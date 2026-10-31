@@ -1,0 +1,40 @@
+# Mock account used for the Beyond 90 demo. Not real data.
+customer:
+  name: Northwind Retail (mock)
+  tier: enterprise
+  ceiling_version: "2026.4"
+
+legacy_metric:
+  definition: connected accounts / accounts known at contract signing
+  known_at_signing: 100
+  connected_then: 92
+  value: 0.92
+
+stages:
+  L1_procurement:
+    true_accounts: 117        # billing + org hierarchy + SSO assignments
+    connected_accounts: 110
+    value: 0.94
+    unconnected:
+      - { id: acct-bu-retail-01, source: billing, owner: bu-retail, last_spend_eur: 1840 }
+      - { id: acct-bu-retail-02, source: org,     owner: bu-retail, last_spend_eur: 920 }
+  L2_processing:
+    value: 0.96
+    missing_types: [container_registry]     # connected, never inventoried
+  L3_tooling:
+    value: 0.95
+    inactive_relevant_modules: [runtime_sensor, code_scanning]
+  L4_findings:
+    value: 0.91
+    unowned_findings: 212
+    note: ownership lost after a team reorganization
+
+yield: 0.78      # 0.94 * 0.96 * 0.95 * 0.91 = 0.7802
+
+reach:
+  teams_with_assets: 14
+  teams_with_active_users: 9
+  sso_coverage: 0.80
+  access_reviews_last_90d: 0.5
+
+next_target: 0.90     # max(current + 5pp, 90%) -> first checkpoint, not the goal
