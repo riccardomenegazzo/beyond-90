@@ -14,12 +14,10 @@ from typing import Optional
 
 from . import __version__
 from .attribution import Attribution
-from .forecast import forecast_zero_critical
 from .planner import Plan
 from .playbooks import Action
 from .scoring import CHECKPOINTS, STAGE_NAMES, Score
-from .sections import (html_attribution, html_forecast, html_plan, html_universe, md_attribution, md_forecast,
-                       md_plan, md_universe)
+from .sections import html_attribution, html_forecast, html_plan, html_universe, md_attribution, md_forecast, md_plan, md_universe
 
 STAGES = ("L1", "L2", "L3", "L4")
 
@@ -93,7 +91,7 @@ def render_markdown(score: Score, actions: list[Action], history: Optional[list[
     if score.naive is not None:
         head += f" against a legacy metric of {pct(score.naive)} (gap {(score.naive - score.yield_) * 100:.1f} points)"
     d = _delta(score, previous)
-    if d is not None:
+    if d is not None and previous:
         head += f"; {pts(d)} since {previous['as_of']}"
     L += [head + ".", ""]
     L += ["| Stage | Pass rate | Count | Meaning |", "|---|---|---|---|"]
@@ -290,7 +288,7 @@ def render_html(score: Score, actions: list[Action], history: Optional[list[dict
     e = escape
     h: list[str] = []
     d = _delta(score, previous)
-    delta = f" · {pts(d)} since {e(previous['as_of'])}" if d is not None else ""
+    delta = f" · {pts(d)} since {e(previous['as_of'])}" if d is not None and previous else ""
     h.append(f'<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
              f'<title>{e(score.customer)}: adoption score</title><style>{CSS}</style></head><body><main>')
     h.append(f'<header><h1>{e(score.customer)}: adoption score</h1><p>As of {e(score.as_of)} <span class="chip">ceiling {e(score.ceiling_version)}</span> '

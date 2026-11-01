@@ -49,7 +49,7 @@ def html_attribution(a: Attribution) -> str:
                    f'<text x="{ml - 8}" y="{y + 15}" text-anchor="end">{e(f.label)}</text>'
                    f'<rect x="{x:.1f}" y="{y}" width="{max(w, 1):.1f}" height="20" rx="3" fill="{fill}" stroke="{color}" stroke-width="1.5"/>'
                    f'<text x="{(mid + w + 6) if f.points >= 0 else (mid - w - 6):.1f}" y="{y + 15}" text-anchor="{"start" if f.points >= 0 else "end"}" style="font-weight:600">{f.points:+.1f}</text></g>')
-    out.append(f'<defs><pattern id="hatchbar" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="var(--neg)" stroke-width="1.5"/></pattern></defs></svg>')
+    out.append('<defs><pattern id="hatchbar" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="var(--neg)" stroke-width="1.5"/></pattern></defs></svg>')
     note = (f'<p>The customer moved <strong>{a.customer_points:+.1f} pts</strong>; the bar moved <strong>{a.bar_points:+.1f} pts</strong>. '
             'Contributions sum exactly to the change.</p>')
     if a.bar_points < -0.05 and a.customer_points > 0:
@@ -180,7 +180,7 @@ def html_plan(p: Plan, top: int = 12) -> str:
     dips = "".join(f"<li><strong>Week {d['week']}: Yield dips {d['drop_points']:.1f} pts.</strong> {e(d['cause'])}</li>" for d in p.dips)
     rows = "".join(f'<tr><td class="n">{j.started_week}-{j.done_week}</td><td>{e(j.title)}</td><td class="n">{j.hours:g}</td><td class="n">+{j.steady_gain_points:.1f} pts</td></tr>' for j in p.jobs[:top])
     more = f'<tr><td></td><td>{len(p.jobs) - top} more</td><td></td><td></td></tr>' if len(p.jobs) > top else ""
-    resid = (f'<p class="warn">Assumed blocked, needs escalation: ' + e("; ".join(f"{n} {k}" for k, n in p.residual.items())) + ".</p>") if p.residual else ""
+    resid = ('<p class="warn">Assumed blocked, needs escalation: ' + e("; ".join(f"{n} {k}" for k, n in p.residual.items())) + ".</p>") if p.residual else ""
     notes = "".join(f'<p class="warn">{e(n)}</p>' for n in p.notes)
     return (f'<section aria-labelledby="rm"><h2 id="rm">Roadmap</h2>'
             f'<p>{p.hours_per_week:g} hours a week, {p.realization:.0%} of each action assumed to succeed. Yield {pct(p.start_yield)} to <strong>{pct(p.end_yield)}</strong>. Checkpoints: {ms}.</p>'

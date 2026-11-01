@@ -34,8 +34,27 @@ beyond90 = "beyond90.cli:main"
 where = ["src"]
 
 [tool.setuptools.package-data]
-beyond90 = ["data/*.json"]
+beyond90 = ["data/*.json", "py.typed"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 140
+target-version = "py311"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM", "RUF100"]
+ignore = ["E501", "E741", "SIM108", "B905", "UP007", "UP045"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["beyond90"]
+known-local-folder = ["helpers"]
+
+[tool.mypy]
+python_version = "3.11"
+warn_unused_ignores = true
+warn_redundant_casts = true
+check_untyped_defs = true

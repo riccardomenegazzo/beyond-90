@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
 from datetime import date, timedelta
-from typing import Optional
+from typing import Any, Optional
 
 from .catalogue import Catalogue, parse_version
 from .models import CustomerData, Finding
@@ -126,7 +126,7 @@ def stage_l2(data: CustomerData, cat: Catalogue) -> StageResult:
     return StageResult("L2", STAGE_NAMES["L2"], num, den, value, has, leaks, notes)
 
 
-def stage_l3(data: CustomerData, cat: Catalogue, ceiling: str) -> StageResult:
+def stage_l3(data: CustomerData, cat: Catalogue, ceiling: str, *, details: bool = True) -> StageResult:
     baseline = parse_version(data.settings.baseline_ceiling)
     present: dict[str, set[str]] = {}
     for r in data.inventory:
@@ -134,20 +134,27 @@ def stage_l3(data: CustomerData, cat: Catalogue, ceiling: str) -> StageResult:
             present.setdefault(r.account_id, set()).add(r.resource_type)
     active = {(a.account_id, a.module_id) for a in data.activations if a.active}
     num = den = 0
-    per_module: dict[str, dict] = {}
+    per_module: dict[str, dict[str, Any]] = {}
+    modules = [(m, set(m.requires_any), set(m.providers)) for m in cat.modules_at(ceiling)]
+    nothing: set[str] = set()
     for a in _active_accounts(data):
         if not a.connected:
             continue
-        have = present.get(a.id, set())
-        for m in cat.modules_at(ceiling):
-            if a.provider not in m.providers:
+        have = present.get(a.id, nothing)
+        for m, requires, providers in modules:
+            if a.provider not in providers:
                 continue
-            if m.requires_any and not (have & set(m.requires_any)):
+            if requires and not (have & requires):
                 continue
             den += 1
-            entry = per_module.setdefault(
-                m.id,
-                {
+            is_active = (a.id, m.id) in active
+            if is_active:
+                num += 1
+            if not details:
+                continue
+            entry = per_module.get(m.id)
+            if entry is None:
+                entry = per_module[m.id] = {
                     "module": m.id,
                     "name": m.name,
                     "since": m.since,
@@ -155,12 +162,9 @@ def stage_l3(data: CustomerData, cat: Catalogue, ceiling: str) -> StageResult:
                     "relevant": 0,
                     "inactive": 0,
                     "accounts": [],
-                },
-            )
+                }
             entry["relevant"] += 1
-            if (a.id, m.id) in active:
-                num += 1
-            else:
+            if not is_active:
                 entry["inactive"] += 1
                 entry["accounts"].append(a.id)
     value, has = _ratio(num, den)
@@ -270,6 +274,7 @@ def compute_outcomes(data: CustomerData) -> dict:
     closed = [f for f in data.findings if f.closed_at is not None and f.closed_at >= lookback]
     mttr: dict[str, dict] = {}
     for f in closed:
+        assert f.closed_at is not None
         days = (f.closed_at - f.opened_at).days
         for key in (f.severity, f"{f.severity}/{f.exposure}"):
             mttr.setdefault(key, {"days": []})["days"].append(days)
@@ -282,6 +287,7 @@ def compute_outcomes(data: CustomerData) -> dict:
     )
     streak = 0
     for f in crit_closed:
+        assert f.closed_at is not None
         if (f.closed_at - f.opened_at).days <= sla["critical"]:
             streak += 1
         else:
@@ -292,7 +298,7 @@ def compute_outcomes(data: CustomerData) -> dict:
         if (data.as_of - f.opened_at).days > sla[f.severity]:
             overdue[f.severity] += 1
 
-    suspects = []
+    suspects: list[dict[str, Any]] = []
     for f in data.findings:
         if not (f.previous_severity and f.severity_changed_at):
             continue

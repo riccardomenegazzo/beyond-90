@@ -1,8 +1,7 @@
 """Small builders so each test states only what it cares about."""
 from datetime import date
 
-from beyond90.models import (Account, Activation, CustomerData, Entitlement, Finding,
-                             InventoryRow, Settings, Team)
+from beyond90.models import Account, CustomerData, Finding, InventoryRow, Settings
 
 AS_OF = date(2026, 10, 31)
 

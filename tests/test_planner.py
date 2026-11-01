@@ -79,3 +79,13 @@ def test_ownership_bundles_are_planned_as_owner_plus_decision():
              findings=[finding(f"f{i}", opened_days_ago=20) for i in range(4)])
     plan = build_plan(d, CAT, realization=1.0, horizon_weeks=4)
     assert plan.end_yield == pytest.approx(1.0) and plan.jobs[0].playbook == "l4_assign_owners"
+
+
+def test_large_actions_are_planned_in_weekly_batches():
+    accounts = [account("ok")] + [account(f"u{i}", connected=False, owner="x", last_spend=100 - i) for i in range(60)]
+    acts = [Activation("ok", m.id, True) for m in CAT.modules_at("2026.4") if "aws" in m.providers]
+    d = data(accounts=accounts, inventory=full_inventory("ok"), activations=acts)
+    plan = build_plan(d, CAT, hours_per_week=8, horizon_weeks=10, realization=1.0)
+    first = plan.jobs[0]
+    assert "first" in first.title and first.hours <= 8.0 + 1e-9    # a batch that fits in a week, not a 46-hour lump
+    assert len(plan.jobs) >= 3 and plan.end_yield > plan.start_yield

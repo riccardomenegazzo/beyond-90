@@ -1,11 +1,10 @@
-from datetime import date, timedelta
+from datetime import timedelta
 
 import pytest
 
 from beyond90.catalogue import Catalogue
 from beyond90.models import Activation, Entitlement, InventoryRow, Team
-from beyond90.scoring import (classify_finding, compute_score, next_target, stage_l1, stage_l2,
-                              stage_l3, stage_l4)
+from beyond90.scoring import classify_finding, compute_score, next_target, stage_l1, stage_l2, stage_l3, stage_l4
 
 from helpers import AS_OF, account, data, finding, full_inventory
 

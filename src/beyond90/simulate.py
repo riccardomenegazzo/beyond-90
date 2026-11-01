@@ -20,9 +20,10 @@ Assumptions (all explicit and editable):
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass, replace
 from datetime import timedelta
-from typing import Iterable, Optional
+from typing import Optional
 
 from .catalogue import Catalogue
 from .models import Activation, CustomerData, InventoryRow
@@ -34,21 +35,52 @@ class RampModel:
     inventory_lag_weeks: int = 2
 
 
+DEFAULT_RAMP = RampModel()
+
+
 @dataclass(frozen=True)
 class Deferred:
     week: int
     ops: tuple[dict, ...]
 
 
-def quick_stages(data: CustomerData, cat: Catalogue, ceiling: Optional[str] = None) -> dict[str, float]:
-    """Stage values only (no outcomes, no leak formatting beyond what the stages compute)."""
+_AFFECTS = {
+    "connect": {"L1", "L2", "L3"},
+    "settle": {"L2", "L3"},
+    "inventory": {"L2", "L3"},
+    "enable": {"L3"},
+    "own": {"L4"},
+    "decide": {"L4"},
+    "set_expiry": {"L4"},
+}
+
+
+def affected_stages(ops: Iterable[dict]) -> set[str]:
+    """Which stages an action can change (the others keep their value)."""
+    out: set[str] = set()
+    for op in ops:
+        out |= _AFFECTS[op["op"]]
+    return out
+
+
+def quick_stages(
+    data: CustomerData,
+    cat: Catalogue,
+    ceiling: Optional[str] = None,
+    *,
+    only: Optional[Iterable[str]] = None,
+    reuse: Optional[dict[str, float]] = None,
+) -> dict[str, float]:
+    """Stage values only. With ``only`` and ``reuse``, recompute just those stages and copy the rest."""
     ceiling = ceiling or data.settings.ceiling_version
-    return {
-        "L1": stage_l1(data).value,
-        "L2": stage_l2(data, cat).value,
-        "L3": stage_l3(data, cat, ceiling).value,
-        "L4": stage_l4(data).value,
+    want = set(only) if only is not None else {"L1", "L2", "L3", "L4"}
+    fns = {
+        "L1": lambda: stage_l1(data).value,
+        "L2": lambda: stage_l2(data, cat).value,
+        "L3": lambda: stage_l3(data, cat, ceiling, details=False).value,
+        "L4": lambda: stage_l4(data).value,
     }
+    return {k: (fns[k]() if k in want or reuse is None else reuse[k]) for k in ("L1", "L2", "L3", "L4")}
 
 
 def quick_yield(data: CustomerData, cat: Catalogue, ceiling: Optional[str] = None) -> float:
@@ -75,13 +107,14 @@ def _settle(data: CustomerData, accounts: Iterable[str], cat: Catalogue) -> None
     provider = {a.id: a.provider for a in data.accounts}
     inv = {(r.account_id, r.resource_type): r for r in data.inventory}
     act = {(a.account_id, a.module_id): a for a in data.activations}
+    modules = cat.modules_at(data.settings.ceiling_version)
     for aid in sorted(ids):
         if aid not in provider:
             continue
         for t in cat.expected_types(provider[aid]):
             row = inv.get((aid, t))
             inv[(aid, t)] = InventoryRow(aid, t, max(row.count if row else 0, 1), True)
-        for m in cat.modules_at(data.settings.ceiling_version):
+        for m in modules:
             if m.on_connect and provider[aid] in m.providers:
                 act[(aid, m.id)] = Activation(aid, m.id, True)
     data.inventory = list(inv.values())
@@ -94,7 +127,7 @@ def apply_ops(
     cat: Catalogue,
     *,
     week: int = 0,
-    ramp: RampModel = RampModel(),
+    ramp: RampModel = DEFAULT_RAMP,
     steady: bool = False,
 ) -> tuple[CustomerData, list[Deferred]]:
     """Return a modified copy and the changes that land later.

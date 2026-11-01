@@ -32,6 +32,7 @@ def test_unconnected_accounts_are_grouped_by_owner_and_effect_is_the_stage_share
 
 def test_new_unconnected_accounts_trigger_auto_onboarding():
     from datetime import timedelta
+
     from helpers import AS_OF
     d, _, actions = build(accounts=[account("new", connected=False, created_at=AS_OF - timedelta(days=5)),
                                     account("old", connected=False, created_at=AS_OF - timedelta(days=400))])
@@ -63,7 +64,6 @@ def test_entitlement_gap_action_and_due_dates():
 
 def test_every_generated_playbook_exists_in_the_catalogue():
     from pathlib import Path
-    import subprocess, sys
     root = Path(__file__).parent.parent / "examples" / "portfolio"
     from beyond90.loader import load_customer
     for d in sorted(p for p in root.iterdir() if p.is_dir()):

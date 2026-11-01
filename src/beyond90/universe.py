@@ -23,8 +23,6 @@ number as a prompt to go looking, not as a count.
 
 from __future__ import annotations
 
-from typing import Optional
-
 from .models import CustomerData
 
 CAPTURE_SOURCES = ("billing", "org", "sso")

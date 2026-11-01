@@ -207,6 +207,7 @@ def cmd_explain(args) -> int:
     cat = _catalogue(args)
     data, _ = load_customer(args.directory, cat)
     score = compute_score(data, cat)
+    previous: Optional[dict] = None
     if args.since:
         old, _ = load_customer(args.since, cat)
         previous = compute_score(old, cat).to_dict()

@@ -9,12 +9,14 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
+from functools import lru_cache
 from pathlib import Path
 from typing import Optional
 
 DATA_DIR = Path(__file__).parent / "data"
 
 
+@lru_cache(maxsize=256)
 def parse_version(value: str) -> tuple[int, ...]:
     try:
         return tuple(int(p) for p in str(value).strip().split("."))
@@ -62,7 +64,7 @@ class Catalogue:
         self.version = version
 
     @classmethod
-    def load(cls, directory: Optional[Path] = None) -> "Catalogue":
+    def load(cls, directory: Optional[Path] = None) -> Catalogue:
         base = Path(directory) if directory else DATA_DIR
         rt = json.loads((base / "resource_types.json").read_text(encoding="utf-8"))
         mods = json.loads((base / "modules.json").read_text(encoding="utf-8"))

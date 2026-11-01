@@ -16,7 +16,9 @@ def score_on(day, findings=()):
 
 def test_save_history_upsert_and_previous(tmp_path):
     s = Store(tmp_path / "h.db")
-    s.save(score_on(0)); s.save(score_on(10)); s.save(score_on(10))      # same day twice: one row
+    s.save(score_on(0))
+    s.save(score_on(10))
+    s.save(score_on(10))      # same day twice: one row
     hist = s.history("Test")
     assert [h["as_of"] for h in hist] == ["2026-10-01", "2026-10-11"]
     assert s.previous("Test", "2026-10-11")["as_of"] == "2026-10-01"

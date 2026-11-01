@@ -24,7 +24,7 @@ from __future__ import annotations
 import math
 import random
 from datetime import timedelta
-from typing import Optional
+from typing import Any, Optional
 
 from .models import CustomerData
 
@@ -37,7 +37,7 @@ def _quantile(sorted_vals: list[float], q: float) -> Optional[float]:
     return None if math.isinf(v) else v
 
 
-def forecast_zero_critical(data: CustomerData, *, runs: int = 2000, horizon_days: int = 365, seed: int = 7) -> dict:
+def forecast_zero_critical(data: CustomerData, *, runs: int = 2000, horizon_days: int = 365, seed: int = 7) -> dict[str, Any]:
     crit = [f for f in data.findings if f.severity == "critical" and f.decision != "false_positive"]
     open_ = [f for f in crit if f.closed_at is None]
     durations = [max(1, (f.closed_at - f.opened_at).days) for f in crit if f.closed_at is not None]
@@ -45,7 +45,7 @@ def forecast_zero_critical(data: CustomerData, *, runs: int = 2000, horizon_days
     since = data.as_of - timedelta(days=lookback)
     arrivals = [f for f in crit if f.opened_at >= since]
     rate = len(arrivals) / lookback if lookback else 0.0
-    out = {"available": True, "open_critical": len(open_), "arrivals_per_week": round(rate * 7, 2),
+    out: dict[str, Any] = {"available": True, "open_critical": len(open_), "arrivals_per_week": round(rate * 7, 2),
            "closed_samples": len(durations), "runs": runs, "seed": seed, "horizon_days": horizon_days}
     if not durations:
         return {**out, "available": False, "reason": "No closed critical findings to learn close times from."}
@@ -62,10 +62,11 @@ def forecast_zero_critical(data: CustomerData, *, runs: int = 2000, horizon_days
     longest = max(durations)
     out["stuck_beyond_history"] = sum(1 for a in ages if a >= longest)
     zero_at: list[float] = []
+    longer_than = {age: [d - age for d in durations if d > age] for age in set(ages)}
     for _ in range(runs):
         intervals: list[tuple[float, float]] = []
         for age in ages:
-            longer = [d - age for d in durations if d > age]
+            longer = longer_than[age]
             intervals.append((0.0, float(rng.choice(longer)) if longer else rng.expovariate(1.0 / max(age, 1))))
         if rate > 0:
             t = 0.0
@@ -82,9 +83,14 @@ def forecast_zero_critical(data: CustomerData, *, runs: int = 2000, horizon_days
             covered = max(covered, end)
         zero_at.append(covered if covered < horizon_days else math.inf)
     zero_at.sort()
-    p = lambda d: round(sum(1 for z in zero_at if z <= d) / runs, 3)
+
+    def p(d: float) -> float:
+        return round(sum(1 for z in zero_at if z <= d) / runs, 3)
+
+    def day(x: Optional[float]) -> Optional[str]:
+        return None if x is None else (data.as_of + timedelta(days=math.ceil(x))).isoformat()
+
     p50, p90 = _quantile(zero_at, 0.5), _quantile(zero_at, 0.9)
-    day = lambda x: None if x is None else (data.as_of + timedelta(days=math.ceil(x))).isoformat()
     out.update(
         state="open",
         p50_days=None if p50 is None else math.ceil(p50), p50_date=day(p50),

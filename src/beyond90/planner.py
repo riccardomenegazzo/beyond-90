@@ -15,6 +15,8 @@ playbook catalogue, the ramp model and the assumptions in ``simulate.py``.
 
 from __future__ import annotations
 
+import math
+import re
 from dataclasses import asdict, dataclass, field
 from typing import Optional
 
@@ -22,7 +24,7 @@ from .catalogue import Catalogue
 from .models import CustomerData
 from .playbooks import Action, generate_actions
 from .scoring import CHECKPOINTS, compute_score
-from .simulate import Deferred, RampModel, apply_ops, quick_stages, quick_yield, settle_pending
+from .simulate import DEFAULT_RAMP, Deferred, RampModel, affected_stages, apply_ops, quick_stages, settle_pending
 
 MIN_HOURS = 0.25
 EPS = 1e-9
@@ -128,13 +130,37 @@ def _realize(ops: list[dict], rate: float) -> tuple[list[dict], set[tuple[str, s
     return out, blocked
 
 
+def _batch(action: Action, hours_per_week: float, cat: Catalogue) -> Action:
+    """Split an action that would take longer than a week into the first batch that fits.
+
+    Large estates have actions worth hundreds of hours ("connect 160 accounts"). Planning
+    them as one lump would show nothing for months; a batch is a real unit of weekly work,
+    taken from the head of the list (accounts are ordered by spend, so the biggest go first).
+    """
+    if action.effort_hours <= hours_per_week:
+        return action
+    p = cat.playbooks[action.playbook]
+    n = int(action.units)
+    fit = n if p.effort_per_unit <= 0 else int((hours_per_week - p.effort_base) / p.effort_per_unit)
+    k = max(1, min(n, fit))
+    if k >= n:
+        return action
+    ops = []
+    for op in action.ops:
+        key = "accounts" if "accounts" in op else "findings" if "findings" in op else None
+        ops.append({**op, key: op[key][:k]} if key else op)
+    hours = round(p.effort_base + p.effort_per_unit * k, 2)
+    title = re.sub(r" \(\d+\)$", "", action.title)          # drop a trailing "(13)" count; the batch size replaces it
+    return Action(**{**action.__dict__, "ops": ops, "units": k, "effort_hours": hours, "title": f"{title}: first {k} of {n}"})
+
+
 def build_plan(
     data: CustomerData,
     cat: Optional[Catalogue] = None,
     *,
     hours_per_week: float = 8.0,
     horizon_weeks: int = 26,
-    ramp: RampModel = RampModel(),
+    ramp: RampModel = DEFAULT_RAMP,
     realization: float = 0.9,
 ) -> Plan:
     if hours_per_week <= 0 or horizon_weeks <= 0:
@@ -156,22 +182,45 @@ def build_plan(
     weeks = [snapshot(0, 0.0, [], [])]
     current: Optional[tuple[Action, float, int, float]] = None  # action, remaining hours, started week, steady gain
 
+    versions = {"L1": 0, "L2": 0, "L3": 0, "L4": 0}   # bumped whenever a stage's inputs change
+    cache: dict[tuple, dict[str, float]] = {}          # candidate -> ratio of each affected stage after / before
+
+    def bump(ops: list[dict]) -> None:
+        for st in affected_stages(ops):
+            versions[st] += 1
+
     def choose() -> Optional[tuple[Action, float]]:
         score = compute_score(state, cat)
         base = settle_pending(state, pending, cat)
-        y0 = quick_yield(base, cat)
+        base_stages = quick_stages(base, cat)
+        y0 = math.prod(base_stages.values())
+        pending_sig = hash(frozenset(pending))
         best: Optional[tuple[float, str, Action, float]] = None
         for a in generate_actions(state, score, cat):
             a2 = _restrict(a, pending, blocked, cat)
             if a2 is None:
                 continue
-            after, _ = apply_ops(base, a2.ops, cat, steady=True)
-            gain = quick_yield(after, cat) - y0
+            a2 = _batch(a2, hours_per_week, cat)
+            aff = affected_stages(a2.ops)
+            ids_sig = hash(tuple(tuple(op.get("accounts") or op.get("findings") or ()) for op in a2.ops))
+            key = (a2.id, ids_sig, tuple(versions[x] for x in sorted(aff)), pending_sig if aff & {"L2", "L3"} else 0)
+            ratios = cache.get(key)
+            if ratios is None:
+                after, _ = apply_ops(base, a2.ops, cat, steady=True)
+                new_stages = quick_stages(after, cat, only=aff, reuse=base_stages)
+                if any(base_stages[x] <= 0 for x in aff):
+                    gain = math.prod(new_stages.values()) - y0          # a zero stage has no ratio; compute directly, do not cache
+                    ratios = None
+                else:
+                    ratios = {x: new_stages[x] / base_stages[x] for x in aff}
+                    cache[key] = ratios
+            if ratios is not None:
+                gain = y0 * (math.prod(ratios.values()) - 1.0)
             if gain <= EPS:
                 continue
-            key = (gain / max(a2.effort_hours, MIN_HOURS), a2.id)
-            if best is None or key[0] > best[0] + 1e-12 or (abs(key[0] - best[0]) <= 1e-12 and key[1] < best[1]):
-                best = (key[0], key[1], a2, gain)
+            rank = gain / max(a2.effort_hours, MIN_HOURS)
+            if best is None or rank > best[0] + 1e-12 or (abs(rank - best[0]) <= 1e-12 and a2.id < best[1]):
+                best = (rank, a2.id, a2, gain)
         return None if best is None else (best[2], best[3])
 
     for week in range(1, horizon_weeks + 1):
@@ -182,6 +231,7 @@ def build_plan(
         settled = 0
         for d in due:
             state, _ = apply_ops(state, d.ops, cat, week=week)
+            bump(list(d.ops))
             for op in d.ops:
                 if op["op"] == "settle":
                     pending -= set(op["accounts"])
@@ -209,6 +259,7 @@ def build_plan(
             applied, newly_blocked = _realize(a.ops, realization)
             blocked |= newly_blocked
             state, new_deferred = apply_ops(state, applied, cat, week=week, ramp=ramp)
+            bump(applied)
             deferred.extend(new_deferred)
             for d in new_deferred:
                 for op in d.ops:
@@ -239,10 +290,10 @@ def build_plan(
             dips.append({"week": cur.week, "drop_points": round((prev.yield_ - cur.yield_) * 100, 2),
                          "cause": cur.events[-1] if cur.events else "A change made earlier took effect."})
     residual: dict[str, int] = {}
-    for op, extra, _ in blocked:
+    for blocked_kind, _, _ in blocked:
         label = {"connect": "accounts that could not be connected", "inventory": "inventory gaps that could not be closed",
                  "enable": "module activations that did not happen", "own": "findings that stayed unowned",
-                 "decide": "findings that stayed undecided", "set_expiry": "accepted risks that stayed unreviewed"}[op]
+                 "decide": "findings that stayed undecided", "set_expiry": "accepted risks that stayed unreviewed"}[blocked_kind]
         residual[label] = residual.get(label, 0) + 1
     if residual:
         notes.append(f"At {realization:.0%} realization the plan plateaus: the residual needs escalation, not more of the same effort.")

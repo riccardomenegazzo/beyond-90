@@ -1,4 +1,3 @@
-import pytest
 
 from beyond90.forecast import forecast_zero_critical, render_forecast
 

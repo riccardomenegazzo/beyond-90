@@ -18,9 +18,10 @@ from __future__ import annotations
 
 import csv
 import tomllib
+from collections.abc import Callable
 from datetime import date
 from pathlib import Path
-from typing import Callable, Optional
+from typing import Optional
 
 from .catalogue import Catalogue, parse_version
 from .models import (
