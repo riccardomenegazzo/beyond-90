@@ -76,7 +76,7 @@ def load_portfolio(root: str | Path, cat: Optional[Catalogue] = None, store: Opt
         raise DataError([f"{base}: no customer directories found (each needs a customer.toml)"])
     for d in dirs:
         try:
-            data, _ = load_customer(d, cat)
+            data, _ = load_customer(d, cat, require_accounts=True)
         except DataError as exc:
             pf.errors[d.name] = exc.errors
             continue

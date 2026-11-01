@@ -99,6 +99,13 @@ def explain(current: Score, previous: dict, data: Optional[CustomerData] = None,
         Factor(k, LABELS[k], kind, o, n, 100.0 * lm * (math.log(max(n, FLOOR)) - math.log(max(o, FLOOR))))
         for k, kind, o, n in pairs
     ]
+    # A stage at exactly zero cannot sit inside a logarithm, so it is held at a tiny floor and the split of the change
+    # between factors is then only approximate. The total is not: the parts are scaled to add up to the real change.
+    total, target = sum(f.points for f in factors), 100.0 * (y1 - y0)
+    if abs(total - target) > 1e-9 and abs(total) > 1e-12:
+        scale = target / total
+        factors = [Factor(f.key, f.label, f.kind, f.old, f.new, f.points * scale) for f in factors]
+        notes.append("A stage is at zero, so how the change splits between factors is approximate; the parts are scaled to add up exactly.")
     cust = sum(f.points for f in factors if f.kind == "customer")
     bar = sum(f.points for f in factors if f.kind == "bar")
     if abs(previous.get("yield", y0) - y0) > 1e-6:

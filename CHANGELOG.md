@@ -2,6 +2,18 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.8.1
+
+Found by an audit of the whole project.
+
+- **An estate with no active account is refused** by `score`, `report`, `qbr`, `plan`, `explain`, `universe`, `forecast`, `book`, `portfolio` and the browser app, with an explanation. Before, it scored 100% on every stage. `validate` and `init` still accept it. **Behaviour change.**
+- **Free text is cleaned on load**: line breaks, control characters and direction-changing characters become spaces, and `|` becomes `¦`, so a name can no longer split a Markdown table or inject a heading. A warning counts the values adjusted.
+- **Attribution is exact when a stage is zero.** The two parts used to miss the total by up to half a point in that case; they are now scaled to add up exactly, with a note that the split is approximate.
+- Python 3.11 compatibility restored (an f-string reused its own quote character).
+- "1 customers" corrected.
+- New tests: seeded random estates (bounds, determinism, row order, plan, attribution), hostile input (parsed HTML audit, Markdown tables), the browser's rendering of hostile text, the empty-estate refusal.
+- `THIRD_PARTY.md` for the software bundled in the browser app; README status, limits and guide brought up to date.
+
 ## 0.8.0
 
 - **How far to trust this number.** `Score.quality`: checks on the inputs (independence of the account list, inventory and activation coverage, freshness of the findings export, empty owner and decision columns, very few accounts, forgotten accounts) and an overall confidence of high, medium or low. Shown in the report and in the browser app. It never changes Yield.

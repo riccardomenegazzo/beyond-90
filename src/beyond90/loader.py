@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import csv
 import difflib
+import re
 import tomllib
 from collections.abc import Callable
 from datetime import date
@@ -56,6 +57,15 @@ _TRUE = {"true", "yes", "y", "1"}
 _FALSE = {"false", "no", "n", "0", ""}
 
 
+_INVISIBLE = dict.fromkeys([*range(0x202A, 0x202F), *range(0x2066, 0x206A), 0x200E, 0x200F, 0x061C])     # bidirectional controls: they reorder text on screen
+
+
+def clean_text(raw: str) -> str:
+    """Make a free-text value safe to show anywhere: one line, no control or direction-changing characters, and no
+    pipe (it would split a Markdown table cell). Everything else is kept as written."""
+    return re.sub(r"\s+", " ", re.sub(r"[\x00-\x1f\x7f]", " ", raw.translate(_INVISIBLE))).strip().replace("|", "\u00a6")
+
+
 class _Ctx:
     """Collects errors for one file while rows are parsed."""
 
@@ -63,6 +73,7 @@ class _Ctx:
         self.filename = filename
         self.errors = errors
         self.line = 0
+        self.adjusted = 0
 
     def err(self, message: str) -> None:
         self.errors.append(f"{self.filename}:{self.line}: {message}")
@@ -115,6 +126,10 @@ class _Ctx:
 
     def text(self, row: dict, key: str, required: bool = False) -> str:
         raw = (row.get(key) or "").strip()
+        cleaned = clean_text(raw)
+        if cleaned != raw:
+            self.adjusted += 1
+        raw = cleaned
         if required and not raw:
             self.err(f"{key}: required")
         return raw
@@ -125,6 +140,7 @@ def _read_csv(
     required_columns: tuple[str, ...],
     errors: list[str],
     parse: Callable[[dict, _Ctx], object],
+    notes: Optional[list[str]] = None,
 ) -> list:
     if not path.exists():
         return []
@@ -145,6 +161,8 @@ def _read_csv(
             item = parse(clean, ctx)
             if item is not None:
                 out.append(item)
+        if notes is not None and ctx.adjusted:
+            notes.append(f"{path.name}: {ctx.adjusted} value(s) had line breaks, control characters or '|' replaced, so that tables stay readable.")
     return out
 
 
@@ -228,9 +246,14 @@ def _settings(raw: dict, errors: list[str]) -> Settings:
 
 
 def load_customer(
-    directory: str | Path, catalogue: Optional[Catalogue] = None
+    directory: str | Path, catalogue: Optional[Catalogue] = None, *, require_accounts: bool = False
 ) -> tuple[CustomerData, list[str]]:
-    """Return ``(data, warnings)`` or raise :class:`DataError` with all errors."""
+    """Return ``(data, warnings)`` or raise :class:`DataError` with all errors.
+
+    With ``require_accounts`` an estate with no active account is an error: an empty list would score 100% on
+    every stage ("nothing is missing"), which is the opposite of what it means. ``validate`` and ``init`` do not
+    ask for it, because an empty scaffold is a legitimate thing to check.
+    """
     base = Path(directory)
     catalogue = catalogue or Catalogue.load()
     errors: list[str] = []
@@ -253,7 +276,7 @@ def load_customer(
                          "Upgrade beyond90, or lower schema_version only if you know the files still follow the older format."])
     _unknown_keys(cust, KNOWN_CUSTOMER_KEYS, "customer.toml [customer]", warnings)
     _unknown_keys(meta.get("settings", {}), KNOWN_SETTINGS_KEYS, "customer.toml [settings]", warnings)
-    name = str(cust.get("name", "")).strip()
+    name = clean_text(str(cust.get("name", "")))
     if not name:
         errors.append("customer.toml: customer.name is required")
     as_of = cust.get("as_of")
@@ -293,7 +316,7 @@ def load_customer(
             created_at=c.date_(row, "created_at"),
         )
 
-    accounts = _read_csv(base / "accounts.csv", ("id", "provider", "sources", "connected"), errors, parse_account)
+    accounts = _read_csv(base / "accounts.csv", ("id", "provider", "sources", "connected"), errors, parse_account, warnings)
     if not (base / "accounts.csv").exists():
         errors.append("accounts.csv: not found (required)")
     seen: dict[str, int] = {}
@@ -317,7 +340,7 @@ def load_customer(
             return None
         return InventoryRow(aid, rtype, int(c.number(row, "count")), c.boolean(row, "inventoried"))
 
-    inventory = _read_csv(base / "inventory.csv", ("account_id", "resource_type", "count", "inventoried"), errors, parse_inventory)
+    inventory = _read_csv(base / "inventory.csv", ("account_id", "resource_type", "count", "inventoried"), errors, parse_inventory, warnings)
 
     module_ids = {m.id for m in catalogue.modules}
 
@@ -334,7 +357,7 @@ def load_customer(
             return None
         return Activation(aid, mid, c.boolean(row, "active"))
 
-    activations = _read_csv(base / "activations.csv", ("account_id", "module_id", "active"), errors, parse_activation)
+    activations = _read_csv(base / "activations.csv", ("account_id", "module_id", "active"), errors, parse_activation, warnings)
 
     def parse_finding(row: dict, c: _Ctx):
         fid = c.text(row, "id", required=True)
@@ -362,7 +385,7 @@ def load_customer(
             expiry=expiry, previous_severity=prev, severity_changed_at=changed,
         )
 
-    findings = _read_csv(base / "findings.csv", ("id", "account_id", "severity", "opened_at"), errors, parse_finding)
+    findings = _read_csv(base / "findings.csv", ("id", "account_id", "severity", "opened_at"), errors, parse_finding, warnings)
 
     def parse_team(row: dict, c: _Ctx):
         tid = c.text(row, "id", required=True)
@@ -374,7 +397,7 @@ def load_customer(
             role_scoped=c.boolean(row, "role_scoped"), last_access_review=c.date_(row, "last_access_review"),
         )
 
-    teams = _read_csv(base / "teams.csv", ("id", "has_assets", "active_users", "sso", "role_scoped"), errors, parse_team)
+    teams = _read_csv(base / "teams.csv", ("id", "has_assets", "active_users", "sso", "role_scoped"), errors, parse_team, warnings)
 
     def parse_entitlement(row: dict, c: _Ctx):
         unit = c.text(row, "unit", required=True).lower()
@@ -386,7 +409,7 @@ def load_customer(
             return None
         return Entitlement(unit, licensed, c.number(row, "used"))
 
-    entitlements = _read_csv(base / "entitlements.csv", ("unit", "licensed", "used"), errors, parse_entitlement)
+    entitlements = _read_csv(base / "entitlements.csv", ("unit", "licensed", "used"), errors, parse_entitlement, warnings)
 
     def rating(c: _Ctx, row: dict, key: str) -> Optional[float]:
         raw = (row.get(key) or "").strip()
@@ -417,7 +440,7 @@ def load_customer(
             self_orientation=rating(c, row, "self_orientation"),
         )
 
-    contacts = _read_csv(base / "contacts.csv", ("id", "role"), errors, parse_contact)
+    contacts = _read_csv(base / "contacts.csv", ("id", "role"), errors, parse_contact, warnings)
     contact_ids = {x.id for x in contacts}
 
     def parse_commitment(row: dict, c: _Ctx):
@@ -434,7 +457,7 @@ def load_customer(
             c.err("promised_on is after due_on")
         return Commitment(id=cid, description=c.text(row, "description") or cid, due_on=due, contact_id=who, promised_on=promised, done_on=done)
 
-    commitments = _read_csv(base / "commitments.csv", ("id", "due_on"), errors, parse_commitment)
+    commitments = _read_csv(base / "commitments.csv", ("id", "due_on"), errors, parse_commitment, warnings)
 
     if errors:
         raise DataError(errors)
@@ -442,11 +465,14 @@ def load_customer(
     for fname in KNOWN_COLUMNS:
         _unknown_columns(base / fname, warnings)
 
+    if require_accounts and not any(a.status == "active" for a in accounts):
+        raise DataError(["accounts.csv: no active accounts, so there is nothing to measure. List the cloud accounts you know about (see docs/data-format.md)."])
+
     if not accounts:
         warnings.append("accounts.csv has no rows: the score has nothing to measure")
     return (
         CustomerData(
-            name=name, tier=str(cust.get("tier", "")), arr=float(arr), as_of=as_of, settings=settings,
+            name=name, tier=clean_text(str(cust.get("tier", ""))), arr=float(arr), as_of=as_of, settings=settings,
             accounts=accounts, inventory=inventory, activations=activations, findings=findings,
             teams=teams, entitlements=entitlements, contacts=contacts, commitments=commitments,
             inputs=hash_directory(base), schema_version=schema_version,

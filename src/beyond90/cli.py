@@ -85,7 +85,7 @@ def _catalogue(args) -> Catalogue:
 def _prepare(args):
     """Load, score, list actions, and read/write the history store if one was given."""
     cat = _catalogue(args)
-    data, warnings = load_customer(args.directory, cat)
+    data, warnings = load_customer(args.directory, cat, require_accounts=True)
     score = compute_score(data, cat, getattr(args, "ceiling", None))
     actions = generate_actions(data, score, cat)
     history = previous = None
@@ -195,7 +195,7 @@ def cmd_actions(args) -> int:
 
 def cmd_plan(args) -> int:
     cat = _catalogue(args)
-    data, _ = load_customer(args.directory, cat)
+    data, _ = load_customer(args.directory, cat, require_accounts=True)
     plan = _plan(args, data, cat)
     if args.format == "json":
         _emit(json.dumps(plan.to_dict(), indent=2, ensure_ascii=False), args.out)
@@ -222,7 +222,7 @@ def cmd_plan(args) -> int:
 
 def cmd_explain(args) -> int:
     cat = _catalogue(args)
-    data, _ = load_customer(args.directory, cat)
+    data, _ = load_customer(args.directory, cat, require_accounts=True)
     score = compute_score(data, cat)
     previous: Optional[dict] = None
     if args.since:
@@ -251,7 +251,7 @@ def cmd_book(args) -> int:
     customers, skipped = [], {}
     for d in dirs:
         try:
-            data, _ = load_customer(d, cat)
+            data, _ = load_customer(d, cat, require_accounts=True)
             customers.append((data.name, data))
         except DataError as exc:
             skipped[d.name] = exc.errors
@@ -273,7 +273,7 @@ def cmd_radar(args) -> int:
     customers = []
     for d in dirs:
         try:
-            data, _ = load_customer(d, cat)
+            data, _ = load_customer(d, cat, require_accounts=True)
             customers.append((data.name, data))
         except DataError as exc:
             print(f"skipped {d.name}: {exc.errors[0]}", file=sys.stderr)
@@ -344,7 +344,7 @@ def cmd_reconcile(args) -> int:
 
 def cmd_universe(args) -> int:
     cat = _catalogue(args)
-    data, _ = load_customer(args.directory, cat)
+    data, _ = load_customer(args.directory, cat, require_accounts=True)
     u = compute_score(data, cat).universe
     _emit(json.dumps(u, indent=2) if args.format == "json" else render_universe(u), args.out)
     return 0
@@ -352,7 +352,7 @@ def cmd_universe(args) -> int:
 
 def cmd_forecast(args) -> int:
     cat = _catalogue(args)
-    data, _ = load_customer(args.directory, cat)
+    data, _ = load_customer(args.directory, cat, require_accounts=True)
     f = forecast_zero_critical(data, runs=args.runs, horizon_days=args.horizon, seed=args.seed)
     _emit(json.dumps(f, indent=2) if args.format == "json" else render_forecast(f), args.out)
     return 0

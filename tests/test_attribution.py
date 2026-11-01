@@ -68,3 +68,19 @@ def test_without_data_the_split_is_not_possible_and_says_so():
     old = fake_prev({"L1": 1, "L2": 1, "L3": 1, "L4": 1}, ceiling="2026.1")
     a = explain(FakeScore({"L1": 1, "L2": 1, "L3": 0.9, "L4": 1}, ceiling="2026.4"), old)
     assert any("cannot be split" in n for n in a.notes) and a.bar_points == 0
+
+
+def test_a_stage_at_zero_still_adds_up_exactly_and_says_the_split_is_approximate():
+    from beyond90.attribution import explain
+    from beyond90.catalogue import Catalogue
+    from beyond90.scoring import compute_score
+
+    from helpers import account, data
+
+    cat = Catalogue.load()
+    good = data(accounts=[account("a"), account("b")])
+    bad = data(accounts=[account("a", connected=False), account("b", connected=False)])
+    for old, new in ((good, bad), (bad, good)):
+        s_old, s_new = compute_score(old, cat), compute_score(new, cat)
+        a = explain(s_new, s_old.to_dict(), new, cat)
+        assert a.customer_points + a.bar_points == pytest.approx(a.delta_points, abs=1e-9)

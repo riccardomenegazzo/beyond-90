@@ -147,3 +147,25 @@ def test_fingerprint_command_prints_the_hash_the_reports_carry(tmp_path, capsys)
     assert main(["score", demo, "--format", "json", "--out", str(out)]) == 0
     assert _json.loads(out.read_text())["provenance"]["input_hash"] == printed
     assert main(["fingerprint", str(tmp_path / "nothing")]) == 1
+
+
+@pytest.mark.parametrize("cmd", ["score", "report", "actions", "qbr", "plan", "explain", "universe", "forecast"])
+def test_an_empty_estate_is_refused_not_scored_as_perfect(tmp_path, capsys, cmd):
+    assert main(["init", str(tmp_path / "e")]) == 0
+    assert main(["validate", str(tmp_path / "e")]) == 0                                   # an empty scaffold is a fine thing to validate
+    capsys.readouterr()
+    assert main([cmd, str(tmp_path / "e")]) != 0
+    assert "nothing to measure" in capsys.readouterr().err
+
+
+def test_an_estate_with_only_decommissioned_accounts_is_also_empty(tmp_path, capsys):
+    d = tmp_path / "d"
+    main(["init", str(d)])
+    (d / "accounts.csv").write_text("id,provider,sources,connected,status\na1,aws,billing,true,decommissioned\n")
+    assert main(["score", str(d)]) != 0 and "nothing to measure" in capsys.readouterr().err
+
+
+def test_the_web_path_refuses_it_too():
+    from beyond90.web import analyze_files, summarize_files
+    files = {"customer.toml": '[customer]\nname = "E"\nas_of = 2026-10-31\n', "accounts.csv": "id,provider,sources,connected\n"}
+    assert analyze_files(files)["ok"] is False and summarize_files(files)["ok"] is False

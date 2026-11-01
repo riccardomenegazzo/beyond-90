@@ -47,7 +47,7 @@ def analyze(
     """
     cat = Catalogue.load()
     try:
-        data, warnings = load_customer(directory, cat)
+        data, warnings = load_customer(directory, cat, require_accounts=True)
         old = load_customer(since, cat)[0] if since else None
     except DataError as e:
         return {"ok": False, "errors": e.errors, "version": __version__}
@@ -116,7 +116,7 @@ def summarize_files(files: Mapping[str, str]) -> dict[str, Any]:
         root = Path(tmp)
         _write(root, files)
         try:
-            data, _ = load_customer(root)
+            data, _ = load_customer(root, require_accounts=True)
         except DataError as e:
             return {"ok": False, "errors": [m.replace(str(root) + "/", "") for m in e.errors]}
         s = compute_score(data, Catalogue.load())
@@ -178,7 +178,7 @@ def analyze_book(
         for slug in sorted(names):
             if slug in pf.errors:
                 continue
-            data, _ = load_customer(root / slug, cat)
+            data, _ = load_customer(root / slug, cat, require_accounts=True)
             customers.append((data.name, data))
             keys[data.name] = names[slug]
         if not customers:

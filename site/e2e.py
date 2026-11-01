@@ -145,6 +145,32 @@ def main(site: str) -> int:
         page.wait_for_selector("#errors:not([hidden])")
         check("customer.toml" in page.inner_text("#errlist"), "validation errors are shown")
 
+        # hostile text in the data is shown as text, everywhere, and never runs
+        evil = '<img src=x onerror="window.__pwned=1"> | # Injected'
+        page.set_input_files("#files", files=[
+            {"name": "customer.toml", "mimeType": "text/plain", "buffer": f'[customer]\nname = "{evil.replace(chr(34), chr(39))}"\nas_of = 2026-10-31\n'.encode()},
+            {"name": "accounts.csv", "mimeType": "text/csv", "buffer": b"id,provider,sources,connected,owner\na1,aws,billing;org,true,<b>x</b>\na2,aws,billing,false,<b>x</b>\n"},
+        ])
+        page.wait_for_selector("#loaded li:has-text('customer.toml')")
+        run_and_wait()
+        page.wait_for_selector("#results:not([hidden])")
+        check(page.locator("#kpis img, #kpis b b").count() == 0 and "<img" in page.inner_text("#kpis"), "a hostile customer name is shown as text in the tiles")
+        page.click("[data-tab=qbr]")
+        check(page.locator("#doc img, #doc script").count() == 0 and "Injected" in page.inner_text("#doc"), "and in the rendered Markdown")
+        page.click("[data-tab=report]")
+        check(page.frame_locator("#report").locator("img, script").count() == 0, "and in the report")
+        check(not page.evaluate("window.__pwned === 1"), "nothing ran")
+
+        # an empty estate is refused, never shown as 100%
+        page.set_input_files("#files", files=[
+            {"name": "customer.toml", "mimeType": "text/plain", "buffer": b'[customer]\nname = "Empty"\nas_of = 2026-10-31\n'},
+            {"name": "accounts.csv", "mimeType": "text/csv", "buffer": b"id,provider,sources,connected\n"},
+        ])
+        page.wait_for_selector("#loaded li:has-text('customer.toml')")
+        run_and_wait()
+        page.wait_for_selector("#errors:not([hidden])")
+        check("nothing to measure" in page.inner_text("#errlist"), "an empty estate is refused with an explanation")
+
         # a whole book: several customers, one budget of hours
         page.click("#demo-book")
         page.wait_for_selector("#loaded li:nth-child(3)")

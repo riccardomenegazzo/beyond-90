@@ -194,12 +194,16 @@ def build_book_plan(
 
 # ------------------------------------------------------------------ rendering
 
+def _customers(n: int) -> str:
+    return f"{n} customer" + ("" if n == 1 else "s")
+
+
 def _pct(v: float) -> str:
     return f"{v * 100:.1f}%"
 
 
 def render_book_text(b: BookPlan, top: int = 12) -> str:
-    L = [f"Book plan: {b.hours_per_week:g} h/week for {b.horizon_weeks} weeks across {len(b.customers)} customers ({b.weighting}-weighted, {b.realization:.0%} realization)",
+    L = [f"Book plan: {b.hours_per_week:g} h/week for {b.horizon_weeks} weeks across {_customers(len(b.customers))} ({b.weighting}-weighted, {b.realization:.0%} realization)",
          f"Weighted Yield {_pct(b.weighted_start)} -> {_pct(b.weighted_end)}"]
     for label, v in b.baselines.items():
         L.append(f"  baseline {RULE_LABELS[label]:<28} {_pct(v)}")
@@ -217,7 +221,7 @@ def render_book_text(b: BookPlan, top: int = 12) -> str:
 
 
 def render_book_markdown(b: BookPlan, top: int = 15) -> str:
-    L = ["# Book plan", "", f"{b.hours_per_week:g} hours a week for {b.horizon_weeks} weeks across {len(b.customers)} customers "
+    L = ["# Book plan", "", f"{b.hours_per_week:g} hours a week for {b.horizon_weeks} weeks across {_customers(len(b.customers))} "
          f"({b.weighting}-weighted, {b.realization:.0%} of each action assumed to succeed).", "",
          f"**Weighted Yield {_pct(b.weighted_start)} to {_pct(b.weighted_end)}.**", ""]
     if b.baselines:

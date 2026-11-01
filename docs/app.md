@@ -28,6 +28,10 @@ Choose a folder that contains several customer folders (each with a `customer.to
 
 A Pages site from a public repository is public. Do not put customer data in the repository; the demo is a made-up customer.
 
+## Licences
+
+The site bundles Pyodide (MPL-2.0) and the Python standard library (PSF); see [THIRD_PARTY.md](../THIRD_PARTY.md), which is also served with the page.
+
 ## Build and test locally
 
 ```bash

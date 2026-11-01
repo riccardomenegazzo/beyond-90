@@ -24,6 +24,10 @@ beyond90 validate acme
 beyond90 universe acme        # how many accounts does no source see?
 ```
 
+## Without installing anything
+
+The same engine runs in a browser tab (see [app.md](app.md)): drop a customer folder, or a folder of customer folders for a whole book, and nothing leaves your machine. It saves snapshots of your inputs locally and compares them, so the weekly rhythm below also works there.
+
 ## Every week or two: score, explain, forecast
 
 ```
@@ -92,6 +96,8 @@ beyond90 qbr acme --since last-quarter-dir --quarter "Q4 2026" --out qbr.md
 beyond90 report acme --since last-quarter-dir --out acme.html
 ```
 
+Before you present it, read the sections the customer will not see: the relationship read (who you know, who you do not, which promises are overdue), the expansion types, and the short list of what to do before you walk in ([trust.md](trust.md) explains where they come from). The "How far to trust this number" section in the report tells you which files to improve first.
+
 The QBR draft leads with the answer (real adoption against the legacy number, what changed and why, the roadmap and the dip to expect), gives three reasons, the evidence, and the decisions you need from the customer ([example](example/northwind-qbr.md)). Add the customer's own goals and wins before presenting it.
 
 ## What to be careful about
@@ -99,3 +105,5 @@ The QBR draft leads with the answer (real adoption against the legacy number, wh
 - The plan, the forecast and the hidden-accounts estimate are models. Each report says what it rests on.
 - Do not put customer data in issues or pull requests. Treat data directories and history databases like the systems they came from.
 - Adoption is one input to a customer health view, not the whole of it.
+- Every score carries the hash of the inputs it came from (`beyond90 fingerprint acme` prints it). When a number is questioned, that hash and the engine version are how you show what it was computed from.
+- A spreadsheet export can add columns or rename them. Unknown columns are ignored with a warning and a suggestion; read the warnings.
