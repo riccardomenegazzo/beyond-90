@@ -6,5 +6,8 @@ Most adoption reporting stops at "90% of accounts connected". Beyond 90 measures
 
 - Specification: [SPEC.md](SPEC.md)
 - Mock account for the demo: [docs/demo-account.yaml](docs/demo-account.yaml)
+- Research on how Wiz runs TAM and customer success: [docs/research-wiz-tam.md](docs/research-wiz-tam.md)
+- Reading list: [docs/reading-list.md](docs/reading-list.md)
+- Visual design direction: [docs/design.md](docs/design.md)
 
 Status: specification v0.1. Mock data only.
