@@ -1,0 +1,9 @@
+Linked Account,Account Name,Service,Unblended Cost
+111111111111,management,AWS Organizations,0.00
+222222222222,prod-payments,Amazon EC2,"12,400.50"
+222222222222,prod-payments,Amazon RDS,"3,100.25"
+333333333333,data-lake,Amazon S3,"8,950.00"
+333333333333,data-lake,Amazon Athena,1200.00
+444444444444,ml-sandbox,Amazon SageMaker,2200.40
+000000666666,bu-retail-eu,Amazon EC2,5400.00
+777777777777,unknown-team-experiments,Amazon EC2,1750.75

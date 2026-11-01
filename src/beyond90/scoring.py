@@ -96,6 +96,9 @@ def stage_l1(data: CustomerData) -> StageResult:
 
 
 def stage_l2(data: CustomerData, cat: Catalogue) -> StageResult:
+    if not data.inventory:
+        return StageResult("L2", STAGE_NAMES["L2"], 0, 0, 1.0, False, [],
+                           ["No inventory rows were provided: L2 is not measured. Once inventory exists, a type with no row counts as a leak."])
     covered: set[tuple[str, str]] = {(r.account_id, r.resource_type) for r in data.inventory if r.inventoried}
     num = den = 0
     missing: dict[tuple[str, str], list[str]] = {}
@@ -128,6 +131,9 @@ def stage_l2(data: CustomerData, cat: Catalogue) -> StageResult:
 
 def stage_l3(data: CustomerData, cat: Catalogue, ceiling: str, *, details: bool = True) -> StageResult:
     baseline = parse_version(data.settings.baseline_ceiling)
+    if not data.activations:
+        return StageResult("L3", STAGE_NAMES["L3"], 0, 0, 1.0, False, [],
+                           ["No module activations were provided: L3 is not measured. Once they exist, an inactive relevant module counts as a leak."])
     present: dict[str, set[str]] = {}
     for r in data.inventory:
         if r.inventoried and r.count > 0:

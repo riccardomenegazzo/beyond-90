@@ -13,6 +13,19 @@ from . import __version__
 from .attribution import explain, render_attribution
 from .catalogue import Catalogue
 from .forecast import forecast_zero_critical, render_forecast
+from .importers import (
+    ImportFormatError,
+    merge,
+    parse_aws_org,
+    parse_azure,
+    parse_csv,
+    parse_gcp,
+    read_accounts,
+    reconcile,
+    render_reconcile,
+    resolve_providers,
+    write_accounts,
+)
 from .loader import DataError, load_customer
 from .planner import build_plan
 from .playbooks import generate_actions
@@ -224,6 +237,56 @@ def cmd_explain(args) -> int:
     return 0
 
 
+def cmd_import(args) -> int:
+    base = Path(args.into)
+    if not (base / "customer.toml").exists():
+        print(f"{base}/customer.toml not found: run `beyond90 init {base}` first", file=sys.stderr)
+        return 1
+    text = Path(args.file).read_text(encoding="utf-8-sig")
+    if args.kind == "aws-org":
+        records = parse_aws_org(text)
+    elif args.kind == "azure":
+        records = parse_azure(text)
+    elif args.kind == "gcp":
+        records = parse_gcp(text)
+    else:
+        if not args.id_column:
+            print("import csv needs --id-column", file=sys.stderr)
+            return 1
+        records = parse_csv(
+            text, source=args.source or ("platform" if args.connected else "billing"), id_column=args.id_column,
+            provider=args.provider, provider_column=args.provider_column, owner_column=args.owner_column,
+            spend_column=args.spend_column, status_column=args.status_column,
+            infer_provider=bool(args.connected),
+        )
+        if args.connected:
+            for r in records:
+                r.connected = True
+    path = base / "accounts.csv"
+    records = resolve_providers(records, read_accounts(path))
+    res = merge(read_accounts(path), records, authoritative_connected=bool(args.connected and args.authoritative))
+    print(f"{len(records)} account(s) in {args.file}: {len(res.added)} added, {len(res.updated)} updated, {res.unchanged} unchanged"
+          + (f", {len(res.newly_unconnected)} marked unconnected" if res.newly_unconnected else ""))
+    for c in res.conflicts:
+        print(f"conflict: {c}", file=sys.stderr)
+    if args.dry_run:
+        print("Dry run: accounts.csv not written.")
+    else:
+        write_accounts(path, res.accounts)
+        print(f"Wrote {path} ({len(res.accounts)} accounts)")
+    return 0
+
+
+def cmd_reconcile(args) -> int:
+    accounts = read_accounts(Path(args.directory) / "accounts.csv")
+    if not accounts:
+        print(f"{args.directory}/accounts.csv is missing or empty", file=sys.stderr)
+        return 1
+    r = reconcile(accounts)
+    _emit(json.dumps(r, indent=2) if args.format == "json" else render_reconcile(r), args.out)
+    return 0
+
+
 def cmd_universe(args) -> int:
     cat = _catalogue(args)
     data, _ = load_customer(args.directory, cat)
@@ -356,6 +419,29 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--out")
     sp.set_defaults(func=cmd_explain)
 
+    sp = sub.add_parser("import", help="merge a native export (AWS Organizations, Azure, GCP, CSV) into accounts.csv")
+    sp.add_argument("kind", choices=["aws-org", "azure", "gcp", "csv"])
+    sp.add_argument("file")
+    sp.add_argument("--into", required=True, help="customer data directory (created with `init`)")
+    sp.add_argument("--dry-run", action="store_true")
+    g = sp.add_argument_group("csv options")
+    g.add_argument("--source", help="billing, org, sso, manual, plan or platform (default billing; platform with --connected)")
+    g.add_argument("--id-column")
+    g.add_argument("--provider", help="aws, azure, gcp, ... for every row (with --connected it is inferred from accounts.csv or the id's shape)")
+    g.add_argument("--provider-column")
+    g.add_argument("--owner-column")
+    g.add_argument("--spend-column", help="summed per account when an account has several rows")
+    g.add_argument("--status-column")
+    g.add_argument("--connected", action="store_true", help="the listed accounts are the ones connected to the platform")
+    g.add_argument("--authoritative", action="store_true", help="with --connected: accounts not in the file are marked unconnected")
+    sp.set_defaults(func=cmd_import)
+
+    sp = sub.add_parser("reconcile", help="how billing, organization and SSO lists overlap; which accounts each one misses")
+    sp.add_argument("directory")
+    sp.add_argument("--format", choices=["text", "json"], default="text")
+    sp.add_argument("--out")
+    sp.set_defaults(func=cmd_reconcile)
+
     sp = sub.add_parser("universe", help="estimate how many accounts no source has seen")
     common(sp, store=False, ceiling=False)
     sp.add_argument("--format", choices=["text", "json"], default="text")
@@ -420,7 +506,7 @@ def main(argv: Optional[list[str]] = None) -> int:
         for line in exc.errors:
             print(f"  {line}", file=sys.stderr)
         return 1
-    except (FileNotFoundError, NotADirectoryError, ValueError) as exc:
+    except (FileNotFoundError, NotADirectoryError, ValueError, ImportFormatError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1
 

@@ -1,0 +1,5 @@
+[
+  {"cloudName": "AzureCloud", "id": "AAAAAAAA-0000-4000-8000-000000000001", "isDefault": true, "name": "prod-core", "state": "Enabled", "tenantId": "tenant-1"},
+  {"cloudName": "AzureCloud", "id": "AAAAAAAA-0000-4000-8000-000000000002", "isDefault": false, "name": "analytics", "state": "Enabled", "tenantId": "tenant-1"},
+  {"cloudName": "AzureCloud", "id": "AAAAAAAA-0000-4000-8000-000000000003", "isDefault": false, "name": "old-poc", "state": "Disabled", "tenantId": "tenant-1"}
+]

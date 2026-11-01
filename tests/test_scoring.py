@@ -37,10 +37,20 @@ def test_l2_pairs_over_connected_accounts_and_zero_resources_is_not_a_leak():
 
 
 def test_l2_unknown_provider_is_skipped_with_a_note():
-    d = data(accounts=[account("x", provider="mars")])
+    d = data(accounts=[account("x", provider="mars")], inventory=[InventoryRow("x", "compute", 1, True)])
     s = stage_l2(d, CAT)
     assert not s.has_data and s.value == 1.0
     assert any("mars" in n for n in s.notes)
+
+
+def test_missing_inventory_or_activations_means_not_measured_not_zero():
+    d = data(accounts=[account("a1")])
+    s2, s3 = stage_l2(d, CAT), stage_l3(d, CAT, "2026.4")
+    assert (s2.has_data, s2.value, s3.has_data, s3.value) == (False, 1.0, False, 1.0)
+    assert "not measured" in s2.notes[0] and "not measured" in s3.notes[0]
+    # with inventory but no activations, L2 is measured and L3 is not
+    d.inventory = full_inventory("a1", skip=("compute",))
+    assert stage_l2(d, CAT).has_data and not stage_l3(d, CAT, "2026.4").has_data
 
 
 def test_l3_ceiling_moves_the_denominator_and_flags_new_modules():
@@ -60,7 +70,7 @@ def test_l3_ceiling_moves_the_denominator_and_flags_new_modules():
 
 def test_l3_module_is_relevant_only_when_its_resource_type_is_present():
     inv = [InventoryRow("a1", "compute", 3, True)]      # no identity, no storage, no registry
-    d = data(accounts=[account("a1")], inventory=inv)
+    d = data(accounts=[account("a1")], inventory=inv, activations=[Activation("a1", "posture", False)])
     ids = {leak["module"] for leak in stage_l3(d, CAT, "2026.4").leaks}
     assert "identity_analysis" not in ids and "data_security" not in ids
     assert "posture" in ids and "runtime_sensor" in ids

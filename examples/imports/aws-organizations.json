@@ -1,0 +1,10 @@
+{
+  "Accounts": [
+    {"Id": "111111111111", "Arn": "arn:aws:organizations::999999999999:account/o-example/111111111111", "Email": "root@example.test", "Name": "management", "Status": "ACTIVE", "JoinedMethod": "INVITED", "JoinedTimestamp": "2021-03-02T09:14:31.221000+00:00"},
+    {"Id": "222222222222", "Arn": "arn:aws:organizations::999999999999:account/o-example/222222222222", "Email": "prod@example.test", "Name": "prod-payments", "Status": "ACTIVE", "JoinedMethod": "CREATED", "JoinedTimestamp": "2021-06-18T12:00:00+00:00"},
+    {"Id": "333333333333", "Arn": "arn:aws:organizations::999999999999:account/o-example/333333333333", "Email": "data@example.test", "Name": "data-lake", "Status": "ACTIVE", "JoinedMethod": "CREATED", "JoinedTimestamp": "2022-01-10T08:30:00+00:00"},
+    {"Id": "444444444444", "Arn": "arn:aws:organizations::999999999999:account/o-example/444444444444", "Email": "ml@example.test", "Name": "ml-sandbox", "Status": "ACTIVE", "JoinedMethod": "CREATED", "JoinedTimestamp": "2024-09-05T15:45:00+00:00"},
+    {"Id": "555555555555", "Arn": "arn:aws:organizations::999999999999:account/o-example/555555555555", "Email": "old@example.test", "Name": "legacy-2019", "Status": "SUSPENDED", "JoinedMethod": "INVITED", "JoinedTimestamp": "2019-11-20T10:00:00+00:00"},
+    {"Id": "000000666666", "Arn": "arn:aws:organizations::999999999999:account/o-example/000000666666", "Email": "retail@example.test", "Name": "bu-retail-eu", "Status": "ACTIVE", "JoinedMethod": "CREATED", "JoinedTimestamp": "2026-10-12T09:00:00+00:00"}
+  ]
+}

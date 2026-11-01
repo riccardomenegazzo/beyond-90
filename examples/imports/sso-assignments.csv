@@ -1,0 +1,6 @@
+Application,Account Id,Group
+AWS IAM Identity Center,222222222222,payments-admins
+AWS IAM Identity Center,333333333333,data-engineers
+AWS IAM Identity Center,444444444444,ml-research
+AWS IAM Identity Center,000000666666,retail-it
+AWS IAM Identity Center,888888888888,contractors-sandbox
