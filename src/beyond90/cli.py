@@ -11,6 +11,7 @@ from typing import Optional
 
 from . import __version__
 from .attribution import explain, render_attribution
+from .book import build_book_plan, render_book_html, render_book_json, render_book_markdown, render_book_text
 from .catalogue import Catalogue
 from .forecast import forecast_zero_critical, render_forecast
 from .importers import (
@@ -237,6 +238,31 @@ def cmd_explain(args) -> int:
     return 0
 
 
+def cmd_book(args) -> int:
+    cat = _catalogue(args)
+    root = Path(args.root)
+    dirs = sorted(p for p in root.iterdir() if p.is_dir() and (p / "customer.toml").exists())
+    if not dirs:
+        print(f"{root}: no customer directories found (each needs a customer.toml)", file=sys.stderr)
+        return 1
+    customers, skipped = [], {}
+    for d in dirs:
+        try:
+            data, _ = load_customer(d, cat)
+            customers.append((data.name, data))
+        except DataError as exc:
+            skipped[d.name] = exc.errors
+    for name, errs in skipped.items():
+        print(f"skipped {name}: {errs[0]}" + (f" (+{len(errs) - 1} more)" if len(errs) > 1 else ""), file=sys.stderr)
+    if not customers:
+        return 1
+    plan = build_book_plan(customers, cat, hours_per_week=args.hours, horizon_weeks=args.weeks, realization=args.realization,
+                           weighting=args.weight, ramp=RampModel(args.ramp_weeks), baselines=not args.no_baselines)
+    render = {"text": render_book_text, "markdown": render_book_markdown, "json": render_book_json, "html": render_book_html}[args.format]
+    _emit(render(plan), args.out)
+    return 1 if skipped and args.strict else 0
+
+
 def cmd_import(args) -> int:
     base = Path(args.into)
     if not (base / "customer.toml").exists():
@@ -418,6 +444,20 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--format", choices=["text", "json"], default="text")
     sp.add_argument("--out")
     sp.set_defaults(func=cmd_explain)
+
+    sp = sub.add_parser("book", help="spend one budget of hours across many customers where it adds the most weighted Yield")
+    sp.add_argument("root", help="directory containing one sub-directory per customer")
+    sp.add_argument("--catalogue-dir")
+    sp.add_argument("--hours", type=float, default=30.0, help="hours per week across the whole book (default 30)")
+    sp.add_argument("--weeks", type=int, default=26)
+    sp.add_argument("--realization", type=float, default=0.9)
+    sp.add_argument("--ramp-weeks", type=int, default=2)
+    sp.add_argument("--weight", choices=["arr", "equal"], default="arr", help="what the book optimizes: ARR-weighted or equal-weighted Yield")
+    sp.add_argument("--no-baselines", action="store_true", help="skip the comparison with equal and ARR-proportional splits (faster)")
+    sp.add_argument("--format", choices=["text", "markdown", "json", "html"], default="text")
+    sp.add_argument("--strict", action="store_true", help="exit 1 if any customer directory is invalid")
+    sp.add_argument("--out")
+    sp.set_defaults(func=cmd_book)
 
     sp = sub.add_parser("import", help="merge a native export (AWS Organizations, Azure, GCP, CSV) into accounts.csv")
     sp.add_argument("kind", choices=["aws-org", "azure", "gcp", "csv"])

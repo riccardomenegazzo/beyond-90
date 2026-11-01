@@ -2,15 +2,18 @@
 
 The planner is greedy on *exact* gain per hour: for every candidate action it
 simulates the converged state (``simulate.apply_ops(..., steady=True)``) and
-rescores the whole estate, so interactions between stages are included. It then
-spends a weekly budget of hours on the best action, applies the change to the
-simulated estate (with the ramp that real connections need), regenerates the
-actions from the new state, and repeats. Follow-up work therefore appears on its
-own: connecting accounts creates enablement work, assigning owners creates
-decision work.
+rescores the estate, so interactions between stages are included. It then spends
+a weekly budget of hours on the best action, applies the change to the simulated
+estate (with the ramp real connections need), regenerates the actions from the
+new state, and repeats. Follow-up work appears on its own: connecting accounts
+creates enablement work, assigning owners creates decision work.
+
+``CustomerPlanner`` is the stepping engine for one customer. ``build_plan`` runs
+it alone; ``book.py`` runs several against one shared budget of hours.
 
 The projection is a model, not a promise. It rests on the effort figures in the
-playbook catalogue, the ramp model and the assumptions in ``simulate.py``.
+playbook catalogue, the ramp model, the realization rate and the assumptions in
+``simulate.py``.
 """
 
 from __future__ import annotations
@@ -28,6 +31,15 @@ from .simulate import DEFAULT_RAMP, Deferred, RampModel, affected_stages, apply_
 
 MIN_HOURS = 0.25
 EPS = 1e-9
+
+BLOCKED_LABELS = {
+    "connect": "accounts that could not be connected",
+    "inventory": "inventory gaps that could not be closed",
+    "enable": "module activations that did not happen",
+    "own": "findings that stayed unowned",
+    "decide": "findings that stayed undecided",
+    "set_expiry": "accepted risks that stayed unreviewed",
+}
 
 
 @dataclass
@@ -82,27 +94,12 @@ class Plan:
         return d
 
 
-def _restrict(action: Action, pending: set[str], blocked: set, cat: Catalogue) -> Optional[Action]:
-    """Drop accounts still ramping and units assumed blocked; None if nothing is left to do."""
-    ops = []
-    for op in action.ops:
-        if "accounts" in op:
-            ids = [a for a in op["accounts"] if a not in pending and _key(op, a) not in blocked]
-            if not ids:
-                return None
-            op = {**op, "accounts": ids}
-        elif "findings" in op:
-            ids = [f for f in op["findings"] if _key(op, f) not in blocked]
-            if not ids:
-                return None
-            op = {**op, "findings": ids}
-        ops.append(op)
-    if not ops:
-        return None
-    n = len(ops[0].get("accounts") or ops[0].get("findings") or [])
-    p = cat.playbooks[action.playbook]
-    hours = round(p.effort_base + p.effort_per_unit * n, 2)
-    return Action(**{**action.__dict__, "ops": ops, "units": n, "effort_hours": hours})
+@dataclass
+class Pick:
+    """The next piece of work a customer wants, and how much of it is left."""
+    action: Action
+    gain: float            # Yield gained when it has fully taken effect (a fraction, not points)
+    remaining_hours: float
 
 
 def _key(op: dict, ident: str) -> tuple[str, str, str]:
@@ -130,6 +127,29 @@ def _realize(ops: list[dict], rate: float) -> tuple[list[dict], set[tuple[str, s
     return out, blocked
 
 
+def _restrict(action: Action, pending: set[str], blocked: set, cat: Catalogue) -> Optional[Action]:
+    """Drop accounts still ramping and units assumed blocked; None if nothing is left to do."""
+    ops = []
+    for op in action.ops:
+        if "accounts" in op:
+            ids = [a for a in op["accounts"] if a not in pending and _key(op, a) not in blocked]
+            if not ids:
+                return None
+            op = {**op, "accounts": ids}
+        elif "findings" in op:
+            ids = [f for f in op["findings"] if _key(op, f) not in blocked]
+            if not ids:
+                return None
+            op = {**op, "findings": ids}
+        ops.append(op)
+    if not ops:
+        return None
+    n = len(ops[0].get("accounts") or ops[0].get("findings") or [])
+    p = cat.playbooks[action.playbook]
+    hours = round(p.effort_base + p.effort_per_unit * n, 2)
+    return Action(**{**action.__dict__, "ops": ops, "units": n, "effort_hours": hours})
+
+
 def _batch(action: Action, hours_per_week: float, cat: Catalogue) -> Action:
     """Split an action that would take longer than a week into the first batch that fits.
 
@@ -154,6 +174,183 @@ def _batch(action: Action, hours_per_week: float, cat: Catalogue) -> Action:
     return Action(**{**action.__dict__, "ops": ops, "units": k, "effort_hours": hours, "title": f"{title}: first {k} of {n}"})
 
 
+class CustomerPlanner:
+    """Steps one customer through time. Spend hours with :meth:`work`, advance with the week methods."""
+
+    def __init__(
+        self,
+        data: CustomerData,
+        cat: Catalogue,
+        *,
+        hours_per_week: float,
+        realization: float = 0.9,
+        ramp: RampModel = DEFAULT_RAMP,
+    ) -> None:
+        if not 0 < realization <= 1:
+            raise ValueError("realization must be in (0, 1]")
+        self.data, self.cat = data, cat
+        self.state = data
+        self.batch_hours = hours_per_week
+        self.realization, self.ramp = realization, ramp
+        self.deferred: list[Deferred] = []
+        self.pending: set[str] = set()
+        self.blocked: set[tuple[str, str, str]] = set()
+        self.jobs: list[Job] = []
+        self.current: Optional[tuple[Action, float, int, float]] = None   # action, remaining hours, started week, gain
+        self.versions = {"L1": 0, "L2": 0, "L3": 0, "L4": 0}              # bumped whenever a stage's inputs change
+        self._cache: dict[tuple, Optional[dict[str, float]]] = {}
+        self._pick: Optional[Pick] = None
+        self._pick_valid = False
+        self._events: list[str] = []
+        self._done: list[str] = []
+        self._connected_now = 0
+        self.weeks = [self._snapshot(0, 0.0, [], [])]
+
+    # ---------------------------------------------------------------- helpers
+    def _snapshot(self, week: int, hours: float, done: list[str], events: list[str]) -> WeekState:
+        st = quick_stages(self.state, self.cat)
+        return WeekState(week, st["L1"] * st["L2"] * st["L3"] * st["L4"], st, round(hours, 2), done, events)
+
+    def _changed(self, ops: list[dict]) -> None:
+        for s in affected_stages(ops):
+            self.versions[s] += 1
+        self._pick_valid = False
+
+    def _choose(self) -> Optional[Pick]:
+        cat = self.cat
+        score = compute_score(self.state, cat)
+        base = settle_pending(self.state, self.pending, cat)
+        base_stages = quick_stages(base, cat)
+        y0 = math.prod(base_stages.values())
+        pending_sig = hash(frozenset(self.pending))
+        best: Optional[tuple[float, str, Action, float]] = None
+        for a in generate_actions(self.state, score, cat):
+            a2 = _restrict(a, self.pending, self.blocked, cat)
+            if a2 is None:
+                continue
+            a2 = _batch(a2, self.batch_hours, cat)
+            aff = affected_stages(a2.ops)
+            ids_sig = hash(tuple(tuple(op.get("accounts") or op.get("findings") or ()) for op in a2.ops))
+            key = (a2.id, ids_sig, tuple(self.versions[x] for x in sorted(aff)), pending_sig if aff & {"L2", "L3"} else 0)
+            ratios = self._cache.get(key)
+            gain: float
+            if key not in self._cache:
+                after, _ = apply_ops(base, a2.ops, cat, steady=True)
+                new_stages = quick_stages(after, cat, only=aff, reuse=base_stages)
+                if any(base_stages[x] <= 0 for x in aff):
+                    gain = math.prod(new_stages.values()) - y0       # a zero stage has no ratio: compute directly, do not cache
+                    ratios = None
+                else:
+                    ratios = {x: new_stages[x] / base_stages[x] for x in aff}
+                    self._cache[key] = ratios
+                    gain = y0 * (math.prod(ratios.values()) - 1.0)
+            else:
+                assert ratios is not None
+                gain = y0 * (math.prod(ratios.values()) - 1.0)
+            if gain <= EPS:
+                continue
+            rank = gain / max(a2.effort_hours, MIN_HOURS)
+            if best is None or rank > best[0] + 1e-12 or (abs(rank - best[0]) <= 1e-12 and a2.id < best[1]):
+                best = (rank, a2.id, a2, gain)
+        if best is None:
+            return None
+        return Pick(best[2], best[3], max(best[2].effort_hours, MIN_HOURS))
+
+    # ------------------------------------------------------------------- api
+    def begin_week(self, week: int) -> None:
+        self._events, self._done, self._connected_now = [], [], 0
+        due = [d for d in self.deferred if d.week <= week]
+        self.deferred = [d for d in self.deferred if d.week > week]
+        settled = 0
+        for d in due:
+            self.state, _ = apply_ops(self.state, d.ops, self.cat, week=week)
+            self._changed(list(d.ops))
+            for op in d.ops:
+                if op["op"] == "settle":
+                    self.pending -= set(op["accounts"])
+                    settled += len(op["accounts"])
+        if settled:
+            self._events.append(f"Inventory completes and agentless modules switch on for {settled} newly connected account(s).")
+
+    def peek(self) -> Optional[Pick]:
+        """What this customer would work on next, without spending anything."""
+        if self.current is not None:
+            a, remaining, _, gain = self.current
+            return Pick(a, gain, remaining)
+        if not self._pick_valid:
+            self._pick, self._pick_valid = self._choose(), True
+        return self._pick
+
+    def work(self, week: int, budget: float) -> float:
+        """Spend up to ``budget`` hours on the current or next job; returns the hours used."""
+        if budget <= EPS:
+            return 0.0
+        if self.current is None:
+            pick = self.peek()
+            if pick is None:
+                return 0.0
+            self.current = (pick.action, pick.remaining_hours, week, pick.gain)
+            self._pick_valid = False
+        a, remaining, started, gain = self.current
+        spend = min(budget, remaining)
+        remaining -= spend
+        if remaining > EPS:
+            self.current = (a, remaining, started, gain)
+            return spend
+        applied, newly_blocked = _realize(a.ops, self.realization)
+        self.blocked |= newly_blocked
+        self.state, new_deferred = apply_ops(self.state, applied, self.cat, week=week, ramp=self.ramp)
+        self._changed(applied)
+        self.deferred.extend(new_deferred)
+        for d in new_deferred:
+            for op in d.ops:
+                self.pending |= set(op["accounts"])
+        self.jobs.append(Job(a.id, a.title, a.playbook, a.leak, a.units, a.effort_hours, started, week, round(gain * 100, 2)))
+        self._done.append(a.title)
+        self._connected_now += sum(len(op["accounts"]) for op in applied if op["op"] == "connect")
+        self.current = None
+        self._pick_valid = False
+        return spend
+
+    def end_week(self, week: int, hours_used: float) -> WeekState:
+        events = list(self._events)
+        if self._connected_now:
+            events.append(f"{self._connected_now} account(s) connected: they enter L2 and L3 with nothing covered yet, so Yield dips before it recovers.")
+        w = self._snapshot(week, hours_used, list(self._done), events)
+        self.weeks.append(w)
+        return w
+
+    @property
+    def idle(self) -> bool:
+        return self.current is None and not self.deferred and self.peek() is None
+
+    def finalize(self, hours_per_week: float, horizon_weeks: int) -> Plan:
+        notes: list[str] = []
+        if self.current is not None:
+            notes.append(f"Work in progress at the horizon: {self.current[0].title}.")
+        if self.deferred:
+            notes.append("Some changes were still ramping at the horizon; Yield is higher once they settle.")
+        weeks = self.weeks
+        milestones: dict[str, Optional[int]] = {
+            f"{int(c * 100)}%": next((w.week for w in weeks if w.yield_ >= c - 1e-12), None) for c in CHECKPOINTS
+        }
+        dips = []
+        for prev, cur in zip(weeks, weeks[1:]):
+            if cur.yield_ < prev.yield_ - 1e-9:
+                dips.append({"week": cur.week, "drop_points": round((prev.yield_ - cur.yield_) * 100, 2),
+                             "cause": cur.events[-1] if cur.events else "A change made earlier took effect."})
+        residual: dict[str, int] = {}
+        for kind, _, _ in self.blocked:
+            label = BLOCKED_LABELS[kind]
+            residual[label] = residual.get(label, 0) + 1
+        if residual:
+            notes.append(f"At {self.realization:.0%} realization the plan plateaus: the residual needs escalation, not more of the same effort.")
+        if not self.jobs:
+            notes.append("There is nothing to plan: no open action changes Yield.")
+        return Plan(self.data.name, self.data.as_of.isoformat(), hours_per_week, horizon_weeks, self.realization,
+                    weeks, self.jobs, milestones, dips, residual, notes)
+
+
 def build_plan(
     data: CustomerData,
     cat: Optional[Catalogue] = None,
@@ -165,138 +362,23 @@ def build_plan(
 ) -> Plan:
     if hours_per_week <= 0 or horizon_weeks <= 0:
         raise ValueError("hours_per_week and horizon_weeks must be positive")
-    if not 0 < realization <= 1:
-        raise ValueError("realization must be in (0, 1]")
     cat = cat or Catalogue.load()
-    state = data
-    deferred: list[Deferred] = []
-    pending: set[str] = set()
-    blocked: set[tuple[str, str, str]] = set()
-    jobs: list[Job] = []
-    notes: list[str] = []
-
-    def snapshot(week: int, hours: float, done: list[str], events: list[str]) -> WeekState:
-        st = quick_stages(state, cat)
-        return WeekState(week, st["L1"] * st["L2"] * st["L3"] * st["L4"], st, round(hours, 2), done, events)
-
-    weeks = [snapshot(0, 0.0, [], [])]
-    current: Optional[tuple[Action, float, int, float]] = None  # action, remaining hours, started week, steady gain
-
-    versions = {"L1": 0, "L2": 0, "L3": 0, "L4": 0}   # bumped whenever a stage's inputs change
-    cache: dict[tuple, dict[str, float]] = {}          # candidate -> ratio of each affected stage after / before
-
-    def bump(ops: list[dict]) -> None:
-        for st in affected_stages(ops):
-            versions[st] += 1
-
-    def choose() -> Optional[tuple[Action, float]]:
-        score = compute_score(state, cat)
-        base = settle_pending(state, pending, cat)
-        base_stages = quick_stages(base, cat)
-        y0 = math.prod(base_stages.values())
-        pending_sig = hash(frozenset(pending))
-        best: Optional[tuple[float, str, Action, float]] = None
-        for a in generate_actions(state, score, cat):
-            a2 = _restrict(a, pending, blocked, cat)
-            if a2 is None:
-                continue
-            a2 = _batch(a2, hours_per_week, cat)
-            aff = affected_stages(a2.ops)
-            ids_sig = hash(tuple(tuple(op.get("accounts") or op.get("findings") or ()) for op in a2.ops))
-            key = (a2.id, ids_sig, tuple(versions[x] for x in sorted(aff)), pending_sig if aff & {"L2", "L3"} else 0)
-            ratios = cache.get(key)
-            if ratios is None:
-                after, _ = apply_ops(base, a2.ops, cat, steady=True)
-                new_stages = quick_stages(after, cat, only=aff, reuse=base_stages)
-                if any(base_stages[x] <= 0 for x in aff):
-                    gain = math.prod(new_stages.values()) - y0          # a zero stage has no ratio; compute directly, do not cache
-                    ratios = None
-                else:
-                    ratios = {x: new_stages[x] / base_stages[x] for x in aff}
-                    cache[key] = ratios
-            if ratios is not None:
-                gain = y0 * (math.prod(ratios.values()) - 1.0)
-            if gain <= EPS:
-                continue
-            rank = gain / max(a2.effort_hours, MIN_HOURS)
-            if best is None or rank > best[0] + 1e-12 or (abs(rank - best[0]) <= 1e-12 and a2.id < best[1]):
-                best = (rank, a2.id, a2, gain)
-        return None if best is None else (best[2], best[3])
-
+    eng = CustomerPlanner(data, cat, hours_per_week=hours_per_week, realization=realization, ramp=ramp)
+    stopped_note = ""
     for week in range(1, horizon_weeks + 1):
-        events: list[str] = []
-        done: list[str] = []
-        due = [d for d in deferred if d.week <= week]
-        deferred = [d for d in deferred if d.week > week]
-        settled = 0
-        for d in due:
-            state, _ = apply_ops(state, d.ops, cat, week=week)
-            bump(list(d.ops))
-            for op in d.ops:
-                if op["op"] == "settle":
-                    pending -= set(op["accounts"])
-                    settled += len(op["accounts"])
-        if settled:
-            events.append(f"Inventory completes and agentless modules switch on for {settled} newly connected account(s).")
-        connected_now = 0
-        budget = hours_per_week
-        used = 0.0
+        eng.begin_week(week)
+        budget, used = hours_per_week, 0.0
         while budget > EPS:
-            if current is None:
-                pick = choose()
-                if pick is None:
-                    break
-                a, gain = pick
-                current = (a, max(a.effort_hours, MIN_HOURS), week, gain)
-            a, remaining, started, gain = current
-            spend = min(budget, remaining)
-            budget -= spend
-            used += spend
-            remaining -= spend
-            if remaining > EPS:
-                current = (a, remaining, started, gain)
+            spent = eng.work(week, budget)
+            if spent <= EPS:
                 break
-            applied, newly_blocked = _realize(a.ops, realization)
-            blocked |= newly_blocked
-            state, new_deferred = apply_ops(state, applied, cat, week=week, ramp=ramp)
-            bump(applied)
-            deferred.extend(new_deferred)
-            for d in new_deferred:
-                for op in d.ops:
-                    pending |= set(op["accounts"])
-            jobs.append(Job(a.id, a.title, a.playbook, a.leak, a.units, a.effort_hours, started, week, round(gain * 100, 2)))
-            done.append(a.title)
-            connected_now += sum(len(op["accounts"]) for op in applied if op["op"] == "connect")
-            current = None
-        if connected_now:
-            events.append(f"{connected_now} account(s) connected: they enter L2 and L3 with nothing covered yet, so Yield dips before it recovers.")
-        weeks.append(snapshot(week, used, done, events))
-        if current is None and not deferred and used <= EPS:
-            notes.append(f"No further action improves Yield after week {week - 1}; the plan stops there.")
-            weeks.pop()
+            budget -= spent
+            used += spent
+        if used <= EPS and eng.current is None and not eng.deferred:
+            stopped_note = f"No further action improves Yield after week {week - 1}; the plan stops there."
             break
-
-    if current is not None:
-        notes.append(f"Work in progress at the horizon: {current[0].title}.")
-    if deferred:
-        notes.append("Some changes were still ramping at the horizon; Yield is higher once they settle.")
-
-    milestones: dict[str, Optional[int]] = {}
-    for c in CHECKPOINTS:
-        milestones[f"{int(c * 100)}%"] = next((w.week for w in weeks if w.yield_ >= c - 1e-12), None)
-    dips = []
-    for prev, cur in zip(weeks, weeks[1:]):
-        if cur.yield_ < prev.yield_ - 1e-9:
-            dips.append({"week": cur.week, "drop_points": round((prev.yield_ - cur.yield_) * 100, 2),
-                         "cause": cur.events[-1] if cur.events else "A change made earlier took effect."})
-    residual: dict[str, int] = {}
-    for blocked_kind, _, _ in blocked:
-        label = {"connect": "accounts that could not be connected", "inventory": "inventory gaps that could not be closed",
-                 "enable": "module activations that did not happen", "own": "findings that stayed unowned",
-                 "decide": "findings that stayed undecided", "set_expiry": "accepted risks that stayed unreviewed"}[blocked_kind]
-        residual[label] = residual.get(label, 0) + 1
-    if residual:
-        notes.append(f"At {realization:.0%} realization the plan plateaus: the residual needs escalation, not more of the same effort.")
-    if not jobs:
-        notes.append("There is nothing to plan: no open action changes Yield.")
-    return Plan(data.name, data.as_of.isoformat(), hours_per_week, horizon_weeks, realization, weeks, jobs, milestones, dips, residual, notes)
+        eng.end_week(week, used)
+    plan = eng.finalize(hours_per_week, horizon_weeks)
+    if stopped_note:
+        plan.notes.insert(0, stopped_note)
+    return plan
