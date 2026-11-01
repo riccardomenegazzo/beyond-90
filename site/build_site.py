@@ -9,6 +9,7 @@ The result is a folder of static files. It needs no server code and loads nothin
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import shutil
 import sys
@@ -18,13 +19,14 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 PYODIDE_FILES = ("pyodide.mjs", "pyodide.asm.mjs", "pyodide.asm.wasm", "python_stdlib.zip", "pyodide-lock.json", "package.json")
 DEMO = ROOT / "examples" / "portfolio" / "northwind"
+DEMO_PREVIOUS = ROOT / "examples" / "history" / "northwind-2026-09"
 
 
 def build(out: Path, pyodide: Path) -> None:
     if out.exists():
         shutil.rmtree(out)
     out.mkdir(parents=True)
-    for name in ("index.html", "app.js", "style.css"):
+    for name in ("index.html", "app.js", "style.css", "engine.js", "store.js", "workspace-core.js", "worker.js"):
         shutil.copy(ROOT / "site" / name, out / name)
     # The engine: the package and its data, nothing else, in a fixed order so builds are reproducible.
     with zipfile.ZipFile(out / "beyond90.zip", "w", zipfile.ZIP_DEFLATED) as z:
@@ -35,6 +37,8 @@ def build(out: Path, pyodide: Path) -> None:
                 z.writestr(info, p.read_bytes())
     demo = {p.name: p.read_text(encoding="utf-8") for p in sorted(DEMO.iterdir()) if p.suffix in (".csv", ".toml")}
     (out / "demo.json").write_text(json.dumps(demo, ensure_ascii=False), encoding="utf-8")
+    prev = {p.name: p.read_text(encoding="utf-8") for p in sorted(DEMO_PREVIOUS.iterdir()) if p.suffix in (".csv", ".toml")}
+    (out / "demo-previous.json").write_text(json.dumps(prev, ensure_ascii=False), encoding="utf-8")
     dest = out / "pyodide"
     dest.mkdir()
     for name in PYODIDE_FILES:
@@ -42,7 +46,19 @@ def build(out: Path, pyodide: Path) -> None:
         if not src.exists():
             sys.exit(f"missing {src}: run npm install pyodide first")
         shutil.copy(src, dest / name)
+    write_service_worker(out)
     (out / ".nojekyll").write_text("")
+
+
+def write_service_worker(out: Path) -> None:
+    """Precache every file under a name derived from their content, so a new build is a new cache."""
+    files = sorted(p.relative_to(out).as_posix() for p in out.rglob("*") if p.is_file())
+    digest = hashlib.sha256()
+    for name in files:
+        digest.update(name.encode() + b"\0" + (out / name).read_bytes() + b"\0")
+    template = (ROOT / "site" / "sw.js").read_text(encoding="utf-8")
+    assets = ["./"] + [f"./{n}" for n in files]
+    (out / "sw.js").write_text(template.replace("__CACHE__", "beyond90-" + digest.hexdigest()[:16]).replace("__ASSETS__", json.dumps(assets)), encoding="utf-8")
 
 
 def main() -> None:

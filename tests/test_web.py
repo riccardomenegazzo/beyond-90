@@ -67,6 +67,47 @@ def test_site_build_is_reproducible_and_has_no_third_party_urls(tmp_path):
     assert (a / "beyond90.zip").read_bytes() == (b / "beyond90.zip").read_bytes()
     assert {"index.html", "app.js", "style.css", "demo.json", "beyond90.zip", ".nojekyll"} <= {p.name for p in a.iterdir()}
     import re
-    for name in ("index.html", "app.js"):
-        urls = re.findall(r"https?://[^\s\"')]+", (a / name).read_text())
-        assert all("github.com/riccardomenegazzo" in u for u in urls), (name, urls)       # links only; nothing is fetched from elsewhere
+    assert (a / "sw.js").read_text() == (b / "sw.js").read_text() and "beyond90-" in (a / "sw.js").read_text()
+    allowed = ("github.com/riccardomenegazzo", "example.com/beyond90-probe")        # links, and the self-check that proves nothing can leave
+    for name in ("index.html", "app.js", "engine.js", "store.js", "workspace-core.js", "worker.js", "sw.js"):
+        urls = re.findall(r"https?://[^\s\"')`]+", (a / name).read_text())
+        assert all(any(ok in u for ok in allowed) for u in urls), (name, urls)
+
+
+
+HISTORY = ROOT / "examples" / "history" / "northwind-2026-09"
+
+
+def read_dir(d):
+    return {p.name: p.read_text(encoding="utf-8") for p in d.iterdir() if p.suffix in (".csv", ".toml")}
+
+
+def test_the_fingerprint_is_the_same_whether_you_hash_a_folder_or_a_mapping_of_texts():
+    from beyond90.provenance import hash_directory, input_hash
+    from beyond90.web import fingerprint_files
+    assert fingerprint_files(demo_files()) == input_hash(hash_directory(DEMO))
+    noisy = {**demo_files(), "notes.txt": "not an input", "sub/accounts.csv.bak": "x"}
+    assert fingerprint_files(noisy) == fingerprint_files(demo_files())                 # files that are not inputs cannot change it
+    crlf = {k: v.replace("\n", "\r\n") for k, v in demo_files().items()}
+    assert fingerprint_files(crlf) == fingerprint_files(demo_files())                  # nor can the line endings
+
+
+def test_summary_is_cheap_and_agrees_with_the_full_analysis():
+    from beyond90.web import summarize_files
+    s, full = summarize_files(demo_files()), analyze_files(demo_files())
+    assert s["yield"] == pytest.approx(full["yield"]) and s["input_hash"] == full["input_hash"] and set(s["stages"]) == {"L1", "L2", "L3", "L4"}
+    assert summarize_files({"accounts.csv": "id\n"})["ok"] is False
+
+
+def test_comparing_with_an_older_snapshot_adds_the_explanation():
+    plain = analyze_files(demo_files())
+    compared = analyze_files(demo_files(), since_files=read_dir(HISTORY))
+    assert "What changed" in compared["report_markdown"] and "What changed" not in plain["report_markdown"]
+    assert compared["input_hash"] == plain["input_hash"]                              # the older snapshot does not alter the new one's identity
+    via_json = json.loads(analyze_json(json.dumps(demo_files()), json.dumps({"since_files": read_dir(HISTORY)})))
+    assert via_json["report_markdown"] == compared["report_markdown"]
+
+
+def test_the_report_footer_says_which_inputs_it_came_from():
+    r = analyze_files(demo_files())
+    assert r["input_hash"][:12] in r["report_html"] and r["input_hash"][:12] in r["qbr_markdown"] or r["input_hash"][:12] in r["report_markdown"]

@@ -2,6 +2,18 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.7.0
+
+Structure, from *Designing Data-Intensive Applications* (see `docs/architecture.md`).
+
+- **Provenance.** Every score carries the hash of its inputs, the engine version, the catalogue hash and the ceiling; reports print it. New command `fingerprint`.
+- **Tolerant reader.** Unknown CSV columns and `customer.toml` keys are ignored with a warning and a "did you mean". `schema_version` in `customer.toml`: newer formats are refused with advice.
+- **Percentiles.** Time to remediate is reported as median and 90th percentile (mean kept in the JSON). The QBR line changed accordingly. **Behaviour change in the report text.**
+- **Browser app, local-first.** The engine runs in a worker (cancel, restart, no frozen page). Snapshots of the inputs can be saved in the browser (IndexedDB), compared with an earlier snapshot, exported and imported. Merge is set union and idempotent; imports are verified against their content hash; unknown fields survive. Contacts and commitments are left out unless you opt in.
+- **Offline.** A service worker caches the whole app per build; a new build waits for old tabs to close.
+- **Self-check.** A button that proves the page and the worker cannot reach another site.
+- Tests: Node tests for the workspace model, a cross-language fingerprint check, and a larger browser test (offline, cancel, persistence, import/export, tampering).
+
 ## 0.6.0
 
 - Browser app (`site/`): the engine runs in the page through Pyodide; drop a folder or try the demo, get the report, QBR, roadmap and JSON. Nothing is uploaded; a strict Content Security Policy allows the page's own origin only.

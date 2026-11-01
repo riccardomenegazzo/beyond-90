@@ -14,7 +14,7 @@
     <h1>Beyond 90</h1>
     <p>Adoption score, roadmap and QBR draft for Technical Account Managers. It runs in this page: your files are read by your browser and never uploaded.</p>
   </div>
-  <span class="chip" id="version">loading engine…</span>
+  <div class="chips"><span class="chip" id="version">loading engine…</span><span class="chip" id="offline" hidden>works offline</span></div>
 </header>
 
 <main>
@@ -40,7 +40,10 @@
         <label>Quarter label<input id="quarter" type="text" placeholder="Q4 2026"></label>
       </div>
     </details>
-    <button class="btn primary big" id="run" type="button" disabled>Run analysis</button>
+    <div class="row left">
+      <button class="btn primary big" id="run" type="button" disabled>Run analysis</button>
+      <button class="btn big" id="cancel" type="button" hidden>Cancel</button>
+    </div>
     <p class="note" id="status" role="status"></p>
     <p class="note">Format: see <a href="https://github.com/riccardomenegazzo/beyond-90/blob/main/docs/data-format.md">data-format.md</a>. Contacts and commitments are personal data; they stay in this tab.</p>
   </section>
@@ -48,6 +51,14 @@
   <section class="panel out" aria-labelledby="res" hidden id="results">
     <h2 id="res">2. Results</h2>
     <div class="kpis" id="kpis"></div>
+    <div class="bar">
+      <label class="inline">Explain what changed since
+        <select id="compare"><option value="">nothing (no comparison)</option></select>
+      </label>
+      <label class="inline check"><input type="checkbox" id="personal"> Keep contacts and commitments when I save</label>
+      <button class="btn" id="save" type="button">Save snapshot in this browser</button>
+    </div>
+    <p class="note" id="saved-note" role="status"></p>
     <div class="tabs" role="tablist">
       <button role="tab" aria-selected="true" data-tab="report">Report</button>
       <button role="tab" aria-selected="false" data-tab="qbr">QBR draft</button>
@@ -64,6 +75,25 @@
     <pre id="raw" class="raw" hidden></pre>
   </section>
 
+  <section class="panel" id="history-panel" aria-labelledby="hist">
+    <h2 id="hist">3. Saved in this browser</h2>
+    <p class="note first">Only your input files are kept, on this device, never results (those are recomputed, so they can never disagree with the data). Contacts and commitments are left out unless you tick the box. Nothing is synced anywhere: to move work between devices, export and import. Importing merges, and importing the same file twice changes nothing.</p>
+    <div id="history-empty" class="empty" hidden>
+      <p>Nothing saved yet. Run an analysis and press <strong>Save snapshot</strong>, or add the demo's earlier quarter to see a comparison.</p>
+      <button class="btn" id="demo-prev" type="button">Add the demo's September snapshot</button>
+    </div>
+    <div id="history-body" hidden>
+      <div id="trend"></div>
+      <table class="hist" id="hist-table"><thead><tr><th>Customer</th><th>As of</th><th class="n">Yield</th><th>Snapshot</th><th></th></tr></thead><tbody></tbody></table>
+    </div>
+    <div class="row left">
+      <button class="btn" id="export" type="button">Export workspace</button>
+      <label class="btn">Import workspace<input id="import" type="file" accept=".json,application/json" hidden></label>
+      <button class="btn danger" id="forget" type="button">Forget everything</button>
+    </div>
+    <p class="note" id="ws-status" role="status"></p>
+  </section>
+
   <section class="panel errors" id="errors" hidden aria-live="assertive">
     <h2>Fix these first</h2>
     <ul id="errlist"></ul>
@@ -71,6 +101,7 @@
 </main>
 
 <footer>
+  <p><button class="link" id="selfcheck" type="button">Check that nothing leaves this page</button> <span id="selfcheck-out" role="status"></span></p>
   <p>Independent open source project (Apache-2.0), not affiliated with or endorsed by any vendor. <a href="https://github.com/riccardomenegazzo/beyond-90">Source</a>. Models (plan, forecast, universe estimate) are models; read the limits in the <a href="https://github.com/riccardomenegazzo/beyond-90/blob/main/README.md#honest-limits">README</a>.</p>
 </footer>
 <script src="app.js" type="module"></script>

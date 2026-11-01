@@ -17,6 +17,7 @@ stopping at the first one, so a TAM can fix a whole export in one pass.
 from __future__ import annotations
 
 import csv
+import difflib
 import tomllib
 from collections.abc import Callable
 from datetime import date
@@ -42,6 +43,7 @@ from .models import (
     Settings,
     Team,
 )
+from .provenance import SCHEMA_VERSION, hash_directory
 
 
 class DataError(Exception):
@@ -146,6 +148,47 @@ def _read_csv(
     return out
 
 
+KNOWN_COLUMNS: dict[str, tuple[str, ...]] = {
+    "accounts.csv": ("id", "provider", "sources", "connected", "owner", "last_spend", "status", "in_plan", "created_at"),
+    "inventory.csv": ("account_id", "resource_type", "count", "inventoried"),
+    "activations.csv": ("account_id", "module_id", "active"),
+    "findings.csv": ("id", "account_id", "severity", "exposure", "opened_at", "closed_at", "owner", "decision", "decision_reason",
+                     "expiry", "previous_severity", "severity_changed_at"),
+    "teams.csv": ("id", "name", "has_assets", "active_users", "sso", "role_scoped", "last_access_review"),
+    "entitlements.csv": ("unit", "licensed", "used"),
+    "contacts.csv": ("id", "name", "role", "team", "influence", "last_contact", "credibility", "reliability", "intimacy", "self_orientation"),
+    "commitments.csv": ("id", "contact_id", "description", "promised_on", "due_on", "done_on"),
+}
+KNOWN_CUSTOMER_KEYS = ("name", "tier", "arr", "as_of", "schema_version")
+KNOWN_SETTINGS_KEYS = ("ceiling_version", "baseline_ceiling", "triage_window_days", "new_account_days", "access_review_days",
+                       "downgrade_window_days", "mttr_lookback_days", "contact_stale_days", "commitment_lookback_days",
+                       "entitlement_target", "sla_days")
+
+
+def _suggest(name: str, known: tuple[str, ...]) -> str:
+    near = difflib.get_close_matches(name, known, n=1, cutoff=0.75)
+    return f" (did you mean {near[0]!r}?)" if near else ""
+
+
+def _unknown_keys(raw: dict, known: tuple[str, ...], where: str, warnings: list[str]) -> None:
+    """A newer file read by an older engine, or a typo: either way the key does nothing, so say so."""
+    for key in raw:
+        if key not in known:
+            warnings.append(f"{where}: unknown key {key!r} is ignored{_suggest(key, known)}")
+
+
+def _unknown_columns(path: Path, warnings: list[str]) -> None:
+    known = KNOWN_COLUMNS.get(path.name)
+    if known is None or not path.exists():
+        return
+    with path.open(newline="", encoding="utf-8-sig") as fh:
+        header = [h.strip() for h in (next(csv.reader(fh), []) or [])]
+    extra = [h for h in header if h and h not in known]
+    if extra:
+        hints = "; ".join(f"{h!r}{_suggest(h, known)}" for h in extra)
+        warnings.append(f"{path.name}: unknown column(s) ignored: {hints}")
+
+
 def _settings(raw: dict, errors: list[str]) -> Settings:
     s = Settings()
     for key in ("ceiling_version", "baseline_ceiling"):
@@ -202,6 +245,14 @@ def load_customer(
         raise DataError([f"customer.toml: invalid TOML: {exc}"]) from exc
 
     cust = meta.get("customer", {})
+    schema_version = cust.get("schema_version", SCHEMA_VERSION)
+    if not isinstance(schema_version, int) or isinstance(schema_version, bool) or schema_version < 1:
+        raise DataError(["customer.toml: customer.schema_version must be a positive integer"])
+    if schema_version > SCHEMA_VERSION:
+        raise DataError([f"customer.toml: written for data format {schema_version}, this engine reads format {SCHEMA_VERSION}. "
+                         "Upgrade beyond90, or lower schema_version only if you know the files still follow the older format."])
+    _unknown_keys(cust, KNOWN_CUSTOMER_KEYS, "customer.toml [customer]", warnings)
+    _unknown_keys(meta.get("settings", {}), KNOWN_SETTINGS_KEYS, "customer.toml [settings]", warnings)
     name = str(cust.get("name", "")).strip()
     if not name:
         errors.append("customer.toml: customer.name is required")
@@ -388,6 +439,9 @@ def load_customer(
     if errors:
         raise DataError(errors)
 
+    for fname in KNOWN_COLUMNS:
+        _unknown_columns(base / fname, warnings)
+
     if not accounts:
         warnings.append("accounts.csv has no rows: the score has nothing to measure")
     return (
@@ -395,6 +449,7 @@ def load_customer(
             name=name, tier=str(cust.get("tier", "")), arr=float(arr), as_of=as_of, settings=settings,
             accounts=accounts, inventory=inventory, activations=activations, findings=findings,
             teams=teams, entitlements=entitlements, contacts=contacts, commitments=commitments,
+            inputs=hash_directory(base), schema_version=schema_version,
         ),
         warnings,
     )

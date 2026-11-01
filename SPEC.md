@@ -1,4 +1,4 @@
-# Beyond 90: specification v0.6
+# Beyond 90: specification v0.7
 
 An adoption engine for Technical Account Managers. It measures how much of a customer's cloud estate is really covered and operated through a security platform, and turns every gap into an action. The bar keeps moving: when a customer grows or the product ships something, the denominators grow with it.
 
@@ -118,6 +118,16 @@ Candor items are derived only from fields already computed; each carries its evi
 
 The app is a client-side wrapper. It must never send input data off the page, must load nothing from a third party and must produce the same numbers as the CLI for the same files; the first two are enforced by the page's Content Security Policy and the build test, the third by `tests/test_web.py`.
 
+## 15d. Provenance, compatibility and the workspace (0.7)
+
+**Fingerprint.** For each input file (`customer.toml`, `accounts.csv`, `inventory.csv`, `activations.csv`, `findings.csv`, `teams.csv`, `entitlements.csv`, `contacts.csv`, `commitments.csv`) the file hash is SHA-256 of its bytes after removing a leading byte-order mark and turning CRLF and CR into LF. The input hash is SHA-256 of the UTF-8 text made of `<name>\t<file hash>\n` for each present file, sorted by name. Files that are not in the list never contribute. `Score.provenance` holds: engine version, schema version, input hash, per-file hashes, catalogue hash, ceiling and baseline.
+
+**Compatibility.** `customer.schema_version` (default 1). A value above the engine's is an error; unknown keys in `[customer]` and `[settings]` and unknown CSV columns are warnings with the nearest known name when one is close.
+
+**Percentiles.** Nearest rank: the value at position ceil(n·q/100) of the sorted sample. Time to remediate reports the median and the 90th percentile per severity (and per severity and exposure), plus the mean and n.
+
+**Workspace file (browser).** `{format: "beyond90-workspace", version: 1, exported_with, snapshots: [...]}` plus any unknown fields. A snapshot is `{id, customer, as_of, personal_excluded, saved_on, files}` plus unknown fields; `id` is the input hash of `files`. Importing refuses a newer major version, rejects a snapshot whose `id` is not the hash of its `files`, and merges by union on `id` (earliest `saved_on`; a deterministic choice among conflicting unknown values). Deletion does not propagate.
+
 ## 16. Positioning against the platform's own views
 
 Platforms such as Wiz already ship an adoption and maturity view (the Champion Center) and an ownership model. Beyond 90 does not replace them: it measures what the platform cannot see (the true account universe, across a whole portfolio) and reads ownership and decisions rather than rebuilding routing. See `docs/research-wiz-tam.md`.
@@ -134,9 +144,10 @@ Platforms such as Wiz already ship an adoption and maturity view (the Champion C
 2. 0.3: simulator and planner with the J-curve, exact attribution, universe estimate, zero-critical forecast.
 3. 0.4: importers and reconciliation, book planner, radar for releases and threats, performance on large estates.
 4. 0.5: relationship layer, candor ledger, typed expansion, five-stage QBR.
-5. 0.6 (this): browser app on GitHub Pages.
-6. 0.7: connector interface and a first verified connector against a real tenant.
-7. 0.8: criticality weighting; readiness checklist import; per-finding ownership sources.
+5. 0.6: browser app on GitHub Pages.
+6. 0.7 (this): provenance, tolerant reader, percentiles, local-first workspace, offline.
+7. 0.8: connector interface and a first verified connector against a real tenant.
+8. 0.9: criticality weighting; readiness checklist import; per-finding ownership sources.
 
 ## References
 

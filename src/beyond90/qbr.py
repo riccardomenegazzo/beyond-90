@@ -127,7 +127,7 @@ def render_qbr(score: Score, actions: list[Action], previous: Optional[dict] = N
             line += " Zero critical status."
         line += f" Consecutive critical fixes within SLA: {o['mttr_streak']}."
         if "critical" in o["mttr"]:
-            line += f" Mean time to remediate critical: {o['mttr']['critical']['mean_days']:.1f} days."
+            line += f" Critical findings took a median of {o['mttr']['critical']['median_days']:g} days to fix, and one in ten took {o['mttr']['critical']['p90_days']:g} or more."
         L += [line, ""]
     if score.reach:
         L += [f"Reach: {pct(score.reach['value'])} across {score.reach['teams']} teams with cloud assets.", ""]

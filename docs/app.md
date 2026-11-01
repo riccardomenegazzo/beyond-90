@@ -6,10 +6,14 @@
 
 Drop a customer folder (or pick the files), or press **Try the demo**, then **Run analysis**. You get the report, the QBR draft, the roadmap, the summary and the JSON, each with Copy and Download. Validation shows every problem at once, by file and line.
 
+## Saving and comparing
+
+**Save snapshot in this browser** keeps your input files (not results) in IndexedDB. Contacts and commitments are left out unless you tick the box, because they are personal data. Saving the same files twice changes nothing. With an earlier snapshot of the same customer saved, the next run compares with it automatically and the report explains what changed; the menu lets you pick another or none. **Export workspace** writes one JSON file; **Import workspace** merges it, so importing the same file twice, or files from two devices in any order, gives the same result. Imports whose content does not match their name are rejected. The app works offline once loaded. See `docs/architecture.md`.
+
 ## What it does not do
 
-- It does not upload anything. Files are read with the browser's File API and handed to Python in memory. The page has a Content Security Policy that allows requests to its own origin only (`connect-src 'self'`), so even a bug could not send your data elsewhere. Nothing is stored: close the tab and it is gone.
-- It does not keep history (no SQLite in the page), and it does not run `book`, `radar` or `import`. Those need many folders or native exports and stay in the CLI.
+- It does not upload anything. A button in the footer checks it: the page and the worker both try to reach another site and the browser blocks them. Files are read with the browser's File API and handed to Python in memory. The page has a Content Security Policy that allows requests to its own origin only (`connect-src 'self'`), so even a bug could not send your data elsewhere. Nothing is stored: close the tab and it is gone.
+- It keeps no history unless you save snapshots (and then only inputs, in this browser), and it does not run `book`, `radar` or `import`. Those need many folders or native exports and stay in the CLI.
 - No third party is contacted. Pyodide (about 14 MB) is copied into the site at build time and served from the same origin; the first visit downloads it, later visits use the browser cache.
 
 ## Publish it on GitHub Pages
@@ -26,14 +30,15 @@ A Pages site from a public repository is public. Do not put customer data in the
 npm install pyodide@314.0.7 --prefix build/npm
 python site/build_site.py --out _site --pyodide build/npm/node_modules/pyodide
 python -m http.server --directory _site 8000          # then open http://localhost:8000
+node --test site/test/*.test.mjs                       # the workspace model, no browser needed
 pip install playwright && python -m playwright install chromium
-python site/e2e.py _site
+python site/e2e.py _site                               # the whole app in Chromium, including offline
 ```
 
 `file://` does not work: browsers do not let a page load WebAssembly from disk. Serve the folder.
 
 ## Design notes
 
-- `beyond90.web.analyze_json` is the only function the page calls; `tests/test_web.py` checks it returns the same Yield as the CLI.
+- `beyond90.web` is the only module the page calls (`analyze_json`, `summarize_json`, `fingerprint_json`); `tests/test_web.py` checks it returns the same Yield as the CLI.
 - The Markdown viewer escapes everything before it adds markup, and the report is shown in a sandboxed iframe with no scripts.
 - The same palette and light and dark themes as the report; no vendor assets.

@@ -16,6 +16,8 @@ Booleans are `true`/`false` (also `yes`/`no`, `1`/`0`). Dates are `YYYY-MM-DD`. 
 
 ## customer.toml
 
+`schema_version = 1` under `[customer]` is optional. A file marked with a newer format than the engine reads is refused with advice; unknown keys and unknown CSV columns are ignored with a warning (and the nearest known name when it looks like a typo), never silently.
+
 ```toml
 [customer]
 name = "Northwind"

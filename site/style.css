@@ -45,3 +45,16 @@ input[type=number],input[type=text]{font:inherit;padding:6px 8px;border:1px soli
 .errors{border-color:var(--bad)}.errors li{margin:4px 0}
 footer{max-width:1100px;margin:24px auto;padding:0 16px;color:var(--muted);font-size:12px}
 [hidden]{display:none!important}
+.chips{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.row.left{justify-content:flex-start}
+.bar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:4px 0 8px}
+.inline{flex-direction:row;align-items:center;gap:8px}.inline select{font:inherit;padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:var(--page);color:var(--ink);max-width:280px}
+.check{cursor:pointer}
+.note.first{margin-top:0}
+.hist{border-collapse:collapse;width:100%;font-size:14px}.hist th,.hist td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--grid)}.hist .n{text-align:right;font-variant-numeric:tabular-nums}
+.hist code{font-size:12px;color:var(--ink2)}
+.btn.small{padding:3px 9px;font-size:13px}.btn.danger:hover{border-color:var(--bad);color:var(--bad)}
+.empty{border:1px dashed var(--grid);border-radius:10px;padding:12px;margin:8px 0}
+button.link{background:none;border:0;color:var(--accent);font:inherit;cursor:pointer;padding:0;text-decoration:underline}
+#trend svg{width:100%;max-width:640px;height:auto;display:block;margin-bottom:8px}
+#trend text{fill:var(--ink2);font:11px system-ui,sans-serif}

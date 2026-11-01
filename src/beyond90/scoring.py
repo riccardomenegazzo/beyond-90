@@ -16,6 +16,7 @@ from typing import Any, Optional
 
 from .catalogue import Catalogue, parse_version
 from .models import CustomerData, Finding
+from .provenance import build as build_provenance
 from .relationship import compute_relationship
 from .universe import estimate_universe
 
@@ -58,6 +59,7 @@ class Score:
     universe: dict = field(default_factory=dict)
     relationship: Optional[dict] = None
     warnings: list[str] = field(default_factory=list)
+    provenance: dict = field(default_factory=dict)
 
     def to_dict(self) -> dict:
         d = asdict(self)
@@ -272,6 +274,13 @@ def _mean(values: list[float]) -> float:
     return sum(values) / len(values)
 
 
+def percentile(values: list[float], q: float) -> float:
+    """Nearest-rank percentile: always one of the observed values, never an interpolated one that nobody lived."""
+    ordered = sorted(values)
+    rank = max(1, -(-len(ordered) * q // 100))        # ceil(n * q / 100) without floats
+    return float(ordered[int(rank) - 1])
+
+
 def compute_outcomes(data: CustomerData) -> dict:
     s = data.settings
     sla = s.sla_days
@@ -286,7 +295,11 @@ def compute_outcomes(data: CustomerData) -> dict:
         days = (f.closed_at - f.opened_at).days
         for key in (f.severity, f"{f.severity}/{f.exposure}"):
             mttr.setdefault(key, {"days": []})["days"].append(days)
-    mttr = {k: {"mean_days": _mean(v["days"]), "n": len(v["days"])} for k, v in sorted(mttr.items())}
+    mttr = {
+        k: {"median_days": percentile(v["days"], 50), "p90_days": percentile(v["days"], 90),
+            "mean_days": _mean(v["days"]), "n": len(v["days"])}
+        for k, v in sorted(mttr.items())
+    }
 
     crit_closed = sorted(
         (f for f in data.findings if f.severity == "critical" and f.closed_at is not None),
@@ -375,4 +388,5 @@ def compute_score(data: CustomerData, cat: Optional[Catalogue] = None, ceiling: 
         universe=estimate_universe(data),
         relationship=compute_relationship(data),
         warnings=warnings,
+        provenance=build_provenance(data.inputs, cat.digest, ceiling, baseline, data.schema_version) if data.inputs else {},
     )

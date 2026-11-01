@@ -137,3 +137,5 @@ class CustomerData:
     entitlements: list[Entitlement] = field(default_factory=list)
     contacts: list[Contact] = field(default_factory=list)
     commitments: list[Commitment] = field(default_factory=list)
+    inputs: dict[str, str] = field(default_factory=dict)      # file name -> fingerprint, set by the loader
+    schema_version: int = 1

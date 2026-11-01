@@ -9,8 +9,9 @@ from __future__ import annotations
 import json
 import re
 import tempfile
+from collections.abc import Mapping
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 from . import __version__
 from .attribution import explain
@@ -20,6 +21,7 @@ from .forecast import forecast_zero_critical
 from .loader import DataError, load_customer
 from .planner import build_plan
 from .playbooks import generate_actions
+from .provenance import INPUT_FILES, hash_directory, input_hash
 from .qbr import render_qbr
 from .report import render_html, render_json, render_markdown
 from .scoring import compute_score
@@ -63,6 +65,8 @@ def analyze(
         "ok": True,
         "version": __version__,
         "warnings": warnings,
+        "provenance": score.provenance,
+        "input_hash": score.provenance.get("input_hash", ""),
         "customer": score.customer,
         "as_of": str(score.as_of),
         "yield": score.yield_,
@@ -77,13 +81,25 @@ def analyze(
     }
 
 
-def analyze_files(files: dict[str, str], **kw: Any) -> dict[str, Any]:
-    """Same as `analyze`, from a mapping of file name to text (what a browser has)."""
+def _write(root: Path, files: Mapping[str, str]) -> None:
+    for name, text in files.items():
+        base = Path(name).name                      # flat on purpose: a data directory has no sub-folders
+        if base in INPUT_FILES:                     # anything else is not an input and must not change the fingerprint
+            (root / base).write_bytes(text.encode("utf-8"))
+
+
+def analyze_files(files: Mapping[str, str], since_files: Optional[Mapping[str, str]] = None, **kw: Any) -> dict[str, Any]:
+    """Same as `analyze`, from a mapping of file name to text (what a browser has).
+
+    `since_files` is an older snapshot of the same customer; the report then explains what changed.
+    """
     with tempfile.TemporaryDirectory() as tmp:
         root = Path(tmp)
-        for name, text in files.items():
-            p = (root / Path(name).name)           # flat on purpose: a data directory has no sub-folders
-            p.write_text(text, encoding="utf-8")
+        _write(root, files)
+        if since_files:
+            (root / "since").mkdir()
+            _write(root / "since", since_files)
+            kw["since"] = str(root / "since")
         result = analyze(str(root), **kw)
     if not result["ok"]:
         # The folder is a throwaway; show file names, and no advice about a command line the user is not using.
@@ -91,8 +107,40 @@ def analyze_files(files: dict[str, str], **kw: Any) -> dict[str, Any]:
     return result
 
 
+def summarize_files(files: Mapping[str, str]) -> dict[str, Any]:
+    """The few numbers a history list needs, without rendering anything. Derived data: cheap to rebuild, never stored."""
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        _write(root, files)
+        try:
+            data, _ = load_customer(root)
+        except DataError as e:
+            return {"ok": False, "errors": [m.replace(str(root) + "/", "") for m in e.errors]}
+        s = compute_score(data, Catalogue.load())
+        return {
+            "ok": True, "customer": s.customer, "as_of": s.as_of, "yield": s.yield_, "naive": s.naive,
+            "stages": {k: v.value for k, v in s.stages.items()}, "input_hash": s.provenance.get("input_hash", ""),
+            "engine": __version__,
+        }
+
+
+def fingerprint_files(files: Mapping[str, str]) -> str:
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        _write(root, files)
+        return input_hash(hash_directory(root))
+
+
 def analyze_json(files_json: str, options_json: str = "{}") -> str:
-    """JSON in, JSON out: the one function the page calls."""
-    files = json.loads(files_json)
+    """JSON in, JSON out: the one function the page calls for a full analysis."""
     opts = json.loads(options_json)
-    return json.dumps(analyze_files(files, **opts), ensure_ascii=False)
+    since = opts.pop("since_files", None)
+    return json.dumps(analyze_files(json.loads(files_json), since_files=since, **opts), ensure_ascii=False)
+
+
+def summarize_json(files_json: str) -> str:
+    return json.dumps(summarize_files(json.loads(files_json)), ensure_ascii=False)
+
+
+def fingerprint_json(files_json: str) -> str:
+    return fingerprint_files(json.loads(files_json))

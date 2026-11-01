@@ -397,6 +397,19 @@ def cmd_portfolio(args) -> int:
     return 1 if pf.errors and args.strict else 0
 
 
+def cmd_fingerprint(args) -> int:
+    from .provenance import hash_directory, input_hash
+    files = hash_directory(args.directory)
+    if not files:
+        print(f"{args.directory}: no input files found", file=sys.stderr)
+        return 1
+    if args.files:
+        for name, h in sorted(files.items()):
+            print(f"{h}  {name}")
+    print(input_hash(files))
+    return 0
+
+
 def cmd_catalogue(args) -> int:
     cat = _catalogue(args)
     ceiling = args.ceiling or cat.version
@@ -568,6 +581,11 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--strict", action="store_true", help="exit 1 if any customer directory is invalid")
     sp.add_argument("--out")
     sp.set_defaults(func=cmd_portfolio)
+
+    sp = sub.add_parser("fingerprint", help="the hash that names these inputs; reports carry it so a number can be traced to its data")
+    sp.add_argument("directory")
+    sp.add_argument("--files", action="store_true", help="also list the hash of each file")
+    sp.set_defaults(func=cmd_fingerprint)
 
     sp = sub.add_parser("catalogue", help="show modules and expected resource types")
     sp.add_argument("--catalogue-dir")

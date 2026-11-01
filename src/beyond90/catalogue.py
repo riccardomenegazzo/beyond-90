@@ -7,11 +7,14 @@ version, and a score computed at ceiling ``V`` only counts modules with
 
 from __future__ import annotations
 
+import hashlib
 import json
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
 from typing import Optional
+
+from .provenance import normalize
 
 DATA_DIR = Path(__file__).parent / "data"
 
@@ -59,16 +62,19 @@ class Catalogue:
         modules: list[Module],
         playbooks: dict[str, Playbook],
         version: str,
+        digest: str = "",
     ) -> None:
         self.resource_types = resource_types
         self.expected = expected
         self.modules = modules
         self.playbooks = playbooks
         self.version = version
+        self.digest = digest
 
     @classmethod
     def load(cls, directory: Optional[Path] = None) -> Catalogue:
         base = Path(directory) if directory else DATA_DIR
+        digest = hashlib.sha256(b"".join(normalize((base / n).read_bytes()) for n in ("resource_types.json", "modules.json", "playbooks.json"))).hexdigest()
         rt = json.loads((base / "resource_types.json").read_text(encoding="utf-8"))
         mods = json.loads((base / "modules.json").read_text(encoding="utf-8"))
         pbs = json.loads((base / "playbooks.json").read_text(encoding="utf-8"))
@@ -107,7 +113,7 @@ class Catalogue:
             unknown = [t for t in types if t not in rt["types"]]
             if unknown:
                 raise ValueError(f"catalogue: provider {provider} expects undefined types {unknown}")
-        return cls(rt["types"], rt["expected"], modules, playbooks, rt["version"])
+        return cls(rt["types"], rt["expected"], modules, playbooks, rt["version"], digest)
 
     def expected_types(self, provider: str) -> list[str]:
         return list(self.expected.get(provider, []))

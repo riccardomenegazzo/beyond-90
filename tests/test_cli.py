@@ -134,3 +134,16 @@ def test_report_includes_the_new_sections(tmp_path, capsys):
     for needle in ("What changed since", "How complete is the universe?", "Roadmap", "Zero-critical forecast", "The J-curve"):
         assert needle in html
     assert "<script" not in html.lower()
+
+
+def test_fingerprint_command_prints_the_hash_the_reports_carry(tmp_path, capsys):
+    import json as _json
+
+    from beyond90.cli import main
+    demo = "examples/portfolio/northwind"
+    assert main(["fingerprint", demo]) == 0
+    printed = capsys.readouterr().out.strip()
+    out = tmp_path / "s.json"
+    assert main(["score", demo, "--format", "json", "--out", str(out)]) == 0
+    assert _json.loads(out.read_text())["provenance"]["input_hash"] == printed
+    assert main(["fingerprint", str(tmp_path / "nothing")]) == 1

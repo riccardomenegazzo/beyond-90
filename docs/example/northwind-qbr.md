@@ -57,7 +57,7 @@ One caveat: about 6 account(s) are probably known to no source at all; if they a
 
 Against the baseline ceiling (2026.1) Yield is 76.1%. The gap is new capability released since then: more headroom, not a step back.
 
-Critical findings open: 11. Consecutive critical fixes within SLA: 2. Mean time to remediate critical: 11.4 days.
+Critical findings open: 11. Consecutive critical fixes within SLA: 2. Critical findings took a median of 12 days to fix, and one in ten took 18 or more.
 
 Reach: 66.1% across 14 teams with cloud assets.
 
