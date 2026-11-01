@@ -17,7 +17,7 @@ Sources: a public brand teardown of wiz.io (stfo.io, 2026) and Wiz web pages. Wi
 
 ## 2. Decision: borrow principles, not assets
 
-Beyond 90 is an independent project that supports a Wiz application. It must not look like a Wiz product: no Wiz logo, spark, teal, characters or wordmark, and the name never appears in the UI chrome. Anything shown to a recruiter should read as an homage that understands the brand, not a lookalike that could be mistaken for it. Wiz is named only in text, as the subject of the research.
+Beyond 90 is an independent open source project, not affiliated with or endorsed by any vendor. It must not look like a Wiz product: no Wiz logo, spark, teal, characters or wordmark, and no vendor name in the UI chrome. The visual language should read as an homage that understands the brand, not a lookalike that could be mistaken for it. Wiz is named only in text, as the subject of the research.
 
 ## 3. Principles taken from the analysis
 

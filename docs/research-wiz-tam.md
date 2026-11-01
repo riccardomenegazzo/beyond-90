@@ -87,7 +87,7 @@ Implication: every one of these has a licensed number and a used number. The gap
 7. **Threat-to-Adoption.** Map the four AI Threat Readiness pillars to modules and to the readiness checklist, so a new threat points at a specific unused capability.
 8. **Reach to Champion Center.** Align Reach metrics (active users, enabled integrations, projects) with the fields the Champion Center already exposes so numbers can be cross-checked.
 
-## 7. Open questions for the interviews
+## 7. Open questions to validate with practitioners
 
 - What does a TAM at Wiz use day to day for account health (internal dashboards, Champion Center, a CS platform)?
 - How is a book split between one-to-one and pooled accounts in EMEA?
