@@ -32,6 +32,7 @@ from .planner import build_plan
 from .playbooks import generate_actions
 from .portfolio import load_portfolio, render_portfolio_json, render_portfolio_markdown
 from .qbr import render_qbr
+from .radar import load_threats, release_radar, render_radar_json, render_radar_markdown, render_radar_text, threat_radar
 from .report import pct, render_html, render_json, render_markdown, render_text
 from .scoring import compute_score
 from .sections import md_plan
@@ -263,6 +264,32 @@ def cmd_book(args) -> int:
     return 1 if skipped and args.strict else 0
 
 
+def cmd_radar(args) -> int:
+    cat = _catalogue(args)
+    root = Path(args.root)
+    dirs = sorted(p for p in root.iterdir() if p.is_dir() and (p / "customer.toml").exists())
+    customers = []
+    for d in dirs:
+        try:
+            data, _ = load_customer(d, cat)
+            customers.append((data.name, data))
+        except DataError as exc:
+            print(f"skipped {d.name}: {exc.errors[0]}", file=sys.stderr)
+    if not customers:
+        print(f"{root}: no valid customer directories found", file=sys.stderr)
+        return 1
+    releases = []
+    if args.release or args.since_baseline or not args.threats:
+        releases = release_radar(customers, cat, version=args.release, since_baseline=not args.release)
+    threats = []
+    if args.threats:
+        as_of = max(d.as_of for _, d in customers)
+        threats = threat_radar(customers, load_threats(args.threats, cat), cat, as_of=as_of)
+    render = {"text": render_radar_text, "markdown": render_radar_markdown, "json": render_radar_json}[args.format]
+    _emit(render(releases, threats), args.out)
+    return 0
+
+
 def cmd_import(args) -> int:
     base = Path(args.into)
     if not (base / "customer.toml").exists():
@@ -458,6 +485,16 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--strict", action="store_true", help="exit 1 if any customer directory is invalid")
     sp.add_argument("--out")
     sp.set_defaults(func=cmd_book)
+
+    sp = sub.add_parser("radar", help="which customers should hear about a release, and which are exposed to a threat")
+    sp.add_argument("root", help="directory containing one sub-directory per customer")
+    sp.add_argument("--catalogue-dir")
+    sp.add_argument("--release", help="a catalogue version, e.g. 2026.3: customers where modules released then are relevant and off")
+    sp.add_argument("--since-baseline", action="store_true", help="modules released after each customer's baseline ceiling (the default when no --threats)")
+    sp.add_argument("--threats", help="a JSON threat feed (see docs/radar.md); nothing is fetched from the network")
+    sp.add_argument("--format", choices=["text", "markdown", "json"], default="text")
+    sp.add_argument("--out")
+    sp.set_defaults(func=cmd_radar)
 
     sp = sub.add_parser("import", help="merge a native export (AWS Organizations, Azure, GCP, CSV) into accounts.csv")
     sp.add_argument("kind", choices=["aws-org", "azure", "gcp", "csv"])

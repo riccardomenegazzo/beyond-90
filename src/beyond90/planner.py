@@ -340,7 +340,7 @@ class CustomerPlanner:
                 dips.append({"week": cur.week, "drop_points": round((prev.yield_ - cur.yield_) * 100, 2),
                              "cause": cur.events[-1] if cur.events else "A change made earlier took effect."})
         residual: dict[str, int] = {}
-        for kind, _, _ in self.blocked:
+        for kind, _, _ in sorted(self.blocked):
             label = BLOCKED_LABELS[kind]
             residual[label] = residual.get(label, 0) + 1
         if residual:

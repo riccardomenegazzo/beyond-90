@@ -1,0 +1,33 @@
+{
+  "note": "Invented entries for the example portfolio. Replace with entries from the threat intelligence you follow.",
+  "threats": [
+    {
+      "id": "MOCK-2026-001",
+      "title": "Registry credentials exposed in CI logs (mock)",
+      "severity": "high",
+      "published": "2026-10-27",
+      "resource_types": ["container_registry", "kubernetes"],
+      "providers": ["aws", "azure", "gcp"],
+      "mitigated_by": ["container_security", "runtime_sensor"],
+      "source": "mock feed"
+    },
+    {
+      "id": "MOCK-2026-002",
+      "title": "Public object storage holding sensitive data (mock)",
+      "severity": "critical",
+      "published": "2026-10-30",
+      "resource_types": ["storage_object"],
+      "mitigated_by": ["data_security", "posture"],
+      "source": "mock feed"
+    },
+    {
+      "id": "MOCK-2026-003",
+      "title": "Over-privileged workload identities (mock)",
+      "severity": "medium",
+      "published": "2026-09-14",
+      "resource_types": ["identity"],
+      "mitigated_by": ["identity_analysis"],
+      "source": "mock feed"
+    }
+  ]
+}

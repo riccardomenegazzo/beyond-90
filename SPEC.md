@@ -1,4 +1,4 @@
-# Beyond 90: specification v0.3
+# Beyond 90: specification v0.4
 
 An adoption engine for Technical Account Managers. It measures how much of a customer's cloud estate is really covered and operated through a security platform, and turns every gap into an action. The bar keeps moving: when a customer grows or the product ships something, the denominators grow with it.
 
@@ -79,32 +79,48 @@ L1 is measured against the accounts you know. `beyond90 universe` estimates how 
 
 `beyond90 forecast` runs a seeded Monte Carlo of the critical-finding queue, learned from the customer's own history: open findings get a residual time from the empirical close times longer than their age (findings older than anything ever closed are counted as `stuck_beyond_history` and modelled with an exponential residual whose mean is their age); new criticals arrive as a Poisson process at the recent rate. It reports the median and 90th percentile days to zero, the probability of zero within 30, 60 and 90 days, and, when already at zero, the probability that a new critical breaks it. Without closed critical findings it says so and does not guess.
 
-## 11. Portfolio
+## 11. Building the universe from native exports
+
+`beyond90 import` reads the native export of each independent list (`aws organizations list-accounts`, `az account list`, `gcloud projects list`, billing and SSO CSVs, the platform's connected-account list) and merges it into `accounts.csv` by account id. It adds the source, never loses one, reports disagreements (provider, status) instead of guessing, normalizes ids (12-digit AWS ids keep their leading zeros, Azure ids are lower-cased) and is idempotent: importing the same file twice changes nothing. A connected-account list can be authoritative, so accounts missing from it become unconnected. `beyond90 reconcile` shows how the lists overlap and flags accounts billed but absent from the organization hierarchy (likely shadow accounts) and accounts in the organization with no billing line.
+
+When no inventory or no module activations are provided, L2 and L3 are reported as *not measured* (and count as 100% with a note), not as zero: a missing file is missing data, not a finding.
+
+## 12. Planning a whole book
+
+`beyond90 book` runs the planner for every customer under one budget of hours per week. Each customer is a stepping engine that can say what its best next job is and how much Yield it adds when it is done. Every hour goes to the job with the highest `weight x gain / remaining hours`, where the weight is the customer's share of ARR (or equal). The objective is therefore the ARR-weighted Yield of the book. The result is compared with an equal split of hours and a split proportional to ARR, each run as independent plans, so the value of choosing is a number. With enough hours every rule ends at the same place, and the report says so.
+
+## 13. Radar: releases and threats
+
+`beyond90 radar` answers "who should hear about this?" for a portfolio.
+
+* **Releases.** For modules released at a version (or after each customer's baseline): customers where the module is relevant and off, how many accounts, and the exact Yield each would gain by switching it on. Ranked by ARR x gain.
+* **Threats.** From a JSON feed you provide (nothing is fetched): per customer, accounts with inventoried resources of the affected types, how many already have a mitigating module active (any of `mitigated_by`), how many are uncovered, and how many are *unknown* because the affected type was never inventoried. Ranked by `severity weight x ARR x uncovered share`. An L2 leak is also a threat blind spot, and the report says to fix it first.
+
+## 14. Portfolio
 
 `beyond90 portfolio ROOT` scores every customer directory under ROOT, reports the ARR-weighted Yield and lists patterns that recur across customers. Recurring patterns are the candidates for one-to-many work (a shared playbook, a webinar, a knowledge article), the proactive half of scaled customer success.
 
-## 12. QBR draft
+## 15. QBR draft
 
 `beyond90 qbr DIR` writes a Markdown review with the Pyramid Principle: the answer first (real adoption against the legacy number, what changed and why, the roadmap and the dip to expect, a caveat on hidden accounts), three reasons grouped by leak, the evidence beneath, the plan and the decisions asked of the customer. The TAM adds the customer's own goals and wins.
 
-## 13. Positioning against the platform's own views
+## 16. Positioning against the platform's own views
 
 Platforms such as Wiz already ship an adoption and maturity view (the Champion Center) and an ownership model. Beyond 90 does not replace them: it measures what the platform cannot see (the true account universe, across a whole portfolio) and reads ownership and decisions rather than rebuilding routing. See `docs/research-wiz-tam.md`.
 
-## 14. Not yet
+## 17. Not yet
 
-- Portfolio-level planning across customers with a shared hour budget.
 - Live connectors to platform APIs. They need a real tenant to verify and will be separate optional modules.
 - Weighting by asset criticality.
 - Health scoring. Adoption is one input to a customer health view, not health.
 
-## 15. Roadmap
+## 18. Roadmap
 
 1. 0.2: engine, CLI, report, history, portfolio, QBR, validation, tests.
-2. 0.3 (this): simulator and planner with the J-curve, exact attribution, universe estimate, zero-critical forecast.
-3. 0.4: connector interface and a first verified connector; CSV export templates per platform.
-4. 0.5: threat-to-adoption feed (map a new threat or release to customers and unused capabilities); readiness checklist import.
-5. 0.6: criticality weighting; portfolio-level planning (one team, many customers, one hour budget).
+2. 0.3: simulator and planner with the J-curve, exact attribution, universe estimate, zero-critical forecast.
+3. 0.4 (this): importers and reconciliation, book planner, radar for releases and threats, performance on large estates.
+4. 0.5: connector interface and a first verified connector against a real tenant.
+5. 0.6: criticality weighting; readiness checklist import; per-finding ownership sources.
 
 ## References
 
