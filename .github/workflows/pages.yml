@@ -2,7 +2,7 @@ name: Pages
 on:
   push:
     branches: [main]
-    paths: ["site/**", "src/**", "examples/portfolio/northwind/**", ".github/workflows/pages.yml"]
+    paths: ["site/**", "src/**", "examples/**", "THIRD_PARTY.md", "LICENSE", ".github/workflows/pages.yml"]
   workflow_dispatch:
 permissions:
   contents: read

@@ -4,6 +4,8 @@
 
 Most adoption reporting stops at "90% of accounts connected". That number leaves out accounts nobody planned for, resource types the platform never inventoried, controls that are switched off and findings nobody owns. Beyond 90 measures the whole pipeline against independent denominators, turns every gap into an action, and then goes further than a dashboard can.
 
+**Try it without installing anything:** the [browser app](docs/app.md) runs the same engine in your tab. Drop a customer folder, or a folder of customers, and nothing leaves your machine.
+
 ![Beyond 90 report](docs/img/report-light.png)
 
 *Mock customer. The legacy metric says 92%; the real score is 73%.*
