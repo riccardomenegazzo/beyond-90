@@ -30,6 +30,8 @@ Most adoption reporting stops at "90% of accounts connected". That number leaves
 
 **8. A trust layer from *The Trusted Advisor*.** Per-contact trust index, reliability measured from the promises you made, relationship gaps (no sponsor, single-threaded, teams nobody knows), expansion typed as Expand, Broaden or Diversify, a candor ledger of what to say plainly before the customer finds it, and a QBR built as a conversation in five stages. See [docs/trust.md](docs/trust.md).
 
+**9. It runs in a browser tab.** [docs/app.md](docs/app.md): the same engine compiled to WebAssembly, served from GitHub Pages, nothing uploaded. Drop a folder or try the demo.
+
 Plus: ranked actions from a playbook catalogue, a moving bar (the score against today's ceiling and a frozen baseline), Reach, licensed-versus-used, an anti-gaming check for severity downgrades before SLA deadlines, history in SQLite, an ARR-weighted portfolio view that finds patterns worth one-to-many work, and a QBR draft written with the Pyramid Principle.
 
 It runs locally, has no runtime dependencies (Python 3.11+ standard library), makes no network calls and sends no telemetry.
@@ -98,6 +100,7 @@ beyond90 explain acme --store history.db   # what changed since the last stored 
 - [SPEC.md](SPEC.md): formulas and rules; the contract for the code
 - [docs/data-format.md](docs/data-format.md): input files
 - [docs/research-wiz-tam.md](docs/research-wiz-tam.md): how a vendor TAM motion works and what platforms already measure
+- [docs/app.md](docs/app.md): the browser app and how to publish it on GitHub Pages
 - [docs/trust.md](docs/trust.md): the relationship layer and what it takes from the book
 - [docs/reading-list.md](docs/reading-list.md)
 - [docs/design.md](docs/design.md): visual direction and validated palette

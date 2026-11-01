@@ -2,6 +2,13 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.6.0
+
+- Browser app (`site/`): the engine runs in the page through Pyodide; drop a folder or try the demo, get the report, QBR, roadmap and JSON. Nothing is uploaded; a strict Content Security Policy allows the page's own origin only.
+- `beyond90.web`: one call that returns every output for a directory or a mapping of files.
+- GitHub Pages workflow: builds the site, runs a Chromium smoke test, deploys. See `docs/app.md`.
+- Error messages from the browser path name files, not temporary folders.
+
 ## 0.5.0
 
 - Relationship layer: optional `contacts.csv` and `commitments.csv`; trust index per contact, band, limiting factor, reliability measured from promises, coverage and gaps.

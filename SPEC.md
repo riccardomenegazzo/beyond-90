@@ -1,4 +1,4 @@
-# Beyond 90: specification v0.5
+# Beyond 90: specification v0.6
 
 An adoption engine for Technical Account Managers. It measures how much of a customer's cloud estate is really covered and operated through a security platform, and turns every gap into an action. The bar keeps moving: when a customer grows or the product ships something, the denominators grow with it.
 
@@ -114,6 +114,10 @@ Cross-sell type for an action: offer new or same, people known (at least half of
 
 Candor items are derived only from fields already computed; each carries its evidence. The QBR is arranged as agenda, listen, answer, reasons, evidence, candor, aims, plan, decisions, commitments, then a private section.
 
+## 15c. Browser app (0.6)
+
+The app is a client-side wrapper. It must never send input data off the page, must load nothing from a third party and must produce the same numbers as the CLI for the same files; the first two are enforced by the page's Content Security Policy and the build test, the third by `tests/test_web.py`.
+
 ## 16. Positioning against the platform's own views
 
 Platforms such as Wiz already ship an adoption and maturity view (the Champion Center) and an ownership model. Beyond 90 does not replace them: it measures what the platform cannot see (the true account universe, across a whole portfolio) and reads ownership and decisions rather than rebuilding routing. See `docs/research-wiz-tam.md`.
@@ -129,9 +133,10 @@ Platforms such as Wiz already ship an adoption and maturity view (the Champion C
 1. 0.2: engine, CLI, report, history, portfolio, QBR, validation, tests.
 2. 0.3: simulator and planner with the J-curve, exact attribution, universe estimate, zero-critical forecast.
 3. 0.4: importers and reconciliation, book planner, radar for releases and threats, performance on large estates.
-4. 0.5 (this): relationship layer, candor ledger, typed expansion, five-stage QBR.
-5. 0.6: connector interface and a first verified connector against a real tenant.
-6. 0.7: criticality weighting; readiness checklist import; per-finding ownership sources.
+4. 0.5: relationship layer, candor ledger, typed expansion, five-stage QBR.
+5. 0.6 (this): browser app on GitHub Pages.
+6. 0.7: connector interface and a first verified connector against a real tenant.
+7. 0.8: criticality weighting; readiness checklist import; per-finding ownership sources.
 
 ## References
 

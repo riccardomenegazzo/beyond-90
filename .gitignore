@@ -1,10 +1,12 @@
-__pycache__/
-*.py[cod]
+*.db
 *.egg-info/
+*.py[cod]
+*.sqlite
 .pytest_cache/
 .venv/
+/out/
+__pycache__/
+_site/
 build/
 dist/
-*.db
-*.sqlite
-/out/
+node_modules/

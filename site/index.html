@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; frame-src 'self'; worker-src 'self' blob:; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<title>Beyond 90: adoption score in your browser</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <div>
+    <h1>Beyond 90</h1>
+    <p>Adoption score, roadmap and QBR draft for Technical Account Managers. It runs in this page: your files are read by your browser and never uploaded.</p>
+  </div>
+  <span class="chip" id="version">loading engine…</span>
+</header>
+
+<main>
+  <section class="panel" aria-labelledby="in">
+    <h2 id="in">1. Give it the data</h2>
+    <div id="drop" class="drop" tabindex="0" role="button" aria-label="Choose or drop the customer data files">
+      <strong>Drop a customer folder here</strong>
+      <span>or choose files (<code>customer.toml</code>, <code>accounts.csv</code>, …)</span>
+      <div class="row">
+        <label class="btn">Choose folder<input id="folder" type="file" webkitdirectory hidden></label>
+        <label class="btn">Choose files<input id="files" type="file" multiple accept=".csv,.toml" hidden></label>
+        <button class="btn primary" id="demo" type="button" disabled>Try the demo (Northwind)</button>
+      </div>
+    </div>
+    <ul id="loaded" class="loaded" aria-live="polite"></ul>
+
+    <details class="opts">
+      <summary>Planning assumptions</summary>
+      <div class="grid2">
+        <label>Hours per week<input id="hours" type="number" min="0.5" step="0.5" value="8"></label>
+        <label>Horizon (weeks)<input id="weeks" type="number" min="1" max="104" value="26"></label>
+        <label>Realization (0 to 1)<input id="real" type="number" min="0.1" max="1" step="0.05" value="0.9"></label>
+        <label>Quarter label<input id="quarter" type="text" placeholder="Q4 2026"></label>
+      </div>
+    </details>
+    <button class="btn primary big" id="run" type="button" disabled>Run analysis</button>
+    <p class="note" id="status" role="status"></p>
+    <p class="note">Format: see <a href="https://github.com/riccardomenegazzo/beyond-90/blob/main/docs/data-format.md">data-format.md</a>. Contacts and commitments are personal data; they stay in this tab.</p>
+  </section>
+
+  <section class="panel out" aria-labelledby="res" hidden id="results">
+    <h2 id="res">2. Results</h2>
+    <div class="kpis" id="kpis"></div>
+    <div class="tabs" role="tablist">
+      <button role="tab" aria-selected="true" data-tab="report">Report</button>
+      <button role="tab" aria-selected="false" data-tab="qbr">QBR draft</button>
+      <button role="tab" aria-selected="false" data-tab="roadmap">Roadmap</button>
+      <button role="tab" aria-selected="false" data-tab="summary">Summary</button>
+      <button role="tab" aria-selected="false" data-tab="json">JSON</button>
+    </div>
+    <div class="actions">
+      <button class="btn" id="copy" type="button">Copy</button>
+      <button class="btn" id="download" type="button">Download</button>
+    </div>
+    <iframe id="report" title="Report" sandbox></iframe>
+    <article id="doc" class="doc" hidden></article>
+    <pre id="raw" class="raw" hidden></pre>
+  </section>
+
+  <section class="panel errors" id="errors" hidden aria-live="assertive">
+    <h2>Fix these first</h2>
+    <ul id="errlist"></ul>
+  </section>
+</main>
+
+<footer>
+  <p>Independent open source project (Apache-2.0), not affiliated with or endorsed by any vendor. <a href="https://github.com/riccardomenegazzo/beyond-90">Source</a>. Models (plan, forecast, universe estimate) are models; read the limits in the <a href="https://github.com/riccardomenegazzo/beyond-90/blob/main/README.md#honest-limits">README</a>.</p>
+</footer>
+<script src="app.js" type="module"></script>
+</body>
+</html>
