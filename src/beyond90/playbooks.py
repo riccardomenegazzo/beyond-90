@@ -1,9 +1,14 @@
 """Turn every gap into an action.
 
-Each action is tied to a playbook in the catalogue and carries an estimate of
-how many points of Yield it is worth. The estimate treats a stage in
-isolation (units closed / stage denominator, times the other stages), so it is
-a ranking aid, not a promise: connecting an account also adds work to L2-L4.
+Each action is tied to a playbook in the catalogue and carries
+
+* an *isolated* estimate of how many points of Yield it is worth (units closed
+  / stage denominator, times the other stages): a quick ranking aid;
+* ``ops``: the concrete changes it makes to the data, which the simulator
+  (``simulate.py``) applies to compute the *exact* effect, including how
+  connecting an account first lowers other stages;
+* ``effort_hours``: the planner's cost model (``base + per_unit x units``, from
+  the playbook catalogue; edit it to match how you actually work).
 """
 
 from __future__ import annotations
@@ -37,9 +42,14 @@ class Action:
     due: str
     steps: list[str] = field(default_factory=list)
     success: str = ""
+    effort_hours: float = 0.0
+    ops: list[dict] = field(default_factory=list)
 
-    def to_dict(self) -> dict:
-        return asdict(self)
+    def to_dict(self, with_ops: bool = True) -> dict:
+        d = asdict(self)
+        if not with_ops:
+            d.pop("ops")
+        return d
 
 
 def _others(score: Score, stage: str) -> float:
@@ -67,7 +77,8 @@ def generate_actions(data: CustomerData, score: Score, cat: Optional[Catalogue] 
     pb = cat.playbooks
     actions: list[Action] = []
 
-    def add(pid: str, key: str, detail: str, owner: str, units: float, effect: float, title: Optional[str] = None) -> None:
+    def add(pid: str, key: str, detail: str, owner: str, units: float, effect: float,
+            title: Optional[str] = None, ops: Optional[list[dict]] = None) -> None:
         p = pb[pid]
         actions.append(
             Action(
@@ -82,6 +93,8 @@ def generate_actions(data: CustomerData, score: Score, cat: Optional[Catalogue] 
                 due=(data.as_of + timedelta(days=p.due_days)).isoformat(),
                 steps=list(p.steps),
                 success=p.success,
+                effort_hours=round(p.effort_base + p.effort_per_unit * units, 2),
+                ops=ops or [],
             )
         )
 
@@ -101,6 +114,7 @@ def generate_actions(data: CustomerData, score: Score, cat: Optional[Catalogue] 
             len(items),
             _effect(score, "L1", len(items)),
             title=f"Connect {len(items)} account(s) owned by {owner}",
+            ops=[{"op": "connect", "accounts": ids}],
         )
     recent_cut = data.as_of - timedelta(days=data.settings.new_account_days)
     recent = [i for i in l1.leaks if i["created_at"] and i["created_at"] >= recent_cut.isoformat()]
@@ -126,6 +140,7 @@ def generate_actions(data: CustomerData, score: Score, cat: Optional[Catalogue] 
             n,
             _effect(score, "L2", n),
             title=f"Inventory {leak['resource_type']} on {leak['provider']} ({n} account(s))",
+            ops=[{"op": "inventory", "resource_type": leak["resource_type"], "accounts": list(leak["accounts"])}],
         )
 
     # L3: one action per module; new-release modules get the adoption playbook.
@@ -140,6 +155,7 @@ def generate_actions(data: CustomerData, score: Score, cat: Optional[Catalogue] 
             leak["inactive"],
             _effect(score, "L3", leak["inactive"]),
             title=f"{'Adopt' if leak['new_since_baseline'] else 'Enable'} {leak['name']} on {leak['inactive']} account(s)",
+            ops=[{"op": "enable", "module": leak["module"], "accounts": list(leak["accounts"])}],
         )
 
     # L4: per kind of leak.
@@ -155,6 +171,12 @@ def generate_actions(data: CustomerData, score: Score, cat: Optional[Catalogue] 
         "accepted_without_expiry": "are accepted risks with no expiry",
         "expired_acceptance": "are accepted risks whose expiry has passed",
     }
+    kind_ops = {
+        "unowned": lambda ids: [{"op": "own", "findings": ids}, {"op": "decide", "findings": ids}],
+        "no_decision": lambda ids: [{"op": "decide", "findings": ids}],
+        "accepted_without_expiry": lambda ids: [{"op": "set_expiry", "findings": ids}],
+        "expired_acceptance": lambda ids: [{"op": "set_expiry", "findings": ids}],
+    }
     for leak in score.stages["L4"].leaks:
         add(
             kind_to_pb[leak["kind"]],
@@ -164,6 +186,7 @@ def generate_actions(data: CustomerData, score: Score, cat: Optional[Catalogue] 
             leak["count"],
             _effect(score, "L4", leak["count"]),
             title=f"{pb[kind_to_pb[leak['kind']]].title} ({leak['count']})",
+            ops=kind_ops[leak["kind"]](list(leak["ids"])),
         )
     suspects = score.outcomes["reclassification_suspects"]
     if suspects:

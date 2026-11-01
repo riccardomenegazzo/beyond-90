@@ -16,6 +16,7 @@ from typing import Optional
 
 from .catalogue import Catalogue, parse_version
 from .models import CustomerData, Finding
+from .universe import estimate_universe
 
 SEVERITY_RANK = {"low": 0, "medium": 1, "high": 2, "critical": 3}
 CHECKPOINTS = (0.90, 0.95, 0.98)
@@ -53,6 +54,7 @@ class Score:
     entitlements: list[dict]
     outcomes: dict
     target: dict
+    universe: dict = field(default_factory=dict)
     warnings: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict:
@@ -356,5 +358,6 @@ def compute_score(data: CustomerData, cat: Optional[Catalogue] = None, ceiling: 
         entitlements=compute_entitlements(data),
         outcomes=compute_outcomes(data),
         target=next_target(y),
+        universe=estimate_universe(data),
         warnings=warnings,
     )

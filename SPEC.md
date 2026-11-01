@@ -1,4 +1,4 @@
-# Beyond 90: specification v0.2
+# Beyond 90: specification v0.3
 
 An adoption engine for Technical Account Managers. It measures how much of a customer's cloud estate is really covered and operated through a security platform, and turns every gap into an action. The bar keeps moving: when a customer grows or the product ships something, the denominators grow with it.
 
@@ -55,32 +55,56 @@ Stages are sequential, so a leak upstream hides what is downstream. Missing data
 
 ## 6. Actions
 
-Each gap becomes an action tied to a playbook in `playbooks.json`, with steps, a success signal, a due date and an estimated effect. The effect is `100 x (units / stage denominator) x product of the other stages`: it ranks actions, it does not promise the result. L1 actions are grouped by account owner; L2 by provider and resource type; L3 by module; L4 by kind of leak.
+Each gap becomes an action tied to a playbook in `playbooks.json`, with steps, a success signal, a due date, an effort in hours, the `ops` it performs and an estimated effect. The effect is `100 x (units / stage denominator) x product of the other stages`: it ranks actions, it does not promise the result. L1 actions are grouped by account owner; L2 by provider and resource type; L3 by module; L4 by kind of leak.
 
-## 7. Portfolio
+## 7. Simulation and roadmap
+
+An action carries `ops`, the concrete changes it makes to the data (connect accounts, inventory a type, enable a module, assign owners, record decisions, set an expiry). `simulate.py` applies ops to a copy of the data and rescores, so the effect is exact, not isolated.
+
+**The J-curve.** Connecting an account raises L1 immediately but adds that account to the denominators of L2 and L3 with nothing covered: Yield dips before it recovers. The simulator models the ramp: inventory completes after `inventory_lag_weeks` (default 2) and modules marked `on_connect` in the catalogue (the agentless ones) switch on with it; every other module stays off until someone enables it. Newly inventoried types are assumed to hold at least one resource, which can only make L3 look worse.
+
+**The planner** (`beyond90 plan`) is greedy on exact steady-state gain per hour. For each candidate action it simulates the converged estate and rescores everything, takes the best, spends a weekly hour budget on it (effort = `base + per_unit x units`, from the playbook catalogue), applies the change with its ramp, regenerates the actions from the new state, and repeats. Follow-up work appears by itself. Units that fail are assumed blocked (`realization`, default 90%): they never succeed in the plan and are reported as a residual that needs escalation, so the projection plateaus instead of reaching 100%. Output: weekly Yield, checkpoint weeks, the dips and their causes, the jobs.
+
+The projection is a model: it rests on the effort figures, the ramp and the realization rate. It is deterministic for given inputs.
+
+## 8. Attribution: the customer or the bar?
+
+`beyond90 explain` decomposes the change in Yield between two dates exactly with the log-mean Divisia index: `contribution_k = L(Y1, Y0) x ln(r_k)`, where `r_k` is the ratio of a factor's new to old value and `L` is the logarithmic mean. The contributions sum to `Y1 - Y0` with no residual, also when large gains and losses cancel. L3 is split in two: its change at the previous ceiling (the customer's doing) and the change caused by capabilities released since (the bar). A drop caused by a release is headroom, not a regression, and the report says so with numbers.
+
+## 9. How complete is the universe?
+
+L1 is measured against the accounts you know. `beyond90 universe` estimates how many no source has seen, with the capture-recapture lower bound of Chao (1987), using billing, the organization hierarchy and SSO as sources: with `T` sources, `Q1` accounts seen by exactly one and `Q2` by exactly two, `unseen = ((T-1)/T) x Q1^2 / (2 x Q2)` (bias-corrected when `Q2 = 0`). It reports completeness, a pessimistic L1 (if the hidden accounts are unconnected) and warnings when the assumptions fail: a source that lists every account is not independent, and when most accounts are seen by only one source the sources need reconciling before any adoption number is trusted. It is a prompt to look, not a count.
+
+## 10. Zero-critical forecast
+
+`beyond90 forecast` runs a seeded Monte Carlo of the critical-finding queue, learned from the customer's own history: open findings get a residual time from the empirical close times longer than their age (findings older than anything ever closed are counted as `stuck_beyond_history` and modelled with an exponential residual whose mean is their age); new criticals arrive as a Poisson process at the recent rate. It reports the median and 90th percentile days to zero, the probability of zero within 30, 60 and 90 days, and, when already at zero, the probability that a new critical breaks it. Without closed critical findings it says so and does not guess.
+
+## 11. Portfolio
 
 `beyond90 portfolio ROOT` scores every customer directory under ROOT, reports the ARR-weighted Yield and lists patterns that recur across customers. Recurring patterns are the candidates for one-to-many work (a shared playbook, a webinar, a knowledge article), the proactive half of scaled customer success.
 
-## 8. QBR draft
+## 12. QBR draft
 
-`beyond90 qbr DIR` writes a Markdown review with the Pyramid Principle: the answer first (real adoption against the legacy number, projected effect), three reasons grouped by leak, the evidence beneath, the plan and the decisions asked of the customer. The TAM adds the customer's own goals and wins.
+`beyond90 qbr DIR` writes a Markdown review with the Pyramid Principle: the answer first (real adoption against the legacy number, what changed and why, the roadmap and the dip to expect, a caveat on hidden accounts), three reasons grouped by leak, the evidence beneath, the plan and the decisions asked of the customer. The TAM adds the customer's own goals and wins.
 
-## 9. Positioning against the platform's own views
+## 13. Positioning against the platform's own views
 
 Platforms such as Wiz already ship an adoption and maturity view (the Champion Center) and an ownership model. Beyond 90 does not replace them: it measures what the platform cannot see (the true account universe, across a whole portfolio) and reads ownership and decisions rather than rebuilding routing. See `docs/research-wiz-tam.md`.
 
-## 10. Not in 0.2
+## 14. Not yet
 
+- Portfolio-level planning across customers with a shared hour budget.
 - Live connectors to platform APIs. They need a real tenant to verify and will be separate optional modules.
 - Weighting by asset criticality.
 - Health scoring. Adoption is one input to a customer health view, not health.
 
-## 11. Roadmap
+## 15. Roadmap
 
-1. 0.2 (this): engine, CLI, report, history, portfolio, QBR, validation, tests.
-2. 0.3: connector interface and a first verified connector; CSV export templates per platform.
-3. 0.4: threat-to-adoption feed (map a new threat or release to customers and unused capabilities); readiness checklist import.
-4. 0.5: criticality weighting; Markdown and HTML QBR with charts.
+1. 0.2: engine, CLI, report, history, portfolio, QBR, validation, tests.
+2. 0.3 (this): simulator and planner with the J-curve, exact attribution, universe estimate, zero-critical forecast.
+3. 0.4: connector interface and a first verified connector; CSV export templates per platform.
+4. 0.5: threat-to-adoption feed (map a new threat or release to customers and unused capabilities); readiness checklist import.
+5. 0.6: criticality weighting; portfolio-level planning (one team, many customers, one hour budget).
 
 ## References
 

@@ -20,8 +20,8 @@ def score(name):
 def test_northwind_headline_numbers():
     s = score("northwind")
     assert s.naive == pytest.approx(0.92)
-    assert (s.stages["L1"].numerator, s.stages["L1"].denominator) == (105, 117)
-    assert s.yield_ == pytest.approx(0.711, abs=0.001)
+    assert (s.stages["L1"].numerator, s.stages["L1"].denominator) == (109, 121)
+    assert s.yield_ == pytest.approx(0.726, abs=0.001)
     assert s.baseline["yield"] > s.yield_
     assert s.outcomes["reclassification_suspects"]
 

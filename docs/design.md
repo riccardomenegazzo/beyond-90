@@ -87,6 +87,12 @@ System sans only: `system-ui, -apple-system, "Segoe UI", sans-serif`. No display
 5. **Playbook queue.** Gap, owner, expected effect in points, due date.
 6. **Checkpoint line.** 90, 95, 98 as marks on a track with the current Yield and the moving ceiling.
 
+### Views added in 0.3
+
+7. **What changed.** Diverging horizontal bars, one per factor, blue to the right and red to the left (the diverging pair of the palette, neutral midline). The "bar moved" factor is hatched so it reads as headroom and not as the customer's doing. The sum is stated in words under the chart.
+8. **Roadmap.** A line of projected Yield by week with dashed checkpoint lines at 90, 95 and 98. Weeks where Yield dips are marked in the negative colour with a tooltip that names the cause; the J-curve is explained in plain text next to it.
+9. **Universe.** A short paragraph and a table, no chart: the estimate is uncertain and a chart would suggest more precision than it has.
+
 ## 7. Chart rules (applied everywhere)
 
 - One axis only; never a dual-axis chart. Two measures of different scale become two charts.

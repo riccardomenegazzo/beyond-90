@@ -25,7 +25,7 @@ OWNERS = ["platform", "retail-it", "data", "payments", "bu-retail", "ml-research
 PROFILES = {
     "northwind": dict(
         tier="enterprise", arr=480000, seed=42,
-        providers={"aws": 62, "azure": 34, "gcp": 21}, plan=100, plan_unconnected=8, extra_unconnected=4, recent_unconnected=3,
+        providers={"aws": 66, "azure": 37, "gcp": 22}, detect={"billing": 0.80, "org": 0.70, "sso": 0.50}, plan=100, plan_unconnected=8, extra_unconnected=4, recent_unconnected=3,
         registry_missing=0.30, other_inventory_miss=0.004,
         module_p={"posture": 1.0, "vulnerability_scanning": 0.99, "identity_analysis": 0.98, "data_security": 0.97, "container_security": 0.95,
                   "runtime_sensor": 0.90, "cloud_detection": 0.99, "code_scanning": 0.95, "ai_posture": 0.80, "attack_surface": 0.75, "workflow_automation": 0.70},
@@ -35,7 +35,7 @@ PROFILES = {
     ),
     "contoso-bank": dict(
         tier="strategic", arr=1250000, seed=7,
-        providers={"aws": 120, "azure": 80, "gcp": 15}, plan=210, plan_unconnected=3, extra_unconnected=2, recent_unconnected=1,
+        providers={"aws": 124, "azure": 82, "gcp": 16}, detect={"billing": 0.92, "org": 0.88, "sso": 0.75}, plan=210, plan_unconnected=3, extra_unconnected=2, recent_unconnected=1,
         registry_missing=0.05, other_inventory_miss=0.0,
         module_p={"posture": 1.0, "vulnerability_scanning": 1.0, "identity_analysis": 1.0, "data_security": 0.99, "container_security": 0.99,
                   "runtime_sensor": 0.97, "cloud_detection": 1.0, "code_scanning": 0.98, "ai_posture": 0.95, "attack_surface": 0.90, "workflow_automation": 0.85},
@@ -45,7 +45,7 @@ PROFILES = {
     ),
     "fabrikam-labs": dict(
         tier="growth", arr=96000, seed=21,
-        providers={"aws": 18, "gcp": 9}, plan=20, plan_unconnected=2, extra_unconnected=3, recent_unconnected=2,
+        providers={"aws": 20, "gcp": 11}, detect={"billing": 0.70, "org": 0.55, "sso": 0.35}, plan=20, plan_unconnected=2, extra_unconnected=3, recent_unconnected=2,
         registry_missing=0.45, other_inventory_miss=0.01,
         module_p={"posture": 1.0, "vulnerability_scanning": 0.9, "identity_analysis": 0.8, "data_security": 0.7, "container_security": 0.85,
                   "runtime_sensor": 0.5, "cloud_detection": 0.9, "code_scanning": 0.6, "ai_posture": 0.4, "attack_surface": 0.3, "workflow_automation": 0.2},
@@ -72,23 +72,39 @@ def build(name: str, p: dict) -> None:
     out = HERE / "portfolio" / name
     out.mkdir(parents=True, exist_ok=True)
 
-    # Accounts: the first `plan` are in the onboarding plan the legacy metric uses.
+    # The true universe has more accounts than anyone lists. Each independent source
+    # (billing, org, sso) sees an account with its own probability; accounts no source
+    # sees are hidden and do not appear in the files, which is what universe.py estimates.
     accounts = []
     seq = 0
+    hidden = 0
     for provider, n in p["providers"].items():
         for i in range(n):
             seq += 1
-            accounts.append({"id": f"{provider}-{i + 1:03d}", "provider": provider, "n": seq})
+            sources = [src for src in ("billing", "org", "sso") if rng.random() < p["detect"][src]]
+            accounts.append({"id": f"{provider}-{i + 1:03d}", "provider": provider, "n": seq, "sources": sources})
     rng.shuffle(accounts)
-    for idx, a in enumerate(accounts):
-        a["in_plan"] = idx < p["plan"]
+    visible = []
+    plan_count = 0
+    for a in accounts:
+        if not a["sources"]:
+            if plan_count < p["plan"] and rng.random() < 0.25:     # known from the onboarding plan only
+                a["sources"] = ["plan"]
+            else:
+                hidden += 1
+                continue
+        a["in_plan"] = plan_count < p["plan"]
+        if a["in_plan"]:
+            plan_count += 1
+            if "plan" not in a["sources"]:
+                a["sources"] = a["sources"] + ["plan"]
         a["owner"] = rng.choice(OWNERS)
         a["spend"] = round(rng.uniform(200, 9000), 0)
         a["created"] = AS_OF - timedelta(days=rng.randint(120, 900))
-        a["sources"] = ["billing", "org"] if rng.random() < 0.7 else ["billing"]
-        if rng.random() < 0.3:
-            a["sources"].append("sso")
         a["connected"] = True
+        visible.append(a)
+    accounts = visible
+    print(f"{name}: {len(accounts)} known accounts, {hidden} hidden from every source")
     plan_accounts = [a for a in accounts if a["in_plan"]]
     extra = [a for a in accounts if not a["in_plan"]]
     for a in rng.sample(plan_accounts, min(p["plan_unconnected"], len(plan_accounts))):
@@ -153,7 +169,7 @@ def build(name: str, p: dict) -> None:
         if severity == "critical":
             crit_left -= 1
         exposure = "internet" if rng.random() < 0.25 else "internal"
-        age = rng.randint(8, 190)
+        age = rng.randint(8, 45) if severity == "critical" else rng.randint(8, 190)
         x = rng.random()
         owner = rng.choice(OWNERS)
         if x < p["p_unowned"]:
@@ -177,7 +193,10 @@ def build(name: str, p: dict) -> None:
     # Closed findings for MTTR and the streak.
     for _ in range(max(10, n_open // 3)):
         sev = rng.choices(["critical", "high", "medium", "low"], [0.1, 0.25, 0.4, 0.25])[0]
-        took = max(1, int(rng.gauss(SLA[sev] * (0.8 if name != "fabrikam-labs" else 1.3), SLA[sev] * 0.25)))
+        if sev == "critical":
+            took = max(1, int(rng.lognormvariate(1.8 if name != "fabrikam-labs" else 2.4, 0.8)))   # long tail, median ~6 days
+        else:
+            took = max(1, int(rng.gauss(SLA[sev] * (0.8 if name != "fabrikam-labs" else 1.3), SLA[sev] * 0.25)))
         closed_days_ago = rng.randint(1, 85)
         finding(sev, rng.choice(["internet", "internal"]), closed_days_ago + took, closed_after=took, owner=rng.choice(OWNERS), decision="fix")
     # Suspicious downgrades close to the SLA deadline.
@@ -224,7 +243,71 @@ low = 180
     )
 
 
+def read_csv(path: Path) -> tuple[list[str], list[dict]]:
+    with path.open(newline="", encoding="utf-8") as fh:
+        r = csv.DictReader(fh)
+        return list(r.fieldnames or []), list(r)
+
+
+def build_previous(name: str, days_back: int = 31) -> None:
+    """The same customer a month earlier: fewer connected accounts, an older ceiling, fewer modules on.
+
+    Derived from the current files so that `beyond90 explain` has a real before/after to attribute.
+    """
+    rng = random.Random(1000)
+    src = HERE / "portfolio" / name
+    out = HERE / "history" / f"{name}-{(AS_OF - timedelta(days=days_back)).strftime('%Y-%m')}"
+    out.mkdir(parents=True, exist_ok=True)
+    prev = AS_OF - timedelta(days=days_back)
+
+    h, accounts = read_csv(src / "accounts.csv")
+    accounts = [a for a in accounts if date.fromisoformat(a["created_at"]) <= prev]
+    newly = {a["id"] for a in sorted((a for a in accounts if a["connected"] == "true" and a["in_plan"] == "true"), key=lambda a: a["id"])[:7]}
+    for a in accounts:
+        if a["id"] in newly:
+            a["connected"] = "false"
+    keep = {a["id"] for a in accounts}
+    write_csv(out / "accounts.csv", h, [[a[k] for k in h] for a in accounts])
+
+    h, inv = read_csv(src / "inventory.csv")
+    inv = [r for r in inv if r["account_id"] in keep and r["account_id"] not in newly]
+    for r in inv:
+        if r["resource_type"] == "container_registry" and rng.random() < 0.2:
+            r["inventoried"], r["count"] = "false", "0"
+    write_csv(out / "inventory.csv", h, [[r[k] for k in h] for r in inv])
+
+    h, act = read_csv(src / "activations.csv")
+    act = [r for r in act if r["account_id"] in keep and r["account_id"] not in newly]
+    for r in act:
+        if r["active"] == "true" and r["module_id"] in ("runtime_sensor", "code_scanning") and rng.random() < 0.3:
+            r["active"] = "false"
+    write_csv(out / "activations.csv", h, [[r[k] for k in h] for r in act])
+
+    h, fs = read_csv(src / "findings.csv")
+    rows = []
+    for f in fs:
+        if date.fromisoformat(f["opened_at"]) > prev or f["account_id"] not in keep:
+            continue
+        if f["closed_at"] and date.fromisoformat(f["closed_at"]) > prev:
+            f["closed_at"] = ""
+        if f["severity_changed_at"] and date.fromisoformat(f["severity_changed_at"]) > prev:
+            f["previous_severity"] = f["severity_changed_at"] = ""
+        rows.append([f[k] for k in h])
+    write_csv(out / "findings.csv", h, rows)
+
+    h, ts = read_csv(src / "teams.csv")
+    write_csv(out / "teams.csv", h, [[t[k] for k in h] for t in ts])
+    h, es = read_csv(src / "entitlements.csv")
+    for e in es:
+        e["used"] = str(round(float(e["used"]) * 0.88))
+    write_csv(out / "entitlements.csv", h, [[e[k] for k in h] for e in es])
+    toml = (src / "customer.toml").read_text(encoding="utf-8")
+    toml = toml.replace(f"as_of = {AS_OF.isoformat()}", f"as_of = {prev.isoformat()}").replace('ceiling_version = "2026.4"', 'ceiling_version = "2026.2"')
+    (out / "customer.toml").write_text(toml, encoding="utf-8")
+
+
 if __name__ == "__main__":
     for customer, profile in PROFILES.items():
         build(customer, profile)
-    print("Generated", ", ".join(PROFILES), "in", HERE / "portfolio")
+    build_previous("northwind")
+    print("Generated", ", ".join(PROFILES), "in", HERE / "portfolio", "and examples/history/")

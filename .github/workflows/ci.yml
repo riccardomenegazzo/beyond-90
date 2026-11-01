@@ -22,4 +22,8 @@ jobs:
         run: |
           beyond90 validate examples/portfolio/northwind
           beyond90 score examples/portfolio/northwind --format text
-          beyond90 report examples/portfolio/northwind --out /tmp/report.html
+          beyond90 plan examples/portfolio/northwind --weeks 8
+          beyond90 explain examples/portfolio/northwind --since examples/history/northwind-2026-09
+          beyond90 universe examples/portfolio/northwind
+          beyond90 forecast examples/portfolio/northwind
+          beyond90 report examples/portfolio/northwind --since examples/history/northwind-2026-09 --out /tmp/report.html

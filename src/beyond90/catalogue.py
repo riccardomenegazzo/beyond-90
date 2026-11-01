@@ -30,6 +30,7 @@ class Module:
     since: str
     providers: tuple[str, ...]
     requires_any: tuple[str, ...]
+    on_connect: bool = False  # switched on by connecting the account, no extra work (agentless modules)
 
 
 @dataclass(frozen=True)
@@ -41,6 +42,8 @@ class Playbook:
     steps: tuple[str, ...]
     success: str
     due_days: int
+    effort_base: float = 1.0      # hours, used by the planner
+    effort_per_unit: float = 0.0  # hours per account / finding / team
 
 
 class Catalogue:
@@ -72,6 +75,7 @@ class Catalogue:
                 since=m["since"],
                 providers=tuple(m["providers"]),
                 requires_any=tuple(m.get("requires_any", [])),
+                on_connect=bool(m.get("on_connect", False)),
             )
             for m in mods["modules"]
         ]
@@ -86,6 +90,8 @@ class Catalogue:
                 steps=tuple(p["steps"]),
                 success=p["success"],
                 due_days=int(p["due_days"]),
+                effort_base=float(p.get("effort", {}).get("base", 1.0)),
+                effort_per_unit=float(p.get("effort", {}).get("per_unit", 0.0)),
             )
             for pid, p in pbs["playbooks"].items()
         }

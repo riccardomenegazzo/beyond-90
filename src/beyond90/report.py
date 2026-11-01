@@ -13,8 +13,13 @@ from html import escape
 from typing import Optional
 
 from . import __version__
+from .attribution import Attribution
+from .forecast import forecast_zero_critical
+from .planner import Plan
 from .playbooks import Action
 from .scoring import CHECKPOINTS, STAGE_NAMES, Score
+from .sections import (html_attribution, html_forecast, html_plan, html_universe, md_attribution, md_forecast,
+                       md_plan, md_universe)
 
 STAGES = ("L1", "L2", "L3", "L4")
 
@@ -79,7 +84,8 @@ def render_text(score: Score, actions: list[Action], top: int = 8) -> str:
 
 # ------------------------------------------------------------------- Markdown
 
-def render_markdown(score: Score, actions: list[Action], history: Optional[list[dict]] = None, previous: Optional[dict] = None, top: int = 15) -> str:
+def render_markdown(score: Score, actions: list[Action], history: Optional[list[dict]] = None, previous: Optional[dict] = None, top: int = 15,
+                    *, attribution: Optional[Attribution] = None, forecast: Optional[dict] = None, plan: Optional[Plan] = None) -> str:
     L: list[str] = [f"# {score.customer}: adoption score", ""]
     L.append(f"As of {score.as_of} · ceiling {score.ceiling_version} · baseline {score.baseline['ceiling']}")
     L.append("")
@@ -105,6 +111,9 @@ def render_markdown(score: Score, actions: list[Action], history: Optional[list[
     b = score.baseline
     L.append(f"Against the frozen baseline ceiling ({b['ceiling']}), Yield would be {pct(b['yield'])}. The difference is headroom added by releases since then.")
     L.append("")
+    if attribution:
+        L += md_attribution(attribution)
+    L += md_universe(score.universe)
     if score.reach:
         r = score.reach
         L += ["## Reach", "", f"Reach {pct(r['value'])} across {r['teams']} teams with cloud assets.", ""]
@@ -132,6 +141,9 @@ def render_markdown(score: Score, actions: list[Action], history: Optional[list[
         for a in actions[:top]:
             L.append(f"| {a.effect_points:.1f} pts | {a.leak} | {a.title} | {a.owner} | {a.due} |")
         L += ["", "Effect is an estimate that treats each stage in isolation; use it to rank, not to promise.", ""]
+    if plan:
+        L += md_plan(plan)
+    L += md_forecast(forecast)
     if history:
         L += ["## History", "", "| As of | Ceiling | Yield | Legacy | L1 | L2 | L3 | L4 |", "|---|---|---|---|---|---|---|---|"]
         for h in history:
@@ -146,9 +158,9 @@ def render_markdown(score: Score, actions: list[Action], history: Optional[list[
 
 CSS = """
 :root{color-scheme:light dark;--surface:#fcfcfb;--page:#f9f9f7;--ink:#0b0b0b;--ink2:#52514e;--muted:#898781;--grid:#e1e0d9;--base:#c3c2b7;
---s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;--s4:#eda100;--hatch:#86b6ef;--border:rgba(11,11,11,.10);--good:#006300;--crit:#d03b3b}
+--s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;--s4:#eda100;--pos:#2a78d6;--neg:#e34948;--hatch:#86b6ef;--border:rgba(11,11,11,.10);--good:#006300;--crit:#d03b3b}
 @media (prefers-color-scheme:dark){:root{--surface:#1a1a19;--page:#0d0d0d;--ink:#f0efec;--ink2:#c3c2b7;--grid:#2c2c2a;--base:#383835;
---s1:#3987e5;--s2:#d95926;--s3:#199e70;--s4:#c98500;--hatch:#3987e5;--border:rgba(255,255,255,.10);--good:#0ca30c}}
+--s1:#3987e5;--s2:#d95926;--s3:#199e70;--s4:#c98500;--pos:#3987e5;--neg:#e66767;--hatch:#3987e5;--border:rgba(255,255,255,.10);--good:#0ca30c}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--page);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
 main{max-width:980px;margin:0 auto;padding:24px 16px 64px}
@@ -273,7 +285,8 @@ def _leak_summary(score: Score, sid: str) -> list[str]:
     return out or ["No leaks found."]
 
 
-def render_html(score: Score, actions: list[Action], history: Optional[list[dict]] = None, previous: Optional[dict] = None, top: int = 15) -> str:
+def render_html(score: Score, actions: list[Action], history: Optional[list[dict]] = None, previous: Optional[dict] = None, top: int = 15,
+                *, attribution: Optional[Attribution] = None, forecast: Optional[dict] = None, plan: Optional[Plan] = None) -> str:
     e = escape
     h: list[str] = []
     d = _delta(score, previous)
@@ -304,6 +317,8 @@ def render_html(score: Score, actions: list[Action], history: Optional[list[dict
         st = score.stages[sid]
         h.append(f'<tr><td>{sid} {e(st.name)}</td><td class="n">{pct(st.value)}</td><td class="n">{st.numerator:g} / {st.denominator:g}</td><td class="n">{pct(after)}</td></tr>')
     h.append('</tbody></table></details></section>')
+    if attribution:
+        h.append(html_attribution(attribution))
     # stage cards
     h.append('<section aria-labelledby="st"><h2 id="st">Stages</h2><div class="cards">')
     for i, sid in enumerate(STAGES, 1):
@@ -320,6 +335,10 @@ def render_html(score: Score, actions: list[Action], history: Optional[list[dict
             h.append(f'<tr><td class="n">{a.effect_points:.1f} pts</td><td>{e(a.leak)}</td><td><strong>{e(a.title)}</strong><br><span class="warn">{e(a.detail)}</span></td>'
                      f'<td>{e(a.owner)}</td><td>{e(a.due)}</td></tr>')
         h.append('</tbody></table><p class="warn">Effect is an estimate that treats each stage in isolation. Use it to rank.</p></section>')
+    h.append(html_universe(score.universe))
+    if plan:
+        h.append(html_plan(plan))
+    h.append(html_forecast(forecast))
     # reach, entitlements, outcomes
     if score.reach:
         r = score.reach

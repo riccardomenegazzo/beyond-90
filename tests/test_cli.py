@@ -28,8 +28,8 @@ def test_score_formats(capsys):
     code, out, _ = run(capsys, "score", NW, "--format", "json")
     assert code == 0 and 0 < json.loads(out)["yield"] < 1
     assert "Yield" in run(capsys, "score", NW)[1]
-    assert run(capsys, "score", NW, "--format", "markdown")[1].startswith("# Northwind")
-    assert run(capsys, "score", NW, "--format", "html")[1].startswith("<!doctype html>")
+    assert run(capsys, "score", NW, "--format", "markdown", "--no-plan")[1].startswith("# Northwind")
+    assert run(capsys, "score", NW, "--format", "html", "--no-plan")[1].startswith("<!doctype html>")
 
 
 def test_fail_under_exit_code(capsys):
@@ -55,10 +55,10 @@ def test_store_history_and_no_save(tmp_path, capsys):
 
 def test_report_and_qbr_write_files(tmp_path, capsys):
     out = tmp_path / "r" / "report.html"
-    assert run(capsys, "report", NW, "--out", str(out))[0] == 0
+    assert run(capsys, "report", NW, "--out", str(out), "--weeks", "6")[0] == 0
     assert out.read_text().startswith("<!doctype html>")
     q = tmp_path / "qbr.md"
-    assert run(capsys, "qbr", NW, "--out", str(q), "--quarter", "Q4 2026")[0] == 0
+    assert run(capsys, "qbr", NW, "--out", str(q), "--quarter", "Q4 2026", "--weeks", "6")[0] == 0
     assert "Q4 2026" in q.read_text()
 
 
@@ -95,3 +95,42 @@ def test_version(capsys):
     with pytest.raises(SystemExit) as e:
         main(["--version"])
     assert e.value.code == 0
+
+
+HIST = str(ROOT.parent / "history" / "northwind-2026-09")
+
+
+def test_plan_command_text_markdown_and_json(capsys):
+    code, out, _ = run(capsys, "plan", NW, "--weeks", "8")
+    assert code == 0 and "Checkpoints:" in out and "week" in out
+    assert "## Roadmap" in run(capsys, "plan", NW, "--weeks", "4", "--format", "markdown")[1]
+    data = json.loads(run(capsys, "plan", NW, "--weeks", "4", "--format", "json")[1])
+    assert data["weeks"][0]["week"] == 0 and data["hours_per_week"] == 8.0
+    assert run(capsys, "plan", NW, "--hours", "-1")[0] == 1
+
+
+def test_explain_with_since_dir_and_with_store(tmp_path, capsys):
+    code, out, _ = run(capsys, "explain", NW, "--since", HIST)
+    assert code == 0 and "The customer moved" in out and "the bar moved" in out
+    db = str(tmp_path / "h.db")
+    run(capsys, "score", HIST, "--store", db)
+    assert run(capsys, "explain", NW, "--store", db)[0] == 0
+    assert run(capsys, "explain", NW)[0] == 1                       # needs --since or --store
+
+
+def test_universe_and_forecast_commands(capsys):
+    code, out, _ = run(capsys, "universe", NW)
+    assert code == 0 and "no source has seen" in out
+    assert json.loads(run(capsys, "universe", NW, "--format", "json")[1])["estimable"] is True
+    code, out, _ = run(capsys, "forecast", NW, "--runs", "300")
+    assert code == 0 and "Zero critical" in out
+    assert json.loads(run(capsys, "forecast", NW, "--format", "json", "--runs", "300", "--seed", "1")[1])["seed"] == 1
+
+
+def test_report_includes_the_new_sections(tmp_path, capsys):
+    out = tmp_path / "r.html"
+    assert run(capsys, "report", NW, "--out", str(out), "--since", HIST, "--weeks", "8")[0] == 0
+    html = out.read_text()
+    for needle in ("What changed since", "How complete is the universe?", "Roadmap", "Zero-critical forecast", "The J-curve"):
+        assert needle in html
+    assert "<script" not in html.lower()

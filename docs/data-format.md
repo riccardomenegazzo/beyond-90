@@ -48,7 +48,7 @@ One row per cloud account, subscription or project. List each account once.
 |---|---|
 | `id` | Account identifier |
 | `provider` | `aws`, `azure`, `gcp`, `oci`, `kubernetes` (others are accepted and skipped by L2 with a note) |
-| `sources` | Where you learned it exists, separated by `;`: `billing`, `org`, `sso`, `manual`, `plan` |
+| `sources` | Where you learned it exists, separated by `;`: `billing`, `org`, `sso`, `manual`, `plan`. Only `billing`, `org` and `sso` count as independent sources in the hidden-accounts estimate |
 | `connected` | Is it connected to the platform today? |
 | `owner` | Spend or technical owner (used to group actions) |
 | `last_spend` | Last period's spend, for ranking |
@@ -111,4 +111,4 @@ Live connectors are not part of 0.2. They need a real tenant to verify and will 
 
 ## Catalogues
 
-`src/beyond90/data/` holds `resource_types.json`, `modules.json` and `playbooks.json`. Point `--catalogue-dir` at a copy to change the expected resource types, add modules (with a `since` version) or rewrite playbooks. A module released after `baseline_ceiling` is reported as new headroom, not as a regression.
+`src/beyond90/data/` holds `resource_types.json`, `modules.json` and `playbooks.json`. In `modules.json`, `on_connect` marks the modules that switch on by themselves when an account is connected (agentless ones); the planner uses it. In `playbooks.json`, `effort` gives `base` and `per_unit` hours; the planner uses it too. Point `--catalogue-dir` at a copy to change the expected resource types, add modules (with a `since` version) or rewrite playbooks. A module released after `baseline_ceiling` is reported as new headroom, not as a regression.

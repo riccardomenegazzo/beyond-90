@@ -10,7 +10,11 @@
         "Confirm the account appears in the inventory within 7 days."
       ],
       "success": "Account is connected and inventoried within 7 days.",
-      "due_days": 14
+      "due_days": 14,
+      "effort": {
+        "base": 1.0,
+        "per_unit": 0.75
+      }
     },
     "l1_auto_onboarding": {
       "leak": "L1",
@@ -22,7 +26,11 @@
         "Alert the TAM when billing shows a new account."
       ],
       "success": "New accounts connect without a ticket.",
-      "due_days": 30
+      "due_days": 30,
+      "effort": {
+        "base": 2.0,
+        "per_unit": 0.0
+      }
     },
     "l2_enable_inventory": {
       "leak": "L2",
@@ -34,7 +42,11 @@
         "Verify the type appears in the inventory (zero resources is fine, unreadable is not)."
       ],
       "success": "Resource type is marked inventoried on every connected account.",
-      "due_days": 21
+      "due_days": 21,
+      "effort": {
+        "base": 1.0,
+        "per_unit": 0.25
+      }
     },
     "l3_enable_module": {
       "leak": "L3",
@@ -46,7 +58,11 @@
         "Record the activation date so adoption can be tracked."
       ],
       "success": "Module active on all relevant accounts.",
-      "due_days": 45
+      "due_days": 45,
+      "effort": {
+        "base": 2.0,
+        "per_unit": 0.3
+      }
     },
     "l3_new_release_adoption": {
       "leak": "L3",
@@ -58,19 +74,28 @@
         "Track activation within 60 days of release."
       ],
       "success": "Capability active within 60 days of release.",
-      "due_days": 60
+      "due_days": 60,
+      "effort": {
+        "base": 2.5,
+        "per_unit": 0.3
+      }
     },
     "l4_assign_owners": {
       "leak": "L4",
-      "title": "Give unowned findings an owner",
+      "title": "Give unowned findings an owner and a decision",
       "why": "Findings past the triage window have no owner, so nobody is accountable for a decision.",
       "steps": [
         "Map owners from tags, project or service ownership, and code owners.",
         "Route what cannot be mapped to the account owner for assignment.",
+        "Record the decision (fix, accepted risk, exception, false positive) at the same time.",
         "Track the unowned share weekly."
       ],
-      "success": "Unowned share of triaged findings at zero.",
-      "due_days": 14
+      "success": "Every triaged finding has an owner and a decision.",
+      "due_days": 14,
+      "effort": {
+        "base": 0.5,
+        "per_unit": 0.35
+      }
     },
     "l4_record_decisions": {
       "leak": "L4",
@@ -82,7 +107,11 @@
         "Close the loop in the ticketing system."
       ],
       "success": "Every triaged finding has a decision.",
-      "due_days": 21
+      "due_days": 21,
+      "effort": {
+        "base": 0.5,
+        "per_unit": 0.2
+      }
     },
     "l4_review_accepted_risks": {
       "leak": "L4",
@@ -94,7 +123,11 @@
         "Adopt a policy that accepted risks expire by default."
       ],
       "success": "All accepted risks have a reason and a future expiry.",
-      "due_days": 30
+      "due_days": 30,
+      "effort": {
+        "base": 0.5,
+        "per_unit": 0.15
+      }
     },
     "l4_review_reclassifications": {
       "leak": "L4",
@@ -106,7 +139,11 @@
         "Report the count in the next review."
       ],
       "success": "No unexplained downgrades near SLA deadlines.",
-      "due_days": 14
+      "due_days": 14,
+      "effort": {
+        "base": 1.0,
+        "per_unit": 0.5
+      }
     },
     "reach_onboard_team": {
       "leak": "Reach",
@@ -118,31 +155,59 @@
         "Run a first-use session on the team's own findings."
       ],
       "success": "Team has a weekly active user.",
-      "due_days": 30
+      "due_days": 30,
+      "effort": {
+        "base": 2.0,
+        "per_unit": 1.5
+      }
     },
     "reach_enable_sso": {
       "leak": "Reach",
       "title": "Put team access behind SSO",
       "why": "Access outside SSO escapes joiner-mover-leaver controls.",
-      "steps": ["Map the team to an identity-provider group.", "Enforce SSO for the team's role.", "Remove local accounts."],
+      "steps": [
+        "Map the team to an identity-provider group.",
+        "Enforce SSO for the team's role.",
+        "Remove local accounts."
+      ],
       "success": "All team access comes through SSO.",
-      "due_days": 30
+      "due_days": 30,
+      "effort": {
+        "base": 1.0,
+        "per_unit": 1.0
+      }
     },
     "reach_scope_roles": {
       "leak": "Reach",
       "title": "Scope roles to the team's own projects",
       "why": "Broad roles hide ownership and over-expose findings.",
-      "steps": ["Create team-scoped roles.", "Move users to them.", "Retire broad roles."],
+      "steps": [
+        "Create team-scoped roles.",
+        "Move users to them.",
+        "Retire broad roles."
+      ],
       "success": "Team uses a role scoped to its projects.",
-      "due_days": 30
+      "due_days": 30,
+      "effort": {
+        "base": 1.0,
+        "per_unit": 1.0
+      }
     },
     "reach_access_review": {
       "leak": "Reach",
       "title": "Run an access review",
       "why": "No access review in the last 90 days for a team that owns cloud assets.",
-      "steps": ["Export the team's users and roles.", "Ask the team lead to confirm or revoke.", "Record the review date."],
+      "steps": [
+        "Export the team's users and roles.",
+        "Ask the team lead to confirm or revoke.",
+        "Record the review date."
+      ],
       "success": "Access reviewed in the last 90 days.",
-      "due_days": 30
+      "due_days": 30,
+      "effort": {
+        "base": 1.0,
+        "per_unit": 0.5
+      }
     },
     "ent_adoption_gap": {
       "leak": "Entitlement",
@@ -154,7 +219,11 @@
         "Review utilization monthly until it passes the threshold."
       ],
       "success": "Utilization at or above the target for the unit.",
-      "due_days": 45
+      "due_days": 45,
+      "effort": {
+        "base": 3.0,
+        "per_unit": 0.0
+      }
     }
   }
 }
