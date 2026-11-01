@@ -24,11 +24,13 @@ from .sections import (
     html_candor,
     html_forecast,
     html_plan,
+    html_quality,
     html_relationship,
     html_universe,
     md_attribution,
     md_forecast,
     md_plan,
+    md_quality,
     md_relationship,
     md_universe,
 )
@@ -128,6 +130,7 @@ def render_markdown(score: Score, actions: list[Action], history: Optional[list[
         L += md_attribution(attribution)
     L += render_candor_markdown(candor or [])
     L += md_universe(score.universe)
+    L += md_quality(score.quality)
     L += md_relationship(score.relationship)
     if score.reach:
         r = score.reach
@@ -355,6 +358,7 @@ def render_html(score: Score, actions: list[Action], history: Optional[list[dict
                      f'<td>{e(a.owner)}</td><td>{e(a.due)}</td></tr>')
         h.append('</tbody></table><p class="warn">Effect is an estimate that treats each stage in isolation. Use it to rank.</p></section>')
     h.append(html_candor(candor))
+    h.append(html_quality(score.quality))
     h.append(html_universe(score.universe))
     h.append(html_relationship(score.relationship))
     if plan:

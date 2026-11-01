@@ -15,12 +15,14 @@ from typing import Any, Optional
 
 from . import __version__
 from .attribution import explain
+from .book import build_book_plan, render_book_html, render_book_markdown
 from .candor import candor_items
 from .catalogue import Catalogue
 from .forecast import forecast_zero_critical
 from .loader import DataError, load_customer
 from .planner import build_plan
 from .playbooks import generate_actions
+from .portfolio import load_portfolio, render_portfolio_markdown
 from .provenance import INPUT_FILES, hash_directory, input_hash
 from .qbr import render_qbr
 from .report import render_html, render_json, render_markdown
@@ -67,6 +69,7 @@ def analyze(
         "warnings": warnings,
         "provenance": score.provenance,
         "input_hash": score.provenance.get("input_hash", ""),
+        "confidence": score.quality.get("confidence", ""),
         "customer": score.customer,
         "as_of": str(score.as_of),
         "yield": score.yield_,
@@ -129,6 +132,81 @@ def fingerprint_files(files: Mapping[str, str]) -> str:
         root = Path(tmp)
         _write(root, files)
         return input_hash(hash_directory(root))
+
+
+def _slug(key: str, taken: set[str]) -> str:
+    base = re.sub(r"[^A-Za-z0-9._-]+", "-", key).strip("-.") or "customer"
+    out, i = base, 2
+    while out in taken:
+        out, i = f"{base}-{i}", i + 1
+    taken.add(out)
+    return out
+
+
+def analyze_book(
+    groups: Mapping[str, Mapping[str, str]],
+    hours: float = 30.0,
+    weeks: int = 26,
+    realization: float = 0.9,
+    weighting: str = "arr",
+    ramp_weeks: int = 2,
+    baselines: bool = True,
+) -> dict[str, Any]:
+    """Several customers at once: the portfolio view and one budget of hours spent where it adds the most weighted Yield.
+
+    `groups` maps a folder name to that customer's files. A group without a customer.toml is ignored; a group
+    with invalid data is reported and the others carry on.
+    """
+    cat = Catalogue.load()
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        names: dict[str, str] = {}
+        taken: set[str] = set()
+        for key in sorted(groups):
+            if "customer.toml" not in {Path(n).name for n in groups[key]}:
+                continue
+            slug = _slug(key, taken)
+            names[slug] = key
+            (root / slug).mkdir()
+            _write(root / slug, groups[key])
+        if not names:
+            return {"ok": False, "errors": ["No folder with a customer.toml was found."], "version": __version__}
+        pf = load_portfolio(root, cat)
+        errors = {names[k]: [m.replace(str(root) + "/", "") for m in v] for k, v in pf.errors.items()}
+        customers = []
+        keys: dict[str, str] = {}
+        for slug in sorted(names):
+            if slug in pf.errors:
+                continue
+            data, _ = load_customer(root / slug, cat)
+            customers.append((data.name, data))
+            keys[data.name] = names[slug]
+        if not customers:
+            return {"ok": False, "errors": [f"{k}: {v[0]}" for k, v in errors.items()], "version": __version__}
+        plan = build_book_plan(customers, cat, hours_per_week=hours, horizon_weeks=weeks, realization=realization, weighting=weighting,
+                               ramp=RampModel(ramp_weeks), baselines=baselines)
+        by_name = {e.name: e for e in pf.entries}
+        return {
+            "ok": True,
+            "version": __version__,
+            "errors": errors,
+            "arr_weighted_yield": pf.arr_weighted_yield,
+            "weighted_start": plan.weighted_start,
+            "weighted_end": plan.weighted_end,
+            "customers": [
+                {"name": n, "key": keys[n], "arr": by_name[n].arr, "yield": by_name[n].score.yield_, "confidence": by_name[n].score.quality.get("confidence", ""),
+                 "planned_yield": next(c.end_yield for c in plan.customers if c.name == n), "hours": next(c.hours for c in plan.customers if c.name == n)}
+                for n, _ in customers
+            ],
+            "patterns": len(pf.patterns(2)),
+            "portfolio_markdown": render_portfolio_markdown(pf, top_patterns=10),
+            "book_markdown": render_book_markdown(plan),
+            "book_html": render_book_html(plan),
+        }
+
+
+def analyze_book_json(groups_json: str, options_json: str = "{}") -> str:
+    return json.dumps(analyze_book(json.loads(groups_json), **json.loads(options_json)), ensure_ascii=False)
 
 
 def analyze_json(files_json: str, options_json: str = "{}") -> str:

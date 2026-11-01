@@ -13,6 +13,7 @@ Needs `pip install playwright` and a Chromium (`playwright install chromium`).
 from __future__ import annotations
 
 import json
+import os
 import sys
 import tempfile
 import threading
@@ -144,6 +145,30 @@ def main(site: str) -> int:
         page.wait_for_selector("#errors:not([hidden])")
         check("customer.toml" in page.inner_text("#errlist"), "validation errors are shown")
 
+        # a whole book: several customers, one budget of hours
+        page.click("#demo-book")
+        page.wait_for_selector("#loaded li:nth-child(3)")
+        run_and_wait()
+        page.wait_for_selector("#book-table:not([hidden])")
+        check("ARR-weighted" in page.inner_text("#kpis") and page.locator("#book-table tbody tr").count() == 3, "the book demo shows three customers and the weighted Yield")
+        check(page.locator("#tabs button").count() == 3 and "Portfolio" in page.inner_text("#doc"), "book mode has its own tabs")
+        page.click("[data-tab=book]")
+        check("hours" in page.inner_text("#doc").lower(), "the plan says where the hours go")
+        page.click("[data-tab=bookreport]")
+        check("hours" in page.frame_locator("#report").locator("body").inner_text().lower(), "the book report renders")
+        page.locator("#book-table tbody tr").first.get_by_role("button", name="Open").click()
+        page.wait_for_selector("#run:not([disabled])", timeout=180_000)
+        page.wait_for_selector("#book-table[hidden]", state="attached")
+        check("Yield" in page.inner_text("#kpis") and page.locator("#tabs button").count() == 5, "opening a customer from the book shows its own report")
+        examples = Path(__file__).resolve().parent.parent / "examples" / "portfolio"
+        page.set_input_files("#folder", str(examples))
+        page.wait_for_selector("#status:has-text('customers found')")
+        check("customers found" in page.inner_text("#status"), "choosing a folder of customer folders is recognised as a book")
+        page.set_input_files("#folder", str(examples / "northwind"))
+        page.wait_for_selector("#loaded li:has-text('customer.toml')")
+        run_and_wait()
+        check("Yield" in page.inner_text("#kpis") and page.locator("#book-table[hidden]").count() == 1, "choosing one customer folder is a single analysis")
+
         # cancelling stops the run and the engine comes back
         page.click("#demo")
         page.click(".opts summary")
@@ -170,6 +195,30 @@ def main(site: str) -> int:
         run_demo()
         check("Yield" in page.inner_text("#kpis"), "the whole app works with no network")
         ctx.set_offline(False)
+
+        browser.close()
+        browser = p.chromium.launch()
+
+        # accessibility: axe-core, when its path is given (the Pages workflow installs it); both colour schemes
+        axe = os.environ.get("AXE_CORE")
+        if axe:
+            for scheme in ("light", "dark"):
+                actx = browser.new_context(bypass_csp=True, color_scheme=scheme)       # the audit injects a script, which the page's policy rightly forbids
+                apage = actx.new_page()
+                apage.goto(base)
+                apage.wait_for_selector("#demo:not([disabled])", timeout=180_000)
+                apage.click("#demo-prev")
+                apage.click("#demo")
+                apage.click("#run")
+                apage.wait_for_selector("#results:not([hidden])", timeout=180_000)
+                apage.click("#save")
+                apage.wait_for_selector("#saved-note:has-text('Saved')")
+                apage.add_script_tag(path=axe)
+                bad = apage.evaluate("axe.run(document, {runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'best-practice']}).then(r => r.violations.map(v => v.id + ' x' + v.nodes.length))")
+                check(not bad, f"no accessibility violations ({scheme}): {bad}")
+                actx.close()
+        else:
+            print("skip accessibility audit (set AXE_CORE to axe.min.js)")
 
         check(not console, "no console errors or warnings" + (": " + "; ".join(console[:3]) if console else ""))
         browser.close()

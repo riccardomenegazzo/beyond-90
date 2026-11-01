@@ -63,6 +63,31 @@ def html_attribution(a: Attribution) -> str:
 
 # ------------------------------------------------------------------ universe
 
+_MARK = {"ok": "ok", "note": "note", "weak": "weak"}
+
+
+def md_quality(q: dict) -> list[str]:
+    if not q:
+        return []
+    L = ["## How far to trust this number", "",
+         f"Confidence in the inputs: **{q['confidence']}** ({q['weak']} weak, {q['notes']} to note). This is about the files, not the score; it does not change Yield.", ""]
+    L += [f"- **{_MARK[c['status']]}**: {c['title']}. {c['detail']}" for c in q["checks"] if c["status"] != "ok"]
+    ok = [c["title"] for c in q["checks"] if c["status"] == "ok"]
+    if ok:
+        L.append(f"- ok: {'; '.join(ok)}.")
+    return L + [""]
+
+
+def html_quality(q: dict) -> str:
+    if not q:
+        return ""
+    rows = "".join(f'<tr><td>{e(_MARK[c["status"]])}</td><td><strong>{e(c["title"])}</strong><br><span class="warn">{e(c["detail"])}</span></td></tr>' for c in q["checks"])
+    return (f'<section aria-labelledby="qa"><h2 id="qa">How far to trust this number</h2>'
+            f'<p>Confidence in the inputs: <strong>{e(q["confidence"])}</strong> ({q["weak"]} weak, {q["notes"]} to note). '
+            f'<span class="warn">About the files, not the score; it does not change Yield.</span></p>'
+            f'<table><tbody>{rows}</tbody></table></section>')
+
+
 def md_universe(u: dict) -> list[str]:
     if not u or not u.get("estimable"):
         return []

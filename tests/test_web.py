@@ -111,3 +111,53 @@ def test_comparing_with_an_older_snapshot_adds_the_explanation():
 def test_the_report_footer_says_which_inputs_it_came_from():
     r = analyze_files(demo_files())
     assert r["input_hash"][:12] in r["report_html"] and r["input_hash"][:12] in r["qbr_markdown"] or r["input_hash"][:12] in r["report_markdown"]
+
+
+PORTFOLIO = ROOT / "examples" / "portfolio"
+
+
+def book_groups():
+    return {d.name: read_dir(d) for d in sorted(PORTFOLIO.iterdir()) if d.is_dir()}
+
+
+def test_a_book_scores_every_customer_and_spends_one_budget_of_hours():
+    from beyond90.web import analyze_book
+    r = analyze_book(book_groups(), hours=20, weeks=12)
+    assert r["ok"] and len(r["customers"]) == 3 and r["weighted_end"] > r["weighted_start"]
+    assert sum(c["hours"] for c in r["customers"]) <= 20 * 12 + 1e-6                     # never more than the budget
+    assert {c["key"] for c in r["customers"]} == set(book_groups())
+    assert "ARR-weighted Yield" in r["portfolio_markdown"] and "hours" in r["book_markdown"].lower() and r["book_html"].startswith("<!doctype html")
+
+
+def test_a_book_is_deterministic_and_does_not_depend_on_folder_order():
+    from beyond90.web import analyze_book
+    g = book_groups()
+    a = analyze_book(g, hours=15, weeks=8)
+    b = analyze_book(dict(reversed(list(g.items()))), hours=15, weeks=8)
+    assert a["book_markdown"] == b["book_markdown"] and a["portfolio_markdown"] == b["portfolio_markdown"]
+
+
+def test_a_book_reports_the_invalid_customer_and_carries_on_with_the_rest():
+    from beyond90.web import analyze_book
+    g = book_groups()
+    g["broken"] = {"customer.toml": '[customer]\nname = "Broken"\n'}
+    g["not-a-customer"] = {"notes.csv": "x"}                                            # no customer.toml: ignored, not an error
+    r = analyze_book(g, hours=10, weeks=6)
+    assert r["ok"] and len(r["customers"]) == 3 and list(r["errors"]) == ["broken"] and "not-a-customer" not in r["errors"]
+    assert analyze_book({"x": {"notes.csv": "x"}})["ok"] is False
+    assert analyze_book({"b": {"customer.toml": "[customer]\n"}})["ok"] is False        # every customer invalid
+
+
+def test_folder_names_are_made_safe_and_unique_without_losing_the_customer():
+    from beyond90.web import _slug, analyze_book
+    taken: set[str] = set()
+    assert (_slug("../../etc", taken), _slug("a b", taken), _slug("a b", taken), _slug("***", taken)) == ("etc", "a-b", "a-b-2", "customer")
+    g = {"../x/y": read_dir(PORTFOLIO / "northwind"), "z": read_dir(PORTFOLIO / "contoso-bank")}
+    assert analyze_book(g, hours=5, weeks=4)["ok"]
+
+
+def test_the_single_report_carries_the_input_confidence():
+    assert analyze_files(demo_files())["confidence"] == "high"
+    files = demo_files()
+    files["inventory.csv"] = "account_id,resource_type,count,inventoried\n"
+    assert analyze_files(files)["confidence"] == "low"

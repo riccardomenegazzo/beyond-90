@@ -1,4 +1,4 @@
-# Beyond 90: specification v0.7
+# Beyond 90: specification v0.8
 
 An adoption engine for Technical Account Managers. It measures how much of a customer's cloud estate is really covered and operated through a security platform, and turns every gap into an action. The bar keeps moving: when a customer grows or the product ships something, the denominators grow with it.
 
@@ -118,6 +118,10 @@ Candor items are derived only from fields already computed; each carries its evi
 
 The app is a client-side wrapper. It must never send input data off the page, must load nothing from a third party and must produce the same numbers as the CLI for the same files; the first two are enforced by the page's Content Security Policy and the build test, the third by `tests/test_web.py`.
 
+## 15e. Input quality (0.8)
+
+`quality.assess` returns checks with status `ok`, `note` or `weak` and a confidence: `low` with any weak check, `medium` with any note, otherwise `high`. Checks: independent sources present among billing, org and SSO (none is weak, one is a note); share of connected accounts with inventory rows and with activation rows (below 50% weak, below 90% note, none at all weak); newest finding event older than 21 days (note) or 63 days (weak); at least five open findings past the triage window with neither owner nor decision (weak); fewer than eight accounts (note); many unconnected accounts with no owner and no spend (note). Confidence describes the inputs only.
+
 ## 15d. Provenance, compatibility and the workspace (0.7)
 
 **Fingerprint.** For each input file (`customer.toml`, `accounts.csv`, `inventory.csv`, `activations.csv`, `findings.csv`, `teams.csv`, `entitlements.csv`, `contacts.csv`, `commitments.csv`) the file hash is SHA-256 of its bytes after removing a leading byte-order mark and turning CRLF and CR into LF. The input hash is SHA-256 of the UTF-8 text made of `<name>\t<file hash>\n` for each present file, sorted by name. Files that are not in the list never contribute. `Score.provenance` holds: engine version, schema version, input hash, per-file hashes, catalogue hash, ceiling and baseline.
@@ -145,9 +149,10 @@ Platforms such as Wiz already ship an adoption and maturity view (the Champion C
 3. 0.4: importers and reconciliation, book planner, radar for releases and threats, performance on large estates.
 4. 0.5: relationship layer, candor ledger, typed expansion, five-stage QBR.
 5. 0.6: browser app on GitHub Pages.
-6. 0.7 (this): provenance, tolerant reader, percentiles, local-first workspace, offline.
-7. 0.8: connector interface and a first verified connector against a real tenant.
-8. 0.9: criticality weighting; readiness checklist import; per-finding ownership sources.
+6. 0.7: provenance, tolerant reader, percentiles, local-first workspace, offline.
+7. 0.8 (this): input quality, whole-book mode in the browser.
+8. 0.9: connector interface and a first verified connector against a real tenant.
+9. 1.0: criticality weighting; readiness checklist import; per-finding ownership sources.
 
 ## References
 

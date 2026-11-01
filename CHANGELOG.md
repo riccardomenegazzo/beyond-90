@@ -2,6 +2,13 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.8.0
+
+- **How far to trust this number.** `Score.quality`: checks on the inputs (independence of the account list, inventory and activation coverage, freshness of the findings export, empty owner and decision columns, very few accounts, forgotten accounts) and an overall confidence of high, medium or low. Shown in the report and in the browser app. It never changes Yield.
+- **Browser app: a whole book.** Drop a folder of customer folders (or try the book demo): portfolio table, shared patterns, and one budget of hours spent where it adds the most weighted Yield. "Open" jumps to a customer's own report.
+- Accessibility: axe-core runs in the browser test in light and dark with no violations; contrast, labels and landmarks fixed.
+- Screenshots of the app in `docs/img/`.
+
 ## 0.7.0
 
 Structure, from *Designing Data-Intensive Applications* (see `docs/architecture.md`).

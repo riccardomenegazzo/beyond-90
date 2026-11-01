@@ -46,6 +46,9 @@ def build(out: Path, pyodide: Path) -> None:
         if not src.exists():
             sys.exit(f"missing {src}: run npm install pyodide first")
         shutil.copy(src, dest / name)
+    book = {p.name: {q.name: q.read_text(encoding="utf-8") for q in sorted(p.iterdir()) if q.suffix in (".csv", ".toml")}
+            for p in sorted(DEMO.parent.iterdir()) if p.is_dir()}
+    (out / "demo-book.json").write_text(json.dumps(book, ensure_ascii=False), encoding="utf-8")
     write_service_worker(out)
     (out / ".nojekyll").write_text("")
 

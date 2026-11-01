@@ -20,13 +20,14 @@
 <main>
   <section class="panel" aria-labelledby="in">
     <h2 id="in">1. Give it the data</h2>
-    <div id="drop" class="drop" tabindex="0" role="button" aria-label="Choose or drop the customer data files">
+    <div id="drop" class="drop" role="group" aria-label="Choose or drop the customer data files">
       <strong>Drop a customer folder here</strong>
       <span>or choose files (<code>customer.toml</code>, <code>accounts.csv</code>, …)</span>
       <div class="row">
         <label class="btn">Choose folder<input id="folder" type="file" webkitdirectory hidden></label>
         <label class="btn">Choose files<input id="files" type="file" multiple accept=".csv,.toml" hidden></label>
-        <button class="btn primary" id="demo" type="button" disabled>Try the demo (Northwind)</button>
+        <button class="btn primary" id="demo" type="button" disabled>Try the demo (one customer)</button>
+        <button class="btn" id="demo-book" type="button" disabled>Try the book demo (3 customers)</button>
       </div>
     </div>
     <ul id="loaded" class="loaded" aria-live="polite"></ul>
@@ -38,6 +39,8 @@
         <label>Horizon (weeks)<input id="weeks" type="number" min="1" max="104" value="26"></label>
         <label>Realization (0 to 1)<input id="real" type="number" min="0.1" max="1" step="0.05" value="0.9"></label>
         <label>Quarter label<input id="quarter" type="text" placeholder="Q4 2026"></label>
+        <label>Whole-book hours per week<input id="bookhours" type="number" min="1" step="1" value="30"></label>
+        <label>Optimize for<select id="weighting"><option value="arr">ARR-weighted Yield</option><option value="equal">Every customer equally</option></select></label>
       </div>
     </details>
     <div class="row left">
@@ -59,13 +62,8 @@
       <button class="btn" id="save" type="button">Save snapshot in this browser</button>
     </div>
     <p class="note" id="saved-note" role="status"></p>
-    <div class="tabs" role="tablist">
-      <button role="tab" aria-selected="true" data-tab="report">Report</button>
-      <button role="tab" aria-selected="false" data-tab="qbr">QBR draft</button>
-      <button role="tab" aria-selected="false" data-tab="roadmap">Roadmap</button>
-      <button role="tab" aria-selected="false" data-tab="summary">Summary</button>
-      <button role="tab" aria-selected="false" data-tab="json">JSON</button>
-    </div>
+    <table class="hist" id="book-table" hidden><thead><tr><th>Customer</th><th class="n">ARR</th><th class="n">Yield now</th><th class="n">After the plan</th><th class="n">Hours</th><th>Inputs</th><th><span class="sr">Actions</span></th></tr></thead><tbody></tbody></table>
+    <div class="tabs" role="tablist" id="tabs"></div>
     <div class="actions">
       <button class="btn" id="copy" type="button">Copy</button>
       <button class="btn" id="download" type="button">Download</button>
@@ -84,7 +82,7 @@
     </div>
     <div id="history-body" hidden>
       <div id="trend"></div>
-      <table class="hist" id="hist-table"><thead><tr><th>Customer</th><th>As of</th><th class="n">Yield</th><th>Snapshot</th><th></th></tr></thead><tbody></tbody></table>
+      <table class="hist" id="hist-table"><thead><tr><th>Customer</th><th>As of</th><th class="n">Yield</th><th>Snapshot</th><th><span class="sr">Actions</span></th></tr></thead><tbody></tbody></table>
     </div>
     <div class="row left">
       <button class="btn" id="export" type="button">Export workspace</button>

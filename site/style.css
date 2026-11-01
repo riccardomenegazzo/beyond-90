@@ -1,8 +1,9 @@
-:root{color-scheme:light dark;--page:#f9f9f7;--surface:#fcfcfb;--ink:#0b0b0b;--ink2:#52514e;--muted:#898781;--grid:#e1e0d9;--accent:#2a78d6;--on:#fff;--border:rgba(11,11,11,.12);--bad:#d03b3b}
-@media (prefers-color-scheme:dark){:root{--page:#0d0d0d;--surface:#1a1a19;--ink:#f0efec;--ink2:#c3c2b7;--grid:#2c2c2a;--accent:#3987e5;--border:rgba(255,255,255,.14);--bad:#e66767}}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+:root{color-scheme:light dark;--page:#f9f9f7;--surface:#fcfcfb;--ink:#0b0b0b;--ink2:#52514e;--muted:#6b6a65;--grid:#e1e0d9;--accent:#2a78d6;--accent-text:#1c62b8;--on:#fff;--border:rgba(11,11,11,.12);--bad:#d03b3b}
+@media (prefers-color-scheme:dark){:root{--page:#0d0d0d;--surface:#1a1a19;--ink:#f0efec;--ink2:#c3c2b7;--grid:#2c2c2a;--accent:#3987e5;--accent-text:#6ea8f0;--on:#0b0b0b;--muted:#a3a29b;--border:rgba(255,255,255,.14);--bad:#e66767}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--page);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
-a{color:var(--accent)}
+a{color:var(--accent-text)}
 .top{display:flex;gap:16px;justify-content:space-between;align-items:flex-start;max-width:1100px;margin:0 auto;padding:24px 16px 0}
 .top h1{margin:0 0 4px;font-size:24px}.top p{margin:0;color:var(--ink2);max-width:64ch}
 .chip{border:1px solid var(--border);border-radius:999px;padding:2px 10px;font-size:12px;color:var(--ink2);white-space:nowrap}
@@ -17,8 +18,9 @@ main{max-width:1100px;margin:0 auto;padding:0 16px}
 .row{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:8px}
 .btn{display:inline-block;border:1px solid var(--border);background:var(--surface);color:var(--ink);padding:8px 14px;border-radius:8px;font:inherit;cursor:pointer}
 .btn:hover{border-color:var(--accent)}.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on)}
-.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.primary{background:#1c62b8;border-color:#1c62b8;color:#fff}
+@media (prefers-color-scheme:dark){.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on)}}
+.btn:disabled{opacity:.6;cursor:not-allowed}
 .btn.big{margin-top:12px;padding:10px 20px}
 .loaded{list-style:none;padding:0;margin:12px 0 0;display:flex;flex-wrap:wrap;gap:6px}
 .loaded li{border:1px solid var(--border);border-radius:6px;padding:2px 8px;font-size:13px;color:var(--ink2)}
@@ -55,6 +57,6 @@ footer{max-width:1100px;margin:24px auto;padding:0 16px;color:var(--muted);font-
 .hist code{font-size:12px;color:var(--ink2)}
 .btn.small{padding:3px 9px;font-size:13px}.btn.danger:hover{border-color:var(--bad);color:var(--bad)}
 .empty{border:1px dashed var(--grid);border-radius:10px;padding:12px;margin:8px 0}
-button.link{background:none;border:0;color:var(--accent);font:inherit;cursor:pointer;padding:0;text-decoration:underline}
+button.link{background:none;border:0;color:var(--accent-text);font:inherit;cursor:pointer;padding:0;text-decoration:underline}
 #trend svg{width:100%;max-width:640px;height:auto;display:block;margin-bottom:8px}
 #trend text{fill:var(--ink2);font:11px system-ui,sans-serif}

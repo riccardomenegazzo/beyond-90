@@ -5,7 +5,7 @@ import * as W from "./workspace-core.js";
 import * as store from "./store.js";
 
 const $ = (id) => document.getElementById(id);
-const state = { files: {}, result: null, tab: "report", saved: [], yields: new Map(), engine: null, running: false };
+const state = { files: {}, groups: {}, mode: "single", result: null, book: null, tab: "report", saved: [], yields: new Map(), engine: null, running: false };
 const ALLOWED = /\.(csv|toml)$/i;
 const MAX_BYTES = 20 * 1024 * 1024;
 const pct = (x) => (x == null ? "n/a" : (x * 100).toFixed(1) + "%");
@@ -33,7 +33,9 @@ async function boot() {
 }
 
 function refreshRun() {
-  $("run").disabled = state.running || !(state.engine && state.engine.version && Object.keys(state.files).length);
+  const have = state.mode === "book" ? Object.keys(state.groups).length : Object.keys(state.files).length;
+  $("run").disabled = state.running || !(state.engine && state.engine.version && have);
+  $("demo-book").disabled = !(state.engine && state.engine.version);
 }
 
 async function registerOffline() {
@@ -47,28 +49,56 @@ async function registerOffline() {
 }
 
 // ---------- input
-async function addFiles(list) {
-  const files = [...list].filter((f) => ALLOWED.test(f.name));
-  const skipped = list.length - files.length;
-  if (files.length) state.files = {};          // a new selection replaces the old one, it never mixes two customers
-  for (const f of files) {
-    if (f.size > MAX_BYTES) { say(f.name + " is larger than 20 MB and was skipped."); continue; }
-    state.files[W.baseName(f.name)] = await f.text();
+const dirOf = (path) => (path.includes("/") ? path.slice(0, path.lastIndexOf("/")) : "");
+const lastSegment = (dir) => dir.split("/").pop() || dir;
+
+/** Accept files with their folder paths. One customer folder, a folder of customer folders, or loose files. */
+async function addFiles(entries) {
+  const kept = entries.filter(({ file }) => ALLOWED.test(file.name));
+  const skipped = entries.length - kept.length;
+  if (!kept.length) { if (skipped) say(skipped + " file(s) skipped: only .csv and .toml are read."); return; }
+  const byDir = new Map();
+  for (const { file, path } of kept) {
+    if (file.size > MAX_BYTES) { say(file.name + " is larger than 20 MB and was skipped."); continue; }
+    const dir = dirOf(path);
+    if (!byDir.has(dir)) byDir.set(dir, {});
+    byDir.get(dir)[W.baseName(file.name)] = await file.text();
+  }
+  const customers = [...byDir.entries()].filter(([, f]) => "customer.toml" in f);
+  state.files = {}; state.groups = {};                 // a new selection replaces the old one, it never mixes customers
+  if (customers.length >= 2) {
+    state.mode = "book";
+    for (const [dir, f] of customers) state.groups[uniqueKey(lastSegment(dir), state.groups)] = f;
+  } else {
+    state.mode = "single";
+    state.files = customers.length === 1 ? customers[0][1] : Object.assign({}, ...byDir.values());
   }
   if (skipped) say(skipped + " file(s) skipped: only .csv and .toml are read.");
   renderLoaded();
 }
 
+function uniqueKey(key, taken) {
+  let k = key || "customer", i = 2;
+  while (k in taken) k = `${key}-${i++}`;
+  return k;
+}
+
+const fromInput = (list) => [...list].map((file) => ({ file, path: file.webkitRelativePath || file.name }));
+
 function renderLoaded() {
   const ul = $("loaded");
   ul.replaceChildren();
-  for (const name of Object.keys(state.files).sort()) {
+  const labels = state.mode === "book"
+    ? Object.entries(state.groups).map(([k, f]) => `${k} (${Object.keys(f).length} files)`)
+    : Object.keys(state.files).sort();
+  for (const t of labels) {
     const li = document.createElement("li");
     li.className = "ok";
-    li.textContent = name;
+    li.textContent = t;
     ul.append(li);
   }
-  state.result = null;
+  if (state.mode === "book") say(`${Object.keys(state.groups).length} customers found. Press Run analysis to see the portfolio and a plan for your hours.`);
+  state.result = null; state.book = null;
   $("results").hidden = true;
   refreshRun();
 }
@@ -79,23 +109,31 @@ async function dropped(ev) {
   const items = [...(ev.dataTransfer.items || [])].map((i) => i.webkitGetAsEntry && i.webkitGetAsEntry()).filter(Boolean);
   const out = [];
   async function walk(entry, depth) {
-    if (entry.isFile) out.push(await new Promise((res, rej) => entry.file(res, rej)));
-    else if (entry.isDirectory && depth < 2) {
+    if (entry.isFile) out.push({ file: await new Promise((res, rej) => entry.file(res, rej)), path: entry.fullPath.replace(/^\//, "") });
+    else if (entry.isDirectory && depth < 3) {
       const r = entry.createReader();
       let batch;
       do { batch = await new Promise((res, rej) => r.readEntries(res, rej)); for (const e of batch) await walk(e, depth + 1); } while (batch.length);
     }
   }
   if (items.length) for (const e of items) await walk(e, 0);
-  else out.push(...ev.dataTransfer.files);
+  else out.push(...fromInput(ev.dataTransfer.files));
   await addFiles(out);
 }
 
 async function loadDemo() {
   say("Loading the demo…");
+  state.mode = "single"; state.groups = {};
   state.files = await (await fetch("./demo.json")).json();
   renderLoaded();
   say("Demo loaded: a made-up customer, Northwind. Press Run analysis.");
+}
+
+async function loadDemoBook() {
+  say("Loading the book demo…");
+  state.mode = "book"; state.files = {};
+  state.groups = await (await fetch("./demo-book.json")).json();
+  renderLoaded();
 }
 
 // ---------- run
@@ -109,6 +147,7 @@ function options() {
 }
 
 async function run(compareId) {
+  if (state.mode === "book") return runBook();
   $("errors").hidden = true;
   state.running = true;
   $("cancel").hidden = false;
@@ -121,7 +160,7 @@ async function run(compareId) {
     if (base) opts.since_files = base.files;
     const res = await state.engine.json("analyze", { files: state.files, options: opts });
     if (!res.ok) return showErrors(res.errors);
-    state.result = res;
+    state.result = res; state.book = null;
     state.compareId = base ? base.id : "";
     say(res.warnings.length ? res.warnings.length + " warning(s): " + res.warnings.join("; ") : "");
     showResults();
@@ -133,6 +172,55 @@ async function run(compareId) {
     $("cancel").hidden = true;
     refreshRun();
   }
+}
+
+async function runBook() {
+  $("errors").hidden = true;
+  state.running = true;
+  $("cancel").hidden = false;
+  refreshRun();
+  say("Analyzing every customer and planning your hours…");
+  try {
+    const o = options();
+    const res = await state.engine.json("book", { groups: state.groups, options: {
+      hours: Number($("bookhours").value) || 30, weeks: o.weeks, realization: o.realization, weighting: $("weighting").value } });
+    if (!res.ok) return showErrors(res.errors);
+    state.book = res; state.result = null;
+    const skipped = Object.keys(res.errors || {});
+    say(skipped.length ? `${skipped.length} customer(s) skipped because their data is invalid: ${skipped.join(", ")}.` : "");
+    showBook();
+  } catch (e) {
+    if (e.cancelled) say("Cancelled. The engine was restarted.");
+    else showErrors(["Unexpected error: " + e.message]);
+  } finally {
+    state.running = false;
+    $("cancel").hidden = true;
+    refreshRun();
+  }
+}
+
+function showBook() {
+  const b = state.book;
+  $("kpis").replaceChildren(kpi(pct(b.arr_weighted_yield), "ARR-weighted Yield now"), kpi(pct(b.weighted_end), "After the plan"), kpi(String(b.customers.length), "Customers"), kpi(String(b.patterns), "Patterns shared across customers"));
+  document.querySelector(".bar").hidden = true;
+  $("saved-note").textContent = "";
+  const tbody = $("book-table").tBodies[0];
+  tbody.replaceChildren();
+  for (const c of b.customers) {
+    const tr = document.createElement("tr");
+    const cell = (t, cls) => { const td = document.createElement("td"); td.textContent = t; if (cls) td.className = cls; return td; };
+    tr.append(cell(c.name), cell(Math.round(c.arr).toLocaleString("en"), "n"), cell(pct(c.yield), "n"), cell(pct(c.planned_yield), "n"), cell(c.hours.toFixed(0), "n"), cell(c.confidence));
+    const td = document.createElement("td");
+    const open = Object.assign(document.createElement("button"), { className: "btn small", type: "button", textContent: "Open" });
+    open.onclick = () => { state.mode = "single"; state.files = { ...state.groups[c.key] }; state.book = null; renderLoaded(); run(); };
+    td.append(open); tr.append(td); tbody.append(tr);
+  }
+  $("book-table").hidden = false;
+  state.tab = "portfolio";
+  $("results").hidden = false;
+  renderTabs(BOOK_TABS);
+  selectTab(state.tab);
+  $("results").scrollIntoView({ behavior: "smooth" });
 }
 
 /** With no choice made, compare with the most recent earlier snapshot of the same customer, if there is one. */
@@ -167,9 +255,13 @@ function kpi(value, label) {
 
 function showResults() {
   const r = state.result;
-  $("kpis").replaceChildren(kpi(pct(r.yield), "Yield"), kpi(pct(r.reach), "Reach"), kpi(String(r.actions), "Open actions"), kpi(r.customer, "Customer as of " + r.as_of));
+  $("kpis").replaceChildren(kpi(pct(r.yield), "Yield"), kpi(pct(r.reach), "Reach"), kpi(String(r.actions), "Open actions"), kpi(r.confidence, "Confidence in the inputs"), kpi(r.customer, "Customer as of " + r.as_of));
   renderCompare();
+  document.querySelector(".bar").hidden = false;
+  $("book-table").hidden = true;
+  if (!SINGLE_TABS.some((t) => t.id === state.tab)) state.tab = "report";
   $("results").hidden = false;
+  renderTabs(SINGLE_TABS);
   selectTab(state.tab);
   $("results").scrollIntoView({ behavior: "smooth" });
 }
@@ -182,23 +274,44 @@ function renderCompare() {
 }
 
 // ---------- tabs
-const TABS = {
-  report: { key: "report_html", file: "beyond90-report.html", type: "text/html" },
-  qbr: { key: "qbr_markdown", file: "beyond90-qbr.md", type: "text/markdown" },
-  roadmap: { key: "roadmap_markdown", file: "beyond90-roadmap.md", type: "text/markdown" },
-  summary: { key: "report_markdown", file: "beyond90-summary.md", type: "text/markdown" },
-  json: { key: "score_json", file: "beyond90-score.json", type: "application/json" },
-};
+const SINGLE_TABS = [
+  { id: "report", label: "Report", key: "report_html", file: "beyond90-report.html", type: "text/html", kind: "html" },
+  { id: "qbr", label: "QBR draft", key: "qbr_markdown", file: "beyond90-qbr.md", type: "text/markdown", kind: "md" },
+  { id: "roadmap", label: "Roadmap", key: "roadmap_markdown", file: "beyond90-roadmap.md", type: "text/markdown", kind: "md" },
+  { id: "summary", label: "Summary", key: "report_markdown", file: "beyond90-summary.md", type: "text/markdown", kind: "md" },
+  { id: "json", label: "JSON", key: "score_json", file: "beyond90-score.json", type: "application/json", kind: "json" },
+];
+const BOOK_TABS = [
+  { id: "portfolio", label: "Portfolio", key: "portfolio_markdown", file: "beyond90-portfolio.md", type: "text/markdown", kind: "md" },
+  { id: "book", label: "Where your hours go", key: "book_markdown", file: "beyond90-book.md", type: "text/markdown", kind: "md" },
+  { id: "bookreport", label: "Book report", key: "book_html", file: "beyond90-book.html", type: "text/html", kind: "html" },
+];
+let tabDefs = SINGLE_TABS;
+
+function renderTabs(defs) {
+  tabDefs = defs;
+  $("tabs").replaceChildren(...defs.map((t) => {
+    const b = Object.assign(document.createElement("button"), { type: "button", textContent: t.label });
+    b.setAttribute("role", "tab");
+    b.dataset.tab = t.id;
+    b.addEventListener("click", () => selectTab(t.id));
+    return b;
+  }));
+}
+
+const current = () => tabDefs.find((t) => t.id === state.tab) || tabDefs[0];
+const payload = () => (state.mode === "book" || state.book ? state.book : state.result);
 
 function selectTab(name) {
   state.tab = name;
-  for (const b of document.querySelectorAll(".tabs button")) b.setAttribute("aria-selected", String(b.dataset.tab === name));
-  const t = TABS[name], text = state.result[t.key];
-  $("report").hidden = name !== "report";
-  $("doc").hidden = !["qbr", "roadmap", "summary"].includes(name);
-  $("raw").hidden = name !== "json";
-  if (name === "report") $("report").srcdoc = text;
-  else if (name === "json") $("raw").textContent = text;
+  const t = current();
+  for (const b of document.querySelectorAll(".tabs button")) b.setAttribute("aria-selected", String(b.dataset.tab === t.id));
+  const text = payload()[t.key];
+  $("report").hidden = t.kind !== "html";
+  $("doc").hidden = t.kind !== "md";
+  $("raw").hidden = t.kind !== "json";
+  if (t.kind === "html") $("report").srcdoc = text;
+  else if (t.kind === "json") $("raw").textContent = text;
   else $("doc").replaceChildren(...markdown(text));
 }
 
@@ -243,8 +356,8 @@ function markdown(src) {
 
 // ---------- download / copy
 function download() {
-  const t = TABS[state.tab], blob = new Blob([state.result[t.key]], { type: t.type + ";charset=utf-8" });
-  save(blob, t.file);
+  const t = current();
+  save(new Blob([payload()[t.key]], { type: t.type + ";charset=utf-8" }), t.file);
 }
 function save(blob, name) {
   const a = Object.assign(document.createElement("a"), { href: URL.createObjectURL(blob), download: name });
@@ -252,7 +365,7 @@ function save(blob, name) {
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 async function copy() {
-  try { await navigator.clipboard.writeText(state.result[TABS[state.tab].key]); say("Copied."); }
+  try { await navigator.clipboard.writeText(payload()[current().key]); say("Copied."); }
   catch { say("Copy is not available here; use Download."); }
 }
 
@@ -397,12 +510,13 @@ async function selfCheck() {
 }
 
 // ---------- wiring
-$("folder").addEventListener("change", (e) => addFiles(e.target.files));
-$("files").addEventListener("change", (e) => addFiles(e.target.files));
+$("folder").addEventListener("change", (e) => addFiles(fromInput(e.target.files)));
+$("files").addEventListener("change", (e) => addFiles(fromInput(e.target.files)));
 $("drop").addEventListener("dragover", (e) => { e.preventDefault(); $("drop").classList.add("over"); });
 $("drop").addEventListener("dragleave", () => $("drop").classList.remove("over"));
 $("drop").addEventListener("drop", dropped);
 $("demo").addEventListener("click", loadDemo);
+$("demo-book").addEventListener("click", loadDemoBook);
 $("run").addEventListener("click", () => run());
 $("cancel").addEventListener("click", cancel);
 $("copy").addEventListener("click", copy);
@@ -414,5 +528,5 @@ $("import").addEventListener("change", (e) => e.target.files[0] && importWorkspa
 $("forget").addEventListener("click", forgetAll);
 $("demo-prev").addEventListener("click", addDemoPrevious);
 $("selfcheck").addEventListener("click", selfCheck);
-for (const b of document.querySelectorAll(".tabs button")) b.addEventListener("click", () => state.result && selectTab(b.dataset.tab));
+renderTabs(SINGLE_TABS);
 boot();

@@ -89,7 +89,7 @@ def load_portfolio(root: str | Path, cat: Optional[Catalogue] = None, store: Opt
     return pf
 
 
-def render_portfolio_markdown(pf: Portfolio, min_customers: int = 2) -> str:
+def render_portfolio_markdown(pf: Portfolio, min_customers: int = 2, top_patterns: Optional[int] = None) -> str:
     L = ["# Portfolio", ""]
     w = pf.arr_weighted_yield
     if w is not None:
@@ -107,8 +107,10 @@ def render_portfolio_markdown(pf: Portfolio, min_customers: int = 2) -> str:
     pats = pf.patterns(min_customers)
     if pats:
         L += ["## Patterns across customers (one-to-many candidates)", "", "| Pattern | Leak | Customers | Who |", "|---|---|---|---|"]
-        for p in pats:
+        for p in pats[:top_patterns]:
             L.append(f"| {p['pattern']} | {p['leak']} | {p['count']} | {', '.join(p['customers'])} |")
+        if top_patterns is not None and len(pats) > top_patterns:
+            L += ["", f"({len(pats) - top_patterns} more patterns; the `portfolio` command lists all of them.)"]
         L.append("")
     if pf.errors:
         L += ["## Skipped (invalid data)", ""]

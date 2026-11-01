@@ -17,6 +17,7 @@ from typing import Any, Optional
 from .catalogue import Catalogue, parse_version
 from .models import CustomerData, Finding
 from .provenance import build as build_provenance
+from .quality import assess
 from .relationship import compute_relationship
 from .universe import estimate_universe
 
@@ -60,6 +61,7 @@ class Score:
     relationship: Optional[dict] = None
     warnings: list[str] = field(default_factory=list)
     provenance: dict = field(default_factory=dict)
+    quality: dict = field(default_factory=dict)
 
     def to_dict(self) -> dict:
         d = asdict(self)
@@ -388,5 +390,6 @@ def compute_score(data: CustomerData, cat: Optional[Catalogue] = None, ceiling: 
         universe=estimate_universe(data),
         relationship=compute_relationship(data),
         warnings=warnings,
+        quality=assess(data),
         provenance=build_provenance(data.inputs, cat.digest, ceiling, baseline, data.schema_version) if data.inputs else {},
     )
