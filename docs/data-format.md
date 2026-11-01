@@ -94,6 +94,14 @@ The universe must come from somewhere other than the platform itself: billing ex
 
 `unit, licensed, used`. Units used by the playbooks and labels: `workloads`, `sensors`, `code_seats`, `defend_gb`. Any other unit name works; it is reported as given.
 
+## contacts.csv (optional)
+
+`id, role` are required. `name, team, influence, last_contact, credibility, reliability, intimacy, self_orientation` are optional. Roles: `executive_sponsor`, `security_leader`, `champion`, `procurement`, `practitioner`, `skeptic`. `influence` is 1 to 3 and defaults from the role. The four ratings are 1 to 10, your own judgement, and are used for the trust index (see `docs/trust.md`). `team` should match a team id so coverage can be checked. Contains personal data: do not publish it.
+
+## commitments.csv (optional)
+
+`id, due_on` are required. `description, contact_id, promised_on, done_on` are optional. `contact_id` must exist in `contacts.csv`. Reliability is measured from this file over the last `commitment_lookback_days` (default 90). `contact_stale_days` (default 90) sets when a contact counts as not spoken to.
+
 ## Where to get the data
 
 These are suggestions; nothing in the tool calls any of these systems.

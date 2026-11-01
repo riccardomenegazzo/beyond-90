@@ -14,10 +14,23 @@ from typing import Optional
 
 from . import __version__
 from .attribution import Attribution
+from .candor import CandorItem, render_candor_markdown
 from .planner import Plan
 from .playbooks import Action
 from .scoring import CHECKPOINTS, STAGE_NAMES, Score
-from .sections import html_attribution, html_forecast, html_plan, html_universe, md_attribution, md_forecast, md_plan, md_universe
+from .sections import (
+    html_attribution,
+    html_candor,
+    html_forecast,
+    html_plan,
+    html_relationship,
+    html_universe,
+    md_attribution,
+    md_forecast,
+    md_plan,
+    md_relationship,
+    md_universe,
+)
 
 STAGES = ("L1", "L2", "L3", "L4")
 
@@ -83,7 +96,8 @@ def render_text(score: Score, actions: list[Action], top: int = 8) -> str:
 # ------------------------------------------------------------------- Markdown
 
 def render_markdown(score: Score, actions: list[Action], history: Optional[list[dict]] = None, previous: Optional[dict] = None, top: int = 15,
-                    *, attribution: Optional[Attribution] = None, forecast: Optional[dict] = None, plan: Optional[Plan] = None) -> str:
+                    *, attribution: Optional[Attribution] = None, forecast: Optional[dict] = None, plan: Optional[Plan] = None,
+                    candor: Optional[list[CandorItem]] = None) -> str:
     L: list[str] = [f"# {score.customer}: adoption score", ""]
     L.append(f"As of {score.as_of} · ceiling {score.ceiling_version} · baseline {score.baseline['ceiling']}")
     L.append("")
@@ -111,7 +125,9 @@ def render_markdown(score: Score, actions: list[Action], history: Optional[list[
     L.append("")
     if attribution:
         L += md_attribution(attribution)
+    L += render_candor_markdown(candor or [])
     L += md_universe(score.universe)
+    L += md_relationship(score.relationship)
     if score.reach:
         r = score.reach
         L += ["## Reach", "", f"Reach {pct(r['value'])} across {r['teams']} teams with cloud assets.", ""]
@@ -284,7 +300,8 @@ def _leak_summary(score: Score, sid: str) -> list[str]:
 
 
 def render_html(score: Score, actions: list[Action], history: Optional[list[dict]] = None, previous: Optional[dict] = None, top: int = 15,
-                *, attribution: Optional[Attribution] = None, forecast: Optional[dict] = None, plan: Optional[Plan] = None) -> str:
+                *, attribution: Optional[Attribution] = None, forecast: Optional[dict] = None, plan: Optional[Plan] = None,
+                candor: Optional[list[CandorItem]] = None) -> str:
     e = escape
     h: list[str] = []
     d = _delta(score, previous)
@@ -333,7 +350,9 @@ def render_html(score: Score, actions: list[Action], history: Optional[list[dict
             h.append(f'<tr><td class="n">{a.effect_points:.1f} pts</td><td>{e(a.leak)}</td><td><strong>{e(a.title)}</strong><br><span class="warn">{e(a.detail)}</span></td>'
                      f'<td>{e(a.owner)}</td><td>{e(a.due)}</td></tr>')
         h.append('</tbody></table><p class="warn">Effect is an estimate that treats each stage in isolation. Use it to rank.</p></section>')
+    h.append(html_candor(candor))
     h.append(html_universe(score.universe))
+    h.append(html_relationship(score.relationship))
     if plan:
         h.append(html_plan(plan))
     h.append(html_forecast(forecast))

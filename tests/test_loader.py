@@ -76,3 +76,30 @@ def test_optional_date_must_still_parse_and_downgrade_needs_a_date(tmp_path):
         load_customer(tmp_path)
     text = "\n".join(exc.value.errors)
     assert "closed_at is before opened_at" in text and "severity_changed_at is required" in text
+
+
+def test_contacts_and_commitments_load(tmp_path):
+    d, _ = load_customer(write(
+        tmp_path,
+        contacts="id,name,role,influence,credibility,reliability,intimacy,self_orientation,last_contact\n"
+                 "c1,Ana,executive_sponsor,,8,7,6,3,2026-10-01\n",
+        commitments="id,description,due_on,contact_id\nk1,send the plan,2026-10-20,c1\n",
+    ))
+    assert d.contacts[0].influence == 3 and d.contacts[0].credibility == 8       # influence defaults from the role
+    assert d.commitments[0].contact_id == "c1"
+
+
+@pytest.mark.parametrize("contacts,commitments,needle", [
+    ("id,role,credibility\nc1,champion,11\n", None, "credibility"),
+    ("id,role\nc1,wizard\n", None, "role"),
+    ("id,role,influence\nc1,champion,5\n", None, "influence"),
+    ("id,role\nc1,champion\n", "id,due_on,contact_id\nk1,2026-10-01,ghost\n", "ghost"),
+    ("id,role\nc1,champion\n", "id,due_on,promised_on\nk1,2026-10-01,2026-10-05\n", "promised_on"),
+])
+def test_relationship_files_are_validated(tmp_path, contacts, commitments, needle):
+    files = {"contacts": contacts}
+    if commitments:
+        files["commitments"] = commitments
+    with pytest.raises(DataError) as e:
+        load_customer(write(tmp_path, **files))
+    assert needle in str(e.value)

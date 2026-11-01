@@ -29,6 +29,7 @@ ARR-weighted Yield: **83.3%** across 3 customer(s).
 | reach_access_review:stale_access_review | Reach | 3 | Contoso Bank (mock), Fabrikam Labs (mock), Northwind (mock) |
 | reach_onboard_team:no_active_user | Reach | 3 | Contoso Bank (mock), Fabrikam Labs (mock), Northwind (mock) |
 | reach_scope_roles:no_scoped_role | Reach | 3 | Contoso Bank (mock), Fabrikam Labs (mock), Northwind (mock) |
+| rel_introduce:teams | Relationship | 3 | Contoso Bank (mock), Fabrikam Labs (mock), Northwind (mock) |
 | ent_adoption_gap:code_seats | Entitlement | 2 | Fabrikam Labs (mock), Northwind (mock) |
 | ent_adoption_gap:defend_gb | Entitlement | 2 | Fabrikam Labs (mock), Northwind (mock) |
 | ent_adoption_gap:sensors | Entitlement | 2 | Fabrikam Labs (mock), Northwind (mock) |
@@ -36,3 +37,6 @@ ARR-weighted Yield: **83.3%** across 3 customer(s).
 | l3_enable_module:identity_analysis | L3 | 2 | Fabrikam Labs (mock), Northwind (mock) |
 | l4_review_accepted_risks:accepted_without_expiry | L4 | 2 | Contoso Bank (mock), Northwind (mock) |
 | reach_enable_sso:no_sso | Reach | 2 | Fabrikam Labs (mock), Northwind (mock) |
+| rel_close_commitments:overdue | Relationship | 2 | Fabrikam Labs (mock), Northwind (mock) |
+| rel_find_sponsor:sponsor | Relationship | 2 | Fabrikam Labs (mock), Northwind (mock) |
+| rel_improve_self_orientation:self_orientation | Relationship | 2 | Fabrikam Labs (mock), Northwind (mock) |

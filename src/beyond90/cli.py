@@ -12,6 +12,7 @@ from typing import Optional
 from . import __version__
 from .attribution import explain, render_attribution
 from .book import build_book_plan, render_book_html, render_book_json, render_book_markdown, render_book_text
+from .candor import candor_items
 from .catalogue import Catalogue
 from .forecast import forecast_zero_critical, render_forecast
 from .importers import (
@@ -114,6 +115,7 @@ def _extras(args, cat, data, score, previous) -> tuple[dict, Optional[dict]]:
         extras["forecast"] = forecast_zero_critical(data)
     if not getattr(args, "no_plan", False):
         extras["plan"] = _plan(args, data, cat)
+    extras["candor"] = candor_items(score, data, cat, plan=extras.get("plan"), forecast=extras.get("forecast"), attribution=extras.get("attribution"))
     return extras, previous
 
 

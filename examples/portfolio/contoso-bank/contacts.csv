@@ -1,0 +1,5 @@
+id,name,role,team,influence,last_contact,credibility,reliability,intimacy,self_orientation
+c-01,Helen Fischer,executive_sponsor,security,,2026-10-22,9,9,7,2
+c-02,Jonas Berg,champion,platform,,2026-10-27,9,8,8,2
+c-03,Aisha Khan,security_leader,payments,,2026-10-09,8,8,6,3
+c-04,Luca Moretti,practitioner,data,,2026-10-16,7,8,7,2

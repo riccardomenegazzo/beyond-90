@@ -1,12 +1,12 @@
 id,name,has_assets,active_users,sso,role_scoped,last_access_review
-team-01,Team 01,true,13,true,true,2026-09-20
-team-02,Team 02,true,2,true,true,2026-08-12
-team-03,Team 03,true,13,true,true,2026-09-13
-team-04,Team 04,true,4,true,true,2026-09-26
-team-05,Team 05,true,3,true,true,2026-09-26
-team-06,Team 06,true,14,true,true,2026-10-03
-team-07,Team 07,true,3,true,true,2026-08-21
-team-08,Team 08,true,4,true,true,2026-08-12
+platform,Platform,true,13,true,true,2026-09-20
+retail-it,Retail It,true,2,true,true,2026-08-12
+data,Data,true,13,true,true,2026-09-13
+payments,Payments,true,4,true,true,2026-09-26
+bu-retail,Bu Retail,true,3,true,true,2026-09-26
+ml-research,Ml Research,true,14,true,true,2026-10-03
+security,Security,true,3,true,true,2026-08-21
+finance-it,Finance It,true,4,true,true,2026-08-12
 team-09,Team 09,true,4,true,true,2026-08-22
 team-10,Team 10,true,10,true,true,2026-08-27
 team-11,Team 11,true,7,true,true,2026-10-02

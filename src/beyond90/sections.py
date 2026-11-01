@@ -189,3 +189,53 @@ def html_plan(p: Plan, top: int = 12) -> str:
                f'These are the weeks to explain to the customer before they happen.</p><ul>{dips}</ul>' if dips else '')
             + f'<table><thead><tr><th class="n">Weeks</th><th>Action</th><th class="n">Hours</th><th class="n">Effect when settled</th></tr></thead><tbody>{rows}{more}</tbody></table>'
             f'{resid}{notes}<p class="warn">A model, not a promise: it rests on the effort figures in the playbook catalogue and the ramp assumptions in simulate.py.</p></section>')
+
+
+# --------------------------------------------------------------- relationship
+
+def md_relationship(rel: Optional[dict]) -> list[str]:
+    if not rel:
+        return []
+    L = ["## Relationship", "", "Reported next to adoption and never averaged with it: a well-used platform and a sponsor who has stopped answering are different problems.", ""]
+    if rel["weighted_trust"] is not None:
+        L.append(f"Influence-weighted trust index **{rel['weighted_trust']:.1f}** ({rel['weighted_band']}), from T = (credibility + reliability + intimacy) / self-orientation. "
+                 "A framework, not a measurement.")
+    r = rel["reliability"]
+    if r["rate"] is not None:
+        L.append(f"Reliability, measured from promises: {r['on_time']} of {r['due_in_window']} kept on time ({r['rate']:.0%}), {len(r['overdue_open'])} overdue.")
+    c = rel["coverage"]
+    L += ["", f"Contacts {c['contacts']}, touched recently {c['touched_recently']}, executive sponsor: {c['sponsor'] or 'none on record'}.", ""]
+    rated = [p for p in rel["contacts"] if p["rated"]]
+    if rated:
+        L += ["| Contact | Role | Trust | Band | Where one point helps most | Days since contact |", "|---|---|---|---|---|---|"]
+        for p in sorted(rated, key=lambda p: (-p["influence"], p["id"])):
+            L.append(f"| {p['name']} | {p['role'].replace('_', ' ')} | {p['trust']:.1f} | {p['band']} | {p['limiting'].replace('_', ' ')} | {p['days_since_contact'] if p['days_since_contact'] is not None else 'never'} |")
+        L.append("")
+    return L
+
+
+def html_relationship(rel: Optional[dict]) -> str:
+    if not rel:
+        return ""
+    r = rel["reliability"]
+    bits = []
+    if rel["weighted_trust"] is not None:
+        bits.append(f'<p>Influence-weighted trust index <strong>{rel["weighted_trust"]:.1f}</strong> ({e(rel["weighted_band"])}), from T = (credibility + reliability + intimacy) / self-orientation. A framework, not a measurement.</p>')
+    if r["rate"] is not None:
+        bits.append(f'<p>Reliability, measured from promises: <strong>{r["on_time"]} of {r["due_in_window"]}</strong> kept on time ({r["rate"]:.0%}); {len(r["overdue_open"])} overdue.</p>')
+    c = rel["coverage"]
+    bits.append(f'<p>Contacts {c["contacts"]}, touched recently {c["touched_recently"]}, executive sponsor: {e(c["sponsor"] or "none on record")}.</p>')
+    rated = sorted((p for p in rel["contacts"] if p["rated"]), key=lambda p: (-p["influence"], p["id"]))
+    if rated:
+        rows = "".join(f'<tr><td>{e(p["name"])}</td><td>{e(p["role"].replace("_", " "))}</td><td class="n">{p["trust"]:.1f}</td><td>{e(p["band"])}</td>'
+                       f'<td>{e(p["limiting"].replace("_", " "))}</td><td class="n">{p["days_since_contact"] if p["days_since_contact"] is not None else "never"}</td></tr>' for p in rated)
+        bits.append(f'<table><thead><tr><th>Contact</th><th>Role</th><th class="n">Trust</th><th>Band</th><th>One point helps most in</th><th class="n">Days since contact</th></tr></thead><tbody>{rows}</tbody></table>')
+    return ('<section aria-labelledby="rl"><h2 id="rl">Relationship</h2><p class="warn">Reported next to adoption and never averaged with it.</p>' + "".join(bits) + "</section>")
+
+
+def html_candor(items: Optional[list]) -> str:
+    if not items:
+        return ""
+    lis = "".join(f'<li><strong>{e(i.say)}</strong><br><span class="warn">Evidence: {e(i.evidence)}<br>Why say it: {e(i.why)}</span></li>' for i in items)
+    return (f'<section aria-labelledby="cd"><h2 id="cd">What we should say plainly</h2>'
+            f'<p class="warn">Each item is supported by the data. Saying these first, before the customer finds them, is what lowers self-orientation.</p><ol>{lis}</ol></section>')

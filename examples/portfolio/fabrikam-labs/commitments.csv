@@ -1,0 +1,4 @@
+id,contact_id,description,promised_on,due_on,done_on
+k-01,f-01,Send the onboarding plan,2026-09-01,2026-09-15,2026-09-30
+k-02,f-01,Connect the two missing accounts,2026-09-20,2026-10-10,
+k-03,f-01,Share the quick wins list,2026-10-01,2026-10-18,

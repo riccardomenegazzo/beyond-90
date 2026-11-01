@@ -46,6 +46,9 @@ class Playbook:
     due_days: int
     effort_base: float = 1.0      # hours, used by the planner
     effort_per_unit: float = 0.0  # hours per account / finding / team
+    offer: str = ""               # "new" or "same": is it a new capability for these people (see trust.py)
+    question: str = ""            # an open question to ask the customer about this gap
+    we_commit: str = ""           # what the TAM promises to bring, with a date
 
 
 class Catalogue:
@@ -94,6 +97,9 @@ class Catalogue:
                 due_days=int(p["due_days"]),
                 effort_base=float(p.get("effort", {}).get("base", 1.0)),
                 effort_per_unit=float(p.get("effort", {}).get("per_unit", 0.0)),
+                offer=p.get("offer", ""),
+                question=p.get("question", ""),
+                we_commit=p.get("we_commit", ""),
             )
             for pid, p in pbs["playbooks"].items()
         }

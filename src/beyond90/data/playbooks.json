@@ -14,7 +14,10 @@
       "effort": {
         "base": 1.0,
         "per_unit": 0.75
-      }
+      },
+      "offer": "same",
+      "question": "Which of these accounts matter most to your business this quarter, and what has made them hard to connect so far?",
+      "we_commit": "send you the list of unconnected accounts with last spend and suggested owners within two working days"
     },
     "l1_auto_onboarding": {
       "leak": "L1",
@@ -30,7 +33,10 @@
       "effort": {
         "base": 2.0,
         "per_unit": 0.0
-      }
+      },
+      "offer": "",
+      "question": "How do new accounts get created today, and who hears about it?",
+      "we_commit": "write up how new accounts are detected today and what would have to change"
     },
     "l2_enable_inventory": {
       "leak": "L2",
@@ -46,7 +52,10 @@
       "effort": {
         "base": 1.0,
         "per_unit": 0.25
-      }
+      },
+      "offer": "",
+      "question": "What would you want to be certain we can see in these accounts?",
+      "we_commit": "list the permissions each connector is missing, per account, within two working days"
     },
     "l3_enable_module": {
       "leak": "L3",
@@ -62,7 +71,10 @@
       "effort": {
         "base": 2.0,
         "per_unit": 0.3
-      }
+      },
+      "offer": "new",
+      "question": "What would make switching this on worth it for the team that owns these accounts?",
+      "we_commit": "run a 30-minute session for the owning team before the due date"
     },
     "l3_new_release_adoption": {
       "leak": "L3",
@@ -78,7 +90,10 @@
       "effort": {
         "base": 2.5,
         "per_unit": 0.3
-      }
+      },
+      "offer": "new",
+      "question": "Where in your estate would you most want this capability, and what would it have to prove to earn its place?",
+      "we_commit": "send a one-page brief on what shipped and why it matters here, and offer a demo within 30 days"
     },
     "l4_assign_owners": {
       "leak": "L4",
@@ -95,7 +110,10 @@
       "effort": {
         "base": 0.5,
         "per_unit": 0.35
-      }
+      },
+      "offer": "",
+      "question": "When a finding has no obvious owner, who ends up deciding, and how?",
+      "we_commit": "send the findings without an owner, with owners suggested from tags and code ownership, within two working days"
     },
     "l4_record_decisions": {
       "leak": "L4",
@@ -111,7 +129,10 @@
       "effort": {
         "base": 0.5,
         "per_unit": 0.2
-      }
+      },
+      "offer": "",
+      "question": "Which decisions are slow because people lack information, and which because of priorities?",
+      "we_commit": "prepare the list of undecided findings for your next security sync"
     },
     "l4_review_accepted_risks": {
       "leak": "L4",
@@ -127,7 +148,10 @@
       "effort": {
         "base": 0.5,
         "per_unit": 0.15
-      }
+      },
+      "offer": "",
+      "question": "How do you decide today that a risk is acceptable, and when does that decision get looked at again?",
+      "we_commit": "draft a default expiry policy for accepted risks for you to edit"
     },
     "l4_review_reclassifications": {
       "leak": "L4",
@@ -143,7 +167,10 @@
       "effort": {
         "base": 1.0,
         "per_unit": 0.5
-      }
+      },
+      "offer": "",
+      "question": "How are severity changes decided, and who gets to see them?",
+      "we_commit": "list the downgrades that landed near a deadline, with who made them"
     },
     "reach_onboard_team": {
       "leak": "Reach",
@@ -159,7 +186,10 @@
       "effort": {
         "base": 2.0,
         "per_unit": 1.5
-      }
+      },
+      "offer": "same",
+      "question": "What does that team need from security to ship faster?",
+      "we_commit": "prepare the team's own findings, so the first session is about their work and not the product"
     },
     "reach_enable_sso": {
       "leak": "Reach",
@@ -175,7 +205,10 @@
       "effort": {
         "base": 1.0,
         "per_unit": 1.0
-      }
+      },
+      "offer": "",
+      "question": "What stands between this team and your single sign-on?",
+      "we_commit": "map the team to an identity-provider group for you to confirm"
     },
     "reach_scope_roles": {
       "leak": "Reach",
@@ -191,7 +224,10 @@
       "effort": {
         "base": 1.0,
         "per_unit": 1.0
-      }
+      },
+      "offer": "",
+      "question": "What would a role scoped to this team's projects have to allow for them to use it?",
+      "we_commit": "draft the scoped role for you to review"
     },
     "reach_access_review": {
       "leak": "Reach",
@@ -207,7 +243,10 @@
       "effort": {
         "base": 1.0,
         "per_unit": 0.5
-      }
+      },
+      "offer": "",
+      "question": "Who should be able to see this team's findings, and who is there that should not be?",
+      "we_commit": "export the team's users and roles for review"
     },
     "ent_adoption_gap": {
       "leak": "Entitlement",
@@ -223,7 +262,181 @@
       "effort": {
         "base": 3.0,
         "per_unit": 0.0
-      }
+      },
+      "offer": "",
+      "question": "If you were deciding again today, how much of this would you buy?",
+      "we_commit": "show where each unused unit would add the most, and say plainly if the answer is that you need fewer"
+    },
+    "rel_find_sponsor": {
+      "leak": "Relationship",
+      "title": "Find or confirm an executive sponsor",
+      "why": "Nobody at executive level is on record as caring about this program, so priorities are set without you in the room.",
+      "steps": [
+        "Ask your champion who decides on security priorities and who answers for the result.",
+        "Offer that person a short, candid view of where things stand, not a product walkthrough.",
+        "Agree one recurring touchpoint, however short."
+      ],
+      "success": "An executive sponsor is recorded and has been spoken to in the last 90 days.",
+      "due_days": 30,
+      "effort": {
+        "base": 1.5,
+        "per_unit": 0
+      },
+      "offer": "",
+      "question": "Who in your leadership cares most about how this goes, and what do they want to know?",
+      "we_commit": "send your champion a one-page candid summary they can forward"
+    },
+    "rel_reconnect": {
+      "leak": "Relationship",
+      "title": "Reconnect with key people you have not spoken to in 90 days",
+      "why": "People who matter have heard from you only when something was being sold or fixed. Trust is kept up between projects, not only during them.",
+      "steps": [
+        "Send something useful that has nothing to do with renewal or expansion: an insight about their own estate.",
+        "Ask one open question and listen to the answer.",
+        "Make no ask."
+      ],
+      "success": "Every key contact has been spoken to in the last 90 days.",
+      "due_days": 14,
+      "effort": {
+        "base": 0.5,
+        "per_unit": 0.5
+      },
+      "offer": "",
+      "question": "What is on your mind about security that nobody has asked you about lately?",
+      "we_commit": "send one useful finding about their estate with no ask attached"
+    },
+    "rel_widen": {
+      "leak": "Relationship",
+      "title": "Reduce dependence on a single contact",
+      "why": "Fewer than two people have heard from you recently. If that person leaves or goes quiet, so does the account.",
+      "steps": [
+        "Ask your main contact who else should be in the loop and why.",
+        "Invite one more person to the next review, with a reason that is theirs.",
+        "Share notes from meetings so others can see the value without being there."
+      ],
+      "success": "At least two people touched in the last 90 days.",
+      "due_days": 30,
+      "effort": {
+        "base": 1.0,
+        "per_unit": 0.5
+      },
+      "offer": "",
+      "question": "Who else is affected by this and would want to see it?",
+      "we_commit": "share the notes from the last review with the people you name"
+    },
+    "rel_introduce": {
+      "leak": "Relationship",
+      "title": "Get introduced to teams you have no contact in",
+      "why": "These teams own cloud assets and have no relationship with you. Trust does not transfer from your champion to people who have never heard of you.",
+      "steps": [
+        "Learn the team's situation first, with your own time, before asking for anything.",
+        "Ask your champion for an introduction and say what is in it for the team and for the champion.",
+        "Offer the team something useful at the first meeting."
+      ],
+      "success": "A contact exists in every team that owns cloud assets.",
+      "due_days": 45,
+      "effort": {
+        "base": 1.5,
+        "per_unit": 1.0
+      },
+      "offer": "same",
+      "question": "Which team would benefit most from hearing about this, and what would they want from it?",
+      "we_commit": "prepare a short note on each team's situation before any introduction"
+    },
+    "rel_close_commitments": {
+      "leak": "Relationship",
+      "title": "Close overdue commitments",
+      "why": "Promises made to the customer are past their date. Reliability is what people experience between what you said and what happened.",
+      "steps": [
+        "Deliver the overdue items or renegotiate them openly, before the customer has to ask.",
+        "Tell people early when a date will move, and why.",
+        "Make fewer, smaller promises and keep every one."
+      ],
+      "success": "No open commitment is past its due date.",
+      "due_days": 7,
+      "effort": {
+        "base": 0.5,
+        "per_unit": 0.5
+      },
+      "offer": "",
+      "question": "Is there anything we said we would do that you are still waiting for?",
+      "we_commit": "deliver or re-date every overdue item and tell you which"
+    },
+    "rel_improve_credibility": {
+      "leak": "Relationship",
+      "title": "Strengthen credibility with the people who matter",
+      "why": "Credibility is believed expertise, and also whether you seem to be telling the whole story. It is built by showing, not claiming.",
+      "steps": [
+        "Bring a point of view backed by their own data, and say it plainly.",
+        "Say quickly and directly when you do not know.",
+        "Avoid promises that sound like boilerplate."
+      ],
+      "success": "The weakest component for these people has improved by two points at the next review.",
+      "due_days": 45,
+      "effort": {
+        "base": 1.0,
+        "per_unit": 0.5
+      },
+      "offer": "",
+      "question": "What would you need to see from us to be confident in our advice?",
+      "we_commit": "bring one view backed by their own data to the next meeting"
+    },
+    "rel_improve_reliability": {
+      "leak": "Relationship",
+      "title": "Strengthen reliability with the people who matter",
+      "why": "Reliability is promises kept, in the way the customer likes things done: on time, in the format and rhythm they expect.",
+      "steps": [
+        "Make small specific commitments and deliver them quietly.",
+        "Send material before meetings and confirm dates beforehand.",
+        "Match their style, hours and formats."
+      ],
+      "success": "The weakest component for these people has improved by two points at the next review.",
+      "due_days": 45,
+      "effort": {
+        "base": 1.0,
+        "per_unit": 0.5
+      },
+      "offer": "",
+      "question": "How would you like us to work with you day to day?",
+      "we_commit": "agree how and when they want to hear from us, and stick to it"
+    },
+    "rel_improve_intimacy": {
+      "leak": "Relationship",
+      "title": "Open a harder conversation with the people who matter",
+      "why": "Intimacy here means they are willing to talk to you about the hard issues. Someone has to go first, and it is you.",
+      "steps": [
+        "Go first with something a little risky: a doubt, an admitted mistake, a real question.",
+        "Give them an easy way not to answer.",
+        "Ask about what the issue means for them, not only for the platform."
+      ],
+      "success": "The weakest component for these people has improved by two points at the next review.",
+      "due_days": 45,
+      "effort": {
+        "base": 1.0,
+        "per_unit": 0.5
+      },
+      "offer": "",
+      "question": "What is the part of this that worries you most and that we have not talked about?",
+      "we_commit": "raise one difficult topic in the next conversation, with a way out for them"
+    },
+    "rel_improve_self_orientation": {
+      "leak": "Relationship",
+      "title": "Lower self-orientation with the people who matter",
+      "why": "Customers can tell when an advisor's attention is on their own agenda: the renewal, the number, looking clever. It is the biggest drag because it divides everything else.",
+      "steps": [
+        "Start the next meeting by sharing the agenda and asking them to add to it.",
+        "Give away an idea that has no link to renewal or expansion.",
+        "Ask before proposing, and listen before answering."
+      ],
+      "success": "The weakest component for these people has improved by two points at the next review.",
+      "due_days": 45,
+      "effort": {
+        "base": 1.0,
+        "per_unit": 0.5
+      },
+      "offer": "",
+      "question": "What would make this a better use of your time?",
+      "we_commit": "send the agenda in advance and leave room for theirs"
     }
   }
 }

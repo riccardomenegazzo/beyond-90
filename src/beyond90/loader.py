@@ -26,11 +26,15 @@ from typing import Optional
 from .catalogue import Catalogue, parse_version
 from .models import (
     ACCOUNT_STATUSES,
+    CONTACT_ROLES,
     DECISIONS,
+    DEFAULT_INFLUENCE,
     EXPOSURES,
     SEVERITIES,
     Account,
     Activation,
+    Commitment,
+    Contact,
     CustomerData,
     Entitlement,
     Finding,
@@ -151,7 +155,8 @@ def _settings(raw: dict, errors: list[str]) -> Settings:
                 setattr(s, key, str(raw[key]))
             except ValueError as exc:
                 errors.append(f"customer.toml: settings.{key}: {exc}")
-    for key in ("triage_window_days", "new_account_days", "access_review_days", "downgrade_window_days", "mttr_lookback_days"):
+    for key in ("triage_window_days", "new_account_days", "access_review_days", "downgrade_window_days", "mttr_lookback_days",
+                "contact_stale_days", "commitment_lookback_days"):
         if key in raw:
             value = raw[key]
             if isinstance(value, int) and not isinstance(value, bool) and value >= 0:
@@ -332,6 +337,54 @@ def load_customer(
 
     entitlements = _read_csv(base / "entitlements.csv", ("unit", "licensed", "used"), errors, parse_entitlement)
 
+    def rating(c: _Ctx, row: dict, key: str) -> Optional[float]:
+        raw = (row.get(key) or "").strip()
+        if not raw:
+            return None
+        v = c.number(row, key, default=0.0, minimum=1.0)
+        if v > 10:
+            c.err(f"{key}: ratings go from 1 to 10, got {v:g}")
+            return None
+        return v if v >= 1 else None
+
+    def parse_contact(row: dict, c: _Ctx):
+        cid = c.text(row, "id", required=True)
+        role = c.choice(row, "role", CONTACT_ROLES)
+        if not cid or not role:
+            return None
+        infl_raw = (row.get("influence") or "").strip()
+        influence = DEFAULT_INFLUENCE[role]
+        if infl_raw:
+            if infl_raw in ("1", "2", "3"):
+                influence = int(infl_raw)
+            else:
+                c.err(f"influence: expected 1, 2 or 3, got {infl_raw!r}")
+        return Contact(
+            id=cid, name=c.text(row, "name") or cid, role=role, team=c.text(row, "team"), influence=influence,
+            last_contact=c.date_(row, "last_contact"), credibility=rating(c, row, "credibility"),
+            reliability=rating(c, row, "reliability"), intimacy=rating(c, row, "intimacy"),
+            self_orientation=rating(c, row, "self_orientation"),
+        )
+
+    contacts = _read_csv(base / "contacts.csv", ("id", "role"), errors, parse_contact)
+    contact_ids = {x.id for x in contacts}
+
+    def parse_commitment(row: dict, c: _Ctx):
+        cid = c.text(row, "id", required=True)
+        due = c.date_(row, "due_on", required=True)
+        who = c.text(row, "contact_id")
+        if who and who not in contact_ids:
+            c.err(f"contact_id {who!r} is not in contacts.csv")
+            return None
+        if not cid or not due:
+            return None
+        promised, done = c.date_(row, "promised_on"), c.date_(row, "done_on")
+        if promised and promised > due:
+            c.err("promised_on is after due_on")
+        return Commitment(id=cid, description=c.text(row, "description") or cid, due_on=due, contact_id=who, promised_on=promised, done_on=done)
+
+    commitments = _read_csv(base / "commitments.csv", ("id", "due_on"), errors, parse_commitment)
+
     if errors:
         raise DataError(errors)
 
@@ -341,7 +394,7 @@ def load_customer(
         CustomerData(
             name=name, tier=str(cust.get("tier", "")), arr=float(arr), as_of=as_of, settings=settings,
             accounts=accounts, inventory=inventory, activations=activations, findings=findings,
-            teams=teams, entitlements=entitlements,
+            teams=teams, entitlements=entitlements, contacts=contacts, commitments=commitments,
         ),
         warnings,
     )

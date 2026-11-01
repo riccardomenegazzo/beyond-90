@@ -1,0 +1,9 @@
+id,contact_id,description,promised_on,due_on,done_on
+k-01,n-01,Send the Q3 review recap,2026-09-17,2026-09-20,2026-09-19
+k-02,n-01,Share the list of findings with no owner,2026-10-01,2026-10-05,2026-10-04
+k-03,n-03,Run the runtime sensor enablement session,2026-10-01,2026-10-10,2026-10-17
+k-04,n-02,Introduce the cloud detection specialist,2026-10-02,2026-10-15,
+k-05,n-01,Send the SSO group mapping guide,2026-10-13,2026-10-20,2026-10-20
+k-06,n-02,Share the peer benchmark for critical remediation time,2026-10-12,2026-10-25,
+k-07,n-01,Send the quarterly attribution note,2026-10-28,2026-11-07,
+k-08,n-01,Deliver the onboarding checklist,2026-06-10,2026-06-30,2026-06-29

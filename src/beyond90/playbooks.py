@@ -20,6 +20,7 @@ from typing import Optional
 from .catalogue import Catalogue
 from .models import CustomerData
 from .scoring import Score
+from .trust import NOTES, classify
 
 ENTITLEMENT_LABELS = {
     "workloads": "workloads",
@@ -44,6 +45,10 @@ class Action:
     success: str = ""
     effort_hours: float = 0.0
     ops: list[dict] = field(default_factory=list)
+    cross_sell: str = ""      # expand, broaden or diversify; empty when it is not an expansion
+    trust_note: str = ""
+    question: str = ""        # an open question worth asking the customer about this gap
+    we_commit: str = ""       # what the TAM promises to bring, with a date
 
     def to_dict(self, with_ops: bool = True) -> dict:
         d = asdict(self)
@@ -77,9 +82,13 @@ def generate_actions(data: CustomerData, score: Score, cat: Optional[Catalogue] 
     pb = cat.playbooks
     actions: list[Action] = []
 
+    contact_teams = {c.team.strip().lower() for c in data.contacts if c.team.strip()}
+    owner_of = {a.id: a.owner for a in data.accounts}
+
     def add(pid: str, key: str, detail: str, owner: str, units: float, effect: float,
-            title: Optional[str] = None, ops: Optional[list[dict]] = None) -> None:
+            title: Optional[str] = None, ops: Optional[list[dict]] = None, people: Optional[list[str]] = None) -> None:
         p = pb[pid]
+        kind = classify(p.offer, people or [], contact_teams, bool(data.contacts))
         actions.append(
             Action(
                 id=f"{pid}:{key}",
@@ -95,6 +104,10 @@ def generate_actions(data: CustomerData, score: Score, cat: Optional[Catalogue] 
                 success=p.success,
                 effort_hours=round(p.effort_base + p.effort_per_unit * units, 2),
                 ops=ops or [],
+                cross_sell=kind,
+                trust_note=NOTES.get(kind, ""),
+                question=p.question,
+                we_commit=p.we_commit,
             )
         )
 
@@ -115,6 +128,7 @@ def generate_actions(data: CustomerData, score: Score, cat: Optional[Catalogue] 
             _effect(score, "L1", len(items)),
             title=f"Connect {len(items)} account(s) owned by {owner}",
             ops=[{"op": "connect", "accounts": ids}],
+            people=[] if owner == "unassigned" else [owner],
         )
     recent_cut = data.as_of - timedelta(days=data.settings.new_account_days)
     recent = [i for i in l1.leaks if i["created_at"] and i["created_at"] >= recent_cut.isoformat()]
@@ -156,6 +170,7 @@ def generate_actions(data: CustomerData, score: Score, cat: Optional[Catalogue] 
             _effect(score, "L3", leak["inactive"]),
             title=f"{'Adopt' if leak['new_since_baseline'] else 'Enable'} {leak['name']} on {leak['inactive']} account(s)",
             ops=[{"op": "enable", "module": leak["module"], "accounts": list(leak["accounts"])}],
+            people=[owner_of.get(a, "") for a in leak["accounts"]],
         )
 
     # L4: per kind of leak.
@@ -211,7 +226,27 @@ def generate_actions(data: CustomerData, score: Score, cat: Optional[Catalogue] 
         }
         for gap, ids in reach["gaps"].items():
             if ids:
-                add(team_pb[gap], gap, f"{len(ids)} of {reach['teams']} team(s) with cloud assets: {_short(ids)}.", "", len(ids), 0.0)
+                add(team_pb[gap], gap, f"{len(ids)} of {reach['teams']} team(s) with cloud assets: {_short(ids)}.", "", len(ids), 0.0, people=ids)
+
+    # Relationship (reported next to Yield, not inside it).
+    rel = score.relationship
+    if rel:
+        g = rel["gaps"]
+        if g["no_executive_sponsor"]:
+            add("rel_find_sponsor", "sponsor", "No executive sponsor is recorded among the contacts.", "", 1, 0.0)
+        if g["stale_key_contacts"]:
+            ids = g["stale_key_contacts"]
+            add("rel_reconnect", "stale", f"{len(ids)} key contact(s) not spoken to in {data.settings.contact_stale_days} days: {_short(ids)}.", "", len(ids), 0.0)
+        if g["single_threaded"]:
+            add("rel_widen", "single", f"Only {rel['coverage']['touched_recently']} contact(s) touched in the last {data.settings.contact_stale_days} days.", "", 1, 0.0)
+        if g["teams_without_a_contact"]:
+            ids = g["teams_without_a_contact"]
+            add("rel_introduce", "teams", f"{len(ids)} team(s) with cloud assets and no contact: {_short(ids)}.", "", len(ids), 0.0, people=ids)
+        if g["overdue_commitments"]:
+            ids = g["overdue_commitments"]
+            add("rel_close_commitments", "overdue", f"{len(ids)} commitment(s) past their date: {_short(ids)}.", "", len(ids), 0.0)
+        for comp, ids in g["weak_by_component"].items():
+            add(f"rel_improve_{comp}", comp, f"The component that would help most for {len(ids)} influential contact(s): {_short(ids)}.", "", len(ids), 0.0)
 
     # Entitlements.
     for e in score.entitlements:

@@ -57,6 +57,50 @@ PROFILES = {
 
 SLA = {"critical": 7, "high": 30, "medium": 90, "low": 180}
 
+# People and promises. Ratings are 1-10: credibility, reliability, intimacy, self-orientation.
+# Days are "days before as_of" for contacts, absolute dates for commitments (promised, due, done).
+CONTACTS = {
+    "northwind": [
+        ("n-01", "Priya Raman", "champion", "platform", 12, (8, 8, 6, 3)),
+        ("n-02", "Marco Bellini", "security_leader", "security", 140, (7, 5, 3, 4)),
+        ("n-03", "Elena Rossi", "practitioner", "data", 20, (6, 6, 5, 2)),
+        ("n-04", "Tom Walker", "procurement", "finance-it", 60, (5, 4, 2, 7)),
+        ("n-05", "Dana Okafor", "skeptic", "retail-it", 35, (6, 5, 2, 5)),
+    ],
+    "contoso-bank": [
+        ("c-01", "Helen Fischer", "executive_sponsor", "security", 9, (9, 9, 7, 2)),
+        ("c-02", "Jonas Berg", "champion", "platform", 4, (9, 8, 8, 2)),
+        ("c-03", "Aisha Khan", "security_leader", "payments", 22, (8, 8, 6, 3)),
+        ("c-04", "Luca Moretti", "practitioner", "data", 15, (7, 8, 7, 2)),
+    ],
+    "fabrikam-labs": [
+        ("f-01", "Sam Ortega", "champion", "platform", 21, (7, 4, 4, 5)),
+    ],
+}
+COMMITMENTS = {
+    "northwind": [
+        ("k-01", "n-01", "Send the Q3 review recap", "2026-09-17", "2026-09-20", "2026-09-19"),
+        ("k-02", "n-01", "Share the list of findings with no owner", "2026-10-01", "2026-10-05", "2026-10-04"),
+        ("k-03", "n-03", "Run the runtime sensor enablement session", "2026-10-01", "2026-10-10", "2026-10-17"),
+        ("k-04", "n-02", "Introduce the cloud detection specialist", "2026-10-02", "2026-10-15", ""),
+        ("k-05", "n-01", "Send the SSO group mapping guide", "2026-10-13", "2026-10-20", "2026-10-20"),
+        ("k-06", "n-02", "Share the peer benchmark for critical remediation time", "2026-10-12", "2026-10-25", ""),
+        ("k-07", "n-01", "Send the quarterly attribution note", "2026-10-28", "2026-11-07", ""),
+        ("k-08", "n-01", "Deliver the onboarding checklist", "2026-06-10", "2026-06-30", "2026-06-29"),
+    ],
+    "contoso-bank": [
+        ("k-01", "c-01", "Send the executive summary", "2026-09-20", "2026-09-27", "2026-09-26"),
+        ("k-02", "c-02", "Share the zero critical forecast", "2026-10-05", "2026-10-12", "2026-10-11"),
+        ("k-03", "c-04", "Run the data security workshop", "2026-10-08", "2026-10-22", "2026-10-21"),
+        ("k-04", "c-03", "Send the release brief", "2026-10-20", "2026-11-05", ""),
+    ],
+    "fabrikam-labs": [
+        ("k-01", "f-01", "Send the onboarding plan", "2026-09-01", "2026-09-15", "2026-09-30"),
+        ("k-02", "f-01", "Connect the two missing accounts", "2026-09-20", "2026-10-10", ""),
+        ("k-03", "f-01", "Share the quick wins list", "2026-10-01", "2026-10-18", ""),
+    ],
+}
+
 
 def write_csv(path: Path, header: list[str], rows: list[list]) -> None:
     with path.open("w", newline="", encoding="utf-8") as fh:
@@ -214,11 +258,16 @@ def build(name: str, p: dict) -> None:
     n, with_users, with_sso, with_rbac, fresh = p["teams"]
     teams = []
     for i in range(n):
+        tid = OWNERS[i] if i < len(OWNERS) else f"team-{i + 1:02d}"
         review = (AS_OF - timedelta(days=rng.randint(10, 80))).isoformat() if i < fresh else (AS_OF - timedelta(days=rng.randint(120, 400))).isoformat() if i % 3 else ""
-        teams.append([f"team-{i + 1:02d}", f"Team {i + 1:02d}", "true", rng.randint(2, 14) if i < with_users else 0,
+        teams.append([tid, tid.replace("-", " ").title(), "true", rng.randint(2, 14) if i < with_users else 0,
                       str(i < with_sso).lower(), str(i < with_rbac).lower(), review])
     write_csv(out / "teams.csv", ["id", "name", "has_assets", "active_users", "sso", "role_scoped", "last_access_review"], teams)
     write_csv(out / "entitlements.csv", ["unit", "licensed", "used"], [[u, l, used] for u, (l, used) in p["entitlements"].items()])
+
+    write_csv(out / "contacts.csv", ["id", "name", "role", "team", "influence", "last_contact", "credibility", "reliability", "intimacy", "self_orientation"],
+              [[cid, nm, role, team, "", (AS_OF - timedelta(days=ago)).isoformat(), *ratings] for cid, nm, role, team, ago, ratings in CONTACTS[name]])
+    write_csv(out / "commitments.csv", ["id", "contact_id", "description", "promised_on", "due_on", "done_on"], [list(c) for c in COMMITMENTS[name]])
 
     (out / "customer.toml").write_text(
         f'''[customer]

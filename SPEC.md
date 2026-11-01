@@ -1,4 +1,4 @@
-# Beyond 90: specification v0.4
+# Beyond 90: specification v0.5
 
 An adoption engine for Technical Account Managers. It measures how much of a customer's cloud estate is really covered and operated through a security platform, and turns every gap into an action. The bar keeps moving: when a customer grows or the product ships something, the denominators grow with it.
 
@@ -104,6 +104,16 @@ When no inventory or no module activations are provided, L2 and L3 are reported 
 
 `beyond90 qbr DIR` writes a Markdown review with the Pyramid Principle: the answer first (real adoption against the legacy number, what changed and why, the roadmap and the dip to expect, a caveat on hidden accounts), three reasons grouped by leak, the evidence beneath, the plan and the decisions asked of the customer. The TAM adds the customer's own goals and wins.
 
+## 15b. Relationship layer (0.5)
+
+Optional inputs: contacts and commitments. For a contact with credibility C, reliability R, intimacy I and self-orientation S (each 1 to 10), the trust index is T = (C + R + I) / S. Bands: strong at T >= 4, developing at T >= 2, otherwise fragile. The account value is the mean of T weighted by influence (1 to 3), over rated contacts only. The limiting factor is the component whose one-point improvement (one point lower for S, floored at 1) raises T the most; ties resolve by a fixed component order.
+
+Measured reliability is on-time / due over the commitment lookback window. A commitment is on time when `done_on <= due_on`. Open commitments past `due_on` are overdue. Gaps: no executive sponsor, key contacts (influence >= 2) not contacted within `contact_stale_days`, single-threaded (fewer than two contacts within that window), teams with assets and no contact, and the weak component per contact. With neither file, the layer is absent and nothing else changes.
+
+Cross-sell type for an action: offer new or same, people known (at least half of the owners have a contact on that team) or new. New offer to known people is expand; new offer to new people is diversify; same offer to new people is broaden. Without contacts the type is empty.
+
+Candor items are derived only from fields already computed; each carries its evidence. The QBR is arranged as agenda, listen, answer, reasons, evidence, candor, aims, plan, decisions, commitments, then a private section.
+
 ## 16. Positioning against the platform's own views
 
 Platforms such as Wiz already ship an adoption and maturity view (the Champion Center) and an ownership model. Beyond 90 does not replace them: it measures what the platform cannot see (the true account universe, across a whole portfolio) and reads ownership and decisions rather than rebuilding routing. See `docs/research-wiz-tam.md`.
@@ -118,9 +128,10 @@ Platforms such as Wiz already ship an adoption and maturity view (the Champion C
 
 1. 0.2: engine, CLI, report, history, portfolio, QBR, validation, tests.
 2. 0.3: simulator and planner with the J-curve, exact attribution, universe estimate, zero-critical forecast.
-3. 0.4 (this): importers and reconciliation, book planner, radar for releases and threats, performance on large estates.
-4. 0.5: connector interface and a first verified connector against a real tenant.
-5. 0.6: criticality weighting; readiness checklist import; per-finding ownership sources.
+3. 0.4: importers and reconciliation, book planner, radar for releases and threats, performance on large estates.
+4. 0.5 (this): relationship layer, candor ledger, typed expansion, five-stage QBR.
+5. 0.6: connector interface and a first verified connector against a real tenant.
+6. 0.7: criticality weighting; readiness checklist import; per-finding ownership sources.
 
 ## References
 

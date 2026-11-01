@@ -75,6 +75,36 @@ class Entitlement:
     used: float
 
 
+CONTACT_ROLES = ("executive_sponsor", "security_leader", "champion", "procurement", "practitioner", "skeptic")
+DEFAULT_INFLUENCE = {"executive_sponsor": 3, "security_leader": 3, "champion": 2, "procurement": 2, "skeptic": 2, "practitioner": 1}
+
+
+@dataclass(frozen=True)
+class Contact:
+    """A person at the customer. Ratings are the TAM's honest 1-10 view (blank = not rated)."""
+    id: str
+    name: str
+    role: str
+    team: str = ""
+    influence: int = 1
+    last_contact: Optional[date] = None
+    credibility: Optional[float] = None
+    reliability: Optional[float] = None
+    intimacy: Optional[float] = None
+    self_orientation: Optional[float] = None
+
+
+@dataclass(frozen=True)
+class Commitment:
+    """Something promised to the customer. Reliability is measured from these, not rated."""
+    id: str
+    description: str
+    due_on: date
+    contact_id: str = ""
+    promised_on: Optional[date] = None
+    done_on: Optional[date] = None
+
+
 @dataclass
 class Settings:
     ceiling_version: str = "2026.4"
@@ -82,6 +112,8 @@ class Settings:
     triage_window_days: int = 7
     new_account_days: int = 30
     access_review_days: int = 90
+    contact_stale_days: int = 90
+    commitment_lookback_days: int = 90
     downgrade_window_days: int = 3
     mttr_lookback_days: int = 90
     entitlement_target: float = 0.8
@@ -103,3 +135,5 @@ class CustomerData:
     findings: list[Finding] = field(default_factory=list)
     teams: list[Team] = field(default_factory=list)
     entitlements: list[Entitlement] = field(default_factory=list)
+    contacts: list[Contact] = field(default_factory=list)
+    commitments: list[Commitment] = field(default_factory=list)

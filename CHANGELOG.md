@@ -2,6 +2,15 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.5.0
+
+- Relationship layer: optional `contacts.csv` and `commitments.csv`; trust index per contact, band, limiting factor, reliability measured from promises, coverage and gaps.
+- Candor ledger: what to say plainly, with evidence; shown in the report and the five most important in the QBR.
+- Expansion typed as Expand, Broaden or Diversify from who you know on each team.
+- Playbooks gain an offer, an opening question and a commitment; new relationship playbooks (find a sponsor, reconnect, widen, introduce, close commitments, improve a component).
+- QBR rewritten as engage, listen, frame, envision, commit, with a private "for you only" section.
+- Settings `contact_stale_days` and `commitment_lookback_days`. No behaviour change when the new files are absent.
+
 ## 0.4.0
 
 - `import` (aws-org, azure, gcp, csv) and `reconcile`: build `accounts.csv` from native exports, union by account id, report conflicts, idempotent.

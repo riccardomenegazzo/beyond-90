@@ -1,7 +1,7 @@
 id,name,has_assets,active_users,sso,role_scoped,last_access_review
-team-01,Team 01,true,14,true,true,2026-10-14
-team-02,Team 02,true,2,true,true,2025-11-14
-team-03,Team 03,true,10,true,false,2026-04-24
-team-04,Team 04,true,0,false,false,
-team-05,Team 05,true,0,false,false,2026-05-13
-team-06,Team 06,true,0,false,false,2026-02-07
+platform,Platform,true,14,true,true,2026-10-14
+retail-it,Retail It,true,2,true,true,2025-11-14
+data,Data,true,10,true,false,2026-04-24
+payments,Payments,true,0,false,false,
+bu-retail,Bu Retail,true,0,false,false,2026-05-13
+ml-research,Ml Research,true,0,false,false,2026-02-07

@@ -20,11 +20,12 @@ def finding(id="f1", account_id="a1", severity="medium", opened_days_ago=30, **k
     return Finding(id=id, account_id=account_id, severity=severity, opened_at=opened, closed_at=closed, **kw)
 
 
-def data(accounts=(), inventory=(), activations=(), findings=(), teams=(), entitlements=(), **settings):
+def data(accounts=(), inventory=(), activations=(), findings=(), teams=(), entitlements=(), contacts=(), commitments=(), **settings):
     return CustomerData(
         name="Test", tier="", arr=100.0, as_of=AS_OF, settings=Settings(**settings),
         accounts=list(accounts), inventory=list(inventory), activations=list(activations),
         findings=list(findings), teams=list(teams), entitlements=list(entitlements),
+        contacts=list(contacts), commitments=list(commitments),
     )
 
 

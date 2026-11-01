@@ -50,6 +50,7 @@ Each item says what it feeds in the product. "Read" means the page was opened in
 | Title | Feeds | Status |
 |---|---|---|
 | Chris Dotson, *Practical Cloud Security* (O'Reilly, 2019) | The four leaks, tool coverage, vulnerability metrics, access life cycle | Read (chapters 3 to 5, 7) |
+| Maister, Green and Galford, *The Trusted Advisor* (2000) | Trust equation, reliability from promises, Expand/Broaden/Diversify, candor, QBR stages (see docs/trust.md) | Read (chapters 8, 9, 20, 21, 22) |
 | Dixon and Adamson, *The Challenger Customer* | Expansion conversations | Not read here |
 | Barbara Minto, *The Pyramid Principle* | QBR export structure | Not read here |
 | Chris Voss, *Never Split the Difference* | Escalation Cockpit playbooks | Not read here |

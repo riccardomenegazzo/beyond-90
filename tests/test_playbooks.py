@@ -71,3 +71,29 @@ def test_every_generated_playbook_exists_in_the_catalogue():
         sc = compute_score(data_, CAT)
         for a in generate_actions(data_, sc, CAT):
             assert a.playbook in CAT.playbooks
+
+
+def test_new_module_actions_are_typed_as_cross_sell_by_who_you_know():
+    from beyond90.models import Contact
+    acts = [Activation("a", "posture", True)]
+    with_contact = [Contact("c", "C", "champion", team="retail")]
+    d, sc, actions = build(accounts=[account("a", owner="retail")], inventory=full_inventory("a"), activations=acts, contacts=with_contact)
+    modules = [x for x in actions if x.playbook.startswith("l3_")]
+    assert modules and all(x.cross_sell == "expand" for x in modules)        # a new offer to the team we already know
+    d2, sc2, none = build(accounts=[account("a", owner="retail")], inventory=full_inventory("a"), activations=acts)
+    assert all(x.cross_sell == "" for x in none)                      # without contacts the type cannot be told
+
+
+def test_relationship_actions_come_from_the_gaps():
+    from datetime import timedelta
+
+    from tests.helpers import AS_OF
+
+    from beyond90.models import Commitment, Contact
+    d, sc, actions = build(
+        accounts=[account("a")], inventory=full_inventory("a"),
+        contacts=[Contact("c", "C", "practitioner", last_contact=AS_OF - timedelta(days=3))],
+        commitments=[Commitment("k", "late thing", AS_OF - timedelta(days=9))],
+    )
+    ids = {x.playbook for x in actions}
+    assert "rel_find_sponsor" in ids and "rel_close_commitments" in ids
