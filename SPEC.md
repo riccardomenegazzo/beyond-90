@@ -1,4 +1,4 @@
-# Beyond 90: specification v0.8
+# Beyond 90: specification v0.9
 
 An adoption engine for Technical Account Managers. It measures how much of a customer's cloud estate is really covered and operated through a security platform, and turns every gap into an action. The bar keeps moving: when a customer grows or the product ships something, the denominators grow with it.
 
@@ -132,9 +132,13 @@ The app is a client-side wrapper. It must never send input data off the page, mu
 
 **Workspace file (browser).** `{format: "beyond90-workspace", version: 1, exported_with, snapshots: [...]}` plus any unknown fields. A snapshot is `{id, customer, as_of, personal_excluded, saved_on, files}` plus unknown fields; `id` is the input hash of `files`. Importing refuses a newer major version, rejects a snapshot whose `id` is not the hash of its `files`, and merges by union on `id` (earliest `saved_on`; a deterministic choice among conflicting unknown values). Deletion does not propagate.
 
+## 15f. Profiles (0.9)
+
+A profile is a catalogue (`resource_types.json`, `modules.json`, optional `playbooks.json`) for one kind of security product. `cnapp` is the default; `endpoint` ships with it; `--catalogue-dir` loads your own. A customer selects one with `[customer] profile = "name"`; the CLI and the browser app read it, a `--profile` that contradicts it is an error, and a portfolio or book of mixed profiles is refused. A profile's `playbooks.json` overrides the generic playbooks by id, field by field. `terms` (`estate`, `unit`, `units`) set the words the engine uses for the unit of coverage and the estate; text the engine writes passes through them, a customer's own text never does. The stages, formulas, checks and every other rule in this document are the same for every profile, and each score records its profile and catalogue hash in its provenance. See `docs/profiles.md`.
+
 ## 16. Positioning against the platform's own views
 
-Platforms such as Wiz already ship an adoption and maturity view (the Champion Center) and an ownership model. Beyond 90 does not replace them: it measures what the platform cannot see (the true account universe, across a whole portfolio) and reads ownership and decisions rather than rebuilding routing. See `docs/research-wiz-tam.md`.
+Security platforms commonly ship their own adoption or maturity views and an ownership model. Beyond 90 does not replace them: it measures what a platform cannot see about itself (the true universe of units to cover, across a whole portfolio) and reads ownership and decisions rather than rebuilding routing. The research behind this, including a case study of one vendor, is in `docs/research/`.
 
 ## 17. Not yet
 
@@ -150,11 +154,11 @@ Platforms such as Wiz already ship an adoption and maturity view (the Champion C
 4. 0.5: relationship layer, candor ledger, typed expansion, five-stage QBR.
 5. 0.6: browser app on GitHub Pages.
 6. 0.7: provenance, tolerant reader, percentiles, local-first workspace, offline.
-7. 0.8 (this): input quality, whole-book mode in the browser.
-8. 0.9: connector interface and a first verified connector against a real tenant.
-9. 1.0: criticality weighting; readiness checklist import; per-finding ownership sources.
+7. 0.8: input quality, whole-book mode in the browser.
+8. 0.9 (this): profiles (cloud and endpoint), vendor-neutral terms.
+9. 1.0: connector interface and a first verified connector against a real tenant; criticality weighting; readiness checklist import; per-finding ownership sources.
 
 ## References
 
 - C. Dotson, *Practical Cloud Security*, O'Reilly, 2019: ch. 3 (pipeline, four leaks, tagging), ch. 4 (access life cycle), ch. 5 (vulnerability metrics, anti-gaming warning), ch. 7 (response metrics).
-- `docs/research-wiz-tam.md`, `docs/reading-list.md`, `docs/design.md`.
+- `docs/research/`, `docs/profiles.md`, `docs/design.md`.

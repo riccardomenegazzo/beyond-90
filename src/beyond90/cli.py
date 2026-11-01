@@ -13,7 +13,7 @@ from . import __version__
 from .attribution import explain, render_attribution
 from .book import build_book_plan, render_book_html, render_book_json, render_book_markdown, render_book_text
 from .candor import candor_items
-from .catalogue import Catalogue
+from .catalogue import Catalogue, available_profiles
 from .forecast import forecast_zero_critical, render_forecast
 from .importers import (
     ImportFormatError,
@@ -79,7 +79,13 @@ def _emit(text: str, out: Optional[str]) -> None:
 
 
 def _catalogue(args) -> Catalogue:
-    return Catalogue.load(args.catalogue_dir) if getattr(args, "catalogue_dir", None) else Catalogue.load()
+    """The catalogue for this run: --catalogue-dir, else --profile, else the profile named in the customer's customer.toml."""
+    custom, profile = getattr(args, "catalogue_dir", None), getattr(args, "profile", None)
+    if getattr(args, "directory", None):
+        return Catalogue.for_directory(args.directory, profile=profile, custom_dir=custom)
+    if getattr(args, "root", None):
+        return Catalogue.for_root(args.root, profile=profile, custom_dir=custom)
+    return Catalogue.load(Path(custom)) if custom else Catalogue.load(profile=profile)
 
 
 def _prepare(args):
@@ -410,10 +416,19 @@ def cmd_fingerprint(args) -> int:
     return 0
 
 
+def cmd_profiles(args) -> int:
+    for name in available_profiles():
+        cat = Catalogue.load(profile=name)
+        print(f"{name:<10} {cat.description or '(no description)'}")
+        print(f"{'':<10} {len(cat.modules)} modules, {len(cat.resource_types)} asset types, platforms: {', '.join(cat.expected)}")
+    print("\nUse one with --profile NAME, or set profile = \"NAME\" under [customer] in customer.toml. Write your own with --catalogue-dir (docs/profiles.md).")
+    return 0
+
+
 def cmd_catalogue(args) -> int:
     cat = _catalogue(args)
     ceiling = args.ceiling or cat.version
-    lines = [f"Catalogue version {cat.version}; modules at ceiling {ceiling}:"]
+    lines = [f"Profile {cat.profile}, catalogue version {cat.version}; modules at ceiling {ceiling}:"]
     for m in cat.modules_at(ceiling):
         req = f" (needs {', '.join(m.requires_any)})" if m.requires_any else ""
         lines.append(f"  {m.id:<24} since {m.since}  {m.category:<7} {', '.join(m.providers)}{req}{'  [on by connecting]' if m.on_connect else ''}")
@@ -431,6 +446,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     def common(sp, store=True, ceiling=True):
         sp.add_argument("directory", help="customer data directory (see docs/data-format.md)")
+        sp.add_argument("--profile", help="catalogue profile (see `beyond90 profiles`); default: the one named in customer.toml, else cnapp")
         sp.add_argument("--catalogue-dir", help="directory with custom resource_types.json, modules.json, playbooks.json")
         if ceiling:
             sp.add_argument("--ceiling", help="score against this ceiling version instead of the one in customer.toml")
@@ -490,6 +506,7 @@ def build_parser() -> argparse.ArgumentParser:
     sp = sub.add_parser("book", help="spend one budget of hours across many customers where it adds the most weighted Yield")
     sp.add_argument("root", help="directory containing one sub-directory per customer")
     sp.add_argument("--catalogue-dir")
+    sp.add_argument("--profile")
     sp.add_argument("--hours", type=float, default=30.0, help="hours per week across the whole book (default 30)")
     sp.add_argument("--weeks", type=int, default=26)
     sp.add_argument("--realization", type=float, default=0.9)
@@ -504,6 +521,7 @@ def build_parser() -> argparse.ArgumentParser:
     sp = sub.add_parser("radar", help="which customers should hear about a release, and which are exposed to a threat")
     sp.add_argument("root", help="directory containing one sub-directory per customer")
     sp.add_argument("--catalogue-dir")
+    sp.add_argument("--profile")
     sp.add_argument("--release", help="a catalogue version, e.g. 2026.3: customers where modules released then are relevant and off")
     sp.add_argument("--since-baseline", action="store_true", help="modules released after each customer's baseline ceiling (the default when no --threats)")
     sp.add_argument("--threats", help="a JSON threat feed (see docs/radar.md); nothing is fetched from the network")
@@ -574,6 +592,7 @@ def build_parser() -> argparse.ArgumentParser:
     sp = sub.add_parser("portfolio", help="score every customer directory under a root and find shared patterns")
     sp.add_argument("root", help="directory containing one sub-directory per customer")
     sp.add_argument("--catalogue-dir")
+    sp.add_argument("--profile")
     sp.add_argument("--store")
     sp.add_argument("--no-save", action="store_true")
     sp.add_argument("--format", choices=["markdown", "json"], default="markdown")
@@ -587,8 +606,12 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--files", action="store_true", help="also list the hash of each file")
     sp.set_defaults(func=cmd_fingerprint)
 
+    sp = sub.add_parser("profiles", help="list the catalogue profiles (cloud, endpoint, ...) and what each covers")
+    sp.set_defaults(func=cmd_profiles)
+
     sp = sub.add_parser("catalogue", help="show modules and expected resource types")
     sp.add_argument("--catalogue-dir")
+    sp.add_argument("--profile")
     sp.add_argument("--ceiling")
     sp.set_defaults(func=cmd_catalogue)
     return p

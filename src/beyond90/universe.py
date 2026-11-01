@@ -23,7 +23,11 @@ number as a prompt to go looking, not as a count.
 
 from __future__ import annotations
 
+from collections.abc import Mapping
+from typing import Optional
+
 from .models import CustomerData
+from .terms import say
 
 CAPTURE_SOURCES = ("billing", "org", "sso")
 
@@ -32,7 +36,17 @@ def _chapman(n1: int, n2: int, m: int) -> float:
     return (n1 + 1) * (n2 + 1) / (m + 1) - 1
 
 
-def estimate_universe(data: CustomerData) -> dict:
+def estimate_universe(data: CustomerData, terms: Optional[Mapping[str, str]] = None) -> dict:
+    out = _estimate(data)
+    if terms:
+        for key in ("reason",):
+            if key in out:
+                out[key] = say(out[key], terms)
+        out["warnings"] = [say(w, terms) for w in out.get("warnings", [])]
+    return out
+
+
+def _estimate(data: CustomerData) -> dict:
     active = [a for a in data.accounts if a.status == "active"]
     present = [s for s in CAPTURE_SOURCES if any(s in a.sources for a in active)]
     t = len(present)
@@ -89,11 +103,12 @@ def estimate_universe(data: CustomerData) -> dict:
 def render_universe(u: dict) -> str:
     if not u["estimable"]:
         return f"Universe: not estimable. {u['reason']}\n"
-    L = [f"Known accounts: {u['observed']} (sources: {', '.join(u['sources'])})",
+    units = u.get("units", "accounts")
+    L = [f"Known {units}: {u['observed']} (sources: {', '.join(u['sources'])})",
          f"Seen by one source only: {u['seen_by_one']}, by two: {u['seen_by_two']}, by all: {u['seen_by_all']}",
          "Only in: " + ", ".join(f"{s} {n}" for s, n in u["only_in"].items()),
-         f"Estimated accounts no source has seen: about {u['unseen_estimate']:.1f} (lower bound)",
+         f"Estimated {units} no source has seen: about {u['unseen_estimate']:.1f} (lower bound)",
          f"Universe completeness: {u['completeness']:.1%} ({u['confidence']} confidence)",
-         f"L1 if the hidden accounts are unconnected: {u['pessimistic_l1']:.1%}"]
+         f"L1 if the hidden {units} are unconnected: {u['pessimistic_l1']:.1%}"]
     L += [f"Warning: {w}" for w in u["warnings"]]
     return "\n".join(L) + "\n"

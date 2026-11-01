@@ -96,7 +96,7 @@ def explain(current: Score, previous: dict, data: Optional[CustomerData] = None,
     y1 = math.prod(new.values())
     lm = _logmean(y1, y0)
     factors = [
-        Factor(k, LABELS[k], kind, o, n, 100.0 * lm * (math.log(max(n, FLOOR)) - math.log(max(o, FLOOR))))
+        Factor(k, LABELS[k].replace("Accounts", (getattr(current, "terms", None) or {}).get("units", "accounts").capitalize()), kind, o, n, 100.0 * lm * (math.log(max(n, FLOOR)) - math.log(max(o, FLOOR))))
         for k, kind, o, n in pairs
     ]
     # A stage at exactly zero cannot sit inside a logarithm, so it is held at a tiny floor and the split of the change

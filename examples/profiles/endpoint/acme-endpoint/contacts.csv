@@ -1,0 +1,4 @@
+id,name,role,team,influence,last_contact,credibility,reliability,intimacy,self_orientation
+c1,Dana Reyes,security_leader,security-ops,3,2026-10-20,8,7,6,3
+c2,Marco Bianchi,champion,it-ops-emea,2,2026-10-27,7,8,7,2
+c3,Priya Nair,practitioner,retail-it,1,2026-08-02,6,6,4,5

@@ -2,7 +2,7 @@
 
 Each item says what it feeds in the product. "Read" means the page was opened in full; "Snippet" means only the search excerpt was seen, so check before citing.
 
-## A. Wiz primary sources
+## A. Primary sources from one cloud-security vendor (case study)
 
 | Item | Feeds | Status |
 |---|---|---|
@@ -23,7 +23,7 @@ Each item says what it feeds in the product. "Read" means the page was opened in
 | Item | Feeds | Status |
 |---|---|---|
 | Associate TAM posting (scaled CS, two workflows) https://refresh.cv/jobs/wiz/aa57771f-5b40-473e-b104-77bf33455a8d?lang=ja | One-to-many mode | Read |
-| TAM postings, several regions (links in research-wiz-tam.md) | Responsibility map in SPEC section 6 | Snippet |
+| TAM postings, several regions (links in cnapp-vendor-tam-case-study.md) | Responsibility map in SPEC section 6 | Snippet |
 | EMEA Manager, Technical Account Management https://builtin.com/job/manager-technical-account-management/3599443 | Escalation Cockpit, at-scale programs | Snippet |
 
 ## C. Customer success method

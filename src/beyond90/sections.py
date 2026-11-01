@@ -92,10 +92,10 @@ def md_universe(u: dict) -> list[str]:
     if not u or not u.get("estimable"):
         return []
     L = ["## How complete is the universe?", "",
-         f"{u['observed']} accounts are known from {', '.join(u['sources'])}. {u['seen_by_one']} are seen by one source only, {u['seen_by_two']} by two, {u['seen_by_all']} by all.",
-         f"Estimated accounts no source has seen: about {u['unseen_estimate']:.1f} (lower bound, {u['method']}). "
+         f"{u['observed']} {u.get('units', 'accounts')} are known from {', '.join(u['sources'])}. {u['seen_by_one']} are seen by one source only, {u['seen_by_two']} by two, {u['seen_by_all']} by all.",
+         f"Estimated {u.get('units', 'accounts')} no source has seen: about {u['unseen_estimate']:.1f} (lower bound, {u['method']}). "
          f"Completeness {pct(u['completeness'])} ({u['confidence']} confidence).",
-         f"If those accounts are unconnected, L1 would be {pct(u['pessimistic_l1'])} instead of the reported value.", ""]
+         f"If those {u.get('units', 'accounts')} are unconnected, L1 would be {pct(u['pessimistic_l1'])} instead of the reported value.", ""]
     L += [f"- Warning: {w}" for w in u["warnings"]]
     return L + ([""] if u["warnings"] else [])
 
@@ -106,12 +106,12 @@ def html_universe(u: dict) -> str:
     rows = "".join(f"<tr><td>Only in {e(s)}</td><td class=\"n\">{n}</td></tr>" for s, n in u["only_in"].items())
     warn = "".join(f'<p class="warn">{e(w)}</p>' for w in u["warnings"])
     return (f'<section aria-labelledby="un"><h2 id="un">How complete is the universe?</h2>'
-            f'<p>{u["observed"]} accounts are known. Estimated accounts <strong>no source has seen</strong>: about <strong>{u["unseen_estimate"]:.1f}</strong> '
+            f'<p>{u["observed"]} {e(u.get("units", "accounts"))} are known. Estimated {e(u.get("units", "accounts"))} <strong>no source has seen</strong>: about <strong>{u["unseen_estimate"]:.1f}</strong> '
             f'(lower bound). Completeness {pct(u["completeness"])}, {e(u["confidence"])} confidence.</p>'
             f'<p>If those are unconnected, L1 would be <strong>{pct(u["pessimistic_l1"])}</strong>.</p>'
             f'<table><tbody><tr><td>Seen by one source</td><td class="n">{u["seen_by_one"]}</td></tr><tr><td>Seen by two</td><td class="n">{u["seen_by_two"]}</td></tr>'
             f'<tr><td>Seen by all</td><td class="n">{u["seen_by_all"]}</td></tr>{rows}</tbody></table>{warn}'
-            f'<p class="warn">Capture-recapture estimate (Chao 1987). Treat it as a prompt to look for accounts, not as a count.</p></section>')
+            f'<p class="warn">Capture-recapture estimate (Chao 1987). Treat it as a prompt to look for {e(u.get("units", "accounts"))}, not as a count.</p></section>')
 
 
 # ------------------------------------------------------------------ forecast
@@ -210,7 +210,7 @@ def html_plan(p: Plan, top: int = 12) -> str:
     return (f'<section aria-labelledby="rm"><h2 id="rm">Roadmap</h2>'
             f'<p>{p.hours_per_week:g} hours a week, {p.realization:.0%} of each action assumed to succeed. Yield {pct(p.start_yield)} to <strong>{pct(p.end_yield)}</strong>. Checkpoints: {ms}.</p>'
             f'{svg_plan(p)}'
-            + (f'<h3 style="font-size:14px;margin:12px 0 4px">The J-curve</h3><p class="warn">Connecting an account first lowers the score: it enters L2 and L3 with nothing covered yet. '
+            + (f'<h3 style="font-size:14px;margin:12px 0 4px">The J-curve</h3><p class="warn">Connecting {"an" if p.unit[:1] in "aeiou" else "a"} {e(p.unit)} first lowers the score: it enters L2 and L3 with nothing covered yet. '
                f'These are the weeks to explain to the customer before they happen.</p><ul>{dips}</ul>' if dips else '')
             + f'<table><thead><tr><th class="n">Weeks</th><th>Action</th><th class="n">Hours</th><th class="n">Effect when settled</th></tr></thead><tbody>{rows}{more}</tbody></table>'
             f'{resid}{notes}<p class="warn">A model, not a promise: it rests on the effort figures in the playbook catalogue and the ramp assumptions in simulate.py.</p></section>')

@@ -89,7 +89,7 @@ def render_qbr(score: Score, actions: list[Action], previous: Optional[dict] = N
                  + (f", with the {first[0]} checkpoint in week {first[1]}." if first else "."))
         if plan.dips:
             d = plan.dips[0]
-            L.append(f"**Expect a dip first:** in week {d['week']} Yield falls {d['drop_points']:.1f} points because newly connected accounts enter the score with nothing covered yet. "
+            L.append(f"**Expect a dip first:** in week {d['week']} Yield falls {d['drop_points']:.1f} points because newly connected {score.terms.get('units', 'accounts')} enter the score with nothing covered yet. "
                      "That is the cost of seeing them, not a regression.")
     elif ranked:
         L.append(f"Acting on the three biggest gaps below is worth an estimated {top_gain:.1f} points and would take it to about **{pct(projected)}**.")
@@ -99,14 +99,14 @@ def render_qbr(score: Score, actions: list[Action], previous: Optional[dict] = N
         L.append("No open gaps were found at this ceiling. The job now is to keep the level as the estate grows and the product ships.")
     u = score.universe
     if u and u.get("estimable") and u["unseen_estimate"] >= 1:
-        L.append(f"One caveat: about {u['unseen_estimate']:.0f} account(s) are probably known to no source at all; if they are unconnected, L1 is {pct(u['pessimistic_l1'])}.")
+        L.append(f"One caveat: about {u['unseen_estimate']:.0f} {score.terms.get('unit', 'account')}(s) are probably known to no source at all; if they are unconnected, L1 is {pct(u['pessimistic_l1'])}.")
     L.append("")
 
     if ranked:
         L += ["## Three reasons", ""]
         for i, (leak, items) in enumerate(ranked, 1):
             gain = sum(a.effect_points for a in items)
-            label = LEAK_LABEL.get(leak, leak)
+            label = LEAK_LABEL.get(leak, leak).replace("Accounts", score.terms.get("units", "accounts").capitalize())
             L.append(f"{i}. **{label}.** {len(items)} open action(s)" + (f", worth about {gain:.1f} points" if gain else "") + ".")
             for a in items[:3]:
                 L.append(f"   - {a.title}: {a.detail}")
@@ -130,7 +130,7 @@ def render_qbr(score: Score, actions: list[Action], previous: Optional[dict] = N
             line += f" Critical findings took a median of {o['mttr']['critical']['median_days']:g} days to fix, and one in ten took {o['mttr']['critical']['p90_days']:g} or more."
         L += [line, ""]
     if score.reach:
-        L += [f"Reach: {pct(score.reach['value'])} across {score.reach['teams']} teams with cloud assets.", ""]
+        L += [f"Reach: {pct(score.reach['value'])} across {score.reach['teams']} teams with {score.terms.get('estate', 'cloud')} assets.", ""]
     low = [e for e in score.entitlements if e["below_target"]]
     if low:
         L += ["Licensed capacity below target: " + "; ".join(f"{e['unit']} {e['used']:g}/{e['licensed']:g} ({e['utilization']:.0%})" for e in low) + ".", ""]
@@ -142,7 +142,7 @@ def render_qbr(score: Score, actions: list[Action], previous: Optional[dict] = N
           f"- **What we are aiming for:** {pct(score.target['value'])} this period"
           + (f", with {pct(score.target['next_checkpoint'], 0)} as the next checkpoint" if score.target["next_checkpoint"] else ", holding the level")
           + ". Ninety is a checkpoint, not the finish: the denominators grow as you grow and as the product ships.",
-          "- **What it will look like:** every account you pay for is connected, every resource type is visible, the relevant controls are on, and every finding has an owner and a decision.",
+          f"- **What it will look like:** every {score.terms.get('unit', 'account')} you pay for is connected, every resource type is visible, the relevant controls are on, and every finding has an owner and a decision.",
           "- **How we will know:** the same four pass rates, on the same independent denominators, each quarter, with the change split between what you did and what the product added.", ""]
     L += ["## Plan for next quarter", "", "| Action | Owner | Due | Done when |", "|---|---|---|---|"]
     for a in yield_actions[:5]:
@@ -193,7 +193,7 @@ def render_qbr(score: Score, actions: list[Action], previous: Optional[dict] = N
         if g["single_threaded"]:
             L.append("- You depend on fewer than two recent contacts.")
         if g["teams_without_a_contact"]:
-            L.append(f"- Teams with cloud assets and no contact: {', '.join(g['teams_without_a_contact'][:6])}.")
+            L.append(f"- Teams with {score.terms.get('estate', 'cloud')} assets and no contact: {', '.join(g['teams_without_a_contact'][:6])}.")
         for comp, ids in g["weak_by_component"].items():
             L.append(f"- Weakest lever for {', '.join(who[i] for i in ids)}: {comp.replace('_', ' ')}.")
         L.append("")

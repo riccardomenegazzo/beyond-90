@@ -1,6 +1,6 @@
 # The browser app
 
-`site/` is a static web app: the same Python engine, running in the browser through [Pyodide](https://pyodide.org) (WebAssembly). It exists so a TAM can try Beyond 90 on a laptop with nothing installed, and so a hiring manager can open a link and see it work.
+`site/` is a static web app: the same Python engine, running in the browser through [Pyodide](https://pyodide.org) (WebAssembly). It exists so that anyone can try Beyond 90 on a laptop with nothing installed, and so a team can share one link.
 
 ## What it does
 

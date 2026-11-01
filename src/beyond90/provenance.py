@@ -49,13 +49,14 @@ def hash_directory(base: str | Path) -> dict[str, str]:
     return {n: file_hash((base / n).read_bytes()) for n in INPUT_FILES if (base / n).is_file()}
 
 
-def build(files: Mapping[str, str], catalogue_digest: str, ceiling: str, baseline: str, schema_version: int = SCHEMA_VERSION) -> dict:
+def build(files: Mapping[str, str], catalogue_digest: str, ceiling: str, baseline: str, schema_version: int = SCHEMA_VERSION, profile: str = "cnapp") -> dict:
     return {
         "engine": __version__,
         "schema_version": schema_version,
         "input_hash": input_hash(files),
         "files": dict(sorted(files.items())),
         "catalogue": catalogue_digest,
+        "profile": profile,
         "ceiling_version": ceiling,
         "baseline_ceiling": baseline,
     }
@@ -65,5 +66,5 @@ def describe(p: dict) -> str:
     """One line for the foot of a report."""
     if not p:
         return ""
-    return (f"Derived from inputs {p['input_hash'][:12]} ({len(p['files'])} files), catalogue {p['catalogue'][:8]}, "
+    return (f"Derived from inputs {p['input_hash'][:12]} ({len(p['files'])} files), catalogue {p.get('profile', 'cnapp')} {p['catalogue'][:8]}, "
             f"ceiling {p['ceiling_version']}, engine {p['engine']}. The same inputs and the same engine give the same numbers.")

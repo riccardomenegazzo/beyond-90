@@ -62,6 +62,7 @@ class Score:
     warnings: list[str] = field(default_factory=list)
     provenance: dict = field(default_factory=dict)
     quality: dict = field(default_factory=dict)
+    terms: dict = field(default_factory=dict)
 
     def to_dict(self) -> dict:
         d = asdict(self)
@@ -387,9 +388,10 @@ def compute_score(data: CustomerData, cat: Optional[Catalogue] = None, ceiling: 
         entitlements=compute_entitlements(data),
         outcomes=compute_outcomes(data),
         target=next_target(y),
-        universe=estimate_universe(data),
+        universe={**estimate_universe(data, cat.terms), "unit": cat.terms["unit"], "units": cat.terms["units"]},
         relationship=compute_relationship(data),
         warnings=warnings,
-        quality=assess(data),
-        provenance=build_provenance(data.inputs, cat.digest, ceiling, baseline, data.schema_version) if data.inputs else {},
+        quality=assess(data, cat.terms),
+        terms=dict(cat.terms),
+        provenance=build_provenance(data.inputs, cat.digest, ceiling, baseline, data.schema_version, cat.profile) if data.inputs else {},
     )

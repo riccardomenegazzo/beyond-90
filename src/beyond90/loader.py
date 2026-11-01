@@ -177,7 +177,7 @@ KNOWN_COLUMNS: dict[str, tuple[str, ...]] = {
     "contacts.csv": ("id", "name", "role", "team", "influence", "last_contact", "credibility", "reliability", "intimacy", "self_orientation"),
     "commitments.csv": ("id", "contact_id", "description", "promised_on", "due_on", "done_on"),
 }
-KNOWN_CUSTOMER_KEYS = ("name", "tier", "arr", "as_of", "schema_version")
+KNOWN_CUSTOMER_KEYS = ("name", "tier", "arr", "as_of", "schema_version", "profile")
 KNOWN_SETTINGS_KEYS = ("ceiling_version", "baseline_ceiling", "triage_window_days", "new_account_days", "access_review_days",
                        "downgrade_window_days", "mttr_lookback_days", "contact_stale_days", "commitment_lookback_days",
                        "entitlement_target", "sla_days")
@@ -255,7 +255,7 @@ def load_customer(
     ask for it, because an empty scaffold is a legitimate thing to check.
     """
     base = Path(directory)
-    catalogue = catalogue or Catalogue.load()
+    catalogue = catalogue or Catalogue.for_directory(base)
     errors: list[str] = []
     warnings: list[str] = []
 
@@ -275,6 +275,10 @@ def load_customer(
         raise DataError([f"customer.toml: written for data format {schema_version}, this engine reads format {SCHEMA_VERSION}. "
                          "Upgrade beyond90, or lower schema_version only if you know the files still follow the older format."])
     _unknown_keys(cust, KNOWN_CUSTOMER_KEYS, "customer.toml [customer]", warnings)
+    wanted = cust.get("profile")
+    if wanted is not None and catalogue.profile not in (str(wanted), "custom"):
+        raise DataError([f"customer.toml: profile {str(wanted)!r}, but the catalogue in use is {catalogue.profile!r}. "
+                         f"Run with --profile {wanted} (or remove the profile line)."])
     _unknown_keys(meta.get("settings", {}), KNOWN_SETTINGS_KEYS, "customer.toml [settings]", warnings)
     name = clean_text(str(cust.get("name", "")))
     if not name:
@@ -466,7 +470,7 @@ def load_customer(
         _unknown_columns(base / fname, warnings)
 
     if require_accounts and not any(a.status == "active" for a in accounts):
-        raise DataError(["accounts.csv: no active accounts, so there is nothing to measure. List the cloud accounts you know about (see docs/data-format.md)."])
+        raise DataError(["accounts.csv: no active accounts, so there is nothing to measure. List the accounts you know about (see docs/data-format.md)."])
 
     if not accounts:
         warnings.append("accounts.csv has no rows: the score has nothing to measure")

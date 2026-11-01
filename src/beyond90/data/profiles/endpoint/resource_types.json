@@ -1,0 +1,35 @@
+{
+  "version": "2026.4",
+  "description": "Endpoint protection (EPP, EDR, XDR): sites, tenants or device groups running agents on workstations, servers and mobile devices.",
+  "terms": {
+    "estate": "endpoint",
+    "unit": "site",
+    "units": "sites"
+  },
+  "types": {
+    "workstation": "Managed Windows and macOS workstations and laptops",
+    "server": "Servers: physical, virtual and cloud workloads",
+    "vdi": "Virtual desktops and golden images",
+    "container_host": "Container hosts and Kubernetes nodes",
+    "mobile": "Managed phones and tablets",
+    "identity_store": "Directories and identity providers (Active Directory, Entra ID, other IdPs)"
+  },
+  "expected": {
+    "windows": [
+      "workstation",
+      "server",
+      "vdi",
+      "identity_store"
+    ],
+    "macos": [
+      "workstation"
+    ],
+    "linux": [
+      "server",
+      "container_host"
+    ],
+    "mobile": [
+      "mobile"
+    ]
+  }
+}

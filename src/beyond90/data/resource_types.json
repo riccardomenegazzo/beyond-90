@@ -1,5 +1,11 @@
 {
   "version": "2026.4",
+  "description": "Cloud security platforms (posture, workloads, identities, data, code): accounts, subscriptions and projects.",
+  "terms": {
+    "estate": "cloud",
+    "unit": "account",
+    "units": "accounts"
+  },
   "types": {
     "compute": "Virtual machines and instances",
     "storage_object": "Object storage buckets and containers",
@@ -13,10 +19,54 @@
     "ai_service": "Managed AI and ML services, models, endpoints"
   },
   "expected": {
-    "aws": ["compute", "storage_object", "storage_block", "network", "serverless", "container_registry", "kubernetes", "managed_database", "identity", "ai_service"],
-    "azure": ["compute", "storage_object", "storage_block", "network", "serverless", "container_registry", "kubernetes", "managed_database", "identity", "ai_service"],
-    "gcp": ["compute", "storage_object", "storage_block", "network", "serverless", "container_registry", "kubernetes", "managed_database", "identity", "ai_service"],
-    "oci": ["compute", "storage_object", "storage_block", "network", "kubernetes", "managed_database", "identity"],
-    "kubernetes": ["kubernetes", "container_registry"]
+    "aws": [
+      "compute",
+      "storage_object",
+      "storage_block",
+      "network",
+      "serverless",
+      "container_registry",
+      "kubernetes",
+      "managed_database",
+      "identity",
+      "ai_service"
+    ],
+    "azure": [
+      "compute",
+      "storage_object",
+      "storage_block",
+      "network",
+      "serverless",
+      "container_registry",
+      "kubernetes",
+      "managed_database",
+      "identity",
+      "ai_service"
+    ],
+    "gcp": [
+      "compute",
+      "storage_object",
+      "storage_block",
+      "network",
+      "serverless",
+      "container_registry",
+      "kubernetes",
+      "managed_database",
+      "identity",
+      "ai_service"
+    ],
+    "oci": [
+      "compute",
+      "storage_object",
+      "storage_block",
+      "network",
+      "kubernetes",
+      "managed_database",
+      "identity"
+    ],
+    "kubernetes": [
+      "kubernetes",
+      "container_registry"
+    ]
   }
 }

@@ -1,25 +1,10 @@
 # Beyond 90: visual design direction
 
-## 1. What the Wiz brand looks like (observed)
+## 1. Position: independent, and unmistakably not a vendor's product
 
-Sources: a public brand teardown of wiz.io (stfo.io, 2026) and Wiz web pages. Wiz does not publish hex values or a typeface name in anything I could open, so none are claimed here.
+Beyond 90 is an independent open source project, not affiliated with or endorsed by any vendor, and it must not look like any vendor's product: no logo, mark, brand colour, mascot or wordmark of a security company, and no vendor name in the interface. Research on how vendors present themselves is kept apart in [research/brand-observations.md](research/brand-observations.md); what was taken from it is principles, not assets.
 
-| Element | Observation |
-|---|---|
-| Colour | Electric teal field with a white wordmark; a reversed lockup for light surfaces. Stands out in a category of navy gradients, shields and padlocks |
-| Signature mark | Four-pointed spark |
-| Product UI motif | Node-and-edge graph (the Security Graph), reused across product and marketing |
-| Background | Graph-paper grid, cartoon cloud clusters, neon storm-cloud in ads |
-| Characters | Wizard and crystal ball, a gnome in demo banners, a "Zero Critical" rosette, an "All-Stars" scratch-card device |
-| Tone | Playful and irreverent around serious data; verbal anchor "build and run" |
-| Gamification | Zero Critical Club, badges, MTTR streaks, All-Stars |
-| Weak spots (per the teardown) | Typography and sound are less ownable than colour and motif |
-
-## 2. Decision: borrow principles, not assets
-
-Beyond 90 is an independent open source project, not affiliated with or endorsed by any vendor. It must not look like a Wiz product: no Wiz logo, spark, teal, characters or wordmark, and no vendor name in the UI chrome. The visual language should read as an homage that understands the brand, not a lookalike that could be mistaken for it. Wiz is named only in text, as the subject of the research.
-
-## 3. Principles taken from the analysis
+## 2. Principles taken from the analysis
 
 1. **Graph first.** The adoption pipeline is already a graph: cloud source, inventory, controls, findings. Draw it as nodes and edges, with the four leaks as the places where an edge thins.
 2. **Quiet grid.** A faint graph-paper background at very low contrast, only behind the pipeline view, never behind tables.
@@ -28,7 +13,7 @@ Beyond 90 is an independent open source project, not affiliated with or endorsed
 5. **Milestones, not trophies.** Borrow the idea of badges and streaks, as "checkpoints" at 90, 95, 98 and a streak of quarters with the bar raised. Nothing that suggests the job is finished.
 6. **Show the gap.** The signature visual is the difference between the naive number and the real one.
 
-## 4. Palette
+## 3. Palette
 
 Built on the validated default palette of the data-visualization method used for this project, so every chart colour is checked rather than eyeballed. The categorical order is fixed and never cycled.
 
@@ -74,11 +59,11 @@ Status colours (good `#0ca30c`, warning `#fab219`, serious `#ec835a`, critical `
 - Score heatmaps (portfolio by stage): one-hue blue ramp from light to dark. Ordinal use starts no lighter than step 250 (`#86b6ef`) on light.
 - Change versus last quarter: blue and red poles with a grey midpoint (`#f0efec` light, `#383835` dark).
 
-## 5. Typography
+## 4. Typography
 
 System sans only: `system-ui, -apple-system, "Segoe UI", sans-serif`. No display face. The hero score uses default proportional figures; tables and axis ticks use tabular numerals so columns align.
 
-## 6. Signature views
+## 5. Signature views
 
 1. **Score hero.** Large real Yield figure, the naive figure as a ghost outline beside it, the ceiling version as a small chip.
 2. **Pipeline.** Left to right: cloud sources, inventory, controls, findings. Each stage is a node with its pass rate; the edge between nodes thins by the share lost. Hatched segments mark leaks.
@@ -93,7 +78,7 @@ System sans only: `system-ui, -apple-system, "Segoe UI", sans-serif`. No display
 8. **Roadmap.** A line of projected Yield by week with dashed checkpoint lines at 90, 95 and 98. Weeks where Yield dips are marked in the negative colour with a tooltip that names the cause; the J-curve is explained in plain text next to it.
 9. **Universe.** A short paragraph and a table, no chart: the estimate is uncertain and a chart would suggest more precision than it has.
 
-## 7. Chart rules (applied everywhere)
+## 6. Chart rules (applied everywhere)
 
 - One axis only; never a dual-axis chart. Two measures of different scale become two charts.
 - Thin marks, rounded data-ends anchored on the baseline, 2 px gap between adjacent fills, 2 px surface ring on overlapping marks.
@@ -103,11 +88,11 @@ System sans only: `system-ui, -apple-system, "Segoe UI", sans-serif`. No display
 - Dark mode is its own selected set of steps, validated against the dark surface, not an automatic inversion.
 - Reserved status colours never double as series colours.
 
-## 8. Voice
+## 7. Voice
 
 English, short, concrete. Labels say what happened ("7 accounts not connected"), not how to feel. Empty states may be light ("Nothing leaking here. Raising the bar."), but never in a number, a tooltip or a report.
 
-## 9. Not decided yet
+## 8. Not decided yet
 
 - Logo and name treatment for Beyond 90 itself (a simple wordmark; no mark until the pipeline view exists).
 - Whether the graph-paper background survives a real screen test.

@@ -45,12 +45,14 @@ def analyze(
     Returns {"ok": False, "errors": [...]} when the data is invalid, so a caller can show every
     problem at once instead of the first one.
     """
-    cat = Catalogue.load()
     try:
+        cat = Catalogue.for_directory(directory)
         data, warnings = load_customer(directory, cat, require_accounts=True)
         old = load_customer(since, cat)[0] if since else None
     except DataError as e:
         return {"ok": False, "errors": e.errors, "version": __version__}
+    except ValueError as e:
+        return {"ok": False, "errors": [str(e)], "version": __version__}
     score = compute_score(data, cat)
     actions = generate_actions(data, score, cat)
     previous = compute_score(old, cat).to_dict() if old else None
@@ -70,6 +72,7 @@ def analyze(
         "provenance": score.provenance,
         "input_hash": score.provenance.get("input_hash", ""),
         "confidence": score.quality.get("confidence", ""),
+        "profile": cat.profile,
         "customer": score.customer,
         "as_of": str(score.as_of),
         "yield": score.yield_,
@@ -116,10 +119,13 @@ def summarize_files(files: Mapping[str, str]) -> dict[str, Any]:
         root = Path(tmp)
         _write(root, files)
         try:
-            data, _ = load_customer(root, require_accounts=True)
+            cat = Catalogue.for_directory(root)
+            data, _ = load_customer(root, cat, require_accounts=True)
         except DataError as e:
             return {"ok": False, "errors": [m.replace(str(root) + "/", "") for m in e.errors]}
-        s = compute_score(data, Catalogue.load())
+        except ValueError as e:
+            return {"ok": False, "errors": [str(e)]}
+        s = compute_score(data, cat)
         return {
             "ok": True, "customer": s.customer, "as_of": s.as_of, "yield": s.yield_, "naive": s.naive,
             "stages": {k: v.value for k, v in s.stages.items()}, "input_hash": s.provenance.get("input_hash", ""),
@@ -157,7 +163,6 @@ def analyze_book(
     `groups` maps a folder name to that customer's files. A group without a customer.toml is ignored; a group
     with invalid data is reported and the others carry on.
     """
-    cat = Catalogue.load()
     with tempfile.TemporaryDirectory() as tmp:
         root = Path(tmp)
         names: dict[str, str] = {}
@@ -171,6 +176,10 @@ def analyze_book(
             _write(root / slug, groups[key])
         if not names:
             return {"ok": False, "errors": ["No folder with a customer.toml was found."], "version": __version__}
+        try:
+            cat = Catalogue.for_root(root)
+        except ValueError as e:                                  # customers of different profiles do not belong in one portfolio
+            return {"ok": False, "errors": [str(e).replace(str(root), "the folder")], "version": __version__}
         pf = load_portfolio(root, cat)
         errors = {names[k]: [m.replace(str(root) + "/", "") for m in v] for k, v in pf.errors.items()}
         customers = []
@@ -193,6 +202,7 @@ def analyze_book(
             "arr_weighted_yield": pf.arr_weighted_yield,
             "weighted_start": plan.weighted_start,
             "weighted_end": plan.weighted_end,
+            "profile": cat.profile,
             "customers": [
                 {"name": n, "key": keys[n], "arr": by_name[n].arr, "yield": by_name[n].score.yield_, "confidence": by_name[n].score.quality.get("confidence", ""),
                  "planned_yield": next(c.end_yield for c in plan.customers if c.name == n), "hours": next(c.hours for c in plan.customers if c.name == n)}

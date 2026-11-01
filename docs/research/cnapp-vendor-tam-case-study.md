@@ -1,4 +1,8 @@
-# How Wiz runs Technical Account Management: research notes
+# Case study: how one cloud-security vendor runs Technical Account Management
+
+This is the research that shaped the first profile (`cnapp`). It is one vendor, from public sources, kept as evidence for the design. Beyond 90 itself is vendor-neutral: see [../profiles.md](../profiles.md) for how it fits other security products.
+
+## Research notes
 
 Compiled 1 Nov 2026 from public sources only (job postings, Wiz web pages and blog, marketplace listings, press). Nothing here comes from inside Wiz. Where a source was only seen as a search snippet, or two sources disagree, it is flagged.
 

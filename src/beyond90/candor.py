@@ -70,13 +70,14 @@ def candor_items(
     attribution: Optional[Attribution] = None,
 ) -> list[CandorItem]:
     items: list[CandorItem] = []
+    unit, units = cat.terms["unit"], cat.terms["units"]
 
     if score.naive is not None and score.naive - score.yield_ >= 0.10:
         l1 = score.stages["L1"]
         items.append(CandorItem(
             "legacy_overstates",
             f"The figure we have been reporting, {_pct(score.naive)}, overstates adoption. The real figure is {_pct(score.yield_)}.",
-            f"The legacy figure counts only accounts that were in the onboarding plan. The full universe is {l1.denominator:g} accounts, and gaps in "
+            f"The legacy figure counts only {units} that were in the onboarding plan. The full universe is {l1.denominator:g} {units}, and gaps in "
             "inventory, controls and findings come on top.",
             "Volunteering a worse number than the one on the dashboard is the clearest sign you are not managing their impression of you.",
         ))
@@ -95,8 +96,8 @@ def candor_items(
     if u and u.get("estimable") and u["unseen_estimate"] >= 1:
         items.append(CandorItem(
             "hidden_accounts",
-            f"We think around {u['unseen_estimate']:.0f} account(s) are known to none of our lists. If they are unconnected, the real L1 is {_pct(u['pessimistic_l1'])}.",
-            f"{u['seen_by_one']} of {u['observed']} known accounts appear in only one of billing, the organization and SSO ({u['method']}).",
+            f"We think around {u['unseen_estimate']:.0f} {unit}(s) are known to none of our lists. If they are unconnected, the real L1 is {_pct(u['pessimistic_l1'])}.",
+            f"{u['seen_by_one']} of {u['observed']} known {units} appear in only one of billing, the organization and SSO ({u['method']}).",
             "Saying what you cannot see is part of credibility; the alternative is a number that looks more certain than it is.",
         ))
 
@@ -105,7 +106,7 @@ def candor_items(
         items.append(CandorItem(
             "j_curve",
             f"Around week {d['week']} the score will dip by about {d['drop_points']:.1f} points before it recovers. "
-            "Newly connected accounts enter it with nothing covered yet.",
+            f"Newly connected {units} enter it with nothing covered yet.",
             d["cause"],
             "Bad news given in advance is reliability; the same news explained afterwards sounds like an excuse.",
         ))

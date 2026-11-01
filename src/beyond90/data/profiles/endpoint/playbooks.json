@@ -1,0 +1,33 @@
+{
+  "playbooks": {
+    "l1_connect_account": {
+      "title": "Enrol sites and tenants that are outside the platform",
+      "why": "The site exists in your asset records, in the identity provider or in procurement, but no agent reports to the platform, so nothing there is prevented, detected or inventoried.",
+      "steps": [
+        "Find the owner of the site (IT operations or the business unit) and what stopped the rollout: change windows, an incumbent product, missing rights.",
+        "Agree a pilot ring of 5% of devices and a date for full rollout.",
+        "Automate enrolment (device management, group policy or a golden image) so new devices arrive protected."
+      ],
+      "success": "Every known site reports to the platform and new devices enrol on their own."
+    },
+    "l1_auto_onboarding": {
+      "title": "Enrol new sites automatically",
+      "why": "New sites keep appearing and each waits for a manual rollout, so the gap reopens every quarter.",
+      "steps": [
+        "Put the agent in the device build (golden image, MDM profile, endpoint configuration management).",
+        "Alert the TAM when a site appears in procurement or the directory and has no agent within 14 days."
+      ],
+      "success": "New sites are enrolled within 14 days without anyone raising a ticket."
+    },
+    "l2_enable_inventory": {
+      "title": "Get coverage on the device types the platform does not see",
+      "why": "Some device classes at connected sites report no agents, so the platform cannot say what is running there.",
+      "steps": [
+        "List the device classes with no agents (servers, VDI, mobile, Linux nodes) and the blocker for each.",
+        "Start with servers and domain controllers: they carry the most risk per device.",
+        "Confirm coverage against the asset records, not against the platform's own list."
+      ],
+      "success": "Every expected device class at a connected site has agents reporting."
+    }
+  }
+}

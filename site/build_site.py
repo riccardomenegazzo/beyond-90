@@ -19,6 +19,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 PYODIDE_FILES = ("pyodide.mjs", "pyodide.asm.mjs", "pyodide.asm.wasm", "python_stdlib.zip", "pyodide-lock.json", "package.json")
 DEMO = ROOT / "examples" / "portfolio" / "northwind"
+DEMO_ENDPOINT = ROOT / "examples" / "profiles" / "endpoint" / "acme-endpoint"
 DEMO_PREVIOUS = ROOT / "examples" / "history" / "northwind-2026-09"
 
 
@@ -49,6 +50,8 @@ def build(out: Path, pyodide: Path) -> None:
     book = {p.name: {q.name: q.read_text(encoding="utf-8") for q in sorted(p.iterdir()) if q.suffix in (".csv", ".toml")}
             for p in sorted(DEMO.parent.iterdir()) if p.is_dir()}
     (out / "demo-book.json").write_text(json.dumps(book, ensure_ascii=False), encoding="utf-8")
+    ep = {p.name: p.read_text(encoding="utf-8") for p in sorted(DEMO_ENDPOINT.iterdir()) if p.suffix in (".csv", ".toml")}
+    (out / "demo-endpoint.json").write_text(json.dumps(ep, ensure_ascii=False), encoding="utf-8")
     shutil.copy(ROOT / "THIRD_PARTY.md", out / "THIRD_PARTY.md")
     shutil.copy(ROOT / "LICENSE", out / "LICENSE.txt")
     write_service_worker(out)

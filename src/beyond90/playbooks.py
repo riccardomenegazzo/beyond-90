@@ -80,6 +80,7 @@ def _short(ids: list[str], n: int = 8) -> str:
 def generate_actions(data: CustomerData, score: Score, cat: Optional[Catalogue] = None) -> list[Action]:
     cat = cat or Catalogue.load()
     pb = cat.playbooks
+    u = cat.terms["unit"]
     actions: list[Action] = []
 
     contact_teams = {c.team.strip().lower() for c in data.contacts if c.team.strip()}
@@ -122,11 +123,11 @@ def generate_actions(data: CustomerData, score: Score, cat: Optional[Catalogue] 
         add(
             "l1_connect_account",
             owner,
-            f"{len(items)} account(s) not connected, last spend {spend:,.0f}: {_short(ids)}.",
+            f"{len(items)} {u}(s) not connected, last spend {spend:,.0f}: {_short(ids)}.",
             owner,
             len(items),
             _effect(score, "L1", len(items)),
-            title=f"Connect {len(items)} account(s) owned by {owner}",
+            title=f"Connect {len(items)} {u}(s) owned by {owner}",
             ops=[{"op": "connect", "accounts": ids}],
             people=[] if owner == "unassigned" else [owner],
         )
@@ -136,7 +137,7 @@ def generate_actions(data: CustomerData, score: Score, cat: Optional[Catalogue] 
         add(
             "l1_auto_onboarding",
             "recent",
-            f"{len(recent)} unconnected account(s) were created in the last {data.settings.new_account_days} days: "
+            f"{len(recent)} unconnected {u}(s) were created in the last {data.settings.new_account_days} days: "
             f"{_short([r['account_id'] for r in recent])}.",
             "",
             0,
@@ -149,11 +150,11 @@ def generate_actions(data: CustomerData, score: Score, cat: Optional[Catalogue] 
         add(
             "l2_enable_inventory",
             f"{leak['provider']}:{leak['resource_type']}",
-            f"{leak['resource_type']} is not inventoried on {n} connected {leak['provider']} account(s): {_short(leak['accounts'])}.",
+            f"{leak['resource_type']} is not inventoried on {n} connected {leak['provider']} {u}(s): {_short(leak['accounts'])}.",
             "",
             n,
             _effect(score, "L2", n),
-            title=f"Inventory {leak['resource_type']} on {leak['provider']} ({n} account(s))",
+            title=f"Inventory {leak['resource_type']} on {leak['provider']} ({n} {u}(s))",
             ops=[{"op": "inventory", "resource_type": leak["resource_type"], "accounts": list(leak["accounts"])}],
         )
 
@@ -163,12 +164,12 @@ def generate_actions(data: CustomerData, score: Score, cat: Optional[Catalogue] 
         add(
             pid,
             leak["module"],
-            f"{leak['name']} (since {leak['since']}) is relevant on {leak['relevant']} account(s) and inactive on "
+            f"{leak['name']} (since {leak['since']}) is relevant on {leak['relevant']} {u}(s) and inactive on "
             f"{leak['inactive']}: {_short(leak['accounts'])}.",
             "",
             leak["inactive"],
             _effect(score, "L3", leak["inactive"]),
-            title=f"{'Adopt' if leak['new_since_baseline'] else 'Enable'} {leak['name']} on {leak['inactive']} account(s)",
+            title=f"{'Adopt' if leak['new_since_baseline'] else 'Enable'} {leak['name']} on {leak['inactive']} {u}(s)",
             ops=[{"op": "enable", "module": leak["module"], "accounts": list(leak["accounts"])}],
             people=[owner_of.get(a, "") for a in leak["accounts"]],
         )
@@ -226,7 +227,7 @@ def generate_actions(data: CustomerData, score: Score, cat: Optional[Catalogue] 
         }
         for gap, ids in reach["gaps"].items():
             if ids:
-                add(team_pb[gap], gap, f"{len(ids)} of {reach['teams']} team(s) with cloud assets: {_short(ids)}.", "", len(ids), 0.0, people=ids)
+                add(team_pb[gap], gap, f"{len(ids)} of {reach['teams']} team(s) with {score.terms.get('estate', 'cloud')} assets: {_short(ids)}.", "", len(ids), 0.0, people=ids)
 
     # Relationship (reported next to Yield, not inside it).
     rel = score.relationship
@@ -241,7 +242,7 @@ def generate_actions(data: CustomerData, score: Score, cat: Optional[Catalogue] 
             add("rel_widen", "single", f"Only {rel['coverage']['touched_recently']} contact(s) touched in the last {data.settings.contact_stale_days} days.", "", 1, 0.0)
         if g["teams_without_a_contact"]:
             ids = g["teams_without_a_contact"]
-            add("rel_introduce", "teams", f"{len(ids)} team(s) with cloud assets and no contact: {_short(ids)}.", "", len(ids), 0.0, people=ids)
+            add("rel_introduce", "teams", f"{len(ids)} team(s) with {score.terms.get('estate', 'cloud')} assets and no contact: {_short(ids)}.", "", len(ids), 0.0, people=ids)
         if g["overdue_commitments"]:
             ids = g["overdue_commitments"]
             add("rel_close_commitments", "overdue", f"{len(ids)} commitment(s) past their date: {_short(ids)}.", "", len(ids), 0.0)

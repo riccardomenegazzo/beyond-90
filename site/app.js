@@ -35,7 +35,7 @@ async function boot() {
 function refreshRun() {
   const have = state.mode === "book" ? Object.keys(state.groups).length : Object.keys(state.files).length;
   $("run").disabled = state.running || !(state.engine && state.engine.version && have);
-  $("demo-book").disabled = !(state.engine && state.engine.version);
+  $("demo-book").disabled = $("demo-endpoint").disabled = !(state.engine && state.engine.version);
 }
 
 async function registerOffline() {
@@ -127,6 +127,14 @@ async function loadDemo() {
   state.files = await (await fetch("./demo.json")).json();
   renderLoaded();
   say("Demo loaded: a made-up customer, Northwind. Press Run analysis.");
+}
+
+async function loadDemoEndpoint() {
+  say("Loading the demo…");
+  state.mode = "single"; state.groups = {};
+  state.files = await (await fetch("./demo-endpoint.json")).json();
+  renderLoaded();
+  say("Demo loaded: a made-up endpoint-protection customer (profile: endpoint). Press Run analysis.");
 }
 
 async function loadDemoBook() {
@@ -255,7 +263,7 @@ function kpi(value, label) {
 
 function showResults() {
   const r = state.result;
-  $("kpis").replaceChildren(kpi(pct(r.yield), "Yield"), kpi(pct(r.reach), "Reach"), kpi(String(r.actions), "Open actions"), kpi(r.confidence, "Confidence in the inputs"), kpi(r.customer, "Customer as of " + r.as_of));
+  $("kpis").replaceChildren(kpi(pct(r.yield), "Yield"), kpi(pct(r.reach), "Reach"), kpi(String(r.actions), "Open actions"), kpi(r.confidence, "Confidence in the inputs"), kpi(r.profile, "Catalogue profile"), kpi(r.customer, "Customer as of " + r.as_of));
   renderCompare();
   document.querySelector(".bar").hidden = false;
   $("book-table").hidden = true;
@@ -517,6 +525,7 @@ $("drop").addEventListener("dragleave", () => $("drop").classList.remove("over")
 $("drop").addEventListener("drop", dropped);
 $("demo").addEventListener("click", loadDemo);
 $("demo-book").addEventListener("click", loadDemoBook);
+$("demo-endpoint").addEventListener("click", loadDemoEndpoint);
 $("run").addEventListener("click", () => run());
 $("cancel").addEventListener("click", cancel);
 $("copy").addEventListener("click", copy);

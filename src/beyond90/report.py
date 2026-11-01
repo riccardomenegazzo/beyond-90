@@ -111,10 +111,11 @@ def render_markdown(score: Score, actions: list[Action], history: Optional[list[
     if d is not None and previous:
         head += f"; {pts(d)} since {previous['as_of']}"
     L += [head + ".", ""]
+    units = score.terms.get("units", "accounts")
     L += ["| Stage | Pass rate | Count | Meaning |", "|---|---|---|---|"]
     meaning = {
-        "L1": "connected / true accounts (billing, organization, SSO)",
-        "L2": "inventoried resource types / expected, on connected accounts",
+        "L1": f"connected / true {units} (billing, organization, SSO)",
+        "L2": f"inventoried resource types / expected, on connected {units}",
         "L3": "active relevant modules / relevant modules at the ceiling",
         "L4": "findings with owner and decision / findings past triage",
     }
@@ -134,7 +135,7 @@ def render_markdown(score: Score, actions: list[Action], history: Optional[list[
     L += md_relationship(score.relationship)
     if score.reach:
         r = score.reach
-        L += ["## Reach", "", f"Reach {pct(r['value'])} across {r['teams']} teams with cloud assets.", ""]
+        L += ["## Reach", "", f"Reach {pct(r['value'])} across {r['teams']} teams with {score.terms.get('estate', 'cloud')} assets.", ""]
         for k, v in r["components"].items():
             L.append(f"- {k.replace('_', ' ')}: {pct(v)}")
         L.append("")
@@ -292,7 +293,7 @@ def _leak_summary(score: Score, sid: str) -> list[str]:
             out.append(f"+{len(st.leaks) - 3} more")
     elif sid == "L2":
         for leak in st.leaks[:3]:
-            out.append(f"{leak['provider']} {leak['resource_type']}: {len(leak['accounts'])} account(s)")
+            out.append(f"{leak['provider']} {leak['resource_type']}: {len(leak['accounts'])} {score.terms.get('unit', 'account')}(s)")
         if len(st.leaks) > 3:
             out.append(f"+{len(st.leaks) - 3} more")
     elif sid == "L3":
@@ -318,10 +319,11 @@ def render_html(score: Score, actions: list[Action], history: Optional[list[dict
     h.append(f'<header><h1>{e(score.customer)}: adoption score</h1><p>As of {e(score.as_of)} <span class="chip">ceiling {e(score.ceiling_version)}</span> '
              f'<span class="chip">baseline {e(score.baseline["ceiling"])}</span>{delta}</p></header>')
     # hero
+    legacy_units = escape(score.terms.get("units", "accounts"))
     h.append('<section aria-labelledby="hero"><h2 id="hero">Yield</h2><div class="hero">')
     h.append(f'<div><div class="big">{pct(score.yield_)}</div><div class="cap">real: L1 × L2 × L3 × L4</div></div>')
     if score.naive is not None:
-        h.append(f'<div><div class="ghost" title="Legacy metric: connected / accounts in the onboarding plan">{pct(score.naive)}</div>'
+        h.append(f'<div><div class="ghost" title="Legacy metric: connected / {legacy_units} in the onboarding plan">{pct(score.naive)}</div>'
                  f'<div class="cap">legacy metric · gap {(score.naive - score.yield_) * 100:.1f} pts</div></div>')
     t = score.target
     nxt = f", next checkpoint {pct(t['next_checkpoint'], 0)}" if t["next_checkpoint"] else ""
@@ -370,7 +372,7 @@ def render_html(score: Score, actions: list[Action], history: Optional[list[dict
         h.append(f'<section aria-labelledby="re"><h2 id="re">Reach {pct(r["value"])}</h2><table><tbody>')
         for k, v in r["components"].items():
             h.append(f'<tr><td>{e(k.replace("_", " "))}</td><td class="n">{pct(v)}</td></tr>')
-        h.append(f'</tbody></table><p class="warn">{r["teams"]} teams own cloud assets. Reach is reported next to Yield, not inside it.</p></section>')
+        h.append(f'</tbody></table><p class="warn">{r["teams"]} teams own {e(score.terms.get("estate", "cloud"))} assets. Reach is reported next to Yield, not inside it.</p></section>')
     if score.entitlements:
         h.append('<section aria-labelledby="en"><h2 id="en">Licensed versus used</h2><table><thead><tr><th>Unit</th><th class="n">Licensed</th><th class="n">Used</th><th class="n">Utilization</th><th>Status</th></tr></thead><tbody>')
         for x in score.entitlements:

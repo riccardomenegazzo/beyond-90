@@ -78,6 +78,7 @@ class Plan:
     dips: list[dict]
     residual: dict[str, int]
     notes: list[str]
+    unit: str = "account"
 
     @property
     def start_yield(self) -> float:
@@ -270,7 +271,7 @@ class CustomerPlanner:
                     self.pending -= set(op["accounts"])
                     settled += len(op["accounts"])
         if settled:
-            self._events.append(f"Inventory completes and agentless modules switch on for {settled} newly connected account(s).")
+            self._events.append(f"Inventory completes and agentless modules switch on for {settled} newly connected {self.cat.terms['unit']}(s).")
 
     def peek(self) -> Optional[Pick]:
         """What this customer would work on next, without spending anything."""
@@ -315,7 +316,7 @@ class CustomerPlanner:
     def end_week(self, week: int, hours_used: float) -> WeekState:
         events = list(self._events)
         if self._connected_now:
-            events.append(f"{self._connected_now} account(s) connected: they enter L2 and L3 with nothing covered yet, so Yield dips before it recovers.")
+            events.append(f"{self._connected_now} {self.cat.terms['unit']}(s) connected: they enter L2 and L3 with nothing covered yet, so Yield dips before it recovers.")
         w = self._snapshot(week, hours_used, list(self._done), events)
         self.weeks.append(w)
         return w
@@ -341,14 +342,14 @@ class CustomerPlanner:
                              "cause": cur.events[-1] if cur.events else "A change made earlier took effect."})
         residual: dict[str, int] = {}
         for kind, _, _ in sorted(self.blocked):
-            label = BLOCKED_LABELS[kind]
+            label = BLOCKED_LABELS[kind].replace("accounts", self.cat.terms["units"])
             residual[label] = residual.get(label, 0) + 1
         if residual:
             notes.append(f"At {self.realization:.0%} realization the plan plateaus: the residual needs escalation, not more of the same effort.")
         if not self.jobs:
             notes.append("There is nothing to plan: no open action changes Yield.")
         return Plan(self.data.name, self.data.as_of.isoformat(), hours_per_week, horizon_weeks, self.realization,
-                    weeks, self.jobs, milestones, dips, residual, notes)
+                    weeks, self.jobs, milestones, dips, residual, notes, self.cat.terms["unit"])
 
 
 def build_plan(

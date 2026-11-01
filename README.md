@@ -2,7 +2,9 @@
 
 **An adoption score that cannot be flattered, a roadmap that tells you the dip before it happens, and an honest answer to "did the customer improve, or did the bar move?"**
 
-Most adoption reporting stops at "90% of accounts connected". That number leaves out accounts nobody planned for, resource types the platform never inventoried, controls that are switched off and findings nobody owns. Beyond 90 measures the whole pipeline against independent denominators, turns every gap into an action, and then goes further than a dashboard can.
+Most adoption reporting stops at "90% of accounts connected" (or sites, tenants, organizations: whatever your product connects). That number leaves out units nobody planned for, asset types the product never inventoried, controls that are switched off and findings nobody owns. Beyond 90 measures the whole pipeline against independent denominators, turns every gap into an action, and then goes further than a dashboard can.
+
+**For** Technical Account Managers, customer-success engineers and solutions teams at any security vendor: cloud, endpoint, identity, SIEM or other. One engine, a small catalogue ("profile") per kind of product; two ship today ([docs/profiles.md](docs/profiles.md)).
 
 **Try it without installing anything:** the [browser app](docs/app.md) runs the same engine in your tab. Drop a customer folder, or a folder of customers, and nothing leaves your machine.
 
@@ -34,7 +36,9 @@ Most adoption reporting stops at "90% of accounts connected". That number leaves
 
 **9. It says how far to trust the number.** Independent denominators, inventory and activation coverage, stale exports and empty columns are checked and summarised as a confidence level next to the score.
 
-**10. It runs in a browser tab, local-first.** [docs/app.md](docs/app.md): the same engine compiled to WebAssembly, served from GitHub Pages, nothing uploaded. Drop a folder or try the demo. Save snapshots of your inputs in the browser, compare with the previous quarter, export and merge between devices, work offline. Every number carries the hash of the inputs it came from. Drop a whole folder of customers to plan one budget of hours across the book.
+**10. It is not tied to one product.** Profiles describe what a product should see and what it offers; the stages, formulas and checks are the same. Cloud security and endpoint protection ship, and the guide shows how to map identity, SIEM, email, vulnerability and application security.
+
+**11. It runs in a browser tab, local-first.** [docs/app.md](docs/app.md): the same engine compiled to WebAssembly, served from GitHub Pages, nothing uploaded. Drop a folder or try the demo. Save snapshots of your inputs in the browser, compare with the previous quarter, export and merge between devices, work offline. Every number carries the hash of the inputs it came from. Drop a whole folder of customers to plan one budget of hours across the book.
 
 ![The browser app](docs/img/app-results.png)
 
@@ -109,11 +113,12 @@ beyond90 explain acme --store history.db   # what changed since the last stored 
 - [docs/guide.md](docs/guide.md): how it fits into a TAM's month
 - [SPEC.md](SPEC.md): formulas and rules; the contract for the code
 - [docs/data-format.md](docs/data-format.md): input files
-- [docs/research-wiz-tam.md](docs/research-wiz-tam.md): how a vendor TAM motion works and what platforms already measure
+- [docs/profiles.md](docs/profiles.md): one engine for any security product (cloud, endpoint, and how to map others)
+- [docs/research/](docs/research/): the research behind the design, including a case study of one vendor's TAM motion
 - [docs/architecture.md](docs/architecture.md): how the data is treated (system of record, snapshots, compatibility, sync)
 - [docs/app.md](docs/app.md): the browser app and how to publish it on GitHub Pages
 - [docs/trust.md](docs/trust.md): the relationship layer and what it takes from the book
-- [docs/reading-list.md](docs/reading-list.md)
+- [docs/research/reading-list.md](docs/research/reading-list.md)
 - [docs/design.md](docs/design.md): visual direction and validated palette
 
 ## Status

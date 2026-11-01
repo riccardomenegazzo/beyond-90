@@ -11,9 +11,11 @@ The overall confidence is ``high`` with no weak or note checks, ``low`` with any
 
 from __future__ import annotations
 
-from typing import Any
+from collections.abc import Mapping
+from typing import Any, Optional
 
 from .models import CustomerData
+from .terms import say
 
 INDEPENDENT = ("billing", "org", "sso")
 STALE_DAYS = 21
@@ -23,7 +25,7 @@ def _check(id: str, status: str, title: str, detail: str) -> dict[str, str]:
     return {"id": id, "status": status, "title": title, "detail": detail}
 
 
-def assess(data: CustomerData) -> dict[str, Any]:
+def assess(data: CustomerData, terms: Optional[Mapping[str, str]] = None) -> dict[str, Any]:
     s = data.settings
     active = [a for a in data.accounts if a.status == "active"]
     connected = [a for a in active if a.connected]
@@ -91,4 +93,6 @@ def assess(data: CustomerData) -> dict[str, Any]:
     weak = sum(1 for c in checks if c["status"] == "weak")
     note = sum(1 for c in checks if c["status"] == "note")
     confidence = "low" if weak else "medium" if note else "high"
+    if terms:
+        checks = [{**c, "title": say(c["title"], terms), "detail": say(c["detail"], terms)} for c in checks]
     return {"confidence": confidence, "weak": weak, "notes": note, "checks": checks}

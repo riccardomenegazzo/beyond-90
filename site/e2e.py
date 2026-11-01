@@ -171,6 +171,16 @@ def main(site: str) -> int:
         page.wait_for_selector("#errors:not([hidden])")
         check("nothing to measure" in page.inner_text("#errlist"), "an empty estate is refused with an explanation")
 
+        # another kind of security product: the same engine, a different catalogue, its own words
+        page.click("#demo-endpoint")
+        page.wait_for_selector("#loaded li:has-text('customer.toml')")
+        run_and_wait()
+        page.wait_for_selector("#results:not([hidden])")
+        check("endpoint" in page.inner_text("#kpis"), "the endpoint demo runs with its own profile")
+        page.click("[data-tab=qbr]")
+        qbr = page.inner_text("#doc")
+        check("site(s)" in qbr and "cloud" not in qbr.lower(), "and reads in its own words (sites, not cloud accounts)")
+
         # a whole book: several customers, one budget of hours
         page.click("#demo-book")
         page.wait_for_selector("#loaded li:nth-child(3)")

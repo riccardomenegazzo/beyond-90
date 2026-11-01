@@ -1,0 +1,7 @@
+id,name,has_assets,active_users,sso,role_scoped,last_access_review
+it-ops-emea,It Ops Emea,true,2,false,true,2026-07-16
+it-ops-amer,It Ops Amer,true,6,false,true,2026-03-14
+retail-it,Retail It,true,1,false,true,2026-06-28
+plant-it,Plant It,true,5,false,true,2026-08-01
+security-ops,Security Ops,true,4,false,true,2026-03-19
+mobile-team,Mobile Team,true,3,false,false,2026-05-16

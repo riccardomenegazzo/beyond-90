@@ -2,6 +2,16 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.9.0
+
+Vendor-neutral by design: one engine, a catalogue profile per kind of security product.
+
+- **Profiles.** `cnapp` (the default, unchanged) and a new `endpoint` profile for endpoint protection, with its own asset types, capabilities, playbook overrides and words ("site", "endpoint assets"). Choose with `--profile` or `profile = "..."` in `customer.toml`; `beyond90 profiles` lists them; `--catalogue-dir` still loads your own. A mismatch between a flag and the file is an error, a mixed-profile portfolio or book is refused, and every score records its profile and catalogue hash.
+- **Terms.** Text the engine writes follows the profile's words for the unit of coverage; a customer's own text is never rewritten. Cloud output is byte-for-byte unchanged apart from the provenance line.
+- **Browser app.** Reads the profile from the data, shows it, and has an endpoint demo.
+- **Docs.** `docs/profiles.md` (shipped profiles, how to write one, how identity, SIEM, email, vulnerability, network and application security map). Vendor research moved to `docs/research/` as a case study; vendor names removed from the product's own docs, interface and code comments.
+- Example: `examples/profiles/endpoint/acme-endpoint` (invented, generated).
+
 ## 0.8.1
 
 Found by an audit of the whole project.

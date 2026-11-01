@@ -1,0 +1,171 @@
+{
+  "modules": [
+    {
+      "id": "prevention",
+      "name": "Malware and exploit prevention",
+      "category": "protect",
+      "since": "2025.1",
+      "providers": [
+        "windows",
+        "macos",
+        "linux"
+      ],
+      "requires_any": [],
+      "on_connect": true
+    },
+    {
+      "id": "edr_telemetry",
+      "name": "Endpoint detection and response",
+      "category": "detect",
+      "since": "2025.1",
+      "providers": [
+        "windows",
+        "macos",
+        "linux"
+      ],
+      "requires_any": [],
+      "on_connect": true
+    },
+    {
+      "id": "ransomware_protection",
+      "name": "Ransomware rollback and canary files",
+      "category": "protect",
+      "since": "2025.1",
+      "providers": [
+        "windows",
+        "macos",
+        "linux"
+      ],
+      "requires_any": [
+        "workstation",
+        "server"
+      ],
+      "on_connect": false
+    },
+    {
+      "id": "vulnerability_assessment",
+      "name": "Endpoint vulnerability assessment",
+      "category": "exposure",
+      "since": "2025.2",
+      "providers": [
+        "windows",
+        "macos",
+        "linux"
+      ],
+      "requires_any": [
+        "workstation",
+        "server"
+      ],
+      "on_connect": false
+    },
+    {
+      "id": "host_firewall",
+      "name": "Host firewall management",
+      "category": "protect",
+      "since": "2025.2",
+      "providers": [
+        "windows",
+        "macos",
+        "linux"
+      ],
+      "requires_any": [
+        "workstation",
+        "server"
+      ],
+      "on_connect": false
+    },
+    {
+      "id": "device_control",
+      "name": "Removable media and peripheral control",
+      "category": "protect",
+      "since": "2025.3",
+      "providers": [
+        "windows",
+        "macos"
+      ],
+      "requires_any": [
+        "workstation"
+      ],
+      "on_connect": false
+    },
+    {
+      "id": "identity_threat_detection",
+      "name": "Identity threat detection",
+      "category": "detect",
+      "since": "2025.3",
+      "providers": [
+        "windows"
+      ],
+      "requires_any": [
+        "identity_store"
+      ],
+      "on_connect": false
+    },
+    {
+      "id": "mobile_threat_defense",
+      "name": "Mobile threat defense",
+      "category": "protect",
+      "since": "2025.2",
+      "providers": [
+        "mobile"
+      ],
+      "requires_any": [
+        "mobile"
+      ],
+      "on_connect": false
+    },
+    {
+      "id": "container_runtime",
+      "name": "Container runtime protection",
+      "category": "protect",
+      "since": "2025.4",
+      "providers": [
+        "linux"
+      ],
+      "requires_any": [
+        "container_host"
+      ],
+      "on_connect": false
+    },
+    {
+      "id": "managed_detection",
+      "name": "Managed detection and response",
+      "category": "service",
+      "since": "2026.1",
+      "providers": [
+        "windows",
+        "macos",
+        "linux",
+        "mobile"
+      ],
+      "requires_any": [],
+      "on_connect": false
+    },
+    {
+      "id": "ai_assisted_triage",
+      "name": "AI-assisted investigation and triage",
+      "category": "detect",
+      "since": "2026.2",
+      "providers": [
+        "windows",
+        "macos",
+        "linux"
+      ],
+      "requires_any": [],
+      "on_connect": true
+    },
+    {
+      "id": "automated_response",
+      "name": "Automated response playbooks",
+      "category": "respond",
+      "since": "2026.3",
+      "providers": [
+        "windows",
+        "macos",
+        "linux"
+      ],
+      "requires_any": [],
+      "on_connect": false
+    }
+  ]
+}

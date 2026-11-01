@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "beyond90"
-version = "0.8.1"
+version = "0.9.0"
 description = "Adoption engine for Technical Account Managers: a score that cannot be flattered, and an action for every gap."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -34,7 +34,7 @@ beyond90 = "beyond90.cli:main"
 where = ["src"]
 
 [tool.setuptools.package-data]
-beyond90 = ["data/*.json", "py.typed"]
+beyond90 = ["data/*.json", "data/profiles/*/*.json", "py.typed"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

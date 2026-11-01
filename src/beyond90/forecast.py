@@ -1,6 +1,6 @@
 """When do we reach zero critical, and how likely is it to break?
 
-Wiz-style programs celebrate reaching zero critical issues, and then the work is
+Many programs celebrate reaching zero critical issues, and then the work is
 to stay there. Both questions are about a queue: critical findings arrive at some
 rate and each takes some time to close. This module learns both from the
 customer's own history and runs a seeded Monte Carlo (deterministic for a given
