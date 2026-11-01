@@ -16,6 +16,7 @@ from typing import Optional
 from .catalogue import Catalogue
 from .loader import DataError, load_customer
 from .playbooks import Action, generate_actions
+from .renewal import compute_renewal
 from .report import pct, pts
 from .scoring import Score, compute_score
 from .store import Store
@@ -30,6 +31,7 @@ class Entry:
     score: Score
     actions: list[Action]
     previous_yield: Optional[float] = None
+    renewal: Optional[dict] = None
 
 
 @dataclass
@@ -83,7 +85,8 @@ def load_portfolio(root: str | Path, cat: Optional[Catalogue] = None, store: Opt
         score = compute_score(data, cat)
         prev = store.previous(data.name, data.as_of) if store else None
         pf.entries.append(
-            Entry(d.name, data.name, data.tier, data.arr, score, generate_actions(data, score, cat), prev["yield"] if prev else None)
+            Entry(d.name, data.name, data.tier, data.arr, score, generate_actions(data, score, cat), prev["yield"] if prev else None,
+                  compute_renewal(data, score, prev))
         )
     pf.entries.sort(key=lambda e: (-e.arr, e.name))
     return pf
@@ -94,16 +97,25 @@ def render_portfolio_markdown(pf: Portfolio, min_customers: int = 2, top_pattern
     w = pf.arr_weighted_yield
     if w is not None:
         L += [f"ARR-weighted Yield: **{pct(w)}** across {len(pf.entries)} customer(s).", ""]
-    L += ["| Customer | ARR | Yield | Legacy | L1 | L2 | L3 | L4 | Change | Top action |", "|---|---|---|---|---|---|---|---|---|---|"]
+    L += ["| Customer | ARR | Yield | Level | Legacy | L1 | L2 | L3 | L4 | Change | Top action |", "|---|---|---|---|---|---|---|---|---|---|---|"]
     for e in pf.entries:
         s = e.score
         change = pts(s.yield_ - e.previous_yield) if e.previous_yield is not None else "-"
         top = e.actions[0].title if e.actions else "-"
         L.append(
-            f"| {e.name} | {e.arr:,.0f} | {pct(s.yield_)} | {pct(s.naive)} | {pct(s.stages['L1'].value)} | {pct(s.stages['L2'].value)} | "
+            f"| {e.name} | {e.arr:,.0f} | {pct(s.yield_)} | {(s.rubric.get('level') or '-').capitalize()}{'*' if s.rubric.get('provisional') else ''} | {pct(s.naive)} | {pct(s.stages['L1'].value)} | {pct(s.stages['L2'].value)} | "
             f"{pct(s.stages['L3'].value)} | {pct(s.stages['L4'].value)} | {change} | {top} |"
         )
     L.append("")
+    renewing = sorted(((e, e.renewal) for e in pf.entries if e.renewal), key=lambda er: (er[1]["days"], er[0].name))
+    if renewing:
+        at_risk = sum(r["arr_at_risk"] for _, r in renewing)
+        L += ["## Renewals", "", f"{len(renewing)} customer(s) have a renewal date. Revenue at risk inside the window with at least one risk signal: **{at_risk:,.0f}**.", "",
+              "| Customer | Renewal | Days | ARR | Status | Signals needing attention |", "|---|---|---|---|---|---|"]
+        for e, r in renewing:
+            flagged = ", ".join(s["label"].lower() for s in r["signals"] if s["status"] in ("risk", "watch")) or "-"
+            L.append(f"| {e.name} | {r['date']} | {r['days']} | {e.arr:,.0f} | {r['status'].replace('_', ' ')} | {flagged} |")
+        L.append("")
     pats = pf.patterns(min_customers)
     if pats:
         L += ["## Patterns across customers (one-to-many candidates)", "", "| Pattern | Leak | Customers | Who |", "|---|---|---|---|"]
@@ -133,6 +145,8 @@ def render_portfolio_json(pf: Portfolio, min_customers: int = 2) -> str:
                 "naive": e.score.naive,
                 "stages": {k: v.value for k, v in e.score.stages.items()},
                 "previous_yield": e.previous_yield,
+                "level": e.score.rubric.get("level"),
+                "renewal": e.renewal,
                 "top_actions": [a.to_dict() for a in e.actions[:5]],
             }
             for e in pf.entries

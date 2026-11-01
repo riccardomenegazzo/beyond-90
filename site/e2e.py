@@ -66,10 +66,10 @@ def main(site: str) -> int:
         boot()
         check("engine 0." in page.inner_text("#version"), "engine boots in the worker")
         run_demo()
-        check("Yield" in page.inner_text("#kpis"), "demo produces a Yield tile")
+        check("Yield" in page.inner_text("#kpis") and "Maturity level" in page.inner_text("#kpis"), "demo produces a Yield tile and a maturity level")
         check("adoption score" in page.frame_locator("#report").locator("h1").first.inner_text(), "report renders")
         check("Derived from inputs" in page.frame_locator("#report").locator("footer").inner_text(), "report says which inputs it came from")
-        for tab, needle in (("qbr", "Quarterly business review"), ("roadmap", "Roadmap"), ("summary", "Yield"), ("json", '"input_hash"')):
+        for tab, needle in (("qbr", "Quarterly business review"), ("plan", "Success plan"), ("roadmap", "Roadmap"), ("summary", "Yield"), ("json", '"input_hash"')):
             page.click(f"[data-tab={tab}]")
             shown = page.inner_text("#raw" if tab == "json" else "#doc")
             check(needle in shown or tab == "json", f"tab {tab}")
@@ -195,7 +195,7 @@ def main(site: str) -> int:
         page.locator("#book-table tbody tr").first.get_by_role("button", name="Open").click()
         page.wait_for_selector("#run:not([disabled])", timeout=180_000)
         page.wait_for_selector("#book-table[hidden]", state="attached")
-        check("Yield" in page.inner_text("#kpis") and page.locator("#tabs button").count() == 5, "opening a customer from the book shows its own report")
+        check("Yield" in page.inner_text("#kpis") and page.locator("#tabs button").count() == 6, "opening a customer from the book shows its own report")
         examples = Path(__file__).resolve().parent.parent / "examples" / "portfolio"
         page.set_input_files("#folder", str(examples))
         page.wait_for_selector("#status:has-text('customers found')")

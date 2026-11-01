@@ -1,4 +1,14 @@
 {
+  "use_cases": {
+    "prevention": "Malware and exploit prevention",
+    "detection": "Detection and response",
+    "exposure": "Exposure management",
+    "hardening": "Device hardening",
+    "identity": "Identity threat detection",
+    "mobile": "Mobile security",
+    "servers": "Server and container workloads",
+    "managed": "Managed service"
+  },
   "modules": [
     {
       "id": "prevention",
@@ -11,7 +21,11 @@
         "linux"
       ],
       "requires_any": [],
-      "on_connect": true
+      "on_connect": true,
+      "use_case": "prevention",
+      "csf": [
+        "protect"
+      ]
     },
     {
       "id": "edr_telemetry",
@@ -24,7 +38,11 @@
         "linux"
       ],
       "requires_any": [],
-      "on_connect": true
+      "on_connect": true,
+      "use_case": "detection",
+      "csf": [
+        "detect"
+      ]
     },
     {
       "id": "ransomware_protection",
@@ -40,7 +58,12 @@
         "workstation",
         "server"
       ],
-      "on_connect": false
+      "on_connect": false,
+      "use_case": "prevention",
+      "csf": [
+        "protect",
+        "recover"
+      ]
     },
     {
       "id": "vulnerability_assessment",
@@ -56,7 +79,11 @@
         "workstation",
         "server"
       ],
-      "on_connect": false
+      "on_connect": false,
+      "use_case": "exposure",
+      "csf": [
+        "identify"
+      ]
     },
     {
       "id": "host_firewall",
@@ -72,7 +99,11 @@
         "workstation",
         "server"
       ],
-      "on_connect": false
+      "on_connect": false,
+      "use_case": "hardening",
+      "csf": [
+        "protect"
+      ]
     },
     {
       "id": "device_control",
@@ -86,7 +117,11 @@
       "requires_any": [
         "workstation"
       ],
-      "on_connect": false
+      "on_connect": false,
+      "use_case": "hardening",
+      "csf": [
+        "protect"
+      ]
     },
     {
       "id": "identity_threat_detection",
@@ -99,7 +134,11 @@
       "requires_any": [
         "identity_store"
       ],
-      "on_connect": false
+      "on_connect": false,
+      "use_case": "identity",
+      "csf": [
+        "detect"
+      ]
     },
     {
       "id": "mobile_threat_defense",
@@ -112,7 +151,12 @@
       "requires_any": [
         "mobile"
       ],
-      "on_connect": false
+      "on_connect": false,
+      "use_case": "mobile",
+      "csf": [
+        "protect",
+        "detect"
+      ]
     },
     {
       "id": "container_runtime",
@@ -125,7 +169,12 @@
       "requires_any": [
         "container_host"
       ],
-      "on_connect": false
+      "on_connect": false,
+      "use_case": "servers",
+      "csf": [
+        "protect",
+        "detect"
+      ]
     },
     {
       "id": "managed_detection",
@@ -139,7 +188,12 @@
         "mobile"
       ],
       "requires_any": [],
-      "on_connect": false
+      "on_connect": false,
+      "use_case": "managed",
+      "csf": [
+        "detect",
+        "respond"
+      ]
     },
     {
       "id": "ai_assisted_triage",
@@ -152,7 +206,12 @@
         "linux"
       ],
       "requires_any": [],
-      "on_connect": true
+      "on_connect": true,
+      "use_case": "detection",
+      "csf": [
+        "detect",
+        "respond"
+      ]
     },
     {
       "id": "automated_response",
@@ -165,7 +224,11 @@
         "linux"
       ],
       "requires_any": [],
-      "on_connect": false
+      "on_connect": false,
+      "use_case": "detection",
+      "csf": [
+        "respond"
+      ]
     }
   ]
 }

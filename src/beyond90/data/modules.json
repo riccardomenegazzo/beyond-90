@@ -1,4 +1,16 @@
 {
+  "use_cases": {
+    "posture": "Posture and misconfiguration",
+    "vulnerabilities": "Vulnerability and exposure management",
+    "identity": "Identity and entitlements",
+    "data": "Data protection",
+    "workloads": "Workload and container protection",
+    "detection": "Threat detection and response",
+    "appsec": "Application and pipeline security",
+    "ai": "AI security",
+    "exposure": "Exposure management",
+    "automation": "Remediation and response automation"
+  },
   "modules": [
     {
       "id": "posture",
@@ -13,7 +25,12 @@
         "kubernetes"
       ],
       "requires_any": [],
-      "on_connect": true
+      "on_connect": true,
+      "use_case": "posture",
+      "csf": [
+        "identify",
+        "protect"
+      ]
     },
     {
       "id": "vulnerability_scanning",
@@ -31,7 +48,12 @@
         "container_registry",
         "serverless"
       ],
-      "on_connect": true
+      "on_connect": true,
+      "use_case": "vulnerabilities",
+      "csf": [
+        "identify",
+        "protect"
+      ]
     },
     {
       "id": "identity_analysis",
@@ -47,7 +69,11 @@
       "requires_any": [
         "identity"
       ],
-      "on_connect": true
+      "on_connect": true,
+      "use_case": "identity",
+      "csf": [
+        "protect"
+      ]
     },
     {
       "id": "data_security",
@@ -64,7 +90,12 @@
         "storage_object",
         "managed_database"
       ],
-      "on_connect": true
+      "on_connect": true,
+      "use_case": "data",
+      "csf": [
+        "identify",
+        "protect"
+      ]
     },
     {
       "id": "container_security",
@@ -82,7 +113,11 @@
         "container_registry",
         "kubernetes"
       ],
-      "on_connect": true
+      "on_connect": true,
+      "use_case": "workloads",
+      "csf": [
+        "protect"
+      ]
     },
     {
       "id": "runtime_sensor",
@@ -100,7 +135,12 @@
         "compute",
         "kubernetes"
       ],
-      "on_connect": false
+      "on_connect": false,
+      "use_case": "detection",
+      "csf": [
+        "detect",
+        "respond"
+      ]
     },
     {
       "id": "cloud_detection",
@@ -114,7 +154,12 @@
         "oci"
       ],
       "requires_any": [],
-      "on_connect": false
+      "on_connect": false,
+      "use_case": "detection",
+      "csf": [
+        "detect",
+        "respond"
+      ]
     },
     {
       "id": "code_scanning",
@@ -129,7 +174,12 @@
         "kubernetes"
       ],
       "requires_any": [],
-      "on_connect": false
+      "on_connect": false,
+      "use_case": "appsec",
+      "csf": [
+        "identify",
+        "protect"
+      ]
     },
     {
       "id": "ai_posture",
@@ -144,7 +194,12 @@
       "requires_any": [
         "ai_service"
       ],
-      "on_connect": true
+      "on_connect": true,
+      "use_case": "ai",
+      "csf": [
+        "identify",
+        "protect"
+      ]
     },
     {
       "id": "attack_surface",
@@ -161,7 +216,11 @@
         "compute",
         "network"
       ],
-      "on_connect": true
+      "on_connect": true,
+      "use_case": "exposure",
+      "csf": [
+        "identify"
+      ]
     },
     {
       "id": "workflow_automation",
@@ -176,7 +235,11 @@
         "kubernetes"
       ],
       "requires_any": [],
-      "on_connect": false
+      "on_connect": false,
+      "use_case": "automation",
+      "csf": [
+        "respond"
+      ]
     }
   ]
 }

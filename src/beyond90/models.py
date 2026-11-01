@@ -114,6 +114,7 @@ class Settings:
     access_review_days: int = 90
     contact_stale_days: int = 90
     commitment_lookback_days: int = 90
+    renewal_window_days: int = 180
     downgrade_window_days: int = 3
     mttr_lookback_days: int = 90
     entitlement_target: float = 0.8
@@ -139,3 +140,4 @@ class CustomerData:
     commitments: list[Commitment] = field(default_factory=list)
     inputs: dict[str, str] = field(default_factory=dict)      # file name -> fingerprint, set by the loader
     schema_version: int = 1
+    renewal_date: Optional[date] = None

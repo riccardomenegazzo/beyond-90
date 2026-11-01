@@ -25,10 +25,12 @@ from .playbooks import generate_actions
 from .portfolio import load_portfolio, render_portfolio_markdown
 from .provenance import INPUT_FILES, hash_directory, input_hash
 from .qbr import render_qbr
+from .renewal import compute_renewal
 from .report import render_html, render_json, render_markdown
 from .scoring import compute_score
 from .sections import md_plan
 from .simulate import RampModel
+from .successplan import render_success_plan
 
 
 def analyze(
@@ -63,6 +65,7 @@ def analyze(
         extras["forecast"] = forecast_zero_critical(data)
     plan = build_plan(data, cat, hours_per_week=hours, horizon_weeks=weeks, realization=realization, ramp=RampModel(ramp_weeks))
     extras["plan"] = plan
+    extras["renewal"] = compute_renewal(data, score, previous)
     extras["candor"] = candor_items(score, data, cat, plan=plan, forecast=extras.get("forecast"), attribution=extras.get("attribution"))
     summary = score.to_dict()
     return {
@@ -72,6 +75,8 @@ def analyze(
         "provenance": score.provenance,
         "input_hash": score.provenance.get("input_hash", ""),
         "confidence": score.quality.get("confidence", ""),
+        "level": score.rubric.get("level", ""),
+        "level_provisional": bool(score.rubric.get("provisional")),
         "profile": cat.profile,
         "customer": score.customer,
         "as_of": str(score.as_of),
@@ -81,6 +86,7 @@ def analyze(
         "report_html": render_html(score, actions, None, previous, **extras),
         "report_markdown": render_markdown(score, actions, None, previous, **extras),
         "qbr_markdown": render_qbr(score, actions, previous, quarter, **extras),
+        "success_plan_markdown": render_success_plan(score, actions, plan),
         "roadmap_markdown": "\n".join([f"# Roadmap: {plan.customer}", ""] + md_plan(plan, top=12)),
         "score_json": render_json(score, actions, None),
         "summary": {k: summary[k] for k in summary if k in ("customer", "as_of", "yield", "stages")},

@@ -2,6 +2,17 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.10.0
+
+Informed by a survey of existing products (`docs/research/landscape.md`).
+
+- **Maturity ladder.** Bronze, silver and gold from checks; a customer is at a level only when every check at that level and below passes; the next checks to pass are listed with the action that closes each; unmeasured checks neither pass nor block and mark the level provisional. Shipped rubric in `data/rubric.json`, replaceable per profile; level names are fixed. Shown in reports, the QBR, the portfolio table and the browser app.
+- **Adoption by use case and by NIST CSF 2.0 function.** Modules carry `use_case` and `csf` tags (both profiles). Not compliance: stated in the output.
+- **Renewal readiness.** `renewal_date` and `renewal_window_days`; a checklist of leading indicators with evidence, ARR on the line, and expansion headroom; a Renewals section in the portfolio with revenue at risk. No predicted probability.
+- **Success plan.** `beyond90 successplan`: outcomes, measures, milestones, owners, decisions, commitments, risks, signatures. Nothing private. A tab in the browser app.
+- Example customers gain invented renewal dates; the QBR gains a use-case section and a ladder sentence.
+- Tests: ladder gating and validation, view arithmetic, renewal bands, success plan privacy, plus properties on random estates.
+
 ## 0.9.0
 
 Vendor-neutral by design: one engine, a catalogue profile per kind of security product.

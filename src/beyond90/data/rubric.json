@@ -1,0 +1,244 @@
+{
+  "levels": [
+    "bronze",
+    "silver",
+    "gold"
+  ],
+  "checks": [
+    {
+      "id": "independent_list",
+      "level": "bronze",
+      "title": "The list of units comes from somewhere other than the platform itself",
+      "metric": "independent_sources",
+      "op": ">=",
+      "value": 1,
+      "playbooks": []
+    },
+    {
+      "id": "connected_80",
+      "level": "bronze",
+      "title": "At least 80% of the units you know are connected",
+      "metric": "l1",
+      "op": ">=",
+      "value": 0.8,
+      "playbooks": [
+        "l1_connect_account",
+        "l1_auto_onboarding"
+      ]
+    },
+    {
+      "id": "criticals_owned",
+      "level": "bronze",
+      "title": "Every open critical finding has an owner",
+      "metric": "critical_unowned",
+      "op": "<=",
+      "value": 0,
+      "playbooks": [
+        "l4_assign_owners"
+      ]
+    },
+    {
+      "id": "inputs_sound",
+      "level": "bronze",
+      "title": "The inputs pass every weak-quality check",
+      "metric": "quality_weak",
+      "op": "<=",
+      "value": 0,
+      "playbooks": []
+    },
+    {
+      "id": "two_lists",
+      "level": "silver",
+      "title": "Two independent lists, so units nobody listed can be estimated",
+      "metric": "independent_sources",
+      "op": ">=",
+      "value": 2,
+      "playbooks": []
+    },
+    {
+      "id": "connected_95",
+      "level": "silver",
+      "title": "At least 95% of known units are connected",
+      "metric": "l1",
+      "op": ">=",
+      "value": 0.95,
+      "playbooks": [
+        "l1_connect_account",
+        "l1_auto_onboarding"
+      ]
+    },
+    {
+      "id": "visibility_90",
+      "level": "silver",
+      "title": "At least 90% of the expected asset types are inventoried",
+      "metric": "l2",
+      "op": ">=",
+      "value": 0.9,
+      "playbooks": [
+        "l2_enable_inventory"
+      ]
+    },
+    {
+      "id": "capabilities_80",
+      "level": "silver",
+      "title": "At least 80% of the capabilities that apply are switched on",
+      "metric": "l3",
+      "op": ">=",
+      "value": 0.8,
+      "playbooks": [
+        "l3_enable_module",
+        "l3_new_release_adoption"
+      ]
+    },
+    {
+      "id": "triage_80",
+      "level": "silver",
+      "title": "At least 80% of findings past triage have an owner and a decision",
+      "metric": "l4",
+      "op": ">=",
+      "value": 0.8,
+      "playbooks": [
+        "l4_assign_owners",
+        "l4_record_decisions"
+      ]
+    },
+    {
+      "id": "no_overdue_critical",
+      "level": "silver",
+      "title": "No open critical finding is past its deadline",
+      "metric": "critical_overdue",
+      "op": "<=",
+      "value": 0,
+      "playbooks": []
+    },
+    {
+      "id": "no_downgrade_pattern",
+      "level": "silver",
+      "title": "No severity downgrade lands just before a deadline",
+      "metric": "downgrade_suspects",
+      "op": "<=",
+      "value": 0,
+      "playbooks": [
+        "l4_review_reclassifications"
+      ]
+    },
+    {
+      "id": "licences_used",
+      "level": "silver",
+      "title": "Every licensed unit is at least 60% in use",
+      "metric": "min_utilization",
+      "op": ">=",
+      "value": 0.6,
+      "playbooks": [
+        "ent_adoption_gap"
+      ]
+    },
+    {
+      "id": "yield_90",
+      "level": "gold",
+      "title": "Real adoption (Yield) is at least 90%",
+      "metric": "yield",
+      "op": ">=",
+      "value": 0.9,
+      "playbooks": []
+    },
+    {
+      "id": "visibility_97",
+      "level": "gold",
+      "title": "At least 97% of expected asset types are inventoried",
+      "metric": "l2",
+      "op": ">=",
+      "value": 0.97,
+      "playbooks": [
+        "l2_enable_inventory"
+      ]
+    },
+    {
+      "id": "capabilities_95",
+      "level": "gold",
+      "title": "At least 95% of applicable capabilities are switched on",
+      "metric": "l3",
+      "op": ">=",
+      "value": 0.95,
+      "playbooks": [
+        "l3_enable_module",
+        "l3_new_release_adoption"
+      ]
+    },
+    {
+      "id": "triage_95",
+      "level": "gold",
+      "title": "At least 95% of findings past triage have an owner and a decision",
+      "metric": "l4",
+      "op": ">=",
+      "value": 0.95,
+      "playbooks": [
+        "l4_assign_owners",
+        "l4_record_decisions"
+      ]
+    },
+    {
+      "id": "few_hidden",
+      "level": "gold",
+      "title": "Estimated units no list knows about are under 2% of the total",
+      "metric": "unseen_share",
+      "op": "<=",
+      "value": 0.02,
+      "playbooks": []
+    },
+    {
+      "id": "fast_remediation",
+      "level": "gold",
+      "title": "Nine in ten critical findings are fixed within their deadline",
+      "metric": "mttr_p90_ratio",
+      "op": "<=",
+      "value": 1.0,
+      "playbooks": []
+    },
+    {
+      "id": "zero_critical",
+      "level": "gold",
+      "title": "No critical finding is open",
+      "metric": "critical_open",
+      "op": "<=",
+      "value": 0,
+      "playbooks": []
+    },
+    {
+      "id": "teams_reached",
+      "level": "gold",
+      "title": "At least 90% of the teams that own assets are reached",
+      "metric": "reach",
+      "op": ">=",
+      "value": 0.9,
+      "playbooks": [
+        "reach_onboard_team",
+        "reach_enable_sso",
+        "reach_scope_roles",
+        "reach_access_review"
+      ]
+    },
+    {
+      "id": "sponsor",
+      "level": "gold",
+      "title": "An executive sponsor is on record",
+      "metric": "sponsor",
+      "op": ">=",
+      "value": 1,
+      "playbooks": [
+        "rel_find_sponsor"
+      ]
+    },
+    {
+      "id": "promises_kept",
+      "level": "gold",
+      "title": "At least 80% of promises made in the last 90 days were kept on time",
+      "metric": "reliability_rate",
+      "op": ">=",
+      "value": 0.8,
+      "playbooks": [
+        "rel_close_commitments"
+      ]
+    }
+  ]
+}

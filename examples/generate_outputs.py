@@ -27,6 +27,7 @@ OUT = ROOT / "docs" / "example"
 JOBS = {
     "northwind-report.html": ["report", NW, "--since", HISTORY],
     "northwind-qbr.md": ["qbr", NW, "--since", HISTORY, "--quarter", "Q4 2026"],
+    "northwind-success-plan.md": ["successplan", NW, "--since", HISTORY, "--owner", "Alex Doe"],
     "northwind-plan.md": ["plan", NW, "--format", "markdown"],
     "book.html": ["book", PORTFOLIO, "--hours", "8", "--weeks", "12", "--format", "html"],
     "book.md": ["book", PORTFOLIO, "--hours", "8", "--weeks", "12", "--format", "markdown"],

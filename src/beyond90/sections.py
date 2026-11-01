@@ -264,3 +264,156 @@ def html_candor(items: Optional[list]) -> str:
     lis = "".join(f'<li><strong>{e(i.say)}</strong><br><span class="warn">Evidence: {e(i.evidence)}<br>Why say it: {e(i.why)}</span></li>' for i in items)
     return (f'<section aria-labelledby="cd"><h2 id="cd">What we should say plainly</h2>'
             f'<p class="warn">Each item is supported by the data. Saying these first, before the customer finds them, is what lowers self-orientation.</p><ol>{lis}</ol></section>')
+
+
+# ------------------------------------------------------------------- rubric
+
+_FRACTIONS = {"l1", "l2", "l3", "l4", "yield", "unseen_share", "min_utilization", "reach", "reliability_rate"}
+
+
+def _fmt_metric(name: str, v: float) -> str:
+    if name in _FRACTIONS:
+        return f"{v:.1%}"
+    if name == "mttr_p90_ratio":
+        return f"{v:.2f} x the deadline"
+    if name == "sponsor":
+        return "yes" if v >= 1 else "no"
+    return f"{v:g}"
+
+
+def _fmt_target(c: dict) -> str:
+    return f"{c['op']} {_fmt_metric(c['metric'], c['target'])}"
+
+
+def _closing_actions(c: dict, actions: Optional[list]) -> list[str]:
+    if not actions or not c["playbooks"]:
+        return []
+    return [a.title for a in actions if a.playbook in c["playbooks"]][:2]
+
+
+def rubric_headline(r: dict) -> str:
+    level = r["level"].capitalize()
+    tail = " (provisional: some checks could not be measured)" if r["provisional"] else ""
+    if not r["next_level"]:
+        return f"Maturity level: **{level}**{tail}. Every check passes."
+    n = len(r["blocking"])
+    nxt = r["next_level"].capitalize()
+    if not n:
+        return f"Maturity level: **{level}**{tail}. No check fails at {nxt}; what is left could not be measured."
+    return f"Maturity level: **{level}**{tail}. {n} check{'s' if n != 1 else ''} stand{'s' if n == 1 else ''} between you and {nxt}."
+
+
+def md_rubric(r: dict, actions: Optional[list] = None) -> list[str]:
+    if not r or not r.get("checks"):
+        return []
+    L = ["## Maturity level", "", rubric_headline(r), "",
+         "| Level | Passed | Failed | Not measured |", "|---|---|---|---|"]
+    for lv in r["levels"]:
+        L.append(f"| {lv['level'].capitalize()} | {lv['passed']} of {lv['total']} | {lv['failed']} | {lv['not_measured']} |")
+    L.append("")
+    if r["blocking"]:
+        L += [f"Next to pass for {r['next_level'].capitalize()}:", ""]
+        for c in r["blocking"]:
+            close = _closing_actions(c, actions)
+            L.append(f"- {c['title']}: now {_fmt_metric(c['metric'], c['value'])}, needs {_fmt_target(c)}." + (f" Closes with: {'; '.join(close)}." if close else ""))
+        L.append("")
+    if r["unmeasured"]:
+        L.append("Not measured, so neither passed nor blocking: " + "; ".join(c["title"] for c in r["unmeasured"][:5]) + ("." if len(r["unmeasured"]) <= 5 else f" (+{len(r['unmeasured']) - 5} more)."))
+        L.append("")
+    L += ["*A level needs every check at that level and below. The thresholds are editable per profile; the level names are fixed so customers compare.*", ""]
+    return L
+
+
+def html_rubric(r: dict, actions: Optional[list] = None) -> str:
+    if not r or not r.get("checks"):
+        return ""
+    head = e(rubric_headline(r).replace("**", ""))
+    rows = "".join(f'<tr><td>{e(lv["level"].capitalize())}</td><td class="n">{lv["passed"]} of {lv["total"]}</td><td class="n">{lv["failed"]}</td><td class="n">{lv["not_measured"]}</td></tr>' for lv in r["levels"])
+    nxt = ""
+    if r["blocking"]:
+        items = []
+        for c in r["blocking"]:
+            close = _closing_actions(c, actions)
+            items.append(f'<li><strong>{e(c["title"])}</strong><br><span class="warn">now {e(_fmt_metric(c["metric"], c["value"]))}, needs {e(_fmt_target(c))}.'
+                         + (f" Closes with: {e('; '.join(close))}." if close else "") + "</span></li>")
+        nxt = f'<h3 style="font-size:14px;margin:12px 0 4px">Next to pass for {e(r["next_level"].capitalize())}</h3><ul>{"".join(items)}</ul>'
+    um = ""
+    if r["unmeasured"]:
+        um = '<p class="warn">Not measured, so neither passed nor blocking: ' + e("; ".join(c["title"] for c in r["unmeasured"][:5])) + ".</p>"
+    return (f'<section aria-labelledby="lv"><h2 id="lv">Maturity level</h2><p class="lvl"><strong>{head}</strong></p>'
+            f'<table><thead><tr><th>Level</th><th class="n">Passed</th><th class="n">Failed</th><th class="n">Not measured</th></tr></thead><tbody>{rows}</tbody></table>{nxt}{um}'
+            '<p class="warn">A level needs every check at that level and below. Thresholds are editable per profile; level names are fixed so customers compare.</p></section>')
+
+
+# --------------------------------------------------------------------- views
+
+def _bar(rate: float) -> str:
+    return (f'<div style="background:var(--grid);border-radius:4px;height:8px;min-width:90px"><div style="width:{max(0.0, min(rate, 1.0)) * 100:.0f}%;'
+            'background:var(--s1);height:8px;border-radius:4px"></div></div>')
+
+
+def md_views(v: dict) -> list[str]:
+    if not v:
+        return []
+    L = ["## Adoption by use case", "", "Capability switched on, against capability that applies, grouped by what it is for.", "",
+         "| Use case | In use | Rate | State | Biggest gap |", "|---|---|---|---|---|"]
+    for u in v["use_cases"]:
+        L.append(f"| {u['label']} | {u['active']} of {u['relevant']} | {u['rate']:.0%} | {u['state']} | {u['biggest_gap'] or '-'} |")
+    L += ["", "## Adoption by security framework function", "",
+          "NIST CSF 2.0 functions, read as capability adoption. This is not a compliance statement: Govern and much of Identify are organisational work that no product satisfies.", "",
+          "| Function | In use | Rate |", "|---|---|---|"]
+    for f, x in v["csf"]["functions"].items():
+        L.append(f"| {f.capitalize()} | " + (f"{x['active']} of {x['relevant']} | {x['rate']:.0%} |" if x["rate"] is not None else "no capability in this catalogue serves it | - |"))
+    if v["csf"]["note"]:
+        L += ["", v["csf"]["note"]]
+    return L + [""]
+
+
+def html_views(v: dict) -> str:
+    if not v:
+        return ""
+    rows = "".join(f'<tr><td>{e(u["label"])}</td><td class="n">{u["active"]} of {u["relevant"]}</td><td>{_bar(u["rate"])}</td><td class="n">{u["rate"]:.0%}</td>'
+                   f'<td>{e(u["state"])}</td><td>{e(u["biggest_gap"] or "-")}</td></tr>' for u in v["use_cases"])
+    frows = "".join(f'<tr><td>{e(f.capitalize())}</td>' + (f'<td class="n">{x["active"]} of {x["relevant"]}</td><td>{_bar(x["rate"])}</td><td class="n">{x["rate"]:.0%}</td></tr>'
+                    if x["rate"] is not None else '<td colspan="3" class="warn">no capability in this catalogue serves it</td></tr>') for f, x in v["csf"]["functions"].items())
+    note = f'<p class="warn">{e(v["csf"]["note"])}</p>' if v["csf"]["note"] else ""
+    return ('<section aria-labelledby="uc"><h2 id="uc">Adoption by use case</h2>'
+            '<p class="warn">Capability switched on, against capability that applies, grouped by what it is for.</p>'
+            f'<table><thead><tr><th>Use case</th><th class="n">In use</th><th></th><th class="n">Rate</th><th>State</th><th>Biggest gap</th></tr></thead><tbody>{rows}</tbody></table></section>'
+            '<section aria-labelledby="cs"><h2 id="cs">Adoption by security framework function</h2>'
+            '<p class="warn">NIST CSF 2.0 functions, read as capability adoption. Not a compliance statement: Govern and much of Identify are organisational work that no product satisfies.</p>'
+            f'<table><thead><tr><th>Function</th><th class="n">In use</th><th></th><th class="n">Rate</th></tr></thead><tbody>{frows}</tbody></table>{note}</section>')
+
+
+# ------------------------------------------------------------------- renewal
+
+_STATUS_WORD = {"ready": "ready", "watch": "watch", "at_risk": "at risk"}
+
+
+def renewal_headline(r: dict) -> str:
+    when = (f"in {r['days']} days" if r["days"] >= 0 else f"{-r['days']} days ago") + f" ({r['date']})"
+    return f"Renewal {when}: **{_STATUS_WORD[r['status']]}**" + (f", {r['arr']:,.0f} of annual revenue on the line." if r["status"] != "ready" else ".")
+
+
+def md_renewal(r: Optional[dict]) -> list[str]:
+    if not r:
+        return []
+    L = ["## Renewal readiness", "", renewal_headline(r), "", "| Signal | Status | Evidence |", "|---|---|---|"]
+    for s in r["signals"]:
+        L.append(f"| {s['label']} | {s['status'].replace('_', ' ')} | {s['detail']} |")
+    L.append("")
+    if r["headroom"]:
+        L += ["Expansion headroom, where a use case has barely started: " + ", ".join(r["headroom"]) + ".", ""]
+    L += ["*A checklist of leading indicators, not a prediction: with no renewal history to learn from, any probability would be invented.*", ""]
+    return L
+
+
+def html_renewal(r: Optional[dict]) -> str:
+    if not r:
+        return ""
+    rows = "".join(f'<tr><td>{e(s["label"])}</td><td>{e(s["status"].replace("_", " "))}</td><td>{e(s["detail"])}</td></tr>' for s in r["signals"])
+    head = e(renewal_headline(r).replace("**", ""))
+    hr = f'<p>Expansion headroom, where a use case has barely started: {e(", ".join(r["headroom"]))}.</p>' if r["headroom"] else ""
+    return (f'<section aria-labelledby="rn"><h2 id="rn">Renewal readiness</h2><p><strong>{head}</strong></p>'
+            f'<table><thead><tr><th>Signal</th><th>Status</th><th>Evidence</th></tr></thead><tbody>{rows}</tbody></table>{hr}'
+            '<p class="warn">A checklist of leading indicators, not a prediction: with no renewal history to learn from, any probability would be invented.</p></section>')

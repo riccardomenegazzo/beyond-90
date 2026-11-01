@@ -25,7 +25,7 @@ from .planner import Plan
 from .playbooks import Action
 from .report import pct, pts
 from .scoring import STAGE_NAMES, Score
-from .sections import md_plan
+from .sections import md_plan, md_renewal, rubric_headline
 
 LEAK_LABEL = {
     "L1": "Accounts outside the platform",
@@ -40,7 +40,7 @@ LEAK_LABEL = {
 
 def render_qbr(score: Score, actions: list[Action], previous: Optional[dict] = None, quarter: str = "", *,
                attribution: Optional[Attribution] = None, forecast: Optional[dict] = None, plan: Optional[Plan] = None,
-               candor: Optional[list[CandorItem]] = None) -> str:
+               candor: Optional[list[CandorItem]] = None, renewal: Optional[dict] = None) -> str:
     title = f"Quarterly business review: {score.customer}" + (f", {quarter}" if quarter else "")
     yield_actions = [a for a in actions if a.leak != "Relationship"]
     by_leak: dict[str, list[Action]] = defaultdict(list)
@@ -97,6 +97,12 @@ def render_qbr(score: Score, actions: list[Action], previous: Optional[dict] = N
             L.append(f"The next checkpoint is {pct(score.target['next_checkpoint'], 0)}.")
     else:
         L.append("No open gaps were found at this ceiling. The job now is to keep the level as the estate grows and the product ships.")
+    if score.rubric and score.rubric.get("checks"):
+        L += ["", rubric_headline(score.rubric)]
+        if score.rubric["blocking"]:
+            L.append("")
+            L += [f"- {c['title']}." for c in score.rubric["blocking"][:3]]
+            L.append("")
     u = score.universe
     if u and u.get("estimable") and u["unseen_estimate"] >= 1:
         L.append(f"One caveat: about {u['unseen_estimate']:.0f} {score.terms.get('unit', 'account')}(s) are probably known to no source at all; if they are unconnected, L1 is {pct(u['pessimistic_l1'])}.")
@@ -134,6 +140,14 @@ def render_qbr(score: Score, actions: list[Action], previous: Optional[dict] = N
     low = [e for e in score.entitlements if e["below_target"]]
     if low:
         L += ["Licensed capacity below target: " + "; ".join(f"{e['unit']} {e['used']:g}/{e['licensed']:g} ({e['utilization']:.0%})" for e in low) + ".", ""]
+
+    if score.views:
+        thin = [u for u in score.views["use_cases"] if u["state"] != "deep"][:6]
+        L += ["## Where adoption is thin, by what it is for" if thin else "## Adoption by what it is for", "", "| Use case | In use | State | Biggest gap |", "|---|---|---|---|"]
+        L += [f"| {u['label']} | {u['active']} of {u['relevant']} ({u['rate']:.0%}) | {u['state']} | {u['biggest_gap'] or '-'} |" for u in (thin or score.views['use_cases'][:3])]
+        L.append("")
+        if score.views["csf"]["note"]:
+            L += [score.views["csf"]["note"], ""]
 
     L += render_candor_markdown(candor or [], limit=5)
 
@@ -174,6 +188,8 @@ def render_qbr(score: Score, actions: list[Action], previous: Optional[dict] = N
 
     # For the TAM only.
     L += ["---", "", "## For you only: remove before sharing", ""]
+    if renewal:
+        L += [line.replace("## Renewal readiness", "### Renewal readiness") for line in md_renewal(renewal)]
     rel = score.relationship
     if rel:
         L += ["### The relationship", ""]

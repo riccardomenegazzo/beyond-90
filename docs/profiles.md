@@ -7,6 +7,7 @@ Beyond 90 measures how much of a security product a customer has actually put to
 | `resource_types.json` | The asset types the product should see, per platform it covers (`expected`), a short description, and the words it uses (`terms`) |
 | `modules.json` | The capabilities the product ships, each with the release it appeared in (`since`), the platforms it applies to, and the asset types it needs |
 | `playbooks.json` | Optional. Playbooks that override the generic ones by id (title, why, steps, success); anything not overridden is inherited |
+| `rubric.json` | Optional. The maturity ladder: checks at bronze, silver and gold. Defaults to the shared one; a profile may replace it (level names are fixed, checks and thresholds are yours) |
 
 ## Shipped profiles
 
@@ -56,7 +57,7 @@ The fit is best where the product has a coverage question (what is connected), a
 
 1. Copy a shipped profile directory to start from: `src/beyond90/data/` (the `cnapp` files) or `src/beyond90/data/profiles/endpoint/`.
 2. Edit `resource_types.json`: your platforms and the asset types each should have, plus `terms`.
-3. Edit `modules.json`: one entry per capability, with the release it first shipped in. Keep `since` honest: it is what makes the bar move and what lets the report say "the customer improved, the bar moved too".
+3. Edit `modules.json`: one entry per capability, with the release it first shipped in. Keep `since` honest: it is what makes the bar move and what lets the report say "the customer improved, the bar moved too". Give each capability a `use_case` (the outcome the customer buys it for; labels go in the top-level `use_cases` map) and a `csf` list (the NIST CSF 2.0 functions it serves: identify, protect, detect, respond, recover). A test requires both.
 4. Override only the playbooks whose wording would be wrong for your product.
 5. Run with `--catalogue-dir path/to/your/profile`, check it with `beyond90 catalogue --catalogue-dir ...`, and read `tests/test_profiles.py` for the consistency rules a profile must satisfy.
 

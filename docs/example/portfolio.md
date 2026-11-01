@@ -2,11 +2,21 @@
 
 ARR-weighted Yield: **83.3%** across 3 customer(s).
 
-| Customer | ARR | Yield | Legacy | L1 | L2 | L3 | L4 | Change | Top action |
-|---|---|---|---|---|---|---|---|---|---|
-| Contoso Bank (mock) | 1,250,000 | 91.0% | 98.6% | 97.7% | 99.7% | 96.6% | 96.7% | - | Adopt Workflow and remediation automation on 35 account(s) |
-| Northwind (mock) | 480,000 | 72.6% | 92.0% | 90.1% | 97.3% | 92.7% | 89.4% | - | Give unowned findings an owner and a decision (13) |
-| Fabrikam Labs (mock) | 96,000 | 37.7% | 90.0% | 81.5% | 94.1% | 64.9% | 75.7% | - | Give unowned findings an owner and a decision (11) |
+| Customer | ARR | Yield | Level | Legacy | L1 | L2 | L3 | L4 | Change | Top action |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Contoso Bank (mock) | 1,250,000 | 91.0% | Silver | 98.6% | 97.7% | 99.7% | 96.6% | 96.7% | - | Adopt Workflow and remediation automation on 35 account(s) |
+| Northwind (mock) | 480,000 | 72.6% | Bronze | 92.0% | 90.1% | 97.3% | 92.7% | 89.4% | - | Give unowned findings an owner and a decision (13) |
+| Fabrikam Labs (mock) | 96,000 | 37.7% | Bronze | 90.0% | 81.5% | 94.1% | 64.9% | 75.7% | - | Give unowned findings an owner and a decision (11) |
+
+## Renewals
+
+3 customer(s) have a renewal date. Revenue at risk inside the window with at least one risk signal: **576,000**.
+
+| Customer | Renewal | Days | ARR | Status | Signals needing attention |
+|---|---|---|---|---|---|
+| Fabrikam Labs (mock) | 2026-12-15 | 45 | 96,000 | at risk | adoption level, licences in use, executive sponsor, more than one relationship, promises kept, critical findings handled |
+| Northwind (mock) | 2027-02-28 | 120 | 480,000 | at risk | adoption level, licences in use, executive sponsor, promises kept, key contacts reached recently, critical findings handled |
+| Contoso Bank (mock) | 2027-09-30 | 334 | 1,250,000 | ready | - |
 
 ## Patterns across customers (one-to-many candidates)
 

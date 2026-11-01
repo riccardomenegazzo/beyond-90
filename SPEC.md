@@ -1,4 +1,4 @@
-# Beyond 90: specification v0.9
+# Beyond 90: specification v0.10
 
 An adoption engine for Technical Account Managers. It measures how much of a customer's cloud estate is really covered and operated through a security platform, and turns every gap into an action. The bar keeps moving: when a customer grows or the product ships something, the denominators grow with it.
 
@@ -118,10 +118,6 @@ Candor items are derived only from fields already computed; each carries its evi
 
 The app is a client-side wrapper. It must never send input data off the page, must load nothing from a third party and must produce the same numbers as the CLI for the same files; the first two are enforced by the page's Content Security Policy and the build test, the third by `tests/test_web.py`.
 
-## 15e. Input quality (0.8)
-
-`quality.assess` returns checks with status `ok`, `note` or `weak` and a confidence: `low` with any weak check, `medium` with any note, otherwise `high`. Checks: independent sources present among billing, org and SSO (none is weak, one is a note); share of connected accounts with inventory rows and with activation rows (below 50% weak, below 90% note, none at all weak); newest finding event older than 21 days (note) or 63 days (weak); at least five open findings past the triage window with neither owner nor decision (weak); fewer than eight accounts (note); many unconnected accounts with no owner and no spend (note). Confidence describes the inputs only.
-
 ## 15d. Provenance, compatibility and the workspace (0.7)
 
 **Fingerprint.** For each input file (`customer.toml`, `accounts.csv`, `inventory.csv`, `activations.csv`, `findings.csv`, `teams.csv`, `entitlements.csv`, `contacts.csv`, `commitments.csv`) the file hash is SHA-256 of its bytes after removing a leading byte-order mark and turning CRLF and CR into LF. The input hash is SHA-256 of the UTF-8 text made of `<name>\t<file hash>\n` for each present file, sorted by name. Files that are not in the list never contribute. `Score.provenance` holds: engine version, schema version, input hash, per-file hashes, catalogue hash, ceiling and baseline.
@@ -132,9 +128,29 @@ The app is a client-side wrapper. It must never send input data off the page, mu
 
 **Workspace file (browser).** `{format: "beyond90-workspace", version: 1, exported_with, snapshots: [...]}` plus any unknown fields. A snapshot is `{id, customer, as_of, personal_excluded, saved_on, files}` plus unknown fields; `id` is the input hash of `files`. Importing refuses a newer major version, rejects a snapshot whose `id` is not the hash of its `files`, and merges by union on `id` (earliest `saved_on`; a deterministic choice among conflicting unknown values). Deletion does not propagate.
 
+## 15e. Input quality (0.8)
+
+`quality.assess` returns checks with status `ok`, `note` or `weak` and a confidence: `low` with any weak check, `medium` with any note, otherwise `high`. Checks: independent sources present among billing, org and SSO (none is weak, one is a note); share of connected accounts with inventory rows and with activation rows (below 50% weak, below 90% note, none at all weak); newest finding event older than 21 days (note) or 63 days (weak); at least five open findings past the triage window with neither owner nor decision (weak); fewer than eight accounts (note); many unconnected accounts with no owner and no spend (note). Confidence describes the inputs only.
+
 ## 15f. Profiles (0.9)
 
 A profile is a catalogue (`resource_types.json`, `modules.json`, optional `playbooks.json`) for one kind of security product. `cnapp` is the default; `endpoint` ships with it; `--catalogue-dir` loads your own. A customer selects one with `[customer] profile = "name"`; the CLI and the browser app read it, a `--profile` that contradicts it is an error, and a portfolio or book of mixed profiles is refused. A profile's `playbooks.json` overrides the generic playbooks by id, field by field. `terms` (`estate`, `unit`, `units`) set the words the engine uses for the unit of coverage and the estate; text the engine writes passes through them, a customer's own text never does. The stages, formulas, checks and every other rule in this document are the same for every profile, and each score records its profile and catalogue hash in its provenance. See `docs/profiles.md`.
+
+## 15g. Maturity ladder (0.10)
+
+A rubric is a list of checks `{id, level, title, metric, op, value, playbooks}` with level in bronze, silver, gold, an operator in `>= > <= < ==` and a numeric value, over these metrics: `independent_sources`, `l1`..`l4`, `yield`, `unseen_share` (1 minus universe completeness), `critical_open`, `critical_unowned`, `critical_overdue` (open criticals older than the critical SLA), `mttr_p90_ratio` (90th percentile of critical time to remediate over the SLA), `downgrade_suspects`, `min_utilization`, `reach`, `quality_weak`, `sponsor` (1 or 0), `reliability_rate`, `overdue_commitments`. A metric that cannot be measured is `None` and its check is `not_measured`. The level is the highest of basic, bronze, silver, gold such that no check at that level or any lower level fails. `blocking` lists the failing checks at the next level; the level is `provisional` when any not-measured check sits at or below the next level (or anywhere, at gold). A check's risk weight is the level it sits at. Level names are fixed; checks and thresholds come from `rubric.json` (the shared default, or a profile's own) and are validated at load. Each result carries the measured value and target.
+
+## 15h. Views (0.10)
+
+Each module carries a `use_case` and a list `csf` of NIST CSF 2.0 functions. From the L3 pairs (an active, connected unit and a module that applies to it): per use case, active over applicable, a state (`not started` at 0, `early` below 50%, `partial` below 90%, `deep`) and the module with the most inactive pairs; per function, the same counts (a module serving two functions counts in both) and a note when the best and worst function differ by 25 points or more. Functions with no applicable module are reported as such, not as zero. Govern is not measured. The view says it is not a compliance statement.
+
+## 15i. Renewal readiness (0.10)
+
+With `customer.renewal_date`, signals are evaluated with a status of ok, watch, risk or not measured: adoption level (basic risk, bronze watch), least-used licence (below half the target risk, below target watch), executive sponsor (absent risk), single-threaded (watch), promises (rate below 50% risk, any overdue watch), key contacts stale (watch), critical findings past deadline (watch), direction of travel against a previous snapshot (a fall of 5 points risk, 2 watch), weak input checks (watch). The status is the worst measured signal: ready, watch or at_risk. `arr_at_risk` is the customer's ARR when the status is at_risk and the date is within `renewal_window_days` (or passed). Headroom lists use cases that are not started or early. There is no probability: without a renewal history it would be invented.
+
+## 15j. Success plan (0.10)
+
+`successplan` renders outcomes (the three thinnest use cases and the weakest stage, with targets of 90% and 95%), measures (Yield, ladder level, the next checks, the four stages), 30, 60 and 90 day milestones from the roadmap, the eight highest-ranked actions with owners and due dates, the decisions needed, the commitments, the risks (the J-curve dip, assumed-blocked work, hidden units, weak inputs) and signature lines. It never includes relationship ratings or renewal signals.
 
 ## 16. Positioning against the platform's own views
 
@@ -155,8 +171,9 @@ Security platforms commonly ship their own adoption or maturity views and an own
 5. 0.6: browser app on GitHub Pages.
 6. 0.7: provenance, tolerant reader, percentiles, local-first workspace, offline.
 7. 0.8: input quality, whole-book mode in the browser.
-8. 0.9 (this): profiles (cloud and endpoint), vendor-neutral terms.
-9. 1.0: connector interface and a first verified connector against a real tenant; criticality weighting; readiness checklist import; per-finding ownership sources.
+8. 0.9: profiles (cloud and endpoint), vendor-neutral terms.
+9. 0.10 (this): maturity ladder, use-case and framework views, renewal readiness, success plan.
+10. 1.0: connector interface and a first verified connector against a real tenant; criticality weighting; readiness checklist import; per-finding ownership sources.
 
 ## References
 

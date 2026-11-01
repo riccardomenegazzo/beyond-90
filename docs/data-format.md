@@ -24,6 +24,7 @@ name = "Northwind"
 tier = "enterprise"      # free text
 arr = 480000             # used for the portfolio weighting
 as_of = 2026-10-31       # the date the data describes; snapshots are keyed by it
+renewal_date = 2027-03-31  # optional: turns on the renewal readiness checklist
 
 [settings]
 ceiling_version = "2026.4"      # catalogue version the score is measured against
@@ -34,6 +35,7 @@ access_review_days = 90
 downgrade_window_days = 3       # anti-gaming window around an SLA deadline
 mttr_lookback_days = 90
 entitlement_target = 0.8
+renewal_window_days = 180       # a renewal this close, with a risk signal, puts its ARR "at risk"
 
 [settings.sla_days]
 critical = 7

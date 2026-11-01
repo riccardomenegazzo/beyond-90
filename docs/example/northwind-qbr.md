@@ -28,6 +28,13 @@ Real adoption is **72.6%**, not the 92.0% the legacy metric shows.
 It moved +5.2 points since 2026-09-30: the customer moved +6.8, the bar moved -1.7 (new capabilities raised the denominator).
 At 8 hours a week the plan reaches **97.6%** in 14 weeks, with the 90% checkpoint in week 7.
 **Expect a dip first:** in week 3 Yield falls 1.1 points because newly connected accounts enter the score with nothing covered yet. That is the cost of seeing them, not a regression.
+
+Maturity level: **Bronze**. 4 checks stand between you and Silver.
+
+- At least 95% of known units are connected.
+- No open critical finding is past its deadline.
+- No severity downgrade lands just before a deadline.
+
 One caveat: about 6 account(s) are probably known to no source at all; if they are unconnected, L1 is 85.8%.
 
 ## Three reasons
@@ -62,6 +69,13 @@ Critical findings open: 11. Consecutive critical fixes within SLA: 2. Critical f
 Reach: 66.1% across 14 teams with cloud assets.
 
 Licensed capacity below target: sensors 540/1000 (54%); code_seats 180/300 (60%); defend_gb 2100/3000 (70%).
+
+## Where adoption is thin, by what it is for
+
+| Use case | In use | State | Biggest gap |
+|---|---|---|---|
+| Remediation and response automation | 78 of 109 (72%) | partial | Workflow and remediation automation |
+| Exposure management | 83 of 109 (76%) | partial | External attack surface |
 
 ## What we should say plainly
 
@@ -148,6 +162,24 @@ Small, specific, on time:
 ---
 
 ## For you only: remove before sharing
+
+### Renewal readiness
+
+Renewal in 120 days (2027-02-28): **at risk**, 480,000 of annual revenue on the line.
+
+| Signal | Status | Evidence |
+|---|---|---|
+| Adoption level | watch | Maturity level bronze; Yield 73%. |
+| Licences in use | watch | The least used is sensors at 54% of 1000 (target 80%). |
+| Executive sponsor | risk | No executive sponsor is on record. |
+| More than one relationship | ok | 4 contact(s) spoken to recently. |
+| Promises kept | watch | 2 promise(s) past their date. 50% kept on time. |
+| Key contacts reached recently | watch | 1 key contact(s) not spoken to in 90 days. |
+| Critical findings handled | watch | 11 critical open, 11 past deadline. |
+| Direction of travel | ok | Yield moved +5.2 points since 2026-09-30. |
+| Confidence in the numbers | ok | Inputs pass the checks that matter. |
+
+*A checklist of leading indicators, not a prediction: with no renewal history to learn from, any probability would be invented.*
 
 ### The relationship
 

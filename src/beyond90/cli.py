@@ -34,11 +34,13 @@ from .playbooks import generate_actions
 from .portfolio import load_portfolio, render_portfolio_json, render_portfolio_markdown
 from .qbr import render_qbr
 from .radar import load_threats, release_radar, render_radar_json, render_radar_markdown, render_radar_text, threat_radar
+from .renewal import compute_renewal
 from .report import pct, render_html, render_json, render_markdown, render_text
 from .scoring import compute_score
 from .sections import md_plan
 from .simulate import RampModel
 from .store import Store
+from .successplan import render_success_plan
 from .universe import render_universe
 
 CUSTOMER_TOML = """[customer]
@@ -121,6 +123,7 @@ def _extras(args, cat, data, score, previous) -> tuple[dict, Optional[dict]]:
         extras["forecast"] = forecast_zero_critical(data)
     if not getattr(args, "no_plan", False):
         extras["plan"] = _plan(args, data, cat)
+    extras["renewal"] = compute_renewal(data, score, previous)
     extras["candor"] = candor_items(score, data, cat, plan=extras.get("plan"), forecast=extras.get("forecast"), attribution=extras.get("attribution"))
     return extras, previous
 
@@ -371,6 +374,13 @@ def cmd_qbr(args) -> int:
     return 0
 
 
+def cmd_successplan(args) -> int:
+    cat, data, _, score, actions, _, previous = _prepare(args)
+    extras, previous = _extras(args, cat, data, score, previous)
+    _emit(render_success_plan(score, actions, extras.get("plan"), owner=args.owner or "", review=args.review), args.out)
+    return 0
+
+
 def cmd_history(args) -> int:
     store = Store(args.store)
     rows = store.history(args.customer)
@@ -581,6 +591,14 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--quarter", help="label for the title, e.g. Q4 2026")
     sp.add_argument("--out", help="write to this file instead of stdout")
     sp.set_defaults(func=cmd_qbr)
+
+    sp = sub.add_parser("successplan", help="draft a success plan the customer can sign: outcomes, measures, milestones, owners, risks")
+    common(sp)
+    analyses(sp)
+    sp.add_argument("--owner", help="your name, for the document")
+    sp.add_argument("--review", default="every month", help='review cadence, e.g. "every month"')
+    sp.add_argument("--out")
+    sp.set_defaults(func=cmd_successplan)
 
     sp = sub.add_parser("history", help="show stored snapshots for a customer")
     sp.add_argument("customer", help="customer name as in customer.toml")

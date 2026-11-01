@@ -59,6 +59,8 @@ SLA = {"critical": 7, "high": 30, "medium": 90, "low": 180}
 
 # People and promises. Ratings are 1-10: credibility, reliability, intimacy, self-orientation.
 # Days are "days before as_of" for contacts, absolute dates for commitments (promised, due, done).
+RENEWALS = {"northwind": "2027-02-28", "contoso-bank": "2027-09-30", "fabrikam-labs": "2026-12-15"}   # invented
+
 CONTACTS = {
     "northwind": [
         ("n-01", "Priya Raman", "champion", "platform", 12, (8, 8, 6, 3)),
@@ -275,6 +277,7 @@ name = "{name.replace("-", " ").title()} (mock)"
 tier = "{p["tier"]}"
 arr = {p["arr"]}
 as_of = {AS_OF.isoformat()}
+renewal_date = {RENEWALS[name]}
 
 [settings]
 ceiling_version = "2026.4"

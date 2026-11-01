@@ -83,7 +83,7 @@ def test_html_outputs_never_contain_live_markup_from_data(name):
 @pytest.mark.parametrize("name", NASTY)
 def test_markdown_tables_stay_rectangular_and_headings_cannot_be_injected(name):
     r = analyze_files(files_with(name))
-    for key in ("report_markdown", "qbr_markdown", "roadmap_markdown"):
+    for key in ("report_markdown", "qbr_markdown", "roadmap_markdown", "success_plan_markdown"):
         assert md_tables_are_rectangular(r[key]) == [], (key, md_tables_are_rectangular(r[key])[:2])
         assert "\n# Injected heading" not in r[key]
 

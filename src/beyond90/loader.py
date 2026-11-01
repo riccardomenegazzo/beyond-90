@@ -177,10 +177,10 @@ KNOWN_COLUMNS: dict[str, tuple[str, ...]] = {
     "contacts.csv": ("id", "name", "role", "team", "influence", "last_contact", "credibility", "reliability", "intimacy", "self_orientation"),
     "commitments.csv": ("id", "contact_id", "description", "promised_on", "due_on", "done_on"),
 }
-KNOWN_CUSTOMER_KEYS = ("name", "tier", "arr", "as_of", "schema_version", "profile")
+KNOWN_CUSTOMER_KEYS = ("name", "tier", "arr", "as_of", "schema_version", "profile", "renewal_date")
 KNOWN_SETTINGS_KEYS = ("ceiling_version", "baseline_ceiling", "triage_window_days", "new_account_days", "access_review_days",
                        "downgrade_window_days", "mttr_lookback_days", "contact_stale_days", "commitment_lookback_days",
-                       "entitlement_target", "sla_days")
+                       "renewal_window_days", "entitlement_target", "sla_days")
 
 
 def _suggest(name: str, known: tuple[str, ...]) -> str:
@@ -217,7 +217,7 @@ def _settings(raw: dict, errors: list[str]) -> Settings:
             except ValueError as exc:
                 errors.append(f"customer.toml: settings.{key}: {exc}")
     for key in ("triage_window_days", "new_account_days", "access_review_days", "downgrade_window_days", "mttr_lookback_days",
-                "contact_stale_days", "commitment_lookback_days"):
+                "contact_stale_days", "commitment_lookback_days", "renewal_window_days"):
         if key in raw:
             value = raw[key]
             if isinstance(value, int) and not isinstance(value, bool) and value >= 0:
@@ -293,6 +293,16 @@ def load_customer(
     if not isinstance(as_of, date):
         errors.append("customer.toml: customer.as_of is required (YYYY-MM-DD)")
         as_of = date.today()
+    renewal = cust.get("renewal_date")
+    if isinstance(renewal, str):
+        try:
+            renewal = date.fromisoformat(renewal)
+        except ValueError:
+            errors.append("customer.toml: customer.renewal_date must be YYYY-MM-DD")
+            renewal = None
+    if renewal is not None and not isinstance(renewal, date):
+        errors.append("customer.toml: customer.renewal_date must be YYYY-MM-DD")
+        renewal = None
     arr = cust.get("arr", 0)
     if not isinstance(arr, (int, float)) or isinstance(arr, bool) or arr < 0:
         errors.append("customer.toml: customer.arr must be a non-negative number")
@@ -479,7 +489,7 @@ def load_customer(
             name=name, tier=clean_text(str(cust.get("tier", ""))), arr=float(arr), as_of=as_of, settings=settings,
             accounts=accounts, inventory=inventory, activations=activations, findings=findings,
             teams=teams, entitlements=entitlements, contacts=contacts, commitments=commitments,
-            inputs=hash_directory(base), schema_version=schema_version,
+            inputs=hash_directory(base), schema_version=schema_version, renewal_date=renewal,
         ),
         warnings,
     )

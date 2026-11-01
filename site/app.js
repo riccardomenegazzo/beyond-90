@@ -263,7 +263,7 @@ function kpi(value, label) {
 
 function showResults() {
   const r = state.result;
-  $("kpis").replaceChildren(kpi(pct(r.yield), "Yield"), kpi(pct(r.reach), "Reach"), kpi(String(r.actions), "Open actions"), kpi(r.confidence, "Confidence in the inputs"), kpi(r.profile, "Catalogue profile"), kpi(r.customer, "Customer as of " + r.as_of));
+  $("kpis").replaceChildren(kpi(pct(r.yield), "Yield"), kpi(pct(r.reach), "Reach"), kpi(String(r.actions), "Open actions"), kpi(r.level.charAt(0).toUpperCase() + r.level.slice(1) + (r.level_provisional ? " (provisional)" : ""), "Maturity level"), kpi(r.confidence, "Confidence in the inputs"), kpi(r.profile, "Catalogue profile"), kpi(r.customer, "Customer as of " + r.as_of));
   renderCompare();
   document.querySelector(".bar").hidden = false;
   $("book-table").hidden = true;
@@ -285,6 +285,7 @@ function renderCompare() {
 const SINGLE_TABS = [
   { id: "report", label: "Report", key: "report_html", file: "beyond90-report.html", type: "text/html", kind: "html" },
   { id: "qbr", label: "QBR draft", key: "qbr_markdown", file: "beyond90-qbr.md", type: "text/markdown", kind: "md" },
+  { id: "plan", label: "Success plan", key: "success_plan_markdown", file: "beyond90-success-plan.md", type: "text/markdown", kind: "md" },
   { id: "roadmap", label: "Roadmap", key: "roadmap_markdown", file: "beyond90-roadmap.md", type: "text/markdown", kind: "md" },
   { id: "summary", label: "Summary", key: "report_markdown", file: "beyond90-summary.md", type: "text/markdown", kind: "md" },
   { id: "json", label: "JSON", key: "score_json", file: "beyond90-score.json", type: "application/json", kind: "json" },

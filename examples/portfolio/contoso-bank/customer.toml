@@ -3,6 +3,7 @@ name = "Contoso Bank (mock)"
 tier = "strategic"
 arr = 1250000
 as_of = 2026-10-31
+renewal_date = 2027-09-30
 
 [settings]
 ceiling_version = "2026.4"

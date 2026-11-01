@@ -26,13 +26,19 @@ from .sections import (
     html_plan,
     html_quality,
     html_relationship,
+    html_renewal,
+    html_rubric,
     html_universe,
+    html_views,
     md_attribution,
     md_forecast,
     md_plan,
     md_quality,
     md_relationship,
+    md_renewal,
+    md_rubric,
     md_universe,
+    md_views,
 )
 
 STAGES = ("L1", "L2", "L3", "L4")
@@ -100,7 +106,7 @@ def render_text(score: Score, actions: list[Action], top: int = 8) -> str:
 
 def render_markdown(score: Score, actions: list[Action], history: Optional[list[dict]] = None, previous: Optional[dict] = None, top: int = 15,
                     *, attribution: Optional[Attribution] = None, forecast: Optional[dict] = None, plan: Optional[Plan] = None,
-                    candor: Optional[list[CandorItem]] = None) -> str:
+                    candor: Optional[list[CandorItem]] = None, renewal: Optional[dict] = None) -> str:
     L: list[str] = [f"# {score.customer}: adoption score", ""]
     L.append(f"As of {score.as_of} · ceiling {score.ceiling_version} · baseline {score.baseline['ceiling']}")
     L.append("")
@@ -111,6 +117,8 @@ def render_markdown(score: Score, actions: list[Action], history: Optional[list[
     if d is not None and previous:
         head += f"; {pts(d)} since {previous['as_of']}"
     L += [head + ".", ""]
+    L += md_rubric(score.rubric, actions)
+    L += md_views(score.views)
     units = score.terms.get("units", "accounts")
     L += ["| Stage | Pass rate | Count | Meaning |", "|---|---|---|---|"]
     meaning = {
@@ -133,6 +141,7 @@ def render_markdown(score: Score, actions: list[Action], history: Optional[list[
     L += md_universe(score.universe)
     L += md_quality(score.quality)
     L += md_relationship(score.relationship)
+    L += md_renewal(renewal)
     if score.reach:
         r = score.reach
         L += ["## Reach", "", f"Reach {pct(r['value'])} across {r['teams']} teams with {score.terms.get('estate', 'cloud')} assets.", ""]
@@ -309,7 +318,7 @@ def _leak_summary(score: Score, sid: str) -> list[str]:
 
 def render_html(score: Score, actions: list[Action], history: Optional[list[dict]] = None, previous: Optional[dict] = None, top: int = 15,
                 *, attribution: Optional[Attribution] = None, forecast: Optional[dict] = None, plan: Optional[Plan] = None,
-                candor: Optional[list[CandorItem]] = None) -> str:
+                candor: Optional[list[CandorItem]] = None, renewal: Optional[dict] = None) -> str:
     e = escape
     h: list[str] = []
     d = _delta(score, previous)
@@ -334,6 +343,8 @@ def render_html(score: Score, actions: list[Action], history: Optional[list[dict
     h.append(_svg_checkpoints(score))
     h.append('</section>')
     # waterfall
+    h.append(html_rubric(score.rubric, actions))
+    h.append(html_views(score.views))
     h.append('<section aria-labelledby="wf"><h2 id="wf">Where the score leaks</h2>')
     h.append(_svg_waterfall(score))
     h.append('<details><summary>Table view</summary><table><thead><tr><th>Stage</th><th class="n">Pass rate</th><th class="n">Count</th><th class="n">Yield after</th></tr></thead><tbody>')
@@ -363,6 +374,7 @@ def render_html(score: Score, actions: list[Action], history: Optional[list[dict
     h.append(html_quality(score.quality))
     h.append(html_universe(score.universe))
     h.append(html_relationship(score.relationship))
+    h.append(html_renewal(renewal))
     if plan:
         h.append(html_plan(plan))
     h.append(html_forecast(forecast))

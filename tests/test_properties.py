@@ -123,3 +123,23 @@ def test_attribution_accounts_for_the_whole_change(tmp_path, seed):
     a = explain(compute_score(new, CAT), compute_score(old, CAT).to_dict(), new, CAT)
     assert a.delta_points == pytest.approx(a.yield_to * 100 - a.yield_from * 100, abs=1e-6)
     assert a.customer_points + a.bar_points == pytest.approx(a.delta_points, abs=1e-6)         # no residual: the two parts are the whole change
+
+
+@pytest.mark.parametrize("seed", SEEDS[:25])
+def test_the_ladder_and_the_views_are_consistent_on_random_estates(tmp_path, seed):
+    d = load(tmp_path, estate(seed))
+    if d is None:
+        pytest.skip("empty estate")
+    s = compute_score(d, CAT)
+    r = s.rubric
+    order = ["basic", "bronze", "silver", "gold"]
+    for c in r["checks"]:
+        if order.index(c["level"]) <= order.index(r["level"]) and r["level"] != "basic":
+            assert c["status"] != "fail", (c["id"], r["level"])               # nothing at or below the level may fail
+    if r["next_level"]:
+        assert all(c["level"] == r["next_level"] and c["status"] == "fail" for c in r["blocking"])
+        assert r["blocking"] or any(c["level"] == r["next_level"] and c["status"] != "pass" for c in r["checks"]) or r["next_level"] is None
+    if s.views:
+        assert sum(u["relevant"] for u in s.views["use_cases"]) == s.stages["L3"].denominator
+        assert all(0.0 <= u["rate"] <= 1.0 for u in s.views["use_cases"])
+    assert json.dumps(s.to_dict(), sort_keys=True) == json.dumps(compute_score(d, CAT).to_dict(), sort_keys=True)

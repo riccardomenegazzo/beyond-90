@@ -21,6 +21,7 @@ from pathlib import Path
 from typing import Optional
 
 from .provenance import normalize
+from .rubric import validate as validate_rubric
 
 DATA_DIR = Path(__file__).parent / "data"
 PROFILES_DIR = DATA_DIR / "profiles"
@@ -60,6 +61,8 @@ class Module:
     providers: tuple[str, ...]
     requires_any: tuple[str, ...]
     on_connect: bool = False  # switched on by connecting the account, no extra work (agentless modules)
+    use_case: str = ""        # the outcome the customer bought it for; see Catalogue.use_cases
+    csf: tuple[str, ...] = ()  # NIST CSF 2.0 functions it serves: identify, protect, detect, respond, recover
 
 
 @dataclass(frozen=True)
@@ -90,6 +93,8 @@ class Catalogue:
         profile: str = BASE_PROFILE,
         terms: Optional[dict[str, str]] = None,
         description: str = "",
+        rubric: Optional[dict] = None,
+        use_cases: Optional[dict[str, str]] = None,
     ) -> None:
         self.resource_types = resource_types
         self.expected = expected
@@ -100,6 +105,8 @@ class Catalogue:
         self.profile = profile
         self.terms = {**DEFAULT_TERMS, **(terms or {})}
         self.description = description
+        self.use_cases = use_cases or {}
+        self.rubric = rubric or {"levels": ["bronze", "silver", "gold"], "checks": []}
 
     @classmethod
     def for_directory(cls, directory: str | Path, *, profile: Optional[str] = None, custom_dir: str | Path | None = None) -> Catalogue:
@@ -134,7 +141,10 @@ class Catalogue:
         pb_files = [base / "playbooks.json"] if (base / "playbooks.json").exists() else []
         if overlay is not None:
             pb_files = [overlay / "playbooks.json", *pb_files]
-        digest = hashlib.sha256(name.encode() + b"".join(normalize(f.read_bytes()) for f in [*files, *pb_files])).hexdigest()
+        rubric_file = base / "rubric.json" if (base / "rubric.json").exists() else DATA_DIR / "rubric.json"
+        digest = hashlib.sha256(name.encode() + b"".join(normalize(f.read_bytes()) for f in [*files, *pb_files, rubric_file])).hexdigest()
+        rubric = json.loads(rubric_file.read_text(encoding="utf-8"))
+        validate_rubric(rubric)
         rt = json.loads(files[0].read_text(encoding="utf-8"))
         mods = json.loads(files[1].read_text(encoding="utf-8"))
         merged: dict[str, dict] = {}
@@ -158,6 +168,8 @@ class Catalogue:
                 providers=tuple(m["providers"]),
                 requires_any=tuple(m.get("requires_any", [])),
                 on_connect=bool(m.get("on_connect", False)),
+                use_case=m.get("use_case", ""),
+                csf=tuple(m.get("csf", [])),
             )
             for m in mods["modules"]
         ]
@@ -184,7 +196,7 @@ class Catalogue:
             unknown = [t for t in types if t not in rt["types"]]
             if unknown:
                 raise ValueError(f"catalogue: provider {provider} expects undefined types {unknown}")
-        return cls(rt["types"], rt["expected"], modules, playbooks, rt["version"], digest, name if directory else profile, rt.get("terms"), rt.get("description", ""))
+        return cls(rt["types"], rt["expected"], modules, playbooks, rt["version"], digest, name if directory else profile, rt.get("terms"), rt.get("description", ""), rubric, mods.get("use_cases", {}))
 
     def expected_types(self, provider: str) -> list[str]:
         return list(self.expected.get(provider, []))

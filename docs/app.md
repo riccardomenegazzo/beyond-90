@@ -6,6 +6,10 @@
 
 Drop a customer folder (or pick the files), or press **Try the demo**, then **Run analysis**. You get the report, the QBR draft, the roadmap, the summary and the JSON, each with Copy and Download. Validation shows every problem at once, by file and line.
 
+## What you see
+
+Tiles for Yield, Reach, open actions, **maturity level**, confidence in the inputs and the catalogue profile. Tabs: the report (with the maturity ladder, adoption by use case and by security-framework function, and renewal readiness when `renewal_date` is set), the QBR draft, a **success plan** the customer can sign, the roadmap, a summary and the JSON.
+
 ## A whole book
 
 Choose a folder that contains several customer folders (each with a `customer.toml`), or press **Try the book demo**. The page shows each customer's Yield now and after the plan, the patterns that recur across customers, and where one budget of hours per week does the most good, optimised for ARR-weighted or equal-weighted Yield. A customer with invalid data is reported and the rest carry on. **Open** jumps to one customer's own report.

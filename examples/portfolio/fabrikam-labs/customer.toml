@@ -3,6 +3,7 @@ name = "Fabrikam Labs (mock)"
 tier = "growth"
 arr = 96000
 as_of = 2026-10-31
+renewal_date = 2026-12-15
 
 [settings]
 ceiling_version = "2026.4"

@@ -19,7 +19,9 @@ from .models import CustomerData, Finding
 from .provenance import build as build_provenance
 from .quality import assess
 from .relationship import compute_relationship
+from .rubric import compute_rubric
 from .universe import estimate_universe
+from .views import adoption_views
 
 SEVERITY_RANK = {"low": 0, "medium": 1, "high": 2, "critical": 3}
 CHECKPOINTS = (0.90, 0.95, 0.98)
@@ -41,6 +43,7 @@ class StageResult:
     has_data: bool
     leaks: list[dict] = field(default_factory=list)
     notes: list[str] = field(default_factory=list)
+    detail: dict = field(default_factory=dict)       # extra figures a stage can offer (L3: relevant and active pairs per module)
 
 
 @dataclass
@@ -63,6 +66,8 @@ class Score:
     provenance: dict = field(default_factory=dict)
     quality: dict = field(default_factory=dict)
     terms: dict = field(default_factory=dict)
+    rubric: dict = field(default_factory=dict)
+    views: dict = field(default_factory=dict)
 
     def to_dict(self) -> dict:
         d = asdict(self)
@@ -183,7 +188,8 @@ def stage_l3(data: CustomerData, cat: Catalogue, ceiling: str, *, details: bool 
     value, has = _ratio(num, den)
     notes = [] if has else ["No relevant module/account pairs; L3 is not measurable."]
     leaks = sorted((e for e in per_module.values() if e["inactive"]), key=lambda e: (-e["inactive"], e["module"]))
-    return StageResult("L3", STAGE_NAMES["L3"], num, den, value, has, leaks, notes)
+    modules_detail = {k: {"relevant": v["relevant"], "active": v["relevant"] - v["inactive"]} for k, v in per_module.items()}
+    return StageResult("L3", STAGE_NAMES["L3"], num, den, value, has, leaks, notes, {"modules": modules_detail})
 
 
 def _triaged(data: CustomerData) -> list[Finding]:
@@ -375,7 +381,7 @@ def compute_score(data: CustomerData, cat: Optional[Catalogue] = None, ceiling: 
     warnings: list[str] = []
     for st in (l1, l2, l3, l4):
         warnings.extend(st.notes)
-    return Score(
+    score = Score(
         customer=data.name,
         as_of=data.as_of.isoformat(),
         ceiling_version=ceiling,
@@ -395,3 +401,6 @@ def compute_score(data: CustomerData, cat: Optional[Catalogue] = None, ceiling: 
         terms=dict(cat.terms),
         provenance=build_provenance(data.inputs, cat.digest, ceiling, baseline, data.schema_version, cat.profile) if data.inputs else {},
     )
+    score.rubric = compute_rubric(score, data, cat.rubric)
+    score.views = adoption_views(score, cat)
+    return score
