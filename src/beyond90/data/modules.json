@@ -1,0 +1,92 @@
+{
+  "modules": [
+    {
+      "id": "posture",
+      "name": "Cloud posture and misconfiguration",
+      "category": "cloud",
+      "since": "2025.1",
+      "providers": ["aws", "azure", "gcp", "oci", "kubernetes"],
+      "requires_any": []
+    },
+    {
+      "id": "vulnerability_scanning",
+      "name": "Workload vulnerability scanning",
+      "category": "cloud",
+      "since": "2025.1",
+      "providers": ["aws", "azure", "gcp", "oci"],
+      "requires_any": ["compute", "container_registry", "serverless"]
+    },
+    {
+      "id": "identity_analysis",
+      "name": "Identity and entitlement analysis",
+      "category": "cloud",
+      "since": "2025.1",
+      "providers": ["aws", "azure", "gcp", "oci"],
+      "requires_any": ["identity"]
+    },
+    {
+      "id": "data_security",
+      "name": "Sensitive data discovery and exposure",
+      "category": "cloud",
+      "since": "2025.1",
+      "providers": ["aws", "azure", "gcp", "oci"],
+      "requires_any": ["storage_object", "managed_database"]
+    },
+    {
+      "id": "container_security",
+      "name": "Container and Kubernetes security",
+      "category": "cloud",
+      "since": "2025.1",
+      "providers": ["aws", "azure", "gcp", "oci", "kubernetes"],
+      "requires_any": ["container_registry", "kubernetes"]
+    },
+    {
+      "id": "runtime_sensor",
+      "name": "Runtime sensor",
+      "category": "defend",
+      "since": "2025.1",
+      "providers": ["aws", "azure", "gcp", "oci", "kubernetes"],
+      "requires_any": ["compute", "kubernetes"]
+    },
+    {
+      "id": "cloud_detection",
+      "name": "Cloud log detection and response",
+      "category": "defend",
+      "since": "2025.1",
+      "providers": ["aws", "azure", "gcp", "oci"],
+      "requires_any": []
+    },
+    {
+      "id": "code_scanning",
+      "name": "Code and pipeline scanning",
+      "category": "code",
+      "since": "2025.1",
+      "providers": ["aws", "azure", "gcp", "oci", "kubernetes"],
+      "requires_any": []
+    },
+    {
+      "id": "ai_posture",
+      "name": "AI services posture",
+      "category": "cloud",
+      "since": "2026.1",
+      "providers": ["aws", "azure", "gcp"],
+      "requires_any": ["ai_service"]
+    },
+    {
+      "id": "attack_surface",
+      "name": "External attack surface",
+      "category": "cloud",
+      "since": "2026.2",
+      "providers": ["aws", "azure", "gcp", "oci"],
+      "requires_any": ["compute", "network"]
+    },
+    {
+      "id": "workflow_automation",
+      "name": "Workflow and remediation automation",
+      "category": "cloud",
+      "since": "2026.3",
+      "providers": ["aws", "azure", "gcp", "oci", "kubernetes"],
+      "requires_any": []
+    }
+  ]
+}

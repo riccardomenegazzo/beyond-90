@@ -1,0 +1,209 @@
+"""Turn every gap into an action.
+
+Each action is tied to a playbook in the catalogue and carries an estimate of
+how many points of Yield it is worth. The estimate treats a stage in
+isolation (units closed / stage denominator, times the other stages), so it is
+a ranking aid, not a promise: connecting an account also adds work to L2-L4.
+"""
+
+from __future__ import annotations
+
+from dataclasses import asdict, dataclass, field
+from datetime import timedelta
+from typing import Optional
+
+from .catalogue import Catalogue
+from .models import CustomerData
+from .scoring import Score
+
+ENTITLEMENT_LABELS = {
+    "workloads": "workloads",
+    "sensors": "runtime sensors",
+    "code_seats": "code seats",
+    "defend_gb": "log ingestion (GB/month)",
+}
+
+
+@dataclass
+class Action:
+    id: str
+    playbook: str
+    leak: str
+    title: str
+    detail: str
+    owner: str
+    units: float
+    effect_points: float
+    due: str
+    steps: list[str] = field(default_factory=list)
+    success: str = ""
+
+    def to_dict(self) -> dict:
+        return asdict(self)
+
+
+def _others(score: Score, stage: str) -> float:
+    p = 1.0
+    for sid, st in score.stages.items():
+        if sid != stage:
+            p *= st.value
+    return p
+
+
+def _effect(score: Score, stage: str, units: float) -> float:
+    den = score.stages[stage].denominator
+    if den <= 0:
+        return 0.0
+    return round(100.0 * min(units / den, 1.0) * _others(score, stage), 2)
+
+
+def _short(ids: list[str], n: int = 8) -> str:
+    shown = ", ".join(ids[:n])
+    return shown + (f" (+{len(ids) - n} more)" if len(ids) > n else "")
+
+
+def generate_actions(data: CustomerData, score: Score, cat: Optional[Catalogue] = None) -> list[Action]:
+    cat = cat or Catalogue.load()
+    pb = cat.playbooks
+    actions: list[Action] = []
+
+    def add(pid: str, key: str, detail: str, owner: str, units: float, effect: float, title: Optional[str] = None) -> None:
+        p = pb[pid]
+        actions.append(
+            Action(
+                id=f"{pid}:{key}",
+                playbook=pid,
+                leak=p.leak,
+                title=title or p.title,
+                detail=detail,
+                owner=owner or "unassigned",
+                units=units,
+                effect_points=effect,
+                due=(data.as_of + timedelta(days=p.due_days)).isoformat(),
+                steps=list(p.steps),
+                success=p.success,
+            )
+        )
+
+    # L1: group unconnected accounts by owner.
+    l1 = score.stages["L1"]
+    by_owner: dict[str, list[dict]] = {}
+    for leak in l1.leaks:
+        by_owner.setdefault(leak["owner"] or "unassigned", []).append(leak)
+    for owner, items in sorted(by_owner.items()):
+        spend = sum(i["last_spend"] for i in items)
+        ids = [i["account_id"] for i in items]
+        add(
+            "l1_connect_account",
+            owner,
+            f"{len(items)} account(s) not connected, last spend {spend:,.0f}: {_short(ids)}.",
+            owner,
+            len(items),
+            _effect(score, "L1", len(items)),
+            title=f"Connect {len(items)} account(s) owned by {owner}",
+        )
+    recent_cut = data.as_of - timedelta(days=data.settings.new_account_days)
+    recent = [i for i in l1.leaks if i["created_at"] and i["created_at"] >= recent_cut.isoformat()]
+    if recent:
+        add(
+            "l1_auto_onboarding",
+            "recent",
+            f"{len(recent)} unconnected account(s) were created in the last {data.settings.new_account_days} days: "
+            f"{_short([r['account_id'] for r in recent])}.",
+            "",
+            0,
+            0.0,
+        )
+
+    # L2: one action per provider/resource type.
+    for leak in score.stages["L2"].leaks:
+        n = len(leak["accounts"])
+        add(
+            "l2_enable_inventory",
+            f"{leak['provider']}:{leak['resource_type']}",
+            f"{leak['resource_type']} is not inventoried on {n} connected {leak['provider']} account(s): {_short(leak['accounts'])}.",
+            "",
+            n,
+            _effect(score, "L2", n),
+            title=f"Inventory {leak['resource_type']} on {leak['provider']} ({n} account(s))",
+        )
+
+    # L3: one action per module; new-release modules get the adoption playbook.
+    for leak in score.stages["L3"].leaks:
+        pid = "l3_new_release_adoption" if leak["new_since_baseline"] else "l3_enable_module"
+        add(
+            pid,
+            leak["module"],
+            f"{leak['name']} (since {leak['since']}) is relevant on {leak['relevant']} account(s) and inactive on "
+            f"{leak['inactive']}: {_short(leak['accounts'])}.",
+            "",
+            leak["inactive"],
+            _effect(score, "L3", leak["inactive"]),
+            title=f"{'Adopt' if leak['new_since_baseline'] else 'Enable'} {leak['name']} on {leak['inactive']} account(s)",
+        )
+
+    # L4: per kind of leak.
+    kind_to_pb = {
+        "unowned": "l4_assign_owners",
+        "no_decision": "l4_record_decisions",
+        "accepted_without_expiry": "l4_review_accepted_risks",
+        "expired_acceptance": "l4_review_accepted_risks",
+    }
+    kind_text = {
+        "unowned": "have no owner",
+        "no_decision": "have an owner but no decision",
+        "accepted_without_expiry": "are accepted risks with no expiry",
+        "expired_acceptance": "are accepted risks whose expiry has passed",
+    }
+    for leak in score.stages["L4"].leaks:
+        add(
+            kind_to_pb[leak["kind"]],
+            leak["kind"],
+            f"{leak['count']} finding(s) past the {data.settings.triage_window_days}-day triage window {kind_text[leak['kind']]}.",
+            "",
+            leak["count"],
+            _effect(score, "L4", leak["count"]),
+            title=f"{pb[kind_to_pb[leak['kind']]].title} ({leak['count']})",
+        )
+    suspects = score.outcomes["reclassification_suspects"]
+    if suspects:
+        add(
+            "l4_review_reclassifications",
+            "downgrades",
+            f"{len(suspects)} severity downgrade(s) landed within {data.settings.downgrade_window_days} days of an SLA deadline: "
+            f"{_short([s['finding_id'] for s in suspects])}.",
+            "",
+            len(suspects),
+            0.0,
+        )
+
+    # Reach.
+    reach = score.reach
+    if reach:
+        team_pb = {
+            "no_active_user": "reach_onboard_team",
+            "no_sso": "reach_enable_sso",
+            "no_scoped_role": "reach_scope_roles",
+            "stale_access_review": "reach_access_review",
+        }
+        for gap, ids in reach["gaps"].items():
+            if ids:
+                add(team_pb[gap], gap, f"{len(ids)} of {reach['teams']} team(s) with cloud assets: {_short(ids)}.", "", len(ids), 0.0)
+
+    # Entitlements.
+    for e in score.entitlements:
+        if e["below_target"]:
+            label = ENTITLEMENT_LABELS.get(e["unit"], e["unit"])
+            add(
+                "ent_adoption_gap",
+                e["unit"],
+                f"{label}: {e['used']:g} of {e['licensed']:g} in use ({e['utilization']:.0%}), target {e['target']:.0%}; "
+                f"{e['unused']:g} unused.",
+                "",
+                e["unused"],
+                0.0,
+                title=f"Close the {label} utilization gap",
+            )
+
+    actions.sort(key=lambda a: (-a.effect_points, a.leak, a.id))
+    return actions

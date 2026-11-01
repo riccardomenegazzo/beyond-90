@@ -1,0 +1,160 @@
+{
+  "playbooks": {
+    "l1_connect_account": {
+      "leak": "L1",
+      "title": "Connect accounts that are outside the platform",
+      "why": "The account exists in billing, the organization hierarchy or SSO but is not connected, so nothing in it is inventoried or checked.",
+      "steps": [
+        "Ask the spend owner for read-only auditor access (metadata only, least privilege).",
+        "Prefer an organization-level connector over per-account connections.",
+        "Confirm the account appears in the inventory within 7 days."
+      ],
+      "success": "Account is connected and inventoried within 7 days.",
+      "due_days": 14
+    },
+    "l1_auto_onboarding": {
+      "leak": "L1",
+      "title": "Enable automatic onboarding of new accounts",
+      "why": "Accounts created in the last 30 days are not connected. Manual onboarding will leak again.",
+      "steps": [
+        "Switch the connector to organization or management-group scope.",
+        "Add new-account detection to the monthly account review.",
+        "Alert the TAM when billing shows a new account."
+      ],
+      "success": "New accounts connect without a ticket.",
+      "due_days": 30
+    },
+    "l2_enable_inventory": {
+      "leak": "L2",
+      "title": "Close an inventory blind spot",
+      "why": "The account is connected, but this resource type is not inventoried, so downstream checks cannot see it.",
+      "steps": [
+        "Check the connector role and scopes for this resource type.",
+        "Add the missing permissions and trigger a rescan.",
+        "Verify the type appears in the inventory (zero resources is fine, unreadable is not)."
+      ],
+      "success": "Resource type is marked inventoried on every connected account.",
+      "due_days": 21
+    },
+    "l3_enable_module": {
+      "leak": "L3",
+      "title": "Switch on a relevant module",
+      "why": "Assets that this module applies to are known, but the module is not active for them.",
+      "steps": [
+        "Start with the highest-exposure assets (internet-facing, sensitive data).",
+        "Run a 30-minute enablement session with the owning team.",
+        "Record the activation date so adoption can be tracked."
+      ],
+      "success": "Module active on all relevant accounts.",
+      "due_days": 45
+    },
+    "l3_new_release_adoption": {
+      "leak": "L3",
+      "title": "Adopt a capability released after the baseline",
+      "why": "A module released after the frozen baseline is relevant to this estate and not yet active. The bar rose; this is new headroom, not a regression.",
+      "steps": [
+        "Send a short brief: what shipped, why it matters for this estate.",
+        "Offer a demo to the owning team within 30 days.",
+        "Track activation within 60 days of release."
+      ],
+      "success": "Capability active within 60 days of release.",
+      "due_days": 60
+    },
+    "l4_assign_owners": {
+      "leak": "L4",
+      "title": "Give unowned findings an owner",
+      "why": "Findings past the triage window have no owner, so nobody is accountable for a decision.",
+      "steps": [
+        "Map owners from tags, project or service ownership, and code owners.",
+        "Route what cannot be mapped to the account owner for assignment.",
+        "Track the unowned share weekly."
+      ],
+      "success": "Unowned share of triaged findings at zero.",
+      "due_days": 14
+    },
+    "l4_record_decisions": {
+      "leak": "L4",
+      "title": "Record a decision on owned findings",
+      "why": "The finding has an owner but no decision. Ignoring without review is the leak; accepting consciously is not.",
+      "steps": [
+        "For each finding choose: fix, accepted risk (reason and expiry), exception, or false positive.",
+        "Review in the next weekly security sync.",
+        "Close the loop in the ticketing system."
+      ],
+      "success": "Every triaged finding has a decision.",
+      "due_days": 21
+    },
+    "l4_review_accepted_risks": {
+      "leak": "L4",
+      "title": "Fix accepted risks with no or expired review date",
+      "why": "An accepted risk without an expiry, or with an expired one, is indistinguishable from ignoring it.",
+      "steps": [
+        "Add a reason and an expiry to every accepted risk.",
+        "Re-decide the ones that have expired.",
+        "Adopt a policy that accepted risks expire by default."
+      ],
+      "success": "All accepted risks have a reason and a future expiry.",
+      "due_days": 30
+    },
+    "l4_review_reclassifications": {
+      "leak": "L4",
+      "title": "Review severity downgrades close to the SLA deadline",
+      "why": "Downgrades that land just before a deadline make the metric look better without reducing risk.",
+      "steps": [
+        "List findings downgraded within the review window before their SLA date.",
+        "Ask the owner for the reason; revert the ones without one.",
+        "Report the count in the next review."
+      ],
+      "success": "No unexplained downgrades near SLA deadlines.",
+      "due_days": 14
+    },
+    "reach_onboard_team": {
+      "leak": "Reach",
+      "title": "Onboard teams that own cloud assets but have no active user",
+      "why": "Findings for these teams are read by someone else, if at all.",
+      "steps": [
+        "Identify the team lead and a security champion.",
+        "Create a scoped project or role for the team.",
+        "Run a first-use session on the team's own findings."
+      ],
+      "success": "Team has a weekly active user.",
+      "due_days": 30
+    },
+    "reach_enable_sso": {
+      "leak": "Reach",
+      "title": "Put team access behind SSO",
+      "why": "Access outside SSO escapes joiner-mover-leaver controls.",
+      "steps": ["Map the team to an identity-provider group.", "Enforce SSO for the team's role.", "Remove local accounts."],
+      "success": "All team access comes through SSO.",
+      "due_days": 30
+    },
+    "reach_scope_roles": {
+      "leak": "Reach",
+      "title": "Scope roles to the team's own projects",
+      "why": "Broad roles hide ownership and over-expose findings.",
+      "steps": ["Create team-scoped roles.", "Move users to them.", "Retire broad roles."],
+      "success": "Team uses a role scoped to its projects.",
+      "due_days": 30
+    },
+    "reach_access_review": {
+      "leak": "Reach",
+      "title": "Run an access review",
+      "why": "No access review in the last 90 days for a team that owns cloud assets.",
+      "steps": ["Export the team's users and roles.", "Ask the team lead to confirm or revoke.", "Record the review date."],
+      "success": "Access reviewed in the last 90 days.",
+      "due_days": 30
+    },
+    "ent_adoption_gap": {
+      "leak": "Entitlement",
+      "title": "Close the gap between what is licensed and what is used",
+      "why": "A large share of a licensed unit is not in use. Unused entitlement is a renewal risk and a coverage gap.",
+      "steps": [
+        "Find where the unit would add the most value (internet-facing, sensitive workloads).",
+        "Agree a deployment plan with the owner and a date.",
+        "Review utilization monthly until it passes the threshold."
+      ],
+      "success": "Utilization at or above the target for the unit.",
+      "due_days": 45
+    }
+  }
+}

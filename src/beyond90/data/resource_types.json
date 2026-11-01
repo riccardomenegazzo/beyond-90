@@ -1,0 +1,22 @@
+{
+  "version": "2026.4",
+  "types": {
+    "compute": "Virtual machines and instances",
+    "storage_object": "Object storage buckets and containers",
+    "storage_block": "Block and file storage",
+    "network": "Virtual networks, load balancers, gateways",
+    "serverless": "Functions and managed serverless runtimes",
+    "container_registry": "Container registries and images",
+    "kubernetes": "Managed and self-run Kubernetes clusters",
+    "managed_database": "Managed relational, NoSQL and warehouse services",
+    "identity": "Users, roles, service principals, entitlements",
+    "ai_service": "Managed AI and ML services, models, endpoints"
+  },
+  "expected": {
+    "aws": ["compute", "storage_object", "storage_block", "network", "serverless", "container_registry", "kubernetes", "managed_database", "identity", "ai_service"],
+    "azure": ["compute", "storage_object", "storage_block", "network", "serverless", "container_registry", "kubernetes", "managed_database", "identity", "ai_service"],
+    "gcp": ["compute", "storage_object", "storage_block", "network", "serverless", "container_registry", "kubernetes", "managed_database", "identity", "ai_service"],
+    "oci": ["compute", "storage_object", "storage_block", "network", "kubernetes", "managed_database", "identity"],
+    "kubernetes": ["kubernetes", "container_registry"]
+  }
+}
