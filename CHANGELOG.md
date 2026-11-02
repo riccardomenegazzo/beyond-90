@@ -2,6 +2,17 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.13.0
+
+Hardening: no new features, a lot fewer ways to fall over.
+
+- **Files from any program.** CSV and TOML are read as UTF-8, UTF-8 with a byte-order mark or UTF-16; a file that is not valid UTF-8 is read as Windows-1252 with a warning instead of a traceback; NUL bytes, oversized fields and malformed CSV are errors with a file and line. `NaN`, `inf` and huge numbers are refused as numbers. A `[customer]` or `[settings]` that is not a table is an error.
+- **Fetching.** Truncated bodies, dropped connections, non-HTTP answers, absurdly nested JSON, cursors that are not text and odd `Retry-After` values end in a `FetchError` naming the source, never a traceback.
+- **Pipeline operations.** One run at a time per state directory (a lock that a crashed run cannot leave behind for good); a damaged cache, run log or snapshot folder is ignored instead of stopping the run; the cache and the dated output folder are written whole or not at all; `[state] keep_snapshots` and `keep_outputs` prune old folders (history and run log are kept); unwritable or full disks give a message that says what to check.
+- **Browser app.** A workspace file is refused above 1000 snapshots; snapshots with wrongly typed fields are rejected, not half trusted; a `__proto__` key cannot change a merged object; a crashed engine is replaced by the next request; a full browser store says so in words.
+- **Tests.** Seeded fuzzing of the inputs (300 cases by default, `B90_FUZZ_CASES=6000` for more; none crashed after the fixes), network chaos tests, a differential test of L1 to L4 against an independent reimplementation that reads the raw CSV, lock and retention tests, release checks (versions agree; the wheel carries the data files and installs and runs on its own).
+- **Documented limit.** Planning is quadratic in the size of the estate: about 15 s at 500 accounts and 5,000 findings, about 3 minutes at 5,000 accounts and 50,000 findings. See `docs/operations.md`.
+
 ## 0.12.0
 
 Automation: no one has to export a file.

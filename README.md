@@ -125,6 +125,7 @@ beyond90 explain acme --store history.db   # what changed since the last stored 
 - [docs/research/](docs/research/): the research behind the design, including a case study of one vendor's TAM motion
 - [docs/architecture.md](docs/architecture.md): how the data is treated (system of record, snapshots, compatibility, sync)
 - [docs/automation.md](docs/automation.md): collect data from APIs and CLIs by configuration, run on a schedule, alert on change
+- [docs/operations.md](docs/operations.md): what happens when inputs, sources or disks misbehave; retention, locks, size limits
 - [docs/app.md](docs/app.md): the browser app and how to publish it on GitHub Pages
 - [docs/trust.md](docs/trust.md): the relationship layer and what it takes from the book
 - [docs/research/reading-list.md](docs/research/reading-list.md)

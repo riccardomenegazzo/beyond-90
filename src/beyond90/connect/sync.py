@@ -148,6 +148,19 @@ def _read_manual(dir_: Path, target: str) -> list[dict[str, str]]:
         return [{k.strip(): (v or "").strip() for k, v in r.items() if k} for r in csv.DictReader(fh)]
 
 
+def _read_cache(path: Path) -> Optional[tuple[list[dict[str, str]], str]]:
+    """The last good rows of a source, or None if there are none or the file is damaged (then the source simply fails)."""
+    try:
+        doc = json.loads(path.read_text(encoding="utf-8"))
+        rows, at = doc["rows"], doc["fetched_at"]
+        datetime.fromisoformat(at)
+        if not isinstance(rows, list) or not all(isinstance(r, dict) for r in rows):
+            return None
+        return rows, at
+    except (OSError, ValueError, KeyError, TypeError, RecursionError):
+        return None
+
+
 def sync(cfg: Config, as_of: date, *, now: Optional[datetime] = None, env: Optional[Mapping[str, str]] = None,
          sleep: Callable[[float], None] = time.sleep, opener: Optional[urllib.request.OpenerDirector] = None, write: bool = True) -> SyncReport:
     now = now or datetime.now(UTC)
@@ -171,13 +184,15 @@ def sync(cfg: Config, as_of: date, *, now: Optional[datetime] = None, env: Optio
                 raise MapError(f"required column(s) {', '.join(dead)} came out empty for all {len(mapped)} records: check the path in map")
             rows, res.rows, res.fetched_at = mapped, len(mapped), now.isoformat(timespec="seconds")
             if write:
-                cache_file.write_text(json.dumps({"fetched_at": res.fetched_at, "rows": mapped}), encoding="utf-8")
+                tmp_cache = cache_file.with_suffix(".tmp")
+                tmp_cache.write_text(json.dumps({"fetched_at": res.fetched_at, "rows": mapped}), encoding="utf-8")
+                os.replace(tmp_cache, cache_file)                  # a crash cannot leave half a cache behind
         except (FetchError, MapError) as e:
             res.error = str(e)
-            if cache_file.exists():
-                cached = json.loads(cache_file.read_text(encoding="utf-8"))
-                rows, res.rows, res.fetched_at, res.status = cached["rows"], len(cached["rows"]), cached["fetched_at"], "stale"
-                res.age_days = max(0, (now - datetime.fromisoformat(cached["fetched_at"])).days)
+            cached = _read_cache(cache_file)
+            if cached is not None:
+                rows, res.rows, res.fetched_at, res.status = cached[0], len(cached[0]), cached[1], "stale"
+                res.age_days = max(0, (now - datetime.fromisoformat(cached[1])).days)
             else:
                 res.status = "failed"
         results.append(res)

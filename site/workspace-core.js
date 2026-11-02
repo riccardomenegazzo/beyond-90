@@ -16,6 +16,7 @@ export const INPUT_FILES = [
 export const PERSONAL_FILES = ["contacts.csv", "commitments.csv"];
 export const WORKSPACE_FORMAT = "beyond90-workspace";
 export const WORKSPACE_VERSION = 1;
+export const MAX_SNAPSHOTS = 1000;        // a workspace is a person's working set, not a database; a file past this is refused, not half read
 
 const enc = new TextEncoder();
 
@@ -68,7 +69,12 @@ export async function makeSnapshot(files, { customer, asOf, includePersonal = fa
 
 /** A snapshot is trusted only if its name matches its content; checked wherever data enters from outside. */
 export async function verifySnapshot(s) {
-  return !!s && typeof s.id === "string" && !!s.files && typeof s.files === "object" && (await fingerprint(s.files)) === s.id;
+  try {
+    if (!s || typeof s !== "object" || typeof s.id !== "string" || !s.files || typeof s.files !== "object" || Array.isArray(s.files)) return false;
+    if (!Object.values(s.files).every((t) => typeof t === "string")) return false;
+    for (const k of ["customer", "as_of"]) if (typeof s[k] !== "string") return false;   // they are sorted and compared as text
+    return (await fingerprint(s.files)) === s.id;
+  } catch { return false; }
 }
 
 const cmp = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
@@ -77,7 +83,8 @@ const stable = (v) => JSON.stringify(v, (_, x) => (x && typeof x === "object" &&
 function mergeOne(a, b) {
   const out = { ...a };
   for (const [k, v] of Object.entries(b)) {
-    if (!(k in out)) out[k] = v;
+    if (k === "__proto__") continue;                    // a key that would change the object's type, not add a field
+    if (!Object.hasOwn(out, k)) out[k] = v;
     else if (k === "saved_on") out[k] = [out[k], v].filter(Boolean).sort()[0] || "";   // keep the earliest, and an empty value never wins
     else if (stable(out[k]) !== stable(v)) out[k] = cmp(stable(out[k]), stable(v)) <= 0 ? out[k] : v;   // a deterministic pick, whatever the order
   }
@@ -103,6 +110,7 @@ export function parseWorkspace(text) {
   if (!Number.isInteger(doc.version) || doc.version < 1) throw new Error("The workspace file has no valid version.");
   if (doc.version > WORKSPACE_VERSION) throw new Error(`This workspace was written by a newer version of Beyond 90 (format ${doc.version}); this page reads format ${WORKSPACE_VERSION}. Open the newer page to read it.`);
   if (!Array.isArray(doc.snapshots)) throw new Error("The workspace file has no snapshots list.");
+  if (doc.snapshots.length > MAX_SNAPSHOTS) throw new Error(`The workspace file holds ${doc.snapshots.length} snapshots; this page reads at most ${MAX_SNAPSHOTS}. Split it by customer.`);
   const { format, version, exported_with, snapshots, ...unknown } = doc;   // eslint-disable-line no-unused-vars
   return { snapshots, unknown };
 }

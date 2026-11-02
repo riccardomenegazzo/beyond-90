@@ -11,6 +11,7 @@ Everything it writes is under the state directory, which holds customer data: ke
 from __future__ import annotations
 
 import json
+import os
 import shutil
 import time
 import urllib.request
@@ -75,12 +76,16 @@ def _last_run(state: Path, before: date) -> Optional[dict[str, Any]]:
     if not f.exists():
         return None
     last = None
-    for line in f.read_text(encoding="utf-8").splitlines():
+    try:
+        lines = f.read_text(encoding="utf-8", errors="replace").splitlines()
+    except OSError:
+        return None
+    for line in lines:
         try:
             r = json.loads(line)
-        except json.JSONDecodeError:
+        except (ValueError, RecursionError):
             continue
-        if r.get("as_of", "") < before.isoformat():
+        if isinstance(r, dict) and isinstance(r.get("as_of"), str) and r["as_of"] < before.isoformat():
             last = r
     return last
 
@@ -118,12 +123,84 @@ def _notify(cfg: Config, message: str, alerts: list[dict[str, str]], payload: di
         return f"not sent: {type(e).__name__}"          # never the URL: it is a secret
 
 
+LOCK_STALE_HOURS = 6
+
+
+class _Lock:
+    """One run at a time per state directory. A lock left by a crashed run is taken over after a few hours or once
+    its process is gone, so a scheduler is never stuck for good."""
+
+    def __init__(self, state: Path, now: datetime) -> None:
+        self.path, self.now, self.held = state / "run.lock", now, False
+
+    def __enter__(self) -> _Lock:
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        for _ in range(2):
+            try:
+                fd = os.open(self.path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+            except FileExistsError:
+                if self._stale():
+                    self.path.unlink(missing_ok=True)
+                    continue
+                raise PipelineError([f"another run is in progress (lock file {self.path}); wait for it, or delete the file if you are sure no run is active"]) from None
+            with os.fdopen(fd, "w", encoding="utf-8") as fh:
+                fh.write(json.dumps({"pid": os.getpid(), "since": self.now.isoformat(timespec="seconds")}))
+            self.held = True
+            return self
+        raise PipelineError([f"could not take the run lock {self.path}"])
+
+    def _stale(self) -> bool:
+        try:
+            doc = json.loads(self.path.read_text(encoding="utf-8"))
+            age = (datetime.now(UTC) - datetime.fromisoformat(doc["since"]).astimezone(UTC)).total_seconds()
+            if age > LOCK_STALE_HOURS * 3600:
+                return True
+            os.kill(int(doc["pid"]), 0)              # signal 0 only asks whether the process exists
+            return False
+        except ProcessLookupError:
+            return True
+        except PermissionError:
+            return False                             # the process exists but belongs to someone else
+        except (OSError, ValueError, KeyError, TypeError):
+            return True                              # unreadable lock: it cannot be telling the truth
+
+    def __exit__(self, *exc: object) -> None:
+        if self.held:
+            self.path.unlink(missing_ok=True)
+
+
+def _prune(state: Path, keep_snapshots: int, keep_outputs: int) -> None:
+    """Keep the newest snapshots and dated outputs. The history database and the run log are never touched."""
+    for sub, keep in (("snapshots", keep_snapshots), ("out", keep_outputs)):
+        base = state / sub
+        if not base.exists():
+            continue
+        dated = []
+        for p in base.iterdir():
+            try:
+                date.fromisoformat(p.name)
+                dated.append(p)
+            except ValueError:
+                continue                              # "latest" and anything else a person put there stays
+        for old in sorted(dated, key=lambda p: p.name)[:-keep]:
+            shutil.rmtree(old, ignore_errors=True)
+
+
 def run(cfg: Config, as_of: Optional[date] = None, *, now: Optional[datetime] = None, env: Optional[Mapping[str, str]] = None,
         sleep: Callable[[float], None] = time.sleep, opener: Optional[urllib.request.OpenerDirector] = None, notify: bool = True) -> RunResult:
-    import os
     env = os.environ if env is None else env
     now = now or datetime.now(UTC)
     as_of = as_of or now.date()
+    with _Lock(cfg.state_dir, now):
+        try:
+            return _run(cfg, as_of, now, env, sleep, opener, notify)
+        except OSError as e:
+            raise PipelineError([f"could not read or write the state directory {cfg.state_dir}: {e.strerror or type(e).__name__}"
+                                 f"{' (' + e.filename + ')' if e.filename else ''}. Check permissions and free disk space."]) from e
+
+
+def _run(cfg: Config, as_of: date, now: datetime, env: Mapping[str, str], sleep: Callable[[float], None],
+         opener: Optional[urllib.request.OpenerDirector], notify: bool) -> RunResult:
     state = cfg.state_dir
     rep = sync(cfg, as_of, now=now, env=env, sleep=sleep, opener=opener)
     data_dir = rep.data_dir
@@ -159,20 +236,23 @@ def run(cfg: Config, as_of: Optional[date] = None, *, now: Optional[datetime] = 
 
     out_dir = state / "out" / as_of.isoformat()
     latest = state / "out" / "latest"
-    shutil.rmtree(out_dir, ignore_errors=True)
-    shutil.rmtree(latest, ignore_errors=True)
-    out_dir.mkdir(parents=True)
+    build = state / "out" / f".building-{as_of.isoformat()}"
+    shutil.rmtree(build, ignore_errors=True)
+    build.mkdir(parents=True)
     outputs: dict[str, Path] = {}
     for name in cfg.outputs:
         key, fname = OUTPUT_FILES[name]
-        (out_dir / fname).write_text(result[key], encoding="utf-8")
+        (build / fname).write_text(result[key], encoding="utf-8")
         outputs[name] = out_dir / fname
-    (out_dir / "sync.json").write_text(json.dumps([r.to_dict() for r in rep.results], indent=2), encoding="utf-8")
-    (out_dir / "alerts.json").write_text(json.dumps(alerts, indent=2), encoding="utf-8")
+    (build / "sync.json").write_text(json.dumps([r.to_dict() for r in rep.results], indent=2), encoding="utf-8")
+    (build / "alerts.json").write_text(json.dumps(alerts, indent=2), encoding="utf-8")
     if cfg.export.get("workspace", True):
         ws = workspace_file(data_dir, score.customer, as_of.isoformat(), bool(cfg.export.get("include_personal", False)))
-        (out_dir / "workspace.json").write_text(json.dumps(ws, indent=1) + "\n", encoding="utf-8")
+        (build / "workspace.json").write_text(json.dumps(ws, indent=1) + "\n", encoding="utf-8")
         outputs["workspace"] = out_dir / "workspace.json"
+    shutil.rmtree(out_dir, ignore_errors=True)
+    os.replace(build, out_dir)                         # the dated folder appears whole or not at all
+    shutil.rmtree(latest, ignore_errors=True)
     shutil.copytree(out_dir, latest)
 
     Store(str(state / "history.db")).save(score)
@@ -185,6 +265,7 @@ def run(cfg: Config, as_of: Optional[date] = None, *, now: Optional[datetime] = 
               "alerts": [a["key"] for a in alerts], "sources": {r.name: r.status for r in rep.results}, "warnings": len(warnings)}
     with (state / "runs.jsonl").open("a", encoding="utf-8") as fh:
         fh.write(json.dumps(record) + "\n")
+    _prune(state, cfg.keep_snapshots, cfg.keep_outputs)
 
     sent = _notify(cfg, message, alerts, {"customer": score.customer, "as_of": as_of.isoformat(), "yield": score.yield_, "level": record["level"], "alerts": alerts}, env, opener) if notify else ""
     return RunResult(as_of, rep, score.yield_, record["level"] or "", record["input_hash"], since_dir.name if since_dir else None, alerts, message, outputs, sent)

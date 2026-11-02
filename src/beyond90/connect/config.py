@@ -101,6 +101,8 @@ class Config:
     export: dict[str, Any]
     outputs: list[str]
     output_options: dict[str, Any] = field(default_factory=dict)
+    keep_snapshots: int = 180
+    keep_outputs: int = 30
 
 
 def _suggest(key: str, known: Any) -> str:
@@ -261,13 +263,20 @@ def load_config(path: str | Path) -> Config:
     notify = raw.get("notify", {})
     if notify and not notify.get("webhook_env"):
         errors.append("[notify] webhook_env is required: the name of the environment variable that holds the webhook URL")
+    state = raw.get("state", {})
+    for key in state:
+        if key not in ("dir", "keep_snapshots", "keep_outputs"):
+            errors.append(f"[state] {key}: unknown key{_suggest(key, ('dir', 'keep_snapshots', 'keep_outputs'))}")
+    for key in ("keep_snapshots", "keep_outputs"):
+        if key in state and (not isinstance(state[key], int) or isinstance(state[key], bool) or state[key] < 1):
+            errors.append(f"[state] {key}: expected a whole number of at least 1")
     if errors:
         raise ConfigError(errors)
-    state = raw.get("state", {})
     return Config(
         base_dir=path.resolve().parent, customer=dict(cust), settings=dict(raw.get("settings", {})),
         state_dir=(path.resolve().parent / state.get("dir", "state")), allow_hosts=security["allow_hosts"], max_bytes=security["max_bytes"],
         timeout_seconds=security["timeout_seconds"], retries=security["retries"], sources=sources, notify=dict(raw.get("notify", {})),
         export=dict(raw.get("export", {})), outputs=list(raw.get("outputs", {}).get("make", list(OUTPUTS))),
         output_options={k: v for k, v in raw.get("outputs", {}).items() if k != "make"},
+        keep_snapshots=int(state.get("keep_snapshots", 180)), keep_outputs=int(state.get("keep_outputs", 30)),
     )

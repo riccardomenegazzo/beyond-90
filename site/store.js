@@ -22,6 +22,13 @@ function done(tx) {
   });
 }
 
+/** Storage failures a person can act on, instead of a DOMException name. */
+export function friendly(e) {
+  const name = (e && e.name) || "";
+  if (name === "QuotaExceededError" || /quota/i.test((e && e.message) || "")) return new Error("The browser's storage is full. Delete old snapshots below, or export the workspace and clear it.");
+  return e instanceof Error ? e : new Error("Storage failed.");
+}
+
 export async function all() {
   const db = await open();
   const req = db.transaction(STORE).objectStore(STORE).getAll();
@@ -42,9 +49,14 @@ export async function put(snapshots) {
     r.onsuccess = () => { if (r.result) existing.set(s.id, r.result); resolve(); };
     r.onerror = () => resolve();
   })));
-  for (const s of snapshots) os.put(existing.has(s.id) ? mergeSnapshots([existing.get(s.id)], [s])[0] : s);
-  await done(tx);
-  db.close();
+  try {
+    for (const s of snapshots) os.put(existing.has(s.id) ? mergeSnapshots([existing.get(s.id)], [s])[0] : s);
+    await done(tx);
+  } catch (e) {
+    throw friendly(e);
+  } finally {
+    db.close();
+  }
   return snapshots.filter((s) => !before.has(s.id)).length;
 }
 

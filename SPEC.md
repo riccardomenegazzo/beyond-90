@@ -1,4 +1,4 @@
-# Beyond 90: specification v0.12
+# Beyond 90: specification v0.13
 
 An adoption engine for Technical Account Managers. It measures how much of a customer's cloud estate is really covered and operated through a security platform, and turns every gap into an action. The bar keeps moving: when a customer grows or the product ships something, the denominators grow with it.
 
@@ -164,6 +164,10 @@ With a comparison file (`--since`), the two sets of inputs are compared for sign
 
 A configuration (`beyond90.toml`) declares `[[source]]` entries: `type` (`http`, `command`, `file`), `target` (a data file), `map` (column to path or table), and for accounts a `tag`. `sync` fetches each source, maps it, merges by key and writes a data directory atomically; a failing source falls back to its last good rows (reported `stale` with its age), a required column empty for every record fails the source, rows referring to unlisted accounts are dropped and counted, and no accounts at all is an error. `run` then scores the directory, takes the latest earlier snapshot under `state/snapshots/` as the comparison, writes the outputs, appends a record to `runs.jsonl`, saves a snapshot and the history, writes a browser-compatible workspace file (its id is the input hash of the files kept, personal files only if configured), computes alerts and posts a webhook if one is configured and there is something to say. Alert rules: a source stale or failed, level change (warn on a fall), Yield moved by 2 points or more, an increase in open critical findings without an owner, a renewal at risk that is new or within 30 days, drift warnings, dropped rows, input quality turning weak. Safety rules: tokens only from environment variables, https (plain http to localhost only), host and redirect allow-list, no shell, named environment for commands, size, time and page caps. See `docs/automation.md`.
 
+## 15n. Operating rules (0.13)
+
+Input: text files are decoded as UTF-8 (with or without a byte-order mark) or UTF-16; invalid UTF-8 is read as Windows-1252 and warned about; NUL bytes make a file unreadable; non-finite numbers are rejected; malformed CSV is a `DataError`, never an exception of another type. The loader raises `DataError` or returns data, for every input. Pipeline: `run` takes `state/run.lock` (stale after six hours or when its process is gone), writes outputs to a hidden folder and renames it into place, and prunes dated snapshots and outputs beyond `[state] keep_snapshots` (default 180) and `keep_outputs` (default 30). Workspace: at most 1000 snapshots per file. See `docs/operations.md`.
+
 ## 16. Positioning against the platform's own views
 
 Security platforms commonly ship their own adoption or maturity views and an ownership model. Beyond 90 does not replace them: it measures what a platform cannot see about itself (the true universe of units to cover, across a whole portfolio) and reads ownership and decisions rather than rebuilding routing. The research behind this, including a case study of one vendor, is in `docs/research/`.
@@ -186,8 +190,9 @@ Security platforms commonly ship their own adoption or maturity views and an own
 8. 0.9: profiles (cloud and endpoint), vendor-neutral terms.
 9. 0.10: maturity ladder, use-case and framework views, renewal readiness, success plan.
 10. 0.11: path to the next level, input drift.
-11. 0.12 (this): automatic collection, pipeline, alerts, schedules.
-12. 1.0: connector interface and a first verified connector against a real tenant; criticality weighting; readiness checklist import; per-finding ownership sources.
+11. 0.12: automatic collection, pipeline, alerts, schedules.
+12. 0.13 (this): hardening: encodings, hostile inputs, network chaos, run lock, retention, workspace limits.
+13. 1.0: connector interface and a first verified connector against a real tenant; criticality weighting; readiness checklist import; per-finding ownership sources.
 
 ## References
 

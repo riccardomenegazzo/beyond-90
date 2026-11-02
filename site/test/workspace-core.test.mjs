@@ -90,3 +90,31 @@ test("previousOf finds earlier snapshots of the same customer, newest first", as
   const got = W.previousOf(list, "N", "2026-10-31");
   assert.deepEqual(got.map((s) => s.as_of), ["2026-09-30", "2026-06-30"]);
 });
+
+test("a workspace file that is hostile or malformed is refused or filtered, never half trusted", async () => {
+  const ok = await W.makeSnapshot({ "customer.toml": "x\n" }, { customer: "A", asOf: "2026-01-01" });
+  const bad = [
+    { ...ok, files: { "customer.toml": 5 } },                       // not text
+    { ...ok, files: ["customer.toml"] },                            // not a table of files
+    { ...ok, customer: 7 },                                         // sorted as text: must be text
+    { ...ok, as_of: null },
+    { ...ok, id: 12 },
+    null, "x", 3, [],
+    { ...ok, files: { "customer.toml": "y\n" } },                   // content does not match its name
+  ];
+  const { ok: kept, rejected } = await W.acceptSnapshots([ok, ...bad]);
+  assert.equal(kept.length, 1);
+  assert.equal(rejected, bad.length);
+  const many = JSON.stringify({ format: W.WORKSPACE_FORMAT, version: 1, snapshots: new Array(W.MAX_SNAPSHOTS + 1).fill({}) });
+  assert.throws(() => W.parseWorkspace(many), /at most/);
+});
+
+test("a key named __proto__ cannot change the type of a merged snapshot", async () => {
+  const s = await W.makeSnapshot({ "customer.toml": "x\n" }, { customer: "A", asOf: "2026-01-01" });
+  const evil = JSON.parse(JSON.stringify(s).replace("{", '{"__proto__": {"polluted": true}, ', 1));
+  const merged = W.mergeSnapshots([s], [evil]);
+  assert.equal(merged.length, 1);
+  assert.equal(Object.getPrototypeOf(merged[0]), Object.prototype);
+  assert.equal(merged[0].polluted, undefined);
+  assert.equal({}.polluted, undefined);
+});

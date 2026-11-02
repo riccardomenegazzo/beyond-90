@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import csv
 import glob
+import http.client
 import io
 import json
 import os
@@ -58,11 +59,14 @@ class _SameRules(urllib.request.HTTPRedirectHandler):
 def _parse(body: bytes, fmt: str, records: str, delimiter: str = ",") -> list[Any]:
     if fmt == "csv":
         text = body.decode("utf-8-sig", errors="replace")
-        return [dict(r) for r in csv.DictReader(io.StringIO(text), delimiter=delimiter)]
+        try:
+            return [dict(r) for r in csv.DictReader(io.StringIO(text), delimiter=delimiter)]
+        except csv.Error as e:
+            raise FetchError(f"the response is not valid CSV: {e}") from e
     try:
         doc = json.loads(body.decode("utf-8-sig"))
-    except (UnicodeDecodeError, json.JSONDecodeError) as e:
-        raise FetchError(f"the response is not valid JSON: {e}") from e
+    except (UnicodeDecodeError, ValueError, RecursionError) as e:
+        raise FetchError(f"the response is not valid JSON: {type(e).__name__}") from e
     node = get_path(doc, records) if records else doc
     if node is None:
         raise FetchError(f"no records at path {records!r} in the response")
@@ -126,10 +130,13 @@ def _http(s: Source, cfg: Config, env: Mapping[str, str], sleep: Callable[[float
         elif kind == "cursor":
             try:
                 nxt = get_path(json.loads(body.decode("utf-8-sig")), p["cursor_path"])
-            except json.JSONDecodeError:
+            except (ValueError, RecursionError):
                 break
             if not nxt:
                 break
+            if not isinstance(nxt, (str, int)):
+                raise FetchError("the pagination cursor is not a string or a number")
+            nxt = str(nxt)
             if nxt in seen:
                 raise FetchError("pagination cursor repeats; stopping so it cannot loop")
             seen.add(nxt)
@@ -161,11 +168,14 @@ def _request(opener: urllib.request.OpenerDirector, url: str, headers: dict[str,
             if e.code not in (429, 500, 502, 503, 504) or attempt == cfg.retries:
                 raise FetchError(f"{_safe_url(url)}: {last}" + (" (check the token and its scope)" if e.code in (401, 403) else "")) from None
             try:
-                wait = min(float(e.headers.get("Retry-After", "")), 30.0)
+                wait = float(e.headers.get("Retry-After", ""))
+                wait = min(wait, 30.0) if wait >= 0 else 2.0 ** attempt      # NaN fails the comparison
+                if wait != wait:
+                    wait = 2.0 ** attempt
             except ValueError:
                 wait = 2.0 ** attempt
             sleep(wait)
-        except (urllib.error.URLError, TimeoutError, ConnectionError, OSError) as e:
+        except (urllib.error.URLError, TimeoutError, ConnectionError, OSError, http.client.HTTPException) as e:
             last = type(e).__name__
             if attempt == cfg.retries:
                 raise FetchError(f"{_safe_url(url)}: {last}") from None

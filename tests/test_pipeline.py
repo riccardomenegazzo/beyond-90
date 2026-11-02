@@ -8,7 +8,7 @@ import pytest
 
 from beyond90.alerts import compute_alerts, render_message
 from beyond90.cli import main
-from beyond90.connect import load_config
+from beyond90.connect import SyncError, load_config
 from beyond90.connect.pipeline import PipelineError, run, workspace_file
 from beyond90.connect.schedule import cron_line, github_workflow, needed_env, systemd_units
 from connect_helpers import FINDINGS, Api, config_text, paged, serve_default
@@ -229,3 +229,80 @@ def test_the_cli_end_to_end(api, tmp_path, monkeypatch, capsys):
     with pytest.raises(SystemExit) as ex:
         main(["check-config", str(bad)])
     assert ex.value.code == 1 and "at least one [[source]]" in capsys.readouterr().err
+
+
+# ---------------------------------------------------------------------------- operations
+
+def test_a_second_run_at_the_same_time_is_refused_and_a_dead_lock_is_taken_over(api, tmp_path):
+    cfg = cfg_for(tmp_path, config_text(api.base))
+    cfg.state_dir.mkdir(parents=True)
+    lock = cfg.state_dir / "run.lock"
+    lock.write_text(json.dumps({"pid": __import__("os").getpid(), "since": datetime.now(UTC).isoformat()}))
+    with pytest.raises(PipelineError, match="another run is in progress"):
+        go(cfg, 2)
+    assert lock.exists()                                       # the refused run must not remove the other run's lock
+    lock.write_text(json.dumps({"pid": 2 ** 22 + 12345, "since": datetime.now(UTC).isoformat()}))   # no such process
+    go(cfg, 2)
+    assert not lock.exists()
+    lock.write_text("not json at all")                         # unreadable: cannot be trusted
+    go(cfg, 3)
+    assert not lock.exists()
+    lock.write_text(json.dumps({"pid": __import__("os").getpid(), "since": (datetime.now(UTC) - timedelta(hours=7)).isoformat()}))
+    go(cfg, 4)                                                 # old enough to be abandoned even if the pid is alive
+    assert not lock.exists()
+
+
+def test_the_lock_is_released_when_a_run_fails(api, tmp_path):
+    cfg = cfg_for(tmp_path, config_text(api.base))
+    with pytest.raises(SyncError, match="no list of accounts"):
+        go(cfg, 2, env={"PATH": "/usr/bin"})                   # the token is missing
+    assert not (cfg.state_dir / "run.lock").exists()
+
+
+def test_a_damaged_cache_or_run_log_does_not_stop_a_run(api, tmp_path):
+    cfg = cfg_for(tmp_path, config_text(api.base))
+    go(cfg, 2)
+    for f in (cfg.state_dir / "cache").glob("*.json"):
+        f.write_text('{"rows": "oops"')
+    (cfg.state_dir / "runs.jsonl").write_text("{broken\n\x00\x00\n[]\n")
+    (cfg.state_dir / "snapshots" / "not-a-date").mkdir()
+    res = go(cfg, 3)                                           # the API is still up, so the damaged cache is simply replaced
+    assert res.yield_ > 0
+    api.routes["/tenants"] = lambda q, h: (500, {}, {})
+    for f in (cfg.state_dir / "cache").glob("tenants.json"):
+        f.write_text("{damaged")
+    with pytest.raises(SyncError, match="no list of accounts"):
+        go(cfg, 4)                                             # damaged cache and a dead source: a clear failure, not a traceback
+
+
+def test_old_snapshots_and_outputs_are_pruned_but_history_is_kept(api, tmp_path):
+    text = config_text(api.base).replace("\n[source", '\n[state]\nkeep_snapshots = 2\nkeep_outputs = 3\n\n[source', 1)
+    cfg = cfg_for(tmp_path, text)
+    for d in range(2, 9):
+        go(cfg, d)
+    snaps = sorted(p.name for p in (cfg.state_dir / "snapshots").iterdir())
+    outs = sorted(p.name for p in (cfg.state_dir / "out").iterdir())
+    assert snaps == ["2026-11-07", "2026-11-08"] and outs == ["2026-11-06", "2026-11-07", "2026-11-08", "latest"]
+    assert len((cfg.state_dir / "runs.jsonl").read_text().splitlines()) == 7 and (cfg.state_dir / "history.db").exists()
+
+
+def test_a_state_directory_that_cannot_be_written_gives_a_message_not_a_traceback(api, tmp_path):
+    import os
+    if os.geteuid() == 0:
+        pytest.skip("root can write anywhere")
+    cfg = cfg_for(tmp_path, config_text(api.base))
+    go(cfg, 2)
+    (cfg.state_dir / "out").chmod(0o500)
+    try:
+        with pytest.raises(PipelineError, match="state directory"):
+            go(cfg, 3)
+    finally:
+        (cfg.state_dir / "out").chmod(0o700)
+
+
+def test_state_options_are_checked(tmp_path):
+    from beyond90.connect import ConfigError
+    base = config_text("http://127.0.0.1:1")
+    for extra, needle in (("keep_snapshots = 0", "keep_snapshots"), ('keep_outputs = "x"', "keep_outputs"), ("keep_sna = 3", "unknown key")):
+        with pytest.raises(ConfigError, match=needle):
+            cfg_for(tmp_path, base.replace("\n[source", f"\n[state]\n{extra}\n\n[source", 1))

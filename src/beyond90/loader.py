@@ -16,8 +16,11 @@ stopping at the first one, so a TAM can fix a whole export in one pass.
 
 from __future__ import annotations
 
+import codecs
 import csv
 import difflib
+import io
+import math
 import re
 import tomllib
 from collections.abc import Callable
@@ -108,6 +111,9 @@ class _Ctx:
         except ValueError:
             self.err(f"{key}: expected a number, got {raw!r}")
             return default
+        if not math.isfinite(value):
+            self.err(f"{key}: expected a finite number, got {raw!r}")
+            return default
         if minimum is not None and value < minimum:
             self.err(f"{key}: must be >= {minimum:g}, got {value:g}")
             return default
@@ -135,6 +141,39 @@ class _Ctx:
         return raw
 
 
+class _BadFile(Exception):
+    pass
+
+
+def _decode(path: Path) -> tuple[str, str]:
+    """Read a text file whatever program wrote it. Returns (text, note); the note is empty for UTF-8.
+
+    Spreadsheet programs write UTF-16 or Windows-1252 as readily as UTF-8. UTF-16 and UTF-8 with a byte-order mark are
+    read as they are. A file that is not valid UTF-8 is tried as Windows-1252 and said so, because reading it silently
+    would turn accents into the wrong letters without anyone noticing. Anything else, or a file with NUL bytes, is not
+    a text file and is refused with a message.
+    """
+    raw = path.read_bytes()
+    note = ""
+    if raw.startswith((codecs.BOM_UTF16_LE, codecs.BOM_UTF16_BE)):
+        try:
+            text = raw.decode("utf-16")
+        except UnicodeDecodeError:
+            raise _BadFile(f"{path.name}: looks like UTF-16 but is not valid; save it as CSV UTF-8") from None
+    else:
+        try:
+            text = raw.decode("utf-8-sig")
+        except UnicodeDecodeError:
+            try:
+                text = raw.decode("cp1252")
+                note = f"{path.name}: not valid UTF-8; read as Windows-1252. Save it as UTF-8 so accents cannot be misread."
+            except UnicodeDecodeError:
+                raise _BadFile(f"{path.name}: not text in a known encoding (UTF-8, UTF-16 or Windows-1252)") from None
+    if "\x00" in text:
+        raise _BadFile(f"{path.name}: contains NUL characters, so it is not a CSV or TOML text file")
+    return text, note
+
+
 def _read_csv(
     path: Path,
     required_columns: tuple[str, ...],
@@ -145,24 +184,34 @@ def _read_csv(
     if not path.exists():
         return []
     out: list = []
-    with path.open(newline="", encoding="utf-8-sig") as fh:
-        reader = csv.DictReader(fh)
+    try:
+        text, note = _decode(path)
+    except _BadFile as e:
+        errors.append(str(e))
+        return []
+    if note and notes is not None:
+        notes.append(note)
+    reader = csv.DictReader(io.StringIO(text, newline=""))
+    ctx = _Ctx(path.name, errors)
+    try:
         header = [h.strip() for h in (reader.fieldnames or [])]
         missing = [c for c in required_columns if c not in header]
         if missing:
             errors.append(f"{path.name}:1: missing column(s): {', '.join(missing)}")
             return []
-        ctx = _Ctx(path.name, errors)
         for row in reader:
             ctx.line = reader.line_num
-            clean = {(k or "").strip(): (v or "") for k, v in row.items()}
+            clean = {(k or "").strip(): (v if isinstance(v, str) else "") for k, v in row.items()}
             if not any(v.strip() for v in clean.values()):
                 continue
             item = parse(clean, ctx)
             if item is not None:
                 out.append(item)
-        if notes is not None and ctx.adjusted:
-            notes.append(f"{path.name}: {ctx.adjusted} value(s) had line breaks, control characters or '|' replaced, so that tables stay readable.")
+    except csv.Error as e:
+        errors.append(f"{path.name}:{reader.line_num}: malformed CSV: {e}")
+        return []
+    if notes is not None and ctx.adjusted:
+        notes.append(f"{path.name}: {ctx.adjusted} value(s) had line breaks, control characters or '|' replaced, so that tables stay readable.")
     return out
 
 
@@ -199,8 +248,10 @@ def _unknown_columns(path: Path, warnings: list[str]) -> None:
     known = KNOWN_COLUMNS.get(path.name)
     if known is None or not path.exists():
         return
-    with path.open(newline="", encoding="utf-8-sig") as fh:
-        header = [h.strip() for h in (next(csv.reader(fh), []) or [])]
+    try:
+        header = [h.strip() for h in (next(csv.reader(io.StringIO(_decode(path)[0], newline="")), []) or [])]
+    except (_BadFile, csv.Error):
+        return                                           # the read of this file reports the problem
     extra = [h for h in header if h and h not in known]
     if extra:
         hints = "; ".join(f"{h!r}{_suggest(h, known)}" for h in extra)
@@ -230,7 +281,9 @@ def _settings(raw: dict, errors: list[str]) -> Settings:
             s.entitlement_target = float(v)
         else:
             errors.append("customer.toml: settings.entitlement_target: expected a number in (0, 1]")
-    if "sla_days" in raw:
+    if "sla_days" in raw and not isinstance(raw["sla_days"], dict):
+        errors.append("customer.toml: settings.sla_days: expected a table such as { critical = 7, high = 30 }")
+    elif "sla_days" in raw:
         sla = dict(s.sla_days)
         for sev, days in raw["sla_days"].items():
             if sev not in SEVERITIES:
@@ -263,10 +316,15 @@ def load_customer(
     if not meta_path.exists():
         raise DataError([f"{meta_path}: not found (run `beyond90 init {base}` to scaffold a data directory)"])
     try:
-        meta = tomllib.loads(meta_path.read_text(encoding="utf-8"))
+        meta = tomllib.loads(_decode(meta_path)[0])
     except tomllib.TOMLDecodeError as exc:
         raise DataError([f"customer.toml: invalid TOML: {exc}"]) from exc
+    except _BadFile as exc:
+        raise DataError([str(exc)]) from exc
 
+    for table in ("customer", "settings"):
+        if table in meta and not isinstance(meta[table], dict):
+            raise DataError([f"customer.toml: [{table}] must be a table, not a single value"])
     cust = meta.get("customer", {})
     schema_version = cust.get("schema_version", SCHEMA_VERSION)
     if not isinstance(schema_version, int) or isinstance(schema_version, bool) or schema_version < 1:
