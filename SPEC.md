@@ -1,4 +1,4 @@
-# Beyond 90: specification v0.14
+# Beyond 90: specification v0.15
 
 An adoption engine for Technical Account Managers. It measures how much of a customer's cloud estate is really covered and operated through a security platform, and turns every gap into an action. The bar keeps moving: when a customer grows or the product ships something, the denominators grow with it.
 
@@ -168,6 +168,10 @@ A configuration (`beyond90.toml`) declares `[[source]]` entries: `type` (`http`,
 
 Input: text files are decoded as UTF-8 (with or without a byte-order mark) or UTF-16; invalid UTF-8 is read as Windows-1252 and warned about; NUL bytes make a file unreadable; non-finite numbers are rejected; malformed CSV is a `DataError`, never an exception of another type. The loader raises `DataError` or returns data, for every input. Pipeline: `run` takes `state/run.lock` (stale after six hours or when its process is gone), writes outputs to a hidden folder and renames it into place, and prunes dated snapshots and outputs beyond `[state] keep_snapshots` (default 180) and `keep_outputs` (default 30). Workspace: at most 1000 snapshots per file. See `docs/operations.md`.
 
+## 15o. The weekly rhythm (0.15)
+
+`tier` classes (top, mid, other) set a default cadence of 7, 14 and 30 days, overridden by `settings.cadence_days`. A touch is a line of `interactions.csv` (personal; date not after `as_of`; kinds fixed) or a contact's `last_contact`; the state is on cadence, due soon (two days or fewer), overdue or none. Only the latest line's `next_step` is open. `week_plan` orders a book by a printed sum of points (touch state, overdue follow-up, overdue promises, renewal, uncovered advisories, critical findings without an owner) scaled by tier, and splits the weekly hours after preparation and calls. The call brief is built from existing results in a fixed order: what we owe, what changed, news, leaks, questions, renewal, growth, next steps. Advisories use the threat radar's matching; a feed for another catalogue is skipped with a warning; text is cleaned and only http(s) links are kept. Expansion signals (capacity above 90% of a licence, cross-sell actions, uncovered advisories) are shown as questions, and marked as not yet when the trust gate is closed: Yield below 75%, an overdue promise, a critical finding without an owner, or a fragile relationship. See `docs/rhythm.md`.
+
 ## 16. Positioning against the platform's own views
 
 Security platforms commonly ship their own adoption or maturity views and an ownership model. Beyond 90 does not replace them: it measures what a platform cannot see about itself (the true universe of units to cover, across a whole portfolio) and reads ownership and decisions rather than rebuilding routing. The research behind this, including a case study of one vendor, is in `docs/research/`.
@@ -192,8 +196,9 @@ Security platforms commonly ship their own adoption or maturity views and an own
 10. 0.11: path to the next level, input drift.
 11. 0.12: automatic collection, pipeline, alerts, schedules.
 12. 0.13: hardening: encodings, hostile inputs, network chaos, run lock, retention, workspace limits.
-13. 0.14 (this): a native dashboard in the browser app: explorer tables, what-if planning, portfolio map, command palette, themes.
-14. 1.0: connector interface and a first verified connector against a real tenant; criticality weighting; readiness checklist import; per-finding ownership sources.
+13. 0.14: a native dashboard in the browser app: explorer tables, what-if planning, portfolio map, command palette, themes.
+14. 0.15 (this): the weekly rhythm for a book (tiers, cadence, call prep, advisories, trust-gated expansion) and a hardened browser app (Trusted Types, sealed storage, pinned supply chain).
+15. 1.0: connector interface and a first verified connector against a real tenant; criticality weighting; readiness checklist import; per-finding ownership sources.
 
 ## References
 

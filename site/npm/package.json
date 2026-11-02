@@ -1,0 +1,11 @@
+{
+  "name": "beyond90-site-build",
+  "private": true,
+  "description": "Pinned build and test dependencies for the browser app. Pyodide is copied into the site; axe-core is used only by the accessibility test.",
+  "dependencies": {
+    "pyodide": "314.0.7"
+  },
+  "devDependencies": {
+    "axe-core": "4.10.2"
+  }
+}

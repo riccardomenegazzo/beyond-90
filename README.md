@@ -4,6 +4,8 @@
 
 Most adoption reporting stops at "90% of accounts connected" (or sites, tenants, organizations: whatever your product connects). That number leaves out units nobody planned for, asset types the product never inventoried, controls that are switched off and findings nobody owns. Beyond 90 measures the whole pipeline against independent denominators, turns every gap into an action, and then goes further than a dashboard can.
 
+**It runs the week of a TAM with a book.** Tiers set a cadence; [This week](docs/rhythm.md) orders the customers with the reason for each place; each call has a prepared agenda (what we owe, what changed, the security news that touches them, the questions worth asking); a commercial conversation is offered only when trust has been earned. See [docs/rhythm.md](docs/rhythm.md).
+
 **It collects its own data.** A config file points at your sources (REST APIs, cloud CLIs, a drop folder) and `beyond90 run` does the rest on a schedule: collect, score, compare with last time, write the review, alert only on what changed. See [docs/automation.md](docs/automation.md).
 
 **For** Technical Account Managers, customer-success engineers and solutions teams at any security vendor: cloud, endpoint, identity, SIEM or other. One engine, a small catalogue ("profile") per kind of product; two ship today ([docs/profiles.md](docs/profiles.md)).
@@ -124,6 +126,8 @@ beyond90 explain acme --store history.db   # what changed since the last stored 
 - [docs/profiles.md](docs/profiles.md): one engine for any security product (cloud, endpoint, and how to map others)
 - [docs/research/](docs/research/): the research behind the design, including a case study of one vendor's TAM motion
 - [docs/architecture.md](docs/architecture.md): how the data is treated (system of record, snapshots, compatibility, sync)
+- [docs/rhythm.md](docs/rhythm.md): tiers, cadence, the week, call prep, advisories, growth only when earned
+- [docs/threat-model.md](docs/threat-model.md): what is protected, from what, and what is not claimed
 - [docs/automation.md](docs/automation.md): collect data from APIs and CLIs by configuration, run on a schedule, alert on change
 - [docs/operations.md](docs/operations.md): what happens when inputs, sources or disks misbehave; retention, locks, size limits
 - [docs/app.md](docs/app.md): the browser app and how to publish it on GitHub Pages

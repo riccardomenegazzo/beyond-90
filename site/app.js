@@ -3,18 +3,20 @@
 import { Engine } from "./engine.js";
 import * as W from "./workspace-core.js";
 import * as store from "./store.js";
+import * as Vault from "./vault.js";
 import * as V from "./views.js";
-import { h as el_, saveBlob, copyText } from "./ui.js";
+import { h as el_, s as svg_, saveBlob, copyText, csvCell } from "./ui.js";
 
 const $ = (id) => document.getElementById(id);
-const state = { files: {}, groups: {}, mode: "single", result: null, book: null, tab: "overview", saved: [], yields: new Map(), engine: null, running: false };
+// The page enforces Trusted Types for scripts (see the CSP): the only string-to-HTML sink left is the sandboxed report frame,
+// which has no scripts and no access to this page. Its content is produced by the engine from the customer's files, escaped there.
+const swPolicy = window.trustedTypes ? window.trustedTypes.createPolicy("b90-sw", { createScriptURL: (u) => { if (u !== "./sw.js") throw new TypeError("only the page's own service worker may be registered"); return u; } }) : null;
+const reportPolicy = window.trustedTypes ? window.trustedTypes.createPolicy("b90-report", { createHTML: (t) => t }) : null;
+const state = { advisories: null, files: {}, groups: {}, mode: "single", result: null, book: null, tab: "overview", saved: [], yields: new Map(), engine: null, running: false };
 const ALLOWED = /\.(csv|toml)$/i;
 const MAX_BYTES = 20 * 1024 * 1024;
 const pct = (x) => (x == null ? "n/a" : (x * 100).toFixed(1) + "%");
 
-function esc(s) {
-  return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-}
 const say = (text) => { $("status").textContent = text; };
 
 // ---------- engine
@@ -32,6 +34,7 @@ async function boot() {
   }
   registerOffline();
   await refreshHistory();
+  await refreshVault();
 }
 
 function refreshRun() {
@@ -43,7 +46,7 @@ function refreshRun() {
 async function registerOffline() {
   if (!("serviceWorker" in navigator) || !(location.protocol === "https:" || ["localhost", "127.0.0.1"].includes(location.hostname))) return;
   try {
-    await navigator.serviceWorker.register("./sw.js");
+    await navigator.serviceWorker.register(swPolicy ? swPolicy.createScriptURL("./sw.js") : "./sw.js");
     await navigator.serviceWorker.ready;
     const keys = await caches.keys();
     $("offline").hidden = !keys.some((k) => k.startsWith("beyond90-"));
@@ -153,6 +156,7 @@ function options() {
     weeks: Math.round(Number($("weeks").value)) || 26,
     realization: Math.min(1, Math.max(0.1, Number($("real").value) || 0.9)),
     quarter: $("quarter").value.trim(),
+    ...(state.advisories ? { advisories: state.advisories } : {}),
   };
 }
 
@@ -193,7 +197,8 @@ async function runBook() {
   try {
     const o = options();
     const res = await state.engine.json("book", { groups: state.groups, options: {
-      hours: Number($("bookhours").value) || 30, weeks: o.weeks, realization: o.realization, weighting: $("weighting").value } });
+      hours: Number($("bookhours").value) || 30, week_hours: Number($("bookhours").value) || 30, weeks: o.weeks, realization: o.realization, weighting: $("weighting").value,
+      ...(state.advisories ? { advisories: state.advisories } : {}) } });
     if (!res.ok) return showErrors(res.errors);
     state.book = res; state.result = null;
     const skipped = Object.keys(res.errors || {});
@@ -226,7 +231,7 @@ function showBook() {
     td.append(open); tr.append(td); tbody.append(tr);
   }
   $("book-table").hidden = true;                 // the portfolio map in the tabs replaces this table
-  state.tab = "bookmap";
+  state.tab = "week";
   $("results").hidden = false;
   renderTabs(BOOK_TABS);
   selectTab(state.tab);
@@ -257,10 +262,7 @@ function showErrors(list) {
 }
 
 function kpi(value, label) {
-  const d = document.createElement("div");
-  d.className = "kpi";
-  d.innerHTML = "<b>" + esc(value) + "</b><span>" + esc(label) + "</span>";
-  return d;
+  return el_("div", { class: "kpi" }, el_("b", { text: value }), el_("span", { text: label }));
 }
 
 function showResults() {
@@ -286,9 +288,11 @@ function renderCompare() {
 // ---------- tabs
 const SINGLE_TABS = [
   { id: "overview", label: "Overview", kind: "view", view: "overview" },
+  { id: "prep", label: "Prep a call", kind: "view", view: "prepView" },
   { id: "actions", label: "Actions", kind: "view", view: "actionsView" },
   { id: "accounts", label: "Accounts", kind: "view", view: "accountsView" },
   { id: "findings", label: "Findings", kind: "view", view: "findingsView" },
+  { id: "news", label: "News", kind: "view", view: "newsView" },
   { id: "planview", label: "Plan & what-if", kind: "view", view: "planView" },
   { id: "maturity", label: "Maturity", kind: "view", view: "maturityView" },
   { id: "renewal", label: "Renewal & trust", kind: "view", view: "renewalView" },
@@ -301,6 +305,7 @@ const SINGLE_TABS = [
   { id: "json", label: "JSON", key: "score_json", file: "beyond90-score.json", type: "application/json", kind: "json" },
 ];
 const BOOK_TABS = [
+  { id: "week", label: "This week", kind: "view", view: "weekView" },
   { id: "bookmap", label: "Portfolio map", kind: "view", view: "bookView" },
   { id: "portfolio", label: "Portfolio", key: "portfolio_markdown", file: "beyond90-portfolio.md", type: "text/markdown", kind: "md" },
   { id: "book", label: "Where your hours go", key: "book_markdown", file: "beyond90-book.md", type: "text/markdown", kind: "md" },
@@ -337,16 +342,16 @@ function selectTab(name, extra) {
   $("report").hidden = t.kind !== "html";
   $("doc").hidden = t.kind !== "md";
   $("raw").hidden = t.kind !== "json";
-  if (t.kind === "html") $("report").srcdoc = text;
+  if (t.kind === "html") $("report").srcdoc = reportPolicy ? reportPolicy.createHTML(text) : text;
   else if (t.kind === "json") $("raw").textContent = text;
   else $("doc").replaceChildren(...markdown(text));
 }
 
 function context() {
-  if (state.book) return { book: state.book, openCustomer: (key) => { state.mode = "single"; state.files = { ...state.groups[key] }; state.book = null; state.tab = "overview"; renderLoaded(); run(); } };
+  if (state.book) return { book: state.book, openCustomer: (key) => { state.mode = "single"; state.files = { ...state.groups[key] }; state.book = null; state.tab = "prep"; renderLoaded(); run(); } };
   const r = state.result;
   if (r && state.parsedFor !== r) { state.parsed = JSON.parse(r.score_json); state.parsedFor = r; }
-  return { result: r, dash: r.dashboard, score: state.parsed, engine: state.engine, files: state.files, options: options(), go: (tab, extra) => selectTab(tab, extra) };
+  return { result: r, dash: r.dashboard, score: state.parsed, engine: state.engine, files: state.files, options: options(), advisories: state.advisories, logTouch, go: (tab, extra) => selectTab(tab, extra) };
 }
 
 function renderView(t) {
@@ -360,39 +365,49 @@ function renderView(t) {
 
 // A deliberately small Markdown renderer: headings, paragraphs, lists, tables, bold, italic, code.
 // Everything is escaped first, so nothing in a CSV can inject markup.
-function inline(s) {
-  return esc(s).replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>").replace(/(^|[\s(])[*_]([^*_\n]+)[*_](?=[\s).,;:]|$)/g, "$1<em>$2</em>");
+function inlineNodes(src) {
+  const out = [], re = /`([^`]+)`|\*\*([^*]+)\*\*|(^|[\s(])[*_]([^*_\n]+)[*_](?=[\s).,;:]|$)/g;
+  let last = 0, m;
+  while ((m = re.exec(src))) {
+    if (m.index > last) out.push(src.slice(last, m.index));
+    if (m[1] != null) out.push(el_("code", { text: m[1] }));
+    else if (m[2] != null) out.push(el_("strong", { text: m[2] }));
+    else { out.push(m[3]); out.push(el_("em", { text: m[4] })); }
+    last = re.lastIndex;
+  }
+  if (last < src.length) out.push(src.slice(last));
+  return out;
 }
 function markdown(src) {
   const out = [], lines = src.split("\n");
-  const el = (tag, html) => { const e = document.createElement(tag); e.innerHTML = html; return e; };
+  const el = (tag, ...kids) => el_(tag, {}, ...kids);
   let i = 0;
   while (i < lines.length) {
     const l = lines[i];
     let m;
     if (!l.trim()) { i++; continue; }
     if (/^---+$/.test(l.trim())) { out.push(document.createElement("hr")); i++; continue; }
-    if ((m = /^(#{1,4})\s+(.*)$/.exec(l))) { out.push(el("h" + Math.min(m[1].length, 4), inline(m[2]))); i++; continue; }
+    if ((m = /^(#{1,4})\s+(.*)$/.exec(l))) { out.push(el("h" + Math.min(m[1].length, 4), inlineNodes(m[2]))); i++; continue; }
     if (l.startsWith("|") && /^\|[\s:|-]+\|?$/.test(lines[i + 1] || "")) {
       const cells = (row) => row.replace(/^\||\|$/g, "").split("|").map((c) => c.trim());
       const head = cells(l); i += 2;
-      let h = "<thead><tr>" + head.map((c) => "<th>" + inline(c) + "</th>").join("") + "</tr></thead><tbody>";
-      while (i < lines.length && lines[i].startsWith("|")) { h += "<tr>" + cells(lines[i]).map((c) => "<td>" + inline(c) + "</td>").join("") + "</tr>"; i++; }
-      out.push(el("table", h + "</tbody>")); continue;
+      const rows = [];
+      while (i < lines.length && lines[i].startsWith("|")) { rows.push(el("tr", cells(lines[i]).map((c) => el("td", inlineNodes(c))))); i++; }
+      out.push(el("table", el("thead", el("tr", head.map((c) => el("th", inlineNodes(c))))), el("tbody", rows))); continue;
     }
     if (/^\s*([-*]|\d+\.)\s+/.test(l)) {
       const ordered = /^\s*\d+\./.test(l), list = document.createElement(ordered ? "ol" : "ul");
       while (i < lines.length && /^\s*([-*]|\d+\.)\s+/.test(lines[i])) {
-        const li = el("li", inline(lines[i].replace(/^\s*([-*]|\d+\.)\s+/, "")));
+        const li = el("li", inlineNodes(lines[i].replace(/^\s*([-*]|\d+\.)\s+/, "")));
         i++;
-        while (i < lines.length && /^\s{2,}[-*]\s+/.test(lines[i])) { li.append(el("div", "– " + inline(lines[i].replace(/^\s*[-*]\s+/, "")))); i++; }
+        while (i < lines.length && /^\s{2,}[-*]\s+/.test(lines[i])) { li.append(el("div", "– ", inlineNodes(lines[i].replace(/^\s*[-*]\s+/, "")))); i++; }
         list.append(li);
       }
       out.push(list); continue;
     }
     let p = l; i++;
     while (i < lines.length && lines[i].trim() && !/^(#|\||---|\s*([-*]|\d+\.)\s)/.test(lines[i])) p += " " + lines[i++];
-    out.push(el("p", inline(p)));
+    out.push(el("p", inlineNodes(p)));
   }
   return out;
 }
@@ -417,6 +432,7 @@ const wsSay = (t) => { $("ws-status").textContent = t; };
 
 async function saveSnapshot() {
   const r = state.result;
+  if ((await store.getVault()) && !store.unlocked() && !(await unlockVaultUi())) { $("saved-note").textContent = "Saved data is protected; unlock it to save."; return; }
   try {
     const snap = await W.makeSnapshot(state.files, { customer: r.customer, asOf: r.as_of, includePersonal: $("personal").checked, savedOn: new Date().toISOString().slice(0, 10) });
     const added = await store.put([snap]);
@@ -443,7 +459,7 @@ async function refreshHistory() {
     const y = state.yields.get(s.id);
     tr.append(cell(s.customer), cell(s.as_of), cell(y == null ? "…" : pct(y), "n"));
     const idc = document.createElement("td");
-    idc.innerHTML = `<code>${esc(s.id.slice(0, 8))}</code>${s.personal_excluded ? ' <span class="chip">no contacts</span>' : ""}`;
+    idc.append(el_("code", { text: s.id.slice(0, 8) }), ...(s.personal_excluded ? [" ", el_("span", { class: "chip", text: "no contacts" })] : []));
     tr.append(idc);
     const act = document.createElement("td");
     const load = Object.assign(document.createElement("button"), { className: "btn small", type: "button", textContent: "Load" });
@@ -492,21 +508,21 @@ function drawTrend() {
   const t0 = t(snaps[0].as_of), t1 = t(snaps[snaps.length - 1].as_of) || t0 + 1;
   const x = (d) => ml + ((t(d) - t0) / Math.max(t1 - t0, 1)) * (W_ - ml - mr);
   const y = (v) => mt + (1 - v) * (H - mt - mb);
-  let g = "";
-  for (const v of [0, 0.25, 0.5, 0.75, 1]) g += `<line x1="${ml}" x2="${W_ - mr}" y1="${y(v)}" y2="${y(v)}" stroke="var(--grid)"/><text x="${ml - 6}" y="${y(v) + 4}" text-anchor="end">${v * 100}%</text>`;
-  const pts = snaps.map((s) => `${x(s.as_of).toFixed(1)},${y(state.yields.get(s.id)).toFixed(1)}`);
-  g += `<polyline points="${pts.join(" ")}" fill="none" stroke="var(--accent)" stroke-width="2.5"/>`;
-  snaps.forEach((s, i) => {
+  const g = [];
+  for (const v of [0, 0.25, 0.5, 0.75, 1]) g.push(svg_("line", { x1: ml, x2: W_ - mr, y1: y(v), y2: y(v), stroke: "var(--grid)" }), svg_("text", { x: ml - 6, y: y(v) + 4, "text-anchor": "end" }, `${v * 100}%`));
+  g.push(svg_("polyline", { points: snaps.map((q) => `${x(q.as_of).toFixed(1)},${y(state.yields.get(q.id)).toFixed(1)}`).join(" "), fill: "none", stroke: "var(--accent)", "stroke-width": 2.5 }));
+  snaps.forEach((q, i) => {
     const anchor = i === 0 ? "start" : i === snaps.length - 1 ? "end" : "middle";       // keep the end labels inside the frame
-    g += `<circle cx="${x(s.as_of)}" cy="${y(state.yields.get(s.id))}" r="4" fill="var(--accent)"/><text x="${x(s.as_of)}" y="${H - 8}" text-anchor="${anchor}">${esc(s.as_of)}</text>`;
+    g.push(svg_("circle", { cx: x(q.as_of), cy: y(state.yields.get(q.id)), r: 4, fill: "var(--accent)" }), svg_("text", { x: x(q.as_of), y: H - 8, "text-anchor": anchor }, q.as_of));
   });
-  box.innerHTML = `<svg viewBox="0 0 ${W_} ${H}" role="img" aria-label="Yield over time for ${esc(name)}">${g}</svg>`;
+  box.append(svg_("svg", { viewBox: `0 0 ${W_} ${H}`, role: "img", "aria-label": `Yield over time for ${name}` }, g));
 }
 
 async function exportWorkspace() {
+  if (await store.getVault() && !store.unlocked() && !(await unlockVaultUi())) return;
   const text = W.serializeWorkspace(state.saved, { engine: state.engine ? state.engine.version : "" });
   save(new Blob([text], { type: "application/json" }), "beyond90-workspace.json");
-  wsSay(`Exported ${state.saved.length} snapshot(s). The file contains customer data: keep it private.`);
+  wsSay(`Exported ${state.saved.length} snapshot(s). The file is not encrypted and contains customer data: keep it private.`);
 }
 
 async function importWorkspace(file) {
@@ -524,8 +540,10 @@ async function importWorkspace(file) {
 async function forgetAll() {
   if (!confirm("Delete every snapshot saved in this browser? Export first if you want to keep them.")) return;
   await store.clear();
+  store.setKey(null);
   state.yields.clear();
   await refreshHistory();
+  await refreshVault();
   wsSay("Everything saved in this browser was deleted.");
 }
 
@@ -573,6 +591,137 @@ $("forget").addEventListener("click", forgetAll);
 $("demo-prev").addEventListener("click", addDemoPrevious);
 $("selfcheck").addEventListener("click", selfCheck);
 
+// ---------- protection of saved data
+const IDLE_LOCK_MS = 15 * 60 * 1000;
+let idleTimer = null;
+async function refreshVault() {
+  let meta = null, locked = 0;
+  try { meta = await store.getVault(); locked = meta ? await store.lockedCount() : 0; } catch { /* storage unavailable: nothing to protect */ }
+  const on = !!meta, open = on && store.unlocked();
+  $("vault-state").textContent = !on ? "saved data is not protected" : open ? "protected, unlocked" : `protected, locked${locked ? ` (${locked} snapshot${locked === 1 ? "" : "s"})` : ""}`;
+  $("vault-state").className = "chip" + (!on ? "" : open ? " on" : " locked");
+  $("vault-on").hidden = on;
+  $("vault-unlock").hidden = !on || open;
+  $("vault-lock").hidden = !open;
+  $("vault-off").hidden = !open;
+  clearTimeout(idleTimer);
+  if (open) idleTimer = setTimeout(() => lockVault("Locked after 15 minutes without use."), IDLE_LOCK_MS);
+  return { meta, open };
+}
+async function lockVault(why = "Locked.") {
+  store.setKey(null);
+  state.saved = []; state.yields.clear();
+  await refreshHistory();
+  await refreshVault();
+  wsSay(why);
+}
+function askPassphrase({ title, help, confirm }) {
+  const d = $("vault-dialog");
+  $("vault-title").textContent = title; $("vault-help").textContent = help;
+  $("vault-pass").value = $("vault-pass2").value = ""; $("vault-msg").textContent = "";
+  $("vault-again-label").hidden = !confirm; 
+  d.showModal(); $("vault-pass").focus();
+  return new Promise((resolve) => {
+    const form = $("vault-form"), cancel = $("vault-cancel");
+    const finish = (v) => { form.removeEventListener("submit", onSubmit); cancel.removeEventListener("click", onCancel); d.removeEventListener("close", onCancel); if (d.open) d.close(); resolve(v); };
+    const onSubmit = (e) => {
+      e.preventDefault();
+      const p = $("vault-pass").value;
+      if (confirm) {
+        const bad = Vault.checkPassphrase(p);
+        if (bad) { $("vault-msg").textContent = bad; return; }
+        if (p !== $("vault-pass2").value) { $("vault-msg").textContent = "The two passphrases differ."; return; }
+      }
+      finish(p);
+    };
+    const onCancel = () => finish(null);
+    form.addEventListener("submit", onSubmit); cancel.addEventListener("click", onCancel); d.addEventListener("close", onCancel);
+  });
+}
+async function enableVault() {
+  const p = await askPassphrase({ title: "Protect saved data", confirm: true, help: "Saved snapshots are sealed with a key made from this passphrase. The key stays in this tab's memory and is dropped after 15 idle minutes. There is no recovery: forget it and the saved copy is gone, so export a workspace first if you need a backup (an export is not sealed)." });
+  if (p == null) return;
+  wsSay("Sealing…");
+  try {
+    const { key, meta } = await Vault.createVault(p);
+    store.setKey(key);
+    await store.convertAll({ toSealed: true, meta });
+    wsSay("Saved data is now protected.");
+  } catch (e) { store.setKey(null); wsSay("Could not protect saved data: " + e.message); }
+  await refreshHistory(); await refreshVault();
+}
+async function unlockVaultUi() {
+  const meta = await store.getVault();
+  if (!meta) return true;
+  for (let tries = 0; tries < 5; tries++) {
+    const p = await askPassphrase({ title: "Unlock saved data", confirm: false, help: tries ? "That was not the passphrase. Try again." : "Enter the passphrase you chose." });
+    if (p == null) return false;
+    const key = await Vault.unlockVault(meta, p);
+    if (key) { store.setKey(key); await refreshHistory(); await refreshVault(); wsSay("Unlocked."); return true; }
+    await new Promise((r) => setTimeout(r, 400 * 2 ** tries));          // slows guessing from inside the page; the key derivation already costs the rest
+  }
+  wsSay("Too many wrong passphrases. Reload the page to try again.");
+  return false;
+}
+async function disableVault() {
+  if (!confirm("Remove the passphrase? Saved snapshots will be stored unprotected again.")) return;
+  try { await store.convertAll({ toSealed: false }); store.setKey(null); wsSay("Protection removed."); }
+  catch (e) { wsSay("Could not remove protection: " + e.message); }
+  await refreshHistory(); await refreshVault();
+}
+$("vault-on").addEventListener("click", enableVault);
+$("vault-unlock").addEventListener("click", unlockVaultUi);
+$("vault-lock").addEventListener("click", () => lockVault());
+$("vault-off").addEventListener("click", disableVault);
+for (const ev of ["pointerdown", "keydown"]) document.addEventListener(ev, () => { if (store.unlocked()) { clearTimeout(idleTimer); idleTimer = setTimeout(() => lockVault("Locked after 15 minutes without use."), IDLE_LOCK_MS); } }, { passive: true });
+
+// ---------- news and advisories
+const ADV_KEY = "b90-advisories";
+function showAdvisories() {
+  const n = state.advisories ? (Array.isArray(state.advisories) ? state.advisories : state.advisories.threats || []).length : 0;
+  $("adv-status").textContent = n ? `${n} advisories loaded.` : "";
+  $("clear-adv").hidden = !n;
+}
+function setAdvisories(doc) {
+  state.advisories = doc;
+  try { doc ? localStorage.setItem(ADV_KEY, JSON.stringify(doc)) : localStorage.removeItem(ADV_KEY); } catch { /* storage may be blocked; the feed then lasts for this tab */ }
+  showAdvisories();
+}
+async function loadAdvisoryFile(file) {
+  if (file.size > 1024 * 1024) { $("adv-status").textContent = "That file is larger than 1 MB; an advisory feed should not be."; return; }
+  try {
+    const doc = JSON.parse(await file.text());
+    const list = Array.isArray(doc) ? doc : doc && doc.threats;
+    if (!Array.isArray(list) || list.length > 2000) throw new Error("expected a list of advisories (up to 2000), or an object with a 'threats' list");
+    setAdvisories(doc);
+    $("adv-status").textContent += " Run the analysis again to match them.";
+  } catch (e) { $("adv-status").textContent = "Not a usable feed: " + e.message; }
+}
+try { const saved = localStorage.getItem(ADV_KEY); if (saved) state.advisories = JSON.parse(saved); } catch { /* ignore */ }
+showAdvisories();
+$("advfile").addEventListener("change", (e) => e.target.files[0] && loadAdvisoryFile(e.target.files[0]).then(() => { e.target.value = ""; }));
+$("demo-adv").addEventListener("click", async () => { setAdvisories(await (await fetch("./demo-advisories.json")).json()); $("adv-status").textContent += " Run the analysis again to match them."; });
+$("clear-adv").addEventListener("click", () => setAdvisories(null));
+
+// ---------- the interaction log
+function logTouch(e) {
+  const asOf = state.result.as_of;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(e.date)) return "Pick a date.";
+  if (e.date > asOf) return `The date cannot be after the customer's as_of (${asOf}). Update as_of in customer.toml first.`;
+  if (e.next_due && !/^\d{4}-\d{2}-\d{2}$/.test(e.next_due)) return "The due date is not a date.";
+  const header = "date,kind,contact_id,summary,next_step,next_due";
+  const line = [e.date, e.kind, e.contact_id, e.summary.trim(), e.next_step.trim(), e.next_due || ""].map(csvCell).join(",");
+  const old = state.files["interactions.csv"];
+  state.files["interactions.csv"] = (old && old.trim() ? old.replace(/\s*$/, "\n") : header + "\n") + line + "\n";
+  renderLoaded();
+  run();
+  say("Added to interactions.csv in this tab. Download it from the command palette to keep it.");
+  return "Added.";
+}
+function downloadInteractions() {
+  if (state.files["interactions.csv"]) saveBlob(state.files["interactions.csv"], "interactions.csv", "text/csv");
+}
+
 // ---------- theme
 function applyTheme(t) {
   if (t) document.documentElement.dataset.theme = t; else delete document.documentElement.dataset.theme;
@@ -598,6 +747,7 @@ function commands() {
     { label: "Save snapshot in this browser", hint: "action", when: hasResult, run: saveSnapshot },
     { label: "Copy a five-line summary for chat", hint: "action", when: hasResult, run: copySummary },
     { label: "Download the current document", hint: "action", when: () => hasResult() && current().kind !== "view", run: download },
+    { label: "Download interactions.csv", hint: "action", when: () => !!state.files["interactions.csv"], run: downloadInteractions },
     { label: "Export workspace", hint: "action", run: exportWorkspace },
     { label: "Print this view", hint: "action", run: () => window.print() },
     { label: "Switch colour theme", hint: "action", run: () => $("theme").click() },

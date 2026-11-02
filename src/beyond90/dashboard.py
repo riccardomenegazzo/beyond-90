@@ -118,5 +118,6 @@ def build(data: CustomerData, score: Score, cat: Catalogue, plan: Plan, extras: 
         "forecast": _plain(extras.get("forecast")),
         "drift": _plain(extras.get("drift")),
         "candor": _plain(extras.get("candor")),
+        "rhythm": _plain(extras.get("rhythm")),
         "as_of": date.fromisoformat(str(score.as_of)).isoformat(),
     }

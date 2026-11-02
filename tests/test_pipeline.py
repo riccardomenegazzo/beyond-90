@@ -41,7 +41,7 @@ def test_one_run_collects_scores_writes_everything_and_keeps_history(api, tmp_pa
     res = go(cfg, 2)
     out = cfg.state_dir / "out"
     assert (out / "2026-11-02" / "report.html").read_text().startswith("<!doctype html") and (out / "latest" / "qbr.md").exists()
-    assert {"report", "qbr", "successplan", "summary", "roadmap", "json", "workspace"} == set(res.outputs)
+    assert {"report", "qbr", "successplan", "summary", "roadmap", "json", "prep", "workspace"} == set(res.outputs)
     assert (cfg.state_dir / "history.db").exists() and (cfg.state_dir / "snapshots" / "2026-11-02" / "accounts.csv").exists()
     rec = json.loads((cfg.state_dir / "runs.jsonl").read_text().splitlines()[-1])
     assert rec["as_of"] == "2026-11-02" and rec["input_hash"] == res.input_hash and rec["sources"]["tenants"] == "ok"
@@ -306,3 +306,27 @@ def test_state_options_are_checked(tmp_path):
     for extra, needle in (("keep_snapshots = 0", "keep_snapshots"), ('keep_outputs = "x"', "keep_outputs"), ("keep_sna = 3", "unknown key")):
         with pytest.raises(ConfigError, match=needle):
             cfg_for(tmp_path, base.replace("\n[source", f"\n[state]\n{extra}\n\n[source", 1))
+
+
+def test_a_run_writes_the_call_prep_and_matches_a_feed_that_may_come_and_go(api, tmp_path):
+    feed = tmp_path / "advisories.json"
+    cfg = cfg_for(tmp_path, config_text(api.base) + '\n[advisories]\npath = "advisories.json"\n')
+    res = go(cfg, 2)                                           # no feed yet: not a failure
+    prep = (cfg.state_dir / "out" / "latest" / "call-prep.md").read_text()
+    assert prep.startswith("# Call prep:") and "News that touches" not in prep and res.outputs["prep"].name == "call-prep.md"
+    feed.write_text(json.dumps([{"id": "ADV-1", "title": "Exposed buckets", "severity": "critical", "resource_types": ["storage_object"], "mitigated_by": ["posture"]}]))
+    go(cfg, 3)
+    assert "ADV-1" in (cfg.state_dir / "out" / "latest" / "call-prep.md").read_text()
+    feed.write_text("{not json")
+    with pytest.raises(PipelineError, match="advisories"):
+        go(cfg, 4)
+
+
+def test_the_advisories_section_is_checked(tmp_path):
+    from beyond90.connect import ConfigError
+    for extra in ('\n[advisories]\n', '\n[advisories]\npath = ""\n', '\n[advisories]\npath = "x.json"\nurl = "http://example.org"\n'):
+        base = config_text("http://127.0.0.1:1")
+        if extra.strip() == "[advisories]":
+            continue
+        with pytest.raises(ConfigError, match="advisories"):
+            cfg_for(tmp_path, base + extra)

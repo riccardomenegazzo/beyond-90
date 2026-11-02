@@ -61,6 +61,27 @@ SLA = {"critical": 7, "high": 30, "medium": 90, "low": 180}
 # Days are "days before as_of" for contacts, absolute dates for commitments (promised, due, done).
 RENEWALS = {"northwind": "2027-02-28", "contoso-bank": "2027-09-30", "fabrikam-labs": "2026-12-15"}   # invented
 
+# (days before as_of, kind, contact_id, summary, next_step, next_due as days after as_of or None)
+INTERACTIONS = {
+    "northwind": [
+        (12, "call", "n-01", "Walked through the open critical findings; Priya will bring the platform lead next time.", "Send the list of findings with no owner", -2),
+        (26, "workshop", "n-03", "Runtime sensor enablement session for the data team.", "", None),
+        (40, "email", "n-04", "Licence utilization summary sent ahead of the budget round.", "", None),
+        (61, "qbr", "n-01", "Quarterly review: Yield and the two largest gaps.", "Agree an owner for each critical finding", 10),
+    ],
+    "contoso-bank": [
+        (4, "call", "c-02", "Weekly sync: sensor rollout on the payments accounts is on track.", "Share the container registry inventory guide", 3),
+        (11, "advisory", "c-03", "Walked Aisha through the registry-credential advisory and where it applies.", "", None),
+        (18, "meeting", "c-01", "Executive check-in: Helen wants a one-page view of Yield for the board.", "Send the one-page summary", -5),
+        (25, "call", "c-02", "Weekly sync.", "", None),
+        (32, "call", "c-02", "Weekly sync.", "", None),
+    ],
+    "fabrikam-labs": [
+        (41, "email", "f-01", "Sent the onboarding checklist and the list of accounts still to connect.", "Call to agree who owns the unconnected accounts", -20),
+        (70, "call", "f-01", "Kick-off after the contract renewal discussion.", "", None),
+    ],
+}
+
 CONTACTS = {
     "northwind": [
         ("n-01", "Priya Raman", "champion", "platform", 12, (8, 8, 6, 3)),
@@ -270,6 +291,10 @@ def build(name: str, p: dict) -> None:
     write_csv(out / "contacts.csv", ["id", "name", "role", "team", "influence", "last_contact", "credibility", "reliability", "intimacy", "self_orientation"],
               [[cid, nm, role, team, "", (AS_OF - timedelta(days=ago)).isoformat(), *ratings] for cid, nm, role, team, ago, ratings in CONTACTS[name]])
     write_csv(out / "commitments.csv", ["id", "contact_id", "description", "promised_on", "due_on", "done_on"], [list(c) for c in COMMITMENTS[name]])
+
+    write_csv(out / "interactions.csv", ["date", "kind", "contact_id", "summary", "next_step", "next_due"],
+              [[(AS_OF - timedelta(days=ago)).isoformat(), kind, who, text, step, (AS_OF + timedelta(days=due)).isoformat() if due is not None else ""]
+               for ago, kind, who, text, step, due in INTERACTIONS[name]])
 
     (out / "customer.toml").write_text(
         f'''[customer]

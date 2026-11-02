@@ -11,9 +11,9 @@
 
 export const INPUT_FILES = [
   "customer.toml", "accounts.csv", "inventory.csv", "activations.csv", "findings.csv",
-  "teams.csv", "entitlements.csv", "contacts.csv", "commitments.csv",
+  "teams.csv", "entitlements.csv", "contacts.csv", "commitments.csv", "interactions.csv",
 ];
-export const PERSONAL_FILES = ["contacts.csv", "commitments.csv"];
+export const PERSONAL_FILES = ["contacts.csv", "commitments.csv", "interactions.csv"];
 export const WORKSPACE_FORMAT = "beyond90-workspace";
 export const WORKSPACE_VERSION = 1;
 export const MAX_SNAPSHOTS = 1000;        // a workspace is a person's working set, not a database; a file past this is refused, not half read

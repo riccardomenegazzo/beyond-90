@@ -36,6 +36,7 @@ downgrade_window_days = 3       # anti-gaming window around an SLA deadline
 mttr_lookback_days = 90
 entitlement_target = 0.8
 renewal_window_days = 180       # a renewal this close, with a risk signal, puts its ARR "at risk"
+cadence_days = 0                # how often to be in touch; 0 means the default for the tier (see docs/rhythm.md)
 
 [settings.sla_days]
 critical = 7
@@ -105,6 +106,10 @@ The universe must come from somewhere other than the platform itself: billing ex
 ## commitments.csv (optional)
 
 `id, due_on` are required. `description, contact_id, promised_on, done_on` are optional. `contact_id` must exist in `contacts.csv`. Reliability is measured from this file over the last `commitment_lookback_days` (default 90). `contact_stale_days` (default 90) sets when a contact counts as not spoken to.
+
+## interactions.csv (optional)
+
+`date, kind` are required. `contact_id, summary, next_step, next_due` are optional. Kinds: `call`, `meeting`, `email`, `qbr`, `workshop`, `support`, `advisory`, `escalation`, `other`. `contact_id` must exist in `contacts.csv`; `date` cannot be after `as_of`. This log is what the cadence is measured against; see [rhythm.md](rhythm.md). Contains personal data: do not publish it.
 
 ## Where to get the data
 

@@ -13,7 +13,7 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Any, Optional
 
-from . import __version__, dashboard
+from . import __version__, dashboard, rhythm
 from .attribution import explain
 from .book import build_book_plan, render_book_html, render_book_markdown
 from .candor import candor_items
@@ -27,6 +27,7 @@ from .playbooks import generate_actions
 from .portfolio import load_portfolio, render_portfolio_markdown
 from .provenance import INPUT_FILES, hash_directory, input_hash
 from .qbr import render_qbr
+from .radar import parse_threats
 from .renewal import compute_renewal
 from .report import render_html, render_json, render_markdown
 from .scoring import compute_score
@@ -43,6 +44,7 @@ def analyze(
     ramp_weeks: int = 2,
     quarter: str = "",
     since: str | None = None,
+    advisories: Any = None,
 ) -> dict[str, Any]:
     """Score one customer directory and return every output as text.
 
@@ -53,6 +55,10 @@ def analyze(
         cat = Catalogue.for_directory(directory)
         data, warnings = load_customer(directory, cat, require_accounts=True)
         old = load_customer(since, cat)[0] if since else None
+        skipped: list[str] = []
+        threats = parse_threats(advisories, cat, "the advisories", skipped) if advisories else []
+        if skipped:
+            warnings = [*warnings, f"{len(skipped)} advisory(ies) do not apply to the {cat.profile} catalogue and were skipped: {', '.join(skipped[:5])}."]
     except DataError as e:
         return {"ok": False, "errors": e.errors, "version": __version__}
     except ValueError as e:
@@ -72,6 +78,10 @@ def analyze(
     if old is not None:
         extras["drift"] = input_drift(data, old, cat.terms)
     extras["candor"] = candor_items(score, data, cat, plan=plan, forecast=extras.get("forecast"), attribution=extras.get("attribution"))
+    exposures = rhythm.customer_exposures(data, threats, cat)
+    expansion = rhythm.expansion_signals(data, score, actions, exposures)
+    prep = rhythm.build_prep(data, score, actions, extras, exposures, expansion)
+    rh = {"touch": prep["touch"], "prep": prep, "prep_markdown": rhythm.render_prep_markdown(prep), "exposures": exposures, "expansion": expansion}
     summary = score.to_dict()
     return {
         "ok": True,
@@ -88,7 +98,8 @@ def analyze(
         "yield": score.yield_,
         "reach": (score.reach or {}).get("value") if isinstance(score.reach, dict) else None,
         "actions": len(actions),
-        "dashboard": dashboard.build(data, score, cat, plan, extras, actions),
+        "prep_markdown": rh["prep_markdown"],
+        "dashboard": dashboard.build(data, score, cat, plan, {**extras, "rhythm": rh}, actions),
         "report_html": render_html(score, actions, None, previous, **extras),
         "report_markdown": render_markdown(score, actions, None, previous, **extras),
         "qbr_markdown": render_qbr(score, actions, previous, quarter, **extras),
@@ -183,6 +194,8 @@ def analyze_book(
     weighting: str = "arr",
     ramp_weeks: int = 2,
     baselines: bool = True,
+    week_hours: float = 30.0,
+    advisories: Any = None,
 ) -> dict[str, Any]:
     """Several customers at once: the portfolio view and one budget of hours spent where it adds the most weighted Yield.
 
@@ -206,6 +219,10 @@ def analyze_book(
             cat = Catalogue.for_root(root)
         except ValueError as e:                                  # customers of different profiles do not belong in one portfolio
             return {"ok": False, "errors": [str(e).replace(str(root), "the folder")], "version": __version__}
+        try:
+            threats = parse_threats(advisories, cat, "the advisories", []) if advisories else []
+        except ValueError as e:
+            return {"ok": False, "errors": [str(e)], "version": __version__}
         pf = load_portfolio(root, cat)
         errors = {names[k]: [m.replace(str(root) + "/", "") for m in v] for k, v in pf.errors.items()}
         customers = []
@@ -221,10 +238,25 @@ def analyze_book(
         plan = build_book_plan(customers, cat, hours_per_week=hours, horizon_weeks=weeks, realization=realization, weighting=weighting,
                                ramp=RampModel(ramp_weeks), baselines=baselines)
         by_name = {e.name: e for e in pf.entries}
+        week_rows, preps = [], {}
+        for n, d in customers:
+            ent = by_name[n]
+            expo = rhythm.customer_exposures(d, threats, cat)
+            exp = rhythm.expansion_signals(d, ent.score, ent.actions, expo)
+            ren = compute_renewal(d, ent.score, None)
+            prep = rhythm.build_prep(d, ent.score, ent.actions, {"renewal": ren}, expo, exp)
+            preps[keys[n]] = {"markdown": rhythm.render_prep_markdown(prep), "prep": prep, "exposures": expo, "expansion": exp}
+            week_rows.append({"key": keys[n], "name": n, "data": d, "score": ent.score, "renewal": ren, "exposures": expo, "expansion": exp})
+        week = rhythm.week_plan(week_rows, week_hours)
+        as_of = max(d.as_of for _, d in customers).isoformat()
         return {
             "ok": True,
             "version": __version__,
             "errors": errors,
+            "week": week,
+            "week_markdown": rhythm.render_week_markdown(week, as_of),
+            "preps": preps,
+            "advisories": len(threats),
             "arr_weighted_yield": pf.arr_weighted_yield,
             "weighted_start": plan.weighted_start,
             "weighted_end": plan.weighted_end,

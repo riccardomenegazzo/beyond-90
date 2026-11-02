@@ -22,7 +22,7 @@ from test_properties import estate
 CAT = Catalogue.load()
 TOKENS = ["", " ", "NaN", "nan", "inf", "-inf", "-1", "0", "1e999", "-0", "９９", "٣", "2026-13-45", "0000-00-00", "9999-12-31", "1900-01-01", "true;false", "yes", "TRUE", "None",
           "null", "x" * 5000, "\x00", "a\x00b", "<script>alert(1)</script>", "=cmd|' /C calc'!A0", "‮", "a,b", 'a"b', "a\nb", "a\r\nb", "ß", "😀", "-", ";", "|", "0x10", "1_000", "1,5"]
-FILES = ["accounts.csv", "inventory.csv", "activations.csv", "findings.csv", "teams.csv", "customer.toml"]
+FILES = ["accounts.csv", "inventory.csv", "activations.csv", "findings.csv", "teams.csv", "interactions.csv", "customer.toml"]
 
 
 def mutate(files: dict[str, str], r: random.Random) -> dict[str, bytes]:

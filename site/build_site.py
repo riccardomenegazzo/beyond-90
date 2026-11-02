@@ -27,7 +27,7 @@ def build(out: Path, pyodide: Path) -> None:
     if out.exists():
         shutil.rmtree(out)
     out.mkdir(parents=True)
-    for name in ("index.html", "app.js", "style.css", "engine.js", "store.js", "workspace-core.js", "worker.js", "ui.js", "charts.js", "views.js"):
+    for name in ("index.html", "app.js", "style.css", "engine.js", "store.js", "workspace-core.js", "worker.js", "ui.js", "charts.js", "views.js", "vault.js"):
         shutil.copy(ROOT / "site" / name, out / name)
     # The engine: the package and its data, nothing else, in a fixed order so builds are reproducible.
     with zipfile.ZipFile(out / "beyond90.zip", "w", zipfile.ZIP_DEFLATED) as z:
@@ -52,6 +52,7 @@ def build(out: Path, pyodide: Path) -> None:
     (out / "demo-book.json").write_text(json.dumps(book, ensure_ascii=False), encoding="utf-8")
     ep = {p.name: p.read_text(encoding="utf-8") for p in sorted(DEMO_ENDPOINT.iterdir()) if p.suffix in (".csv", ".toml")}
     (out / "demo-endpoint.json").write_text(json.dumps(ep, ensure_ascii=False), encoding="utf-8")
+    shutil.copy(ROOT / "examples" / "threats.json", out / "demo-advisories.json")
     shutil.copy(ROOT / "THIRD_PARTY.md", out / "THIRD_PARTY.md")
     shutil.copy(ROOT / "LICENSE", out / "LICENSE.txt")
     write_service_worker(out)

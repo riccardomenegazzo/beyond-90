@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; frame-src 'self'; worker-src 'self' blob:; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; frame-src 'self'; worker-src 'self' blob:; base-uri 'none'; form-action 'none'; require-trusted-types-for 'script'; trusted-types b90-report b90-worker b90-sw">
 <meta name="referrer" content="no-referrer">
 <title>Beyond 90: adoption score in your browser</title>
 <link rel="stylesheet" href="style.css">
@@ -43,6 +43,17 @@
       </div>
     </div>
     <ul id="loaded" class="loaded" aria-live="polite"></ul>
+
+    <div class="advrow">
+      <strong>News and advisories</strong>
+      <span class="note">A JSON feed of security advisories. Each one is matched to what the customer has inventoried. Nothing is fetched from the internet.</span>
+      <div class="row left">
+        <label class="btn small">Add a feed<input id="advfile" type="file" accept=".json,application/json" hidden></label>
+        <button class="btn small" id="demo-adv" type="button">Use the demo advisories</button>
+        <button class="btn small" id="clear-adv" type="button" hidden>Remove</button>
+        <span class="note" id="adv-status" role="status"></span>
+      </div>
+    </div>
 
     <details class="opts">
       <summary>Planning assumptions</summary>
@@ -102,6 +113,13 @@
       <label class="btn">Import workspace<input id="import" type="file" accept=".json,application/json" hidden></label>
       <button class="btn danger" id="forget" type="button">Forget everything</button>
     </div>
+    <div class="vaultbar">
+      <span class="chip" id="vault-state">saved data is not protected</span>
+      <button class="btn small" id="vault-on" type="button">Protect with a passphrase</button>
+      <button class="btn small" id="vault-unlock" type="button" hidden>Unlock</button>
+      <button class="btn small" id="vault-lock" type="button" hidden>Lock now</button>
+      <button class="btn small" id="vault-off" type="button" hidden>Remove protection</button>
+    </div>
     <p class="note" id="ws-status" role="status"></p>
   </section>
 
@@ -110,6 +128,17 @@
     <ul id="errlist"></ul>
   </section>
 </main>
+
+<dialog id="vault-dialog" class="palette" aria-labelledby="vault-title">
+  <form method="dialog" id="vault-form">
+    <h3 id="vault-title">Protect saved data</h3>
+    <p class="note first" id="vault-help"></p>
+    <label>Passphrase<input id="vault-pass" type="password" autocomplete="off"></label>
+    <label id="vault-again-label">Again<input id="vault-pass2" type="password" autocomplete="off"></label>
+    <p class="note" id="vault-msg" role="alert"></p>
+    <div class="row left"><button class="btn primary" id="vault-go" type="submit">Continue</button><button class="btn" id="vault-cancel" type="button">Cancel</button></div>
+  </form>
+</dialog>
 
 <dialog id="palette" class="palette" aria-label="Commands">
   <input id="palette-q" type="text" placeholder="Type a command or a view…" aria-label="Search commands" autocomplete="off">

@@ -1,5 +1,9 @@
 // A small client for the worker: requests carry ids, an old answer can never be mistaken for a new one,
 // and cancelling is "throw the worker away and start another", which is the only way to stop Python mid-call.
+// Trusted Types: a worker can only be started from a script URL that went through a policy. This one accepts nothing but the
+// blob: URL this file makes from the page's own worker.js, so no other script can be started from here.
+const workerPolicy = window.trustedTypes ? window.trustedTypes.createPolicy("b90-worker", { createScriptURL: (u) => { if (!/^blob:/.test(u)) throw new TypeError("only blob URLs may start the engine"); return u; } }) : null;
+
 export class Engine {
   constructor(onStatus = () => {}) {
     this.onStatus = onStatus;
@@ -13,7 +17,7 @@ export class Engine {
     const base = new URL("./", location.href).href;
     const src = (await (await fetch("./worker.js")).text()).replaceAll("__BASE__", base);
     const url = URL.createObjectURL(new Blob([src], { type: "text/javascript" }));
-    this.worker = new Worker(url, { type: "module" });
+    this.worker = new Worker(workerPolicy ? workerPolicy.createScriptURL(url) : url, { type: "module" });
     this.worker.onmessage = ({ data }) => {
       if (data.type === "status") return this.onStatus(data.text);
       const p = this.pending.get(data.id);

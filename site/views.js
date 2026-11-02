@@ -48,6 +48,10 @@ export function overview({ result, dash, score, go }) {
 
 function attention({ result, dash, score }) {
   const out = [], o = score.outcomes, u = score.universe;
+  const rh = dash.rhythm;
+  if (rh && (rh.touch.state === "overdue" || rh.touch.state === "never")) out.unshift({ kind: "bad", title: rh.touch.state === "never" ? "No touch on record" : `${rh.touch.days_since} days since the last touch`, text: `The cadence for this customer is every ${rh.touch.cadence_days} days.`, go: "prep", cta: "Prepare the call" });
+  const news = rh ? rh.exposures.filter((e) => e.uncovered && (e.severity === "critical" || e.severity === "high")) : [];
+  if (news.length) out.push({ kind: "warn", title: `${news.length} advisor${news.length === 1 ? "y" : "ies"} touch${news.length === 1 ? "es" : ""} uncovered ${score.terms.units}`, text: news.map((e) => e.id).join(", "), go: "news", cta: "See the news" });
   if (o.critical_open) out.push({ kind: "bad", title: `${o.critical_open} critical finding${o.critical_open === 1 ? "" : "s"} open`, text: dash.forecast?.available && dash.forecast.p50_days ? `At the current pace, zero is about ${dash.forecast.p50_days} days away.` : "No forecast available.", go: "findings" });
   const ren = dash.renewal;
   if (ren && ren.status && ren.status !== "healthy") out.push({ kind: ren.status === "at_risk" ? "bad" : "warn", title: `Renewal in ${ren.days} days: ${ren.status.replace("_", " ")}`, text: `${num(ren.arr_at_risk || ren.arr || 0)} of annual revenue is involved.`, go: "renewal" });
@@ -267,6 +271,104 @@ export function bookView({ book, openCustomer }) {
         h("li", {}, h("b", { text: `${gain.name} gains the most weighted Yield from your hours` }), h("span", { text: `${pct(gain.yield)} to ${pct(gain.planned_yield)} for ${gain.hours.toFixed(0)} hours.` }), h("button", { class: "link", type: "button", text: "Open", onclick: () => openCustomer(gain.key) }))]), { sub: "From the plan that spends one budget of hours across the whole book." }),
       card("Reading the map", h("p", { class: "note first", text: "Each cell is one stage's pass rate; darker means closer to 100%. A column that is pale across many customers is a product or process problem, not one customer's." }))),
     card("The book", dataTable({ columns: cols, rows: cs, label: "Customers", pageSize: 100 }).el));
+}
+
+// ------------------------------------------------------------------ the week and the call
+const TIER_KIND = { top: "bad", mid: "warn", other: "" };
+const TIER_LABEL = { top: "top tier", mid: "mid tier", other: "other" };
+const STATE_LABEL = { never: "no touch on record", overdue: "overdue", due_soon: "due soon", ok: "on cadence" };
+const STATE_KIND = { never: "bad", overdue: "bad", due_soon: "warn", ok: "good" };
+
+/** The agenda for a call, as the engine built it. */
+function agenda(prep) {
+  return h("div", { class: "agenda" }, prep.items.map((it, i) => h("section", { class: "agitem" },
+    h("h4", {}, h("span", { class: "agn", text: String(i + 1) }), it.title), h("p", { class: "note first", text: it.why }), h("ul", {}, it.points.map((p) => h("li", { text: p }))))));
+}
+
+function briefButtons(markdown, name) {
+  return h("span", { class: "btnrow" },
+    h("button", { class: "btn small", type: "button", text: "Copy", onclick: (e) => copyText(markdown).then((ok) => { e.target.textContent = ok ? "Copied" : "Copy not available"; }) }),
+    h("button", { class: "btn small", type: "button", text: "Download .md", onclick: () => saveBlob(markdown, name, "text/markdown") }));
+}
+
+/** Book mode: the order of the week, with the reason for each place and the call prepared behind it. */
+export function weekView({ book, openCustomer, markdown }) {
+  const w = book.week;
+  const cols = [
+    { key: "n", label: "#", num: true, sort: (r) => r.n },
+    { key: "name", label: "Customer", render: (r) => h("span", {}, h("b", { text: r.name }), h("small", { class: "block", text: r.reasons.join("; ") })) },
+    { key: "class", label: "Tier", render: (r) => chip((r.tier || "no tier") + (r.class !== "other" ? "" : ""), TIER_KIND[r.class]) },
+    { key: "touch", label: "Touch", sort: (r) => r.touch.days_since ?? 9999, render: (r) => h("span", {}, chip(STATE_LABEL[r.touch.state], STATE_KIND[r.touch.state]), h("small", { class: "block", text: r.touch.last_touch ? `${r.touch.days_since} days ago, every ${r.touch.cadence_days}` : `every ${r.touch.cadence_days} days` })) },
+    { key: "day", label: "Day" },
+    { key: "hours", label: "Hours", num: true, render: (r) => r.hours.toFixed(1) },
+    { key: "priority", label: "Priority", num: true },
+  ];
+  const rows = w.rows.map((r, i) => ({ ...r, n: i + 1, id: r.key }));
+  const t = dataTable({ columns: cols, rows, label: "The week", pageSize: 100,
+    expand: (r) => { const p = book.preps[r.key]; return h("div", { class: "expand wide" }, h("div", { class: "cardhead" }, h("h4", { text: "Call prep" }), briefButtons(p.markdown, `beyond90-prep-${r.key}.md`)), agenda(p.prep), h("button", { class: "btn small", type: "button", text: "Open the customer's dashboard", onclick: () => openCustomer(r.key) })); } });
+  const top = rows.filter((r) => r.class === "top"), mid = rows.filter((r) => r.class === "mid");
+  return h("div", {},
+    h("div", { class: "kpiline" }, stat(String(top.length), "top-tier customers"), stat(String(mid.length), "mid-tier customers"), stat(String(rows.filter((r) => r.touch.state === "overdue" || r.touch.state === "never").length), "touches overdue", rows.some((r) => r.touch.state === "overdue") ? "bad" : ""), stat(w.hours_per_week + " h", "budget for the week"), stat(String(book.advisories), "advisories loaded")),
+    w.over_budget ? h("div", { class: "card callout bad" }, h("h3", { text: "The week does not fit" }), h("p", { text: `Calls and preparation alone need ${w.fixed_hours} hours. Something has to give: a lower-tier cadence, a shorter call, or help.` })) : null,
+    card("Who to talk to, in this order", t.el, { sub: "Priority is a sum of points, each with its reason. Open a row for the prepared call.", actions: briefButtons(book.week_markdown, "beyond90-week.md") }),
+    book.advisories ? null : h("p", { class: "note", text: "No advisories are loaded, so the plan ignores security news. Add a feed in step 1 (News and advisories)." }));
+}
+
+/** One customer: when to call, what to say, in the order that earns attention. */
+export function prepView({ dash, score, result, logTouch }) {
+  const rh = dash.rhythm, t = rh.touch, prep = rh.prep, ex = rh.expansion;
+  const touchCard = card("Rhythm", h("div", {},
+    h("div", { class: "kpiline" }, stat(t.last_touch ? `${t.days_since} days` : "never", "since the last touch", t.state === "overdue" || t.state === "never" ? "bad" : t.state === "due_soon" ? "warn" : "good"), stat(`every ${t.cadence_days} days`, `${TIER_LABEL[t.class]}${dash.rhythm.touch.tier ? ` (${t.tier})` : ""}`), stat(String(t.touches_90d), "touches in 90 days")),
+    t.follow_up ? h("p", { class: t.follow_up.overdue ? "bad-text" : "note" }, h("b", { text: "Open follow-up: " }), `${t.follow_up.step}${t.follow_up.due ? ` (due ${t.follow_up.due})` : ""}`) : null,
+    t.last_summary ? h("p", { class: "note", text: `Last time (${t.last_touch}, ${t.last_kind}): ${t.last_summary}` }) : null));
+  const expCard = card("Growth, only if earned", h("div", {},
+    h("p", { class: ex.gate.ready ? "note first" : "bad-text", text: ex.say }),
+    !ex.gate.ready ? h("ul", {}, ex.gate.reasons.map((r) => h("li", { text: r }))) : null,
+    ex.signals.length ? h("ul", { class: "signals" + (ex.gate.ready ? "" : " later") }, ex.signals.map((s) => h("li", {}, chip(s.kind, ex.gate.ready ? "good" : ""), h("span", {}, h("b", { text: s.title }), h("small", { class: "block", text: s.why }), h("small", { class: "block", text: "Ask: " + s.ask }))))) : h("p", { class: "note", text: "No expansion signal right now." })),
+    { sub: "A commercial conversation follows adoption and trust; it does not lead them." });
+  return h("div", {},
+    h("div", { class: "col2" }, h("div", {}, touchCard, logForm({ score, result, logTouch })), card("The call, in order", h("div", {}, h("div", { class: "cardhead" }, h("span", { class: "note", text: "Derived from the customer's files." }), briefButtons(rh.prep_markdown, "beyond90-call-prep.md")), agenda(prep)))),
+    expCard);
+}
+
+function logForm({ score, result, logTouch }) {
+  const contacts = (score.relationship && score.relationship.contacts) || [];
+  const f = { date: h("input", { type: "date", value: result.as_of, "aria-label": "Date" }), kind: h("select", { "aria-label": "Kind" }, ["call", "meeting", "email", "qbr", "workshop", "support", "advisory", "escalation", "other"].map((k) => h("option", { value: k, text: k }))),
+    who: h("select", { "aria-label": "Contact" }, h("option", { value: "", text: "(no one in particular)" }), contacts.map((c) => h("option", { value: c.id, text: c.name }))),
+    summary: h("input", { type: "text", placeholder: "What was said or decided", maxlength: 300, "aria-label": "Summary" }),
+    step: h("input", { type: "text", placeholder: "Next step we agreed (optional)", maxlength: 200, "aria-label": "Next step" }),
+    due: h("input", { type: "date", "aria-label": "Next step due" }) };
+  const out = h("p", { class: "note", role: "status" });
+  return card("Log a touch", h("div", {},
+    h("div", { class: "formgrid" }, h("label", {}, "Date", f.date), h("label", {}, "Kind", f.kind), h("label", {}, "With", f.who), h("label", { class: "wide2" }, "Summary", f.summary), h("label", { class: "wide2" }, "Next step", f.step), h("label", {}, "Due", f.due)),
+    h("div", { class: "row left" }, h("button", { class: "btn small primary", type: "button", text: "Add and re-run", onclick: () => { out.textContent = logTouch({ date: f.date.value, kind: f.kind.value, contact_id: f.who.value, summary: f.summary.value, next_step: f.step.value, next_due: f.due.value }) || ""; } }), out)),
+    { sub: "Adds a line to interactions.csv in this tab, then re-runs. Download the file to keep it; nothing is uploaded. The date cannot be after the customer's as_of." });
+}
+
+/** The security news that touches this customer, in plain words, with a note to send. */
+export function newsView({ dash, score, advisories }) {
+  const list = dash.rhythm.exposures;
+  if (!list.length) return card("News and advisories", h("p", { class: "note", text: advisories ? "None of the loaded advisories touch this customer's inventoried resources." : "No advisories are loaded. In step 1, add a feed (a JSON file) or try the demo feed, and each one is matched to this customer's inventory." }));
+  const units = score.terms.units;
+  return h("div", {}, h("p", { class: "note", text: "Matched against what is inventoried here. An advisory can also touch resources that were never inventoried; those are counted as unknown, not as safe." }),
+    list.map((e) => card(`${e.id}: ${e.title}`, h("div", {},
+      h("div", { class: "kpiline" }, stat(String(e.exposed), `exposed ${units}`), stat(String(e.covered), "covered", e.covered ? "good" : ""), stat(String(e.uncovered), "not covered", e.uncovered ? "bad" : "good"), stat(String(e.unknown), "cannot be assessed", e.unknown ? "warn" : ""), e.yield_gain_points ? stat("+" + e.yield_gain_points.toFixed(1) + " pts", "Yield if covered") : null),
+      e.summary ? h("p", { text: e.summary }) : null,
+      h("p", { class: "note" }, chip(e.severity, SEV[e.severity] || ""), ` published ${e.published || "n/a"}${e.age_days != null ? ` (${e.age_days} days ago)` : ""}${e.source ? ` · ${e.source}` : ""} · mitigated by ${e.mitigated_by.join(", ")}`, e.url && e.url.startsWith("https://") ? [" · ", h("a", { href: e.url, target: "_blank", rel: "noopener noreferrer", text: "source" })] : null),
+      e.uncovered_ids.length ? h("p", { class: "note", text: `Not covered: ${e.uncovered_ids.join(", ")}${e.uncovered > e.uncovered_ids.length ? ` and ${e.uncovered - e.uncovered_ids.length} more` : ""}` }) : null,
+      h("div", { class: "row left" }, h("button", { class: "btn small", type: "button", text: "Copy a note for the customer", onclick: (ev) => copyText(customerNote(e, score)).then((ok) => { ev.target.textContent = ok ? "Copied" : "Copy not available"; }) }))),
+      { cls: "news" })));
+}
+
+function customerNote(e, score) {
+  const units = score.terms.units;
+  const lines = [`${e.id}: ${e.title}`, ""];
+  if (e.summary) lines.push(e.summary, "");
+  if (!e.exposed) lines.push(`We could not find the affected resources in your inventoried ${units}.${e.unknown ? ` ${e.unknown} ${units} have not been inventoried, so we cannot rule them out.` : ""}`);
+  else if (!e.uncovered) lines.push(`${e.exposed} of your ${units} are in scope, and all of them already have the protection that addresses this switched on. No action is needed from you.`);
+  else lines.push(`${e.exposed} of your ${units} are in scope. ${e.uncovered} do not yet have ${e.mitigated_by.join(" or ")} switched on, which is what addresses this.`, "", `Suggested next step: enable it on ${e.uncovered_ids.slice(0, 5).join(", ")}${e.uncovered > 5 ? " and the rest" : ""}. We can do it with you this week.`);
+  if (e.unknown) lines.push("", `${e.unknown} more ${units} are not inventoried yet, so we cannot say whether they are affected.`);
+  return lines.join("\n");
 }
 
 // ------------------------------------------------------------------ changes

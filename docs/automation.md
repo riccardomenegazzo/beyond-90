@@ -132,6 +132,15 @@ The browser app stays file-based on purpose: a page cannot hold a vendor token s
 | A wrong path producing blanks | A required column empty for every record fails the source |
 | Noise | Alerts only on change or need |
 
+## Advisories and call prep
+
+```toml
+[advisories]
+path = "advisories.json"    # a threat feed (docs/radar.md), relative to this file; a missing file is fine
+```
+
+Each run matches the feed to the customer's inventory and writes `call-prep.md` next to the report: the agenda for the next call. Put the feed there from a `file` or `http` source, or by hand. A malformed feed stops the run with the reason; a feed for another catalogue is skipped with a warning.
+
 ## Limits, honestly
 
 - Verified against a local fake API, fake commands and files: pagination, auth, retries, redirects, outages, merging, alerts and the webhook are tested end to end. **Not verified against any real vendor's API or CLI**; the cloud presets use field names from public CLI documentation and should be checked against your own output with `beyond90 sync`.

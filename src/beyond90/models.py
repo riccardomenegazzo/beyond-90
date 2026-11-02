@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import datetime as _dt
 from dataclasses import dataclass, field
 from datetime import date
 from typing import Optional
@@ -75,6 +76,7 @@ class Entitlement:
     used: float
 
 
+INTERACTION_KINDS = ("call", "meeting", "email", "qbr", "workshop", "support", "advisory", "escalation", "other")
 CONTACT_ROLES = ("executive_sponsor", "security_leader", "champion", "procurement", "practitioner", "skeptic")
 DEFAULT_INFLUENCE = {"executive_sponsor": 3, "security_leader": 3, "champion": 2, "procurement": 2, "skeptic": 2, "practitioner": 1}
 
@@ -105,6 +107,17 @@ class Commitment:
     done_on: Optional[date] = None
 
 
+@dataclass(frozen=True)
+class Interaction:
+    """One touch with the customer: a call, a message, a review. The log is what a cadence is measured against."""
+    date: _dt.date
+    kind: str
+    summary: str = ""
+    contact_id: str = ""
+    next_step: str = ""
+    next_due: Optional[_dt.date] = None
+
+
 @dataclass
 class Settings:
     ceiling_version: str = "2026.4"
@@ -115,6 +128,7 @@ class Settings:
     contact_stale_days: int = 90
     commitment_lookback_days: int = 90
     renewal_window_days: int = 180
+    cadence_days: int = 0                   # 0 = the default for the tier (see rhythm.py)
     downgrade_window_days: int = 3
     mttr_lookback_days: int = 90
     entitlement_target: float = 0.8
@@ -138,6 +152,7 @@ class CustomerData:
     entitlements: list[Entitlement] = field(default_factory=list)
     contacts: list[Contact] = field(default_factory=list)
     commitments: list[Commitment] = field(default_factory=list)
+    interactions: list[Interaction] = field(default_factory=list)
     inputs: dict[str, str] = field(default_factory=dict)      # file name -> fingerprint, set by the loader
     schema_version: int = 1
     renewal_date: Optional[date] = None

@@ -28,7 +28,7 @@ test("line endings, a BOM and non-input files do not change the identity; conten
 test("personal files are left out of a snapshot unless asked for, and that is recorded", async () => {
   const f = load(demo);
   const a = await W.makeSnapshot(f, { customer: "N", asOf: "2026-10-31" });
-  assert.ok(!("contacts.csv" in a.files) && !("commitments.csv" in a.files) && a.personal_excluded);
+  assert.ok(!("contacts.csv" in a.files) && !("commitments.csv" in a.files) && !("interactions.csv" in a.files) && a.personal_excluded);
   const b = await W.makeSnapshot(f, { customer: "N", asOf: "2026-10-31", includePersonal: true });
   assert.ok("contacts.csv" in b.files && !b.personal_excluded && a.id !== b.id);
   assert.equal(a.id, (await W.makeSnapshot(f, { customer: "N", asOf: "2026-10-31" })).id);   // saving twice names the same snapshot

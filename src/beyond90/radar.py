@@ -21,12 +21,14 @@ what the report says.
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import asdict, dataclass, field
 from datetime import date
 from pathlib import Path
 from typing import Optional
 
 from .catalogue import Catalogue, parse_version
+from .loader import clean_text
 from .models import SEVERITIES, CustomerData
 from .simulate import apply_ops, quick_yield
 
@@ -107,6 +109,8 @@ class Threat:
     providers: list[str]
     mitigated_by: list[str]
     source: str = ""
+    summary: str = ""
+    url: str = ""
 
 
 @dataclass
@@ -134,6 +138,15 @@ def load_threats(path: str | Path, cat: Catalogue) -> list[Threat]:
         raw = json.loads(Path(path).read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         raise ValueError(f"{path}: not valid JSON ({exc.msg} at line {exc.lineno})") from exc
+    return parse_threats(raw, cat, str(path))
+
+
+def parse_threats(raw: object, cat: Catalogue, path: str = "the feed", skipped: Optional[list[str]] = None) -> list[Threat]:
+    """The feed as already-parsed JSON. Text fields are cleaned and a link is kept only if it is http(s), because both end up on a page.
+
+    With ``skipped`` given, an entry that names resource types or modules this catalogue does not have is left out and its id
+    appended to the list, instead of failing the feed: one feed can serve customers of different profiles. Malformed entries still fail.
+    """
     items = raw.get("threats") if isinstance(raw, dict) else raw
     if not isinstance(items, list):
         raise ValueError(f"{path}: expected a list of threats, or an object with a 'threats' list")
@@ -152,6 +165,9 @@ def load_threats(path: str | Path, cat: Catalogue) -> list[Threat]:
             errors.append(f"{where}: severity must be one of {', '.join(SEVERITIES)}")
         types = list(t.get("resource_types", []))
         bad_types = [x for x in types if x not in cat.resource_types]
+        if skipped is not None and tid and types and bad_types and len(bad_types) == len(types):
+            skipped.append(tid)
+            continue
         if not types or bad_types:
             errors.append(f"{where}: resource_types must be a non-empty list from the catalogue" + (f" (unknown: {', '.join(bad_types)})" if bad_types else ""))
         mit = list(t.get("mitigated_by", []))
@@ -164,7 +180,9 @@ def load_threats(path: str | Path, cat: Catalogue) -> list[Threat]:
                 pub = date.fromisoformat(str(t["published"]))
             except ValueError:
                 errors.append(f"{where}: published must be YYYY-MM-DD")
-        out.append(Threat(tid, str(t.get("title", tid)), sev, pub, types, [p.lower() for p in t.get("providers", [])], mit, str(t.get("source", ""))))
+        url = str(t.get("url", "")).strip()
+        out.append(Threat(clean_text(tid), clean_text(str(t.get("title", tid)))[:300], sev, pub, types, [p.lower() for p in t.get("providers", [])], mit,
+                          clean_text(str(t.get("source", "")))[:120], clean_text(str(t.get("summary", "")))[:600], url if re.match(r"^https?://[^\s<>\"']+$", url) else ""))
     if errors:
         raise ValueError("invalid threat feed:\n  " + "\n  ".join(errors))
     return out

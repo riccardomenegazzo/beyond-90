@@ -35,9 +35,9 @@ from .config import Config
 from .fetch import FetchError, check_url
 from .sync import SyncReport, sync
 
-PERSONAL = ("contacts.csv", "commitments.csv")
+PERSONAL = ("contacts.csv", "commitments.csv", "interactions.csv")
 OUTPUT_FILES = {"report": ("report_html", "report.html"), "qbr": ("qbr_markdown", "qbr.md"), "successplan": ("success_plan_markdown", "success-plan.md"),
-                "summary": ("report_markdown", "summary.md"), "roadmap": ("roadmap_markdown", "roadmap.md"), "json": ("score_json", "score.json")}
+                "summary": ("report_markdown", "summary.md"), "roadmap": ("roadmap_markdown", "roadmap.md"), "json": ("score_json", "score.json"), "prep": ("prep_markdown", "call-prep.md")}
 
 
 class PipelineError(Exception):
@@ -213,8 +213,16 @@ def _run(cfg: Config, as_of: date, now: datetime, env: Mapping[str, str], sleep:
     since_dirs = _snapshots(state, as_of)
     since_dir = since_dirs[-1] if since_dirs else None
     opts = cfg.output_options
+    feed = None
+    if cfg.advisories_path is not None:
+        try:
+            feed = json.loads(cfg.advisories_path.read_text(encoding="utf-8"))
+        except FileNotFoundError:
+            feed = None                                   # a feed that is not there yet is not a failure: news is a convenience
+        except (OSError, ValueError, RecursionError) as e:
+            raise PipelineError([f"advisories: {cfg.advisories_path.name} could not be read as JSON ({type(e).__name__})"]) from e
     result = analyze(str(data_dir), hours=float(opts.get("hours_per_week", 8)), weeks=int(opts.get("weeks", 26)),
-                     realization=float(opts.get("realization", 0.9)), since=str(since_dir) if since_dir else None)
+                     realization=float(opts.get("realization", 0.9)), since=str(since_dir) if since_dir else None, advisories=feed)
     if not result["ok"]:
         raise PipelineError(result["errors"])
 

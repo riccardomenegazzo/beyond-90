@@ -57,8 +57,8 @@ The site bundles Pyodide (MPL-2.0) and the Python standard library (PSF); see [T
 ## Build and test locally
 
 ```bash
-npm install pyodide@314.0.7 --prefix build/npm
-python site/build_site.py --out _site --pyodide build/npm/node_modules/pyodide
+npm ci --ignore-scripts --prefix site/npm      # pinned in site/npm/package-lock.json, with integrity hashes
+python site/build_site.py --out _site --pyodide site/npm/node_modules/pyodide
 python -m http.server --directory _site 8000          # then open http://localhost:8000
 node --test site/test/*.test.mjs                       # the workspace model, no browser needed
 pip install playwright && python -m playwright install chromium

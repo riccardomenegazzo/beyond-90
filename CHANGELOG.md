@@ -2,6 +2,18 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.15.0
+
+For a TAM with a book to run every week, and a browser app that is harder to attack.
+
+- **Tiers and cadence.** `tier` classes top, mid and other (default every 7, 14 and 30 days; `cadence_days` overrides). A new personal file, `interactions.csv`, logs calls, meetings, emails and advisories with a next step; the cadence is measured against it.
+- **This week.** In book mode, the customers in the order the week needs them, each with a day, the hours it deserves, and the plain-sum reasons for its place; the week says so when it does not fit.
+- **Prep a call.** An agenda in the order that earns attention (what we owe, what changed, news, leaks, questions, renewal, growth, next steps), copy or download as Markdown; **Log a touch** adds a line to the log and re-runs.
+- **News.** Add a JSON advisory feed and each advisory is matched to what the customer has inventoried: exposed, covered, not covered and cannot be assessed, with a plain-words note to send. Feeds that do not fit a catalogue are skipped with a warning.
+- **Growth only when earned.** Capacity, expand, broaden, diversify and threat signals appear as questions; a trust gate says why a commercial conversation is not yet appropriate.
+- **Automation.** `[advisories] path` in `beyond90.toml` loads the feed on every run, and a run writes `call-prep.md`.
+- **Security.** Trusted Types are enforced and every `innerHTML` is gone, with a test that fails on any new unsafe sink; optional passphrase protection of saved data (PBKDF2-SHA-256 with 600,000 rounds, AES-256-GCM per snapshot, key in memory only, locked after 15 idle minutes); actions pinned to commit SHAs, Dependabot, CodeQL, an npm lock file with integrity hashes installed by `npm ci --ignore-scripts`, and releases with an SBOM, checksums and a signed provenance attestation. `docs/threat-model.md`.
+
 ## 0.14.0
 
 A new browser app. The report is still there; the app is now a dashboard you work in.

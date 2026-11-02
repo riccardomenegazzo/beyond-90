@@ -16,7 +16,7 @@ from typing import Any, Optional
 from ..loader import KNOWN_COLUMNS
 from .mapping import MapError, validate_spec
 
-TARGETS = ("accounts", "inventory", "activations", "findings", "teams", "entitlements", "contacts", "commitments")
+TARGETS = ("accounts", "inventory", "activations", "findings", "teams", "entitlements", "contacts", "commitments", "interactions")
 REQUIRED = {
     "accounts": ("id", "provider"),
     "inventory": ("account_id", "resource_type", "count", "inventoried"),
@@ -26,13 +26,14 @@ REQUIRED = {
     "entitlements": ("unit", "licensed", "used"),
     "contacts": ("id", "role"),
     "commitments": ("id", "due_on"),
+    "interactions": ("date", "kind"),
 }
 KEYS_OF = {"inventory": ("account_id", "resource_type"), "activations": ("account_id", "module_id"), "entitlements": ("unit",)}
 SOURCE_TAGS = ("billing", "org", "sso", "manual", "plan")
 SOURCE_KEYS = {"name", "type", "target", "tag", "preset", "argv", "url", "path", "format", "records", "map", "auth", "headers", "pagination",
                "connected_if_listed", "env", "timeout_seconds", "delimiter", "optional"}
-OUTPUTS = ("report", "qbr", "successplan", "summary", "roadmap", "json")
-TOP_KEYS = {"customer", "settings", "state", "security", "source", "notify", "export", "outputs"}
+OUTPUTS = ("report", "qbr", "successplan", "summary", "roadmap", "json", "prep")
+TOP_KEYS = {"customer", "settings", "state", "security", "source", "notify", "export", "outputs", "advisories"}
 
 PRESETS: dict[str, dict[str, Any]] = {
     "aws-org": {
@@ -101,6 +102,7 @@ class Config:
     export: dict[str, Any]
     outputs: list[str]
     output_options: dict[str, Any] = field(default_factory=dict)
+    advisories_path: Optional[Path] = None
     keep_snapshots: int = 180
     keep_outputs: int = 30
 
@@ -260,6 +262,9 @@ def load_config(path: str | Path) -> Config:
         for o in out_cfg.get("make", []):
             if o not in OUTPUTS:
                 errors.append(f"[outputs] make: unknown output {o!r}; available: {', '.join(OUTPUTS)}")
+    adv = raw.get("advisories", {})
+    if adv and (not isinstance(adv, dict) or set(adv) - {"path"} or not isinstance(adv.get("path"), str) or not adv["path"].strip()):
+        errors.append("[advisories] path is required: where the JSON advisory feed is (relative to this file); nothing else is allowed in this section")
     notify = raw.get("notify", {})
     if notify and not notify.get("webhook_env"):
         errors.append("[notify] webhook_env is required: the name of the environment variable that holds the webhook URL")
@@ -278,5 +283,5 @@ def load_config(path: str | Path) -> Config:
         timeout_seconds=security["timeout_seconds"], retries=security["retries"], sources=sources, notify=dict(raw.get("notify", {})),
         export=dict(raw.get("export", {})), outputs=list(raw.get("outputs", {}).get("make", list(OUTPUTS))),
         output_options={k: v for k, v in raw.get("outputs", {}).items() if k != "make"},
-        keep_snapshots=int(state.get("keep_snapshots", 180)), keep_outputs=int(state.get("keep_outputs", 30)),
+        advisories_path=(path.resolve().parent / adv["path"]) if adv else None, keep_snapshots=int(state.get("keep_snapshots", 180)), keep_outputs=int(state.get("keep_outputs", 30)),
     )

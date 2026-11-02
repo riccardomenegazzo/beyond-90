@@ -35,6 +35,7 @@ from .models import (
     DECISIONS,
     DEFAULT_INFLUENCE,
     EXPOSURES,
+    INTERACTION_KINDS,
     SEVERITIES,
     Account,
     Activation,
@@ -43,6 +44,7 @@ from .models import (
     CustomerData,
     Entitlement,
     Finding,
+    Interaction,
     InventoryRow,
     Settings,
     Team,
@@ -225,11 +227,12 @@ KNOWN_COLUMNS: dict[str, tuple[str, ...]] = {
     "entitlements.csv": ("unit", "licensed", "used"),
     "contacts.csv": ("id", "name", "role", "team", "influence", "last_contact", "credibility", "reliability", "intimacy", "self_orientation"),
     "commitments.csv": ("id", "contact_id", "description", "promised_on", "due_on", "done_on"),
+    "interactions.csv": ("date", "kind", "contact_id", "summary", "next_step", "next_due"),
 }
 KNOWN_CUSTOMER_KEYS = ("name", "tier", "arr", "as_of", "schema_version", "profile", "renewal_date")
 KNOWN_SETTINGS_KEYS = ("ceiling_version", "baseline_ceiling", "triage_window_days", "new_account_days", "access_review_days",
                        "downgrade_window_days", "mttr_lookback_days", "contact_stale_days", "commitment_lookback_days",
-                       "renewal_window_days", "entitlement_target", "sla_days")
+                       "renewal_window_days", "cadence_days", "entitlement_target", "sla_days")
 
 
 def _suggest(name: str, known: tuple[str, ...]) -> str:
@@ -268,7 +271,7 @@ def _settings(raw: dict, errors: list[str]) -> Settings:
             except ValueError as exc:
                 errors.append(f"customer.toml: settings.{key}: {exc}")
     for key in ("triage_window_days", "new_account_days", "access_review_days", "downgrade_window_days", "mttr_lookback_days",
-                "contact_stale_days", "commitment_lookback_days", "renewal_window_days"):
+                "contact_stale_days", "commitment_lookback_days", "renewal_window_days", "cadence_days"):
         if key in raw:
             value = raw[key]
             if isinstance(value, int) and not isinstance(value, bool) and value >= 0:
@@ -531,6 +534,23 @@ def load_customer(
 
     commitments = _read_csv(base / "commitments.csv", ("id", "due_on"), errors, parse_commitment, warnings)
 
+    def parse_interaction(row: dict, c: _Ctx):
+        when = c.date_(row, "date", required=True)
+        kind = c.choice(row, "kind", INTERACTION_KINDS)
+        who = c.text(row, "contact_id")
+        if who and who not in contact_ids:
+            c.err(f"contact_id {who!r} is not in contacts.csv")
+            return None
+        if not when or not kind:
+            return None
+        if when > as_of:
+            c.err(f"date {when} is after as_of {as_of}: a log of what happened cannot be in the future (put plans in next_due)")
+            return None
+        return Interaction(date=when, kind=kind, summary=c.text(row, "summary"), contact_id=who, next_step=c.text(row, "next_step"), next_due=c.date_(row, "next_due"))
+
+    interactions = _read_csv(base / "interactions.csv", ("date", "kind"), errors, parse_interaction, warnings)
+    interactions.sort(key=lambda i: (i.date, i.kind, i.summary))
+
     if errors:
         raise DataError(errors)
 
@@ -546,7 +566,7 @@ def load_customer(
         CustomerData(
             name=name, tier=clean_text(str(cust.get("tier", ""))), arr=float(arr), as_of=as_of, settings=settings,
             accounts=accounts, inventory=inventory, activations=activations, findings=findings,
-            teams=teams, entitlements=entitlements, contacts=contacts, commitments=commitments,
+            teams=teams, entitlements=entitlements, contacts=contacts, commitments=commitments, interactions=interactions,
             inputs=hash_directory(base), schema_version=schema_version, renewal_date=renewal,
         ),
         warnings,
