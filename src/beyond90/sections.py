@@ -9,6 +9,7 @@ from html import escape as e
 from typing import Optional
 
 from .attribution import Attribution
+from .ladder import describe
 from .planner import Plan
 
 CHECK = (0.90, 0.95, 0.98)
@@ -303,7 +304,7 @@ def rubric_headline(r: dict) -> str:
     return f"Maturity level: **{level}**{tail}. {n} check{'s' if n != 1 else ''} stand{'s' if n == 1 else ''} between you and {nxt}."
 
 
-def md_rubric(r: dict, actions: Optional[list] = None) -> list[str]:
+def md_rubric(r: dict, actions: Optional[list] = None, ladder: Optional[dict] = None) -> list[str]:
     if not r or not r.get("checks"):
         return []
     L = ["## Maturity level", "", rubric_headline(r), "",
@@ -317,6 +318,8 @@ def md_rubric(r: dict, actions: Optional[list] = None) -> list[str]:
             close = _closing_actions(c, actions)
             L.append(f"- {c['title']}: now {_fmt_metric(c['metric'], c['value'])}, needs {_fmt_target(c)}." + (f" Closes with: {'; '.join(close)}." if close else ""))
         L.append("")
+    if ladder:
+        L += describe(ladder) + [""]
     if r["unmeasured"]:
         L.append("Not measured, so neither passed nor blocking: " + "; ".join(c["title"] for c in r["unmeasured"][:5]) + ("." if len(r["unmeasured"]) <= 5 else f" (+{len(r['unmeasured']) - 5} more)."))
         L.append("")
@@ -324,7 +327,7 @@ def md_rubric(r: dict, actions: Optional[list] = None) -> list[str]:
     return L
 
 
-def html_rubric(r: dict, actions: Optional[list] = None) -> str:
+def html_rubric(r: dict, actions: Optional[list] = None, ladder: Optional[dict] = None) -> str:
     if not r or not r.get("checks"):
         return ""
     head = e(rubric_headline(r).replace("**", ""))
@@ -337,6 +340,8 @@ def html_rubric(r: dict, actions: Optional[list] = None) -> str:
             items.append(f'<li><strong>{e(c["title"])}</strong><br><span class="warn">now {e(_fmt_metric(c["metric"], c["value"]))}, needs {e(_fmt_target(c))}.'
                          + (f" Closes with: {e('; '.join(close))}." if close else "") + "</span></li>")
         nxt = f'<h3 style="font-size:14px;margin:12px 0 4px">Next to pass for {e(r["next_level"].capitalize())}</h3><ul>{"".join(items)}</ul>'
+    if ladder:
+        nxt += "".join(f"<p>{e(line)}</p>" for line in describe(ladder))
     um = ""
     if r["unmeasured"]:
         um = '<p class="warn">Not measured, so neither passed nor blocking: ' + e("; ".join(c["title"] for c in r["unmeasured"][:5])) + ".</p>"

@@ -14,6 +14,7 @@ from .attribution import explain, render_attribution
 from .book import build_book_plan, render_book_html, render_book_json, render_book_markdown, render_book_text
 from .candor import candor_items
 from .catalogue import Catalogue, available_profiles
+from .drift import input_drift
 from .forecast import forecast_zero_critical, render_forecast
 from .importers import (
     ImportFormatError,
@@ -28,6 +29,7 @@ from .importers import (
     resolve_providers,
     write_accounts,
 )
+from .ladder import path_to_next_level
 from .loader import DataError, load_customer
 from .planner import build_plan
 from .playbooks import generate_actions
@@ -114,6 +116,7 @@ def _plan(args, data, cat):
 def _extras(args, cat, data, score, previous) -> tuple[dict, Optional[dict]]:
     """Optional analyses added to reports: attribution, zero-critical forecast, roadmap."""
     extras: dict = {}
+    old = None
     if getattr(args, "since", None):
         old, _ = load_customer(args.since, cat)
         previous = compute_score(old, cat).to_dict()
@@ -124,6 +127,9 @@ def _extras(args, cat, data, score, previous) -> tuple[dict, Optional[dict]]:
     if not getattr(args, "no_plan", False):
         extras["plan"] = _plan(args, data, cat)
     extras["renewal"] = compute_renewal(data, score, previous)
+    extras["ladder"] = path_to_next_level(score, extras.get("plan"))
+    if old is not None:
+        extras["drift"] = input_drift(data, old, cat.terms)
     extras["candor"] = candor_items(score, data, cat, plan=extras.get("plan"), forecast=extras.get("forecast"), attribution=extras.get("attribution"))
     return extras, previous
 

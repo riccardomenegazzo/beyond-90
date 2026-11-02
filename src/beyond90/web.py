@@ -18,7 +18,9 @@ from .attribution import explain
 from .book import build_book_plan, render_book_html, render_book_markdown
 from .candor import candor_items
 from .catalogue import Catalogue
+from .drift import input_drift
 from .forecast import forecast_zero_critical
+from .ladder import path_to_next_level
 from .loader import DataError, load_customer
 from .planner import build_plan
 from .playbooks import generate_actions
@@ -66,6 +68,9 @@ def analyze(
     plan = build_plan(data, cat, hours_per_week=hours, horizon_weeks=weeks, realization=realization, ramp=RampModel(ramp_weeks))
     extras["plan"] = plan
     extras["renewal"] = compute_renewal(data, score, previous)
+    extras["ladder"] = path_to_next_level(score, plan)
+    if old is not None:
+        extras["drift"] = input_drift(data, old, cat.terms)
     extras["candor"] = candor_items(score, data, cat, plan=plan, forecast=extras.get("forecast"), attribution=extras.get("attribution"))
     summary = score.to_dict()
     return {

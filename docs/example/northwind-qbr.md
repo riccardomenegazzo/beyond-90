@@ -30,6 +30,8 @@ At 8 hours a week the plan reaches **97.6%** in 14 weeks, with the 90% checkpoin
 **Expect a dip first:** in week 3 Yield falls 1.1 points because newly connected accounts enter the score with nothing covered yet. That is the cost of seeing them, not a regression.
 
 Maturity level: **Bronze**. 4 checks stand between you and Silver.
+At 8 hours a week the roadmap passes the stage checks for Silver in week 2, after about 16 hours of work.
+Outside the roadmap, needing a decision or a conversation: No open critical finding is past its deadline; No severity downgrade lands just before a deadline; Every licensed unit is at least 60% in use.
 
 - At least 95% of known units are connected.
 - No open critical finding is past its deadline.

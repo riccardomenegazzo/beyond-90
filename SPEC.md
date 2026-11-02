@@ -1,4 +1,4 @@
-# Beyond 90: specification v0.10
+# Beyond 90: specification v0.11
 
 An adoption engine for Technical Account Managers. It measures how much of a customer's cloud estate is really covered and operated through a security platform, and turns every gap into an action. The bar keeps moving: when a customer grows or the product ships something, the denominators grow with it.
 
@@ -152,6 +152,14 @@ With `customer.renewal_date`, signals are evaluated with a status of ok, watch, 
 
 `successplan` renders outcomes (the three thinnest use cases and the weakest stage, with targets of 90% and 95%), measures (Yield, ladder level, the next checks, the four stages), 30, 60 and 90 day milestones from the roadmap, the eight highest-ranked actions with owners and due dates, the decisions needed, the commitments, the risks (the J-curve dip, assumed-blocked work, hidden units, weak inputs) and signature lines. It never includes relationship ratings or renewal signals.
 
+## 15k. Path to the next level (0.11)
+
+The roadmap records the four stage values every week. The checks that block the next level and use `l1`, `l2`, `l3`, `l4` or `yield` can therefore be followed through it: the answer is the first week from which all of them pass until the end of the roadmap (a pass followed by a fall during a dip does not count), and the hours spent up to and including that week. Blocking checks on any other metric are reported as outside the roadmap, because the simulation does not move them. The text says so; it never claims the plan covers them.
+
+## 15l. Input drift (0.11)
+
+With a comparison file (`--since`), the two sets of inputs are compared for signs of an export artefact: active units missing now without being marked decommissioned (a warning from 10% of the earlier total, and at least 3; otherwise a note), new units (a note), inventory or activation files more than 25% smaller, open findings that vanished from the file without being closed (a warning from 10% and at least 3), findings with a different opening date, and a comparison dated no earlier than the current file (a warning). These are notes to check before presenting a change, not errors.
+
 ## 16. Positioning against the platform's own views
 
 Security platforms commonly ship their own adoption or maturity views and an ownership model. Beyond 90 does not replace them: it measures what a platform cannot see about itself (the true universe of units to cover, across a whole portfolio) and reads ownership and decisions rather than rebuilding routing. The research behind this, including a case study of one vendor, is in `docs/research/`.
@@ -172,8 +180,9 @@ Security platforms commonly ship their own adoption or maturity views and an own
 6. 0.7: provenance, tolerant reader, percentiles, local-first workspace, offline.
 7. 0.8: input quality, whole-book mode in the browser.
 8. 0.9: profiles (cloud and endpoint), vendor-neutral terms.
-9. 0.10 (this): maturity ladder, use-case and framework views, renewal readiness, success plan.
-10. 1.0: connector interface and a first verified connector against a real tenant; criticality weighting; readiness checklist import; per-finding ownership sources.
+9. 0.10: maturity ladder, use-case and framework views, renewal readiness, success plan.
+10. 0.11 (this): path to the next level, input drift.
+11. 1.0: connector interface and a first verified connector against a real tenant; criticality weighting; readiness checklist import; per-finding ownership sources.
 
 ## References
 

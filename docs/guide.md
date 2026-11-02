@@ -100,6 +100,10 @@ Before you present it, read the sections the customer will not see: the relation
 
 The QBR draft leads with the answer (real adoption against the legacy number, what changed and why, the roadmap and the dip to expect), gives three reasons, the evidence, and the decisions you need from the customer ([example](example/northwind-qbr.md)). Add the customer's own goals and wins before presenting it.
 
+## Before you present a change
+
+With `--since`, read "Did the inputs change since ...?" first. A quarter that looks like a jump is sometimes a narrower export, and no one wants to defend an artefact. The maturity section then tells you the week the next level could be reached at your hours, and which checks no amount of hours will move.
+
 ## Renewals and the success plan
 
 Set `renewal_date` in `customer.toml` and every report gets a renewal readiness checklist: licences in use, executive sponsor, more than one relationship, promises kept, critical findings, direction of travel and confidence in the numbers, each with its evidence, and the revenue that is on the line. It is a checklist, not a prediction. The portfolio command lists renewals by date with the ARR at risk. For the customer, `beyond90 successplan acme --owner "Your Name"` drafts a plan they can sign: outcomes by use case, measures, 30, 60 and 90 day milestones, who does what, what you need from them and what you commit to. It contains nothing private.

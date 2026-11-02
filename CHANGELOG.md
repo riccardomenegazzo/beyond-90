@@ -2,6 +2,12 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.11.0
+
+- **Path to the next level.** The ladder now says when: the first week from which the stage checks for the next level keep passing, and the hours spent to get there, from the roadmap (dip included). Checks the roadmap cannot move (findings past their deadline, licence use, relationships) are listed as outside it.
+- **Input drift.** With `--since`, the report says whether the two exports differ in ways that look like artefacts: units that vanished without being decommissioned, a much smaller inventory, open findings that disappeared, a comparison that is not older. Check them before presenting a change.
+- Both appear in the report, the QBR and the browser app.
+
 ## 0.10.0
 
 Informed by a survey of existing products (`docs/research/landscape.md`).

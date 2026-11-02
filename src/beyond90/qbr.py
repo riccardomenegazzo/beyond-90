@@ -21,6 +21,7 @@ from typing import Optional
 
 from .attribution import Attribution
 from .candor import CandorItem, render_candor_markdown
+from .ladder import describe
 from .planner import Plan
 from .playbooks import Action
 from .report import pct, pts
@@ -40,7 +41,7 @@ LEAK_LABEL = {
 
 def render_qbr(score: Score, actions: list[Action], previous: Optional[dict] = None, quarter: str = "", *,
                attribution: Optional[Attribution] = None, forecast: Optional[dict] = None, plan: Optional[Plan] = None,
-               candor: Optional[list[CandorItem]] = None, renewal: Optional[dict] = None) -> str:
+               candor: Optional[list[CandorItem]] = None, renewal: Optional[dict] = None, ladder: Optional[dict] = None, drift: Optional[dict] = None) -> str:
     title = f"Quarterly business review: {score.customer}" + (f", {quarter}" if quarter else "")
     yield_actions = [a for a in actions if a.leak != "Relationship"]
     by_leak: dict[str, list[Action]] = defaultdict(list)
@@ -99,6 +100,7 @@ def render_qbr(score: Score, actions: list[Action], previous: Optional[dict] = N
         L.append("No open gaps were found at this ceiling. The job now is to keep the level as the estate grows and the product ships.")
     if score.rubric and score.rubric.get("checks"):
         L += ["", rubric_headline(score.rubric)]
+        L += describe(ladder) if ladder else []
         if score.rubric["blocking"]:
             L.append("")
             L += [f"- {c['title']}." for c in score.rubric["blocking"][:3]]
