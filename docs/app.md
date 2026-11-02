@@ -8,11 +8,29 @@ Drop a customer folder (or pick the files), or press **Try the demo**, then **Ru
 
 ## What you see
 
-Tiles for Yield, Reach, open actions, **maturity level**, confidence in the inputs and the catalogue profile. Tabs: the report (with the maturity ladder, adoption by use case and by security-framework function, and renewal readiness when `renewal_date` is set), the QBR draft, a **success plan** the customer can sign, the roadmap, a summary and the JSON.
+A strip of tiles (Yield, Reach, open actions, maturity level, confidence, profile), then views you work in:
+
+![Overview](img/app-results.png)
+
+- **Overview.** The Yield gauge with the legacy figure marked, where each stage loses points, what needs attention, the best opportunities and the planned curve.
+- **Actions, Accounts, Findings.** Searchable, filterable, sortable tables. Open a row for the steps, the question to ask the customer or the gaps behind an account. Every table exports to CSV.
+
+![Accounts](img/app-accounts.png)
+
+- **Plan & what-if.** Move the sliders for hours a week, horizon and realization; the engine recomputes and draws the new curve against the original.
+
+![What-if](img/app-whatif.png)
+
+- **Maturity, Renewal & trust, Changes.** The ladder and every check, renewal signals, licences, the unseen-units estimate, contacts, and what changed since an earlier snapshot.
+- **Documents.** The written report, the QBR draft, a success plan the customer can sign, the roadmap, a summary and the JSON, each with Copy and Download.
+
+**Keys.** Ctrl or Cmd + K opens the command palette (run, load a demo, go to a view, save, copy a five-line summary for chat, print, switch theme). Outside a text field, 1 to 9 switch views. The theme follows your system and can be switched; printing gives a clean page.
 
 ## A whole book
 
-Choose a folder that contains several customer folders (each with a `customer.toml`), or press **Try the book demo**. The page shows each customer's Yield now and after the plan, the patterns that recur across customers, and where one budget of hours per week does the most good, optimised for ARR-weighted or equal-weighted Yield. A customer with invalid data is reported and the rest carry on. **Open** jumps to one customer's own report.
+Choose a folder that contains several customer folders (each with a `customer.toml`), or press **Try the book demo**. The page shows each customer's Yield now and after the plan, the patterns that recur across customers, and where one budget of hours per week does the most good, optimised for ARR-weighted or equal-weighted Yield. A customer with invalid data is reported and the rest carry on. The **Portfolio map** is a heat map of every customer by stage, with ARR, level and where to look first. **Open** jumps to one customer's own dashboard.
+
+![Portfolio map](img/app-book.png)
 
 ## Saving and comparing
 

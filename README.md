@@ -44,7 +44,7 @@ Most adoption reporting stops at "90% of accounts connected" (or sites, tenants,
 
 **12. It runs in a browser tab, local-first.** [docs/app.md](docs/app.md): the same engine compiled to WebAssembly, served from GitHub Pages, nothing uploaded. Drop a folder or try the demo. Save snapshots of your inputs in the browser, compare with the previous quarter, export and merge between devices, work offline. Every number carries the hash of the inputs it came from. Drop a whole folder of customers to plan one budget of hours across the book.
 
-![The browser app](docs/img/app-results.png)
+![The browser app: overview with the Yield gauge, losses by stage, what needs attention and the plan](docs/img/app-results.png)
 
 Plus: ranked actions from a playbook catalogue, a moving bar (the score against today's ceiling and a frozen baseline), Reach, licensed-versus-used, an anti-gaming check for severity downgrades before SLA deadlines, history in SQLite, an ARR-weighted portfolio view that finds patterns worth one-to-many work, and a QBR draft written with the Pyramid Principle.
 

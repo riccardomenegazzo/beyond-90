@@ -3,9 +3,11 @@
 import { Engine } from "./engine.js";
 import * as W from "./workspace-core.js";
 import * as store from "./store.js";
+import * as V from "./views.js";
+import { h as el_, saveBlob, copyText } from "./ui.js";
 
 const $ = (id) => document.getElementById(id);
-const state = { files: {}, groups: {}, mode: "single", result: null, book: null, tab: "report", saved: [], yields: new Map(), engine: null, running: false };
+const state = { files: {}, groups: {}, mode: "single", result: null, book: null, tab: "overview", saved: [], yields: new Map(), engine: null, running: false };
 const ALLOWED = /\.(csv|toml)$/i;
 const MAX_BYTES = 20 * 1024 * 1024;
 const pct = (x) => (x == null ? "n/a" : (x * 100).toFixed(1) + "%");
@@ -223,8 +225,8 @@ function showBook() {
     open.onclick = () => { state.mode = "single"; state.files = { ...state.groups[c.key] }; state.book = null; renderLoaded(); run(); };
     td.append(open); tr.append(td); tbody.append(tr);
   }
-  $("book-table").hidden = false;
-  state.tab = "portfolio";
+  $("book-table").hidden = true;                 // the portfolio map in the tabs replaces this table
+  state.tab = "bookmap";
   $("results").hidden = false;
   renderTabs(BOOK_TABS);
   selectTab(state.tab);
@@ -267,7 +269,7 @@ function showResults() {
   renderCompare();
   document.querySelector(".bar").hidden = false;
   $("book-table").hidden = true;
-  if (!SINGLE_TABS.some((t) => t.id === state.tab)) state.tab = "report";
+  if (!SINGLE_TABS.some((t) => t.id === state.tab)) state.tab = "overview";
   $("results").hidden = false;
   renderTabs(SINGLE_TABS);
   selectTab(state.tab);
@@ -283,7 +285,15 @@ function renderCompare() {
 
 // ---------- tabs
 const SINGLE_TABS = [
-  { id: "report", label: "Report", key: "report_html", file: "beyond90-report.html", type: "text/html", kind: "html" },
+  { id: "overview", label: "Overview", kind: "view", view: "overview" },
+  { id: "actions", label: "Actions", kind: "view", view: "actionsView" },
+  { id: "accounts", label: "Accounts", kind: "view", view: "accountsView" },
+  { id: "findings", label: "Findings", kind: "view", view: "findingsView" },
+  { id: "planview", label: "Plan & what-if", kind: "view", view: "planView" },
+  { id: "maturity", label: "Maturity", kind: "view", view: "maturityView" },
+  { id: "renewal", label: "Renewal & trust", kind: "view", view: "renewalView" },
+  { id: "changes", label: "Changes", kind: "view", view: "changesView" },
+  { id: "report", sep: true, label: "Report", key: "report_html", file: "beyond90-report.html", type: "text/html", kind: "html" },
   { id: "qbr", label: "QBR draft", key: "qbr_markdown", file: "beyond90-qbr.md", type: "text/markdown", kind: "md" },
   { id: "plan", label: "Success plan", key: "success_plan_markdown", file: "beyond90-success-plan.md", type: "text/markdown", kind: "md" },
   { id: "roadmap", label: "Roadmap", key: "roadmap_markdown", file: "beyond90-roadmap.md", type: "text/markdown", kind: "md" },
@@ -291,6 +301,7 @@ const SINGLE_TABS = [
   { id: "json", label: "JSON", key: "score_json", file: "beyond90-score.json", type: "application/json", kind: "json" },
 ];
 const BOOK_TABS = [
+  { id: "bookmap", label: "Portfolio map", kind: "view", view: "bookView" },
   { id: "portfolio", label: "Portfolio", key: "portfolio_markdown", file: "beyond90-portfolio.md", type: "text/markdown", kind: "md" },
   { id: "book", label: "Where your hours go", key: "book_markdown", file: "beyond90-book.md", type: "text/markdown", kind: "md" },
   { id: "bookreport", label: "Book report", key: "book_html", file: "beyond90-book.html", type: "text/html", kind: "html" },
@@ -299,22 +310,29 @@ let tabDefs = SINGLE_TABS;
 
 function renderTabs(defs) {
   tabDefs = defs;
-  $("tabs").replaceChildren(...defs.map((t) => {
+  $("tabs").replaceChildren(...defs.flatMap((t) => {
     const b = Object.assign(document.createElement("button"), { type: "button", textContent: t.label });
     b.setAttribute("role", "tab");
     b.dataset.tab = t.id;
     b.addEventListener("click", () => selectTab(t.id));
-    return b;
+    return t.sep ? [Object.assign(document.createElement("span"), { className: "sep", ariaHidden: "true" }), b] : [b];
   }));
 }
 
 const current = () => tabDefs.find((t) => t.id === state.tab) || tabDefs[0];
 const payload = () => (state.mode === "book" || state.book ? state.book : state.result);
 
-function selectTab(name) {
+function selectTab(name, extra) {
   state.tab = name;
+  state.focus = extra && extra.open;
   const t = current();
   for (const b of document.querySelectorAll(".tabs button")) b.setAttribute("aria-selected", String(b.dataset.tab === t.id));
+  $("view").hidden = t.kind !== "view";
+  $("docactions").hidden = t.kind === "view";
+  if (t.kind === "view") {
+    $("report").hidden = $("doc").hidden = $("raw").hidden = true;
+    return renderView(t);
+  }
   const text = payload()[t.key];
   $("report").hidden = t.kind !== "html";
   $("doc").hidden = t.kind !== "md";
@@ -322,6 +340,22 @@ function selectTab(name) {
   if (t.kind === "html") $("report").srcdoc = text;
   else if (t.kind === "json") $("raw").textContent = text;
   else $("doc").replaceChildren(...markdown(text));
+}
+
+function context() {
+  if (state.book) return { book: state.book, openCustomer: (key) => { state.mode = "single"; state.files = { ...state.groups[key] }; state.book = null; state.tab = "overview"; renderLoaded(); run(); } };
+  const r = state.result;
+  if (r && state.parsedFor !== r) { state.parsed = JSON.parse(r.score_json); state.parsedFor = r; }
+  return { result: r, dash: r.dashboard, score: state.parsed, engine: state.engine, files: state.files, options: options(), go: (tab, extra) => selectTab(tab, extra) };
+}
+
+function renderView(t) {
+  const host = $("view");
+  try {
+    host.replaceChildren(V[t.view]({ ...context(), focus: state.focus }));
+  } catch (e) {
+    host.replaceChildren(el_("p", { class: "note", text: "This view could not be drawn: " + e.message }));
+  }
 }
 
 // A deliberately small Markdown renderer: headings, paragraphs, lists, tables, bold, italic, code.
@@ -538,5 +572,71 @@ $("import").addEventListener("change", (e) => e.target.files[0] && importWorkspa
 $("forget").addEventListener("click", forgetAll);
 $("demo-prev").addEventListener("click", addDemoPrevious);
 $("selfcheck").addEventListener("click", selfCheck);
+
+// ---------- theme
+function applyTheme(t) {
+  if (t) document.documentElement.dataset.theme = t; else delete document.documentElement.dataset.theme;
+}
+try { applyTheme(localStorage.getItem("b90-theme")); } catch { /* storage may be blocked; the theme then follows the system */ }
+$("theme").addEventListener("click", () => {
+  const now = document.documentElement.dataset.theme || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+  const next = now === "dark" ? "light" : "dark";
+  applyTheme(next);
+  try { localStorage.setItem("b90-theme", next); } catch { /* ignore */ }
+});
+
+// ---------- command palette and keys
+const hasResult = () => !!state.result;
+function commands() {
+  const go = (id, label) => ({ label: "Go to " + label, hint: "view", when: () => hasResult(), run: () => { selectTab(id); $("results").scrollIntoView({ behavior: "smooth" }); } });
+  return [
+    { label: "Run analysis", hint: "action", when: () => !$("run").disabled, run: () => run() },
+    { label: "Load the demo (one customer)", hint: "demo", when: () => !$("demo").disabled, run: loadDemo },
+    { label: "Load the book demo (3 customers)", hint: "demo", when: () => !$("demo-book").disabled, run: loadDemoBook },
+    { label: "Load the endpoint demo", hint: "demo", when: () => !$("demo-endpoint").disabled, run: loadDemoEndpoint },
+    ...SINGLE_TABS.map((t) => go(t.id, t.label)),
+    { label: "Save snapshot in this browser", hint: "action", when: hasResult, run: saveSnapshot },
+    { label: "Copy a five-line summary for chat", hint: "action", when: hasResult, run: copySummary },
+    { label: "Download the current document", hint: "action", when: () => hasResult() && current().kind !== "view", run: download },
+    { label: "Export workspace", hint: "action", run: exportWorkspace },
+    { label: "Print this view", hint: "action", run: () => window.print() },
+    { label: "Switch colour theme", hint: "action", run: () => $("theme").click() },
+    { label: "Check that nothing leaves this page", hint: "privacy", run: selfCheck },
+  ].filter((c) => !c.when || c.when());
+}
+function copySummary() {
+  const r = state.result, sc = state.parsed || JSON.parse(r.score_json), d = r.dashboard;
+  const lines = [`${r.customer} · ${r.as_of}`, `Yield ${pct(r.yield)} (legacy metric ${pct(sc.naive)}), maturity ${r.level}`,
+    ...Object.entries(sc.stages).map(([k, v]) => `${k} ${v.name}: ${pct(v.value)} (${v.numerator}/${v.denominator})`),
+    d.actions[0] ? `Top action: ${d.actions[0].title} (+${d.actions[0].effect.toFixed(1)} pts, ${d.actions[0].hours.toFixed(1)} h)` : ""].filter(Boolean);
+  copyText(lines.join("\n")).then((ok) => say(ok ? "Summary copied." : "Copy is not available here."));
+}
+const pal = { el: $("palette"), q: $("palette-q"), list: $("palette-list"), items: [], at: 0 };
+function paintPalette() {
+  const q = pal.q.value.trim().toLowerCase();
+  pal.items = commands().filter((c) => !q || c.label.toLowerCase().includes(q));
+  pal.at = Math.min(pal.at, Math.max(0, pal.items.length - 1));
+  pal.list.replaceChildren(...pal.items.map((c, i) => {
+    const li = el_("li", { role: "option", "aria-selected": String(i === pal.at) }, el_("span", { text: c.label }), el_("small", { text: c.hint }));
+    li.addEventListener("click", () => runPalette(i));
+    return li;
+  }));
+}
+function runPalette(i) { const c = pal.items[i]; if (!c) return; pal.el.close(); c.run(); }
+function openPalette() { pal.q.value = ""; pal.at = 0; paintPalette(); if (!pal.el.open) pal.el.showModal(); pal.q.focus(); }
+pal.q.addEventListener("input", () => { pal.at = 0; paintPalette(); });
+pal.q.addEventListener("keydown", (e) => {
+  if (e.key === "ArrowDown") { pal.at = Math.min(pal.items.length - 1, pal.at + 1); paintPalette(); e.preventDefault(); }
+  else if (e.key === "ArrowUp") { pal.at = Math.max(0, pal.at - 1); paintPalette(); e.preventDefault(); }
+  else if (e.key === "Enter") { runPalette(pal.at); e.preventDefault(); }
+});
+$("open-palette").addEventListener("click", openPalette);
+document.addEventListener("keydown", (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") { e.preventDefault(); pal.el.open ? pal.el.close() : openPalette(); return; }
+  const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName || "") || pal.el.open;
+  if (!typing && !e.ctrlKey && !e.metaKey && !e.altKey && /^[1-9]$/.test(e.key) && hasResult() && tabDefs === SINGLE_TABS) {
+    const t = SINGLE_TABS[Number(e.key) - 1]; if (t) selectTab(t.id);
+  }
+});
 renderTabs(SINGLE_TABS);
 boot();

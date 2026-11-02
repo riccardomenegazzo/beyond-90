@@ -1,4 +1,4 @@
-# Beyond 90: specification v0.13
+# Beyond 90: specification v0.14
 
 An adoption engine for Technical Account Managers. It measures how much of a customer's cloud estate is really covered and operated through a security platform, and turns every gap into an action. The bar keeps moving: when a customer grows or the product ships something, the denominators grow with it.
 
@@ -191,8 +191,9 @@ Security platforms commonly ship their own adoption or maturity views and an own
 9. 0.10: maturity ladder, use-case and framework views, renewal readiness, success plan.
 10. 0.11: path to the next level, input drift.
 11. 0.12: automatic collection, pipeline, alerts, schedules.
-12. 0.13 (this): hardening: encodings, hostile inputs, network chaos, run lock, retention, workspace limits.
-13. 1.0: connector interface and a first verified connector against a real tenant; criticality weighting; readiness checklist import; per-finding ownership sources.
+12. 0.13: hardening: encodings, hostile inputs, network chaos, run lock, retention, workspace limits.
+13. 0.14 (this): a native dashboard in the browser app: explorer tables, what-if planning, portfolio map, command palette, themes.
+14. 1.0: connector interface and a first verified connector against a real tenant; criticality weighting; readiness checklist import; per-finding ownership sources.
 
 ## References
 

@@ -9,17 +9,28 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<header class="top">
-  <div>
-    <h1>Beyond 90</h1>
-    <p>Adoption score, roadmap and QBR draft for Technical Account Managers. It runs in this page: your files are read by your browser and never uploaded.</p>
+<a class="skip" href="#main">Skip to content</a>
+<header class="appbar">
+  <div class="appbar-in">
+    <a class="brand" href="./" aria-label="Beyond 90, home">
+      <svg viewBox="0 0 32 32" width="28" height="28" aria-hidden="true"><circle cx="16" cy="16" r="12" fill="none" stroke="var(--grid)" stroke-width="4"/><path d="M16 4a12 12 0 1 1-11.4 8.3" fill="none" stroke="var(--accent)" stroke-width="4" stroke-linecap="round"/><circle cx="16" cy="4" r="2.4" fill="var(--ink)"/></svg>
+      <span>Beyond <b>90</b></span>
+    </a>
+    <div class="chips"><span class="chip" id="version">loading engine…</span><span class="chip" id="offline" hidden>works offline</span></div>
+    <div class="appbar-actions">
+      <button class="btn small" id="open-palette" type="button" aria-haspopup="dialog" title="Commands (Ctrl or Cmd + K)">Commands <kbd>Ctrl K</kbd></button>
+      <button class="btn small" id="theme" type="button" aria-label="Switch colour theme" title="Colour theme">Theme</button>
+    </div>
   </div>
-  <div class="chips"><span class="chip" id="version">loading engine…</span><span class="chip" id="offline" hidden>works offline</span></div>
 </header>
+<section class="intro" aria-label="About">
+  <h1>Adoption you can't flatter.</h1>
+  <p>Beyond 90 scores how much of a security product a customer actually uses, finds the gaps behind the number, and plans the hours to close them. It runs in this page: your files are read by your browser and never uploaded.</p>
+</section>
 
-<main>
+<main id="main">
   <section class="panel" aria-labelledby="in">
-    <h2 id="in">1. Give it the data</h2>
+    <h2 id="in"><span class="step">1</span> Give it the data</h2>
     <div id="drop" class="drop" role="group" aria-label="Choose or drop the customer data files">
       <strong>Drop a customer folder here</strong>
       <span>or choose files (<code>customer.toml</code>, <code>accounts.csv</code>, …)</span>
@@ -53,7 +64,7 @@
   </section>
 
   <section class="panel out" aria-labelledby="res" hidden id="results">
-    <h2 id="res">2. Results</h2>
+    <h2 id="res"><span class="step">2</span> Results</h2>
     <div class="kpis" id="kpis"></div>
     <div class="bar">
       <label class="inline">Explain what changed since
@@ -64,8 +75,9 @@
     </div>
     <p class="note" id="saved-note" role="status"></p>
     <table class="hist" id="book-table" hidden><thead><tr><th>Customer</th><th class="n">ARR</th><th class="n">Yield now</th><th class="n">After the plan</th><th class="n">Hours</th><th>Inputs</th><th><span class="sr">Actions</span></th></tr></thead><tbody></tbody></table>
-    <div class="tabs" role="tablist" id="tabs"></div>
-    <div class="actions">
+    <div class="tabs" role="tablist" id="tabs" aria-label="Views"></div>
+    <div id="view" class="view" role="tabpanel" tabindex="-1" hidden></div>
+    <div class="actions" id="docactions">
       <button class="btn" id="copy" type="button">Copy</button>
       <button class="btn" id="download" type="button">Download</button>
     </div>
@@ -75,7 +87,7 @@
   </section>
 
   <section class="panel" id="history-panel" aria-labelledby="hist">
-    <h2 id="hist">3. Saved in this browser</h2>
+    <h2 id="hist"><span class="step">3</span> Saved in this browser</h2>
     <p class="note first">Only your input files are kept, on this device, never results (those are recomputed, so they can never disagree with the data). Contacts and commitments are left out unless you tick the box. Nothing is synced anywhere: to move work between devices, export and import. Importing merges, and importing the same file twice changes nothing.</p>
     <div id="history-empty" class="empty" hidden>
       <p>Nothing saved yet. Run an analysis and press <strong>Save snapshot</strong>, or add the demo's earlier quarter to see a comparison.</p>
@@ -98,6 +110,12 @@
     <ul id="errlist"></ul>
   </section>
 </main>
+
+<dialog id="palette" class="palette" aria-label="Commands">
+  <input id="palette-q" type="text" placeholder="Type a command or a view…" aria-label="Search commands" autocomplete="off">
+  <ul id="palette-list" role="listbox"></ul>
+  <p class="note">↑ ↓ to move, Enter to run, Esc to close. Outside a text field, 1 to 9 switch views.</p>
+</dialog>
 
 <footer>
   <p><button class="link" id="selfcheck" type="button">Check that nothing leaves this page</button> <span id="selfcheck-out" role="status"></span></p>

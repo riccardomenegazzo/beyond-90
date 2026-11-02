@@ -2,6 +2,19 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.14.0
+
+A new browser app. The report is still there; the app is now a dashboard you work in.
+
+- **Overview.** A Yield gauge with the legacy figure marked on it and the checkpoints at 90, 95 and 98; a waterfall of what each stage costs; a "needs attention" list drawn from the data (critical findings and the pace of closing them, renewal, units no source has seen, severity downgrades near a deadline, under-used licences); the five best opportunities; the planned curve.
+- **Explorers.** Actions (search, stage filter, steps, "copy as ticket"), accounts (provider, owner, gaps, not connected, critical findings; what is not inventoried and which capabilities are off) and open findings (severity, status, owner, decision), each sortable, paged and exportable as CSV. Exported cells that start with `=`, `+`, `-` or `@` are prefixed so a spreadsheet cannot run them.
+- **Plan and what-if.** Sliders for hours, horizon and realization recompute the plan in the engine, against the original as a dashed line, with a timeline of what gets done and when and what the plan cannot close.
+- **Maturity, renewal and trust, changes.** The ladder with every check, adoption by use case and framework function, renewal signals, licences, the universe estimate, contacts, and a contribution chart that sums exactly to the change since an earlier snapshot.
+- **Portfolio map.** In book mode, a heat map of every customer by stage with ARR, plan and level, and where to look first.
+- **Command palette** (Ctrl or Cmd + K), number keys for views, a five-line summary to paste into chat, print styles, and a light, dark or system theme.
+- **Engine.** `analyze` returns a structured `dashboard` (plan by week, per-account and per-finding rows with the gaps behind them, attribution, renewal, ladder, forecast, drift, candor items) and a `plan` call serves the sliders. Lists are capped and say so.
+- **Quality.** Browser tests drive every view, a hostile customer name is checked in each, and the accessibility audit passes in light and dark. Python tests tie the dashboard to the score it was drawn from.
+
 ## 0.13.0
 
 Hardening: no new features, a lot fewer ways to fall over.

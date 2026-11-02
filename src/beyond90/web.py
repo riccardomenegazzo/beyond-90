@@ -13,7 +13,7 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Any, Optional
 
-from . import __version__
+from . import __version__, dashboard
 from .attribution import explain
 from .book import build_book_plan, render_book_html, render_book_markdown
 from .candor import candor_items
@@ -88,6 +88,7 @@ def analyze(
         "yield": score.yield_,
         "reach": (score.reach or {}).get("value") if isinstance(score.reach, dict) else None,
         "actions": len(actions),
+        "dashboard": dashboard.build(data, score, cat, plan, extras, actions),
         "report_html": render_html(score, actions, None, previous, **extras),
         "report_markdown": render_markdown(score, actions, None, previous, **extras),
         "qbr_markdown": render_qbr(score, actions, previous, quarter, **extras),
@@ -96,6 +97,20 @@ def analyze(
         "score_json": render_json(score, actions, None),
         "summary": {k: summary[k] for k in summary if k in ("customer", "as_of", "yield", "stages")},
     }
+
+
+def plan_files(files: Mapping[str, str], hours: float = 8.0, weeks: int = 26, realization: float = 0.9, ramp_weeks: int = 2) -> dict[str, Any]:
+    """Only the plan, for the what-if sliders: same model as the report, none of the rendering."""
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        _write(root, files)
+        try:
+            cat = Catalogue.for_directory(root)
+            data, _ = load_customer(root, cat, require_accounts=True)
+        except (DataError, ValueError) as e:
+            return {"ok": False, "errors": e.errors if isinstance(e, DataError) else [str(e)]}
+        plan = build_plan(data, cat, hours_per_week=hours, horizon_weeks=weeks, realization=realization, ramp=RampModel(ramp_weeks))
+        return {"ok": True, "plan": dashboard.plan_data(plan)}
 
 
 def _write(root: Path, files: Mapping[str, str]) -> None:
@@ -216,6 +231,8 @@ def analyze_book(
             "profile": cat.profile,
             "customers": [
                 {"name": n, "key": keys[n], "arr": by_name[n].arr, "yield": by_name[n].score.yield_, "confidence": by_name[n].score.quality.get("confidence", ""),
+                 "stages": {k: by_name[n].score.stages[k].value for k in ("L1", "L2", "L3", "L4")}, "level": by_name[n].score.rubric.get("level", ""),
+                 "critical_open": by_name[n].score.outcomes.get("critical_open", 0), "naive": by_name[n].score.naive,
                  "planned_yield": next(c.end_yield for c in plan.customers if c.name == n), "hours": next(c.hours for c in plan.customers if c.name == n)}
                 for n, _ in customers
             ],
@@ -235,6 +252,10 @@ def analyze_json(files_json: str, options_json: str = "{}") -> str:
     opts = json.loads(options_json)
     since = opts.pop("since_files", None)
     return json.dumps(analyze_files(json.loads(files_json), since_files=since, **opts), ensure_ascii=False)
+
+
+def plan_json(files_json: str, options_json: str = "{}") -> str:
+    return json.dumps(plan_files(json.loads(files_json), **json.loads(options_json)), ensure_ascii=False)
 
 
 def summarize_json(files_json: str) -> str:

@@ -23,6 +23,7 @@ async function init() {
 const ops = {
   analyze: (a) => call("w.analyze_json(_a, _b)", JSON.stringify(a.files), JSON.stringify(a.options || {})),
   book: (a) => call("w.analyze_book_json(_a, _b)", JSON.stringify(a.groups), JSON.stringify(a.options || {})),
+  plan: (a) => call("w.plan_json(_a, _b)", JSON.stringify(a.files), JSON.stringify(a.options || {})),
   summarize: (a) => call("w.summarize_json(_a)", JSON.stringify(a.files)),
   fingerprint: (a) => call("w.fingerprint_json(_a)", JSON.stringify(a.files)),
   probe: async () => {
