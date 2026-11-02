@@ -2,6 +2,16 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.15.1
+
+A visual pass on the browser app. No change to any number.
+
+- **First impression.** A landing with a live preview of the dashboard, four short reasons to use it, and the three examples as cards instead of buttons.
+- **App shell.** A result header with the customer, level and confidence; a left rail with icons and groups (Customer, Plan and review, Documents; Your book) that becomes a scrolling bar on small screens; a softer, deeper palette with a gradient button, glow and shadows.
+- **Motion.** Cards rise in, the stage bars grow, the examples pulse while the engine loads; all of it off when the system asks for reduced motion.
+- **Icons.** A small line-icon set built without parsing HTML, so Trusted Types still hold.
+- **Accessibility.** One h1 per screen with a real heading order, and every selected control above 4.5:1 contrast, checked in light and dark on every view.
+
 ## 0.15.0
 
 For a TAM with a book to run every week, and a browser app that is harder to attack.

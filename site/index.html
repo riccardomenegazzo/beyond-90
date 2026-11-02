@@ -16,31 +16,50 @@
       <svg viewBox="0 0 32 32" width="28" height="28" aria-hidden="true"><circle cx="16" cy="16" r="12" fill="none" stroke="var(--grid)" stroke-width="4"/><path d="M16 4a12 12 0 1 1-11.4 8.3" fill="none" stroke="var(--accent)" stroke-width="4" stroke-linecap="round"/><circle cx="16" cy="4" r="2.4" fill="var(--ink)"/></svg>
       <span>Beyond <b>90</b></span>
     </a>
-    <div class="chips"><span class="chip" id="version">loading engine…</span><span class="chip" id="offline" hidden>works offline</span></div>
+    <div class="chips"><span class="chip" id="version">loading engine…</span><span class="chip hide-s" id="offline" hidden>works offline</span></div>
     <div class="appbar-actions">
       <button class="btn small" id="open-palette" type="button" aria-haspopup="dialog" title="Commands (Ctrl or Cmd + K)">Commands <kbd>Ctrl K</kbd></button>
       <button class="btn small" id="theme" type="button" aria-label="Switch colour theme" title="Colour theme">Theme</button>
     </div>
   </div>
 </header>
-<section class="intro" aria-label="About">
-  <h1>Adoption you can't flatter.</h1>
-  <p>Beyond 90 scores how much of a security product a customer actually uses, finds the gaps behind the number, and plans the hours to close them. It runs in this page: your files are read by your browser and never uploaded.</p>
+<section class="hero-land" id="landing" aria-label="About">
+  <div class="hero-copy">
+    <p class="eyebrow">For technical account managers</p>
+    <h1>Adoption you <em>can't flatter.</em></h1>
+    <p class="lead">Beyond 90 measures how much of a security product a customer really uses, finds the gaps behind the number, and plans the hours and the conversations to close them, for every customer in your book, every week.</p>
+    <ul class="proof" aria-label="Why you can trust it">
+      <li data-i="lock">Runs in your browser. Nothing is uploaded.</li>
+      <li data-i="shield">Open source, Apache-2.0, no vendor.</li>
+      <li data-i="bolt">Works offline, installs nothing.</li>
+    </ul>
+  </div>
+  <div class="hero-art" id="hero-art" aria-hidden="true"></div>
+</section>
+
+<section class="features" aria-label="What it does">
+  <article><span class="fi" data-i="overview"></span><h3>A score that can't be gamed</h3><p>Yield multiplies four honest stages against their own denominators, and shows the gap to the flattering number.</p></article>
+  <article><span class="fi" data-i="week"></span><h3>The week, in order</h3><p>Top and mid-tier customers ranked with the reason for each place, a prepared agenda for every call.</p></article>
+  <article><span class="fi" data-i="news"></span><h3>News that touches them</h3><p>Advisories matched to each customer's inventory, with a note you can send in plain words.</p></article>
+  <article><span class="fi" data-i="lock"></span><h3>Private by design</h3><p>Strict policy, Trusted Types, optional passphrase for saved data. Your files never leave the tab.</p></article>
 </section>
 
 <main id="main">
   <section class="panel" aria-labelledby="in">
-    <h2 id="in"><span class="step">1</span> Give it the data</h2>
+    <h2 id="in">Your data</h2>
     <div id="drop" class="drop" role="group" aria-label="Choose or drop the customer data files">
       <strong>Drop a customer folder here</strong>
       <span>or choose files (<code>customer.toml</code>, <code>accounts.csv</code>, …)</span>
       <div class="row">
         <label class="btn">Choose folder<input id="folder" type="file" webkitdirectory hidden></label>
         <label class="btn">Choose files<input id="files" type="file" multiple accept=".csv,.toml" hidden></label>
-        <button class="btn primary" id="demo" type="button" disabled>Try the demo (one customer)</button>
-        <button class="btn" id="demo-book" type="button" disabled>Try the book demo (3 customers)</button>
-        <button class="btn" id="demo-endpoint" type="button" disabled>Try an endpoint-protection demo</button>
       </div>
+    </div>
+    <div class="demos" role="group" aria-label="Try an example">
+      <p class="demos-t">Or start with an example</p>
+      <button class="demo-card" id="demo" type="button" disabled><span class="fi" data-i="overview"></span><b>One customer</b><small>The full dashboard, call prep and plan for a mock enterprise customer.</small></button>
+      <button class="demo-card" id="demo-book" type="button" disabled><span class="fi" data-i="week"></span><b>A book of three</b><small>This week's order, the portfolio map and where one budget of hours goes.</small></button>
+      <button class="demo-card" id="demo-endpoint" type="button" disabled><span class="fi" data-i="chip"></span><b>Endpoint protection</b><small>The same engine with a different catalogue and its own words.</small></button>
     </div>
     <ul id="loaded" class="loaded" aria-live="polite"></ul>
 
@@ -75,7 +94,8 @@
   </section>
 
   <section class="panel out" aria-labelledby="res" hidden id="results">
-    <h2 id="res"><span class="step">2</span> Results</h2>
+    <h2 id="res" class="sr">Results</h2>
+    <div id="reshead" class="reshead"></div>
     <div class="kpis" id="kpis"></div>
     <div class="bar">
       <label class="inline">Explain what changed since
@@ -86,6 +106,7 @@
     </div>
     <p class="note" id="saved-note" role="status"></p>
     <table class="hist" id="book-table" hidden><thead><tr><th>Customer</th><th class="n">ARR</th><th class="n">Yield now</th><th class="n">After the plan</th><th class="n">Hours</th><th>Inputs</th><th><span class="sr">Actions</span></th></tr></thead><tbody></tbody></table>
+    <div class="resbody">
     <div class="tabs" role="tablist" id="tabs" aria-label="Views"></div>
     <div id="view" class="view" role="tabpanel" tabindex="-1" hidden></div>
     <div class="actions" id="docactions">
@@ -95,10 +116,11 @@
     <iframe id="report" title="Report" sandbox></iframe>
     <article id="doc" class="doc" hidden></article>
     <pre id="raw" class="raw" hidden></pre>
+    </div>
   </section>
 
   <section class="panel" id="history-panel" aria-labelledby="hist">
-    <h2 id="hist"><span class="step">3</span> Saved in this browser</h2>
+    <h2 id="hist">Saved in this browser</h2>
     <p class="note first">Only your input files are kept, on this device, never results (those are recomputed, so they can never disagree with the data). Contacts and commitments are left out unless you tick the box. Nothing is synced anywhere: to move work between devices, export and import. Importing merges, and importing the same file twice changes nothing.</p>
     <div id="history-empty" class="empty" hidden>
       <p>Nothing saved yet. Run an analysis and press <strong>Save snapshot</strong>, or add the demo's earlier quarter to see a comparison.</p>

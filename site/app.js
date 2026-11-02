@@ -5,7 +5,8 @@ import * as W from "./workspace-core.js";
 import * as store from "./store.js";
 import * as Vault from "./vault.js";
 import * as V from "./views.js";
-import { h as el_, s as svg_, saveBlob, copyText, csvCell } from "./ui.js";
+import { h as el_, s as svg_, saveBlob, copyText, csvCell, icon } from "./ui.js";
+import { gauge, STAGE } from "./charts.js";
 
 const $ = (id) => document.getElementById(id);
 // The page enforces Trusted Types for scripts (see the CSP): the only string-to-HTML sink left is the sandboxed report frame,
@@ -216,6 +217,7 @@ async function runBook() {
 
 function showBook() {
   const b = state.book;
+  fillHead("Your book", `${b.customers.length} customers · ${b.profile} catalogue · engine ${b.version}`, [el_("span", { class: "chip", text: "ARR-weighted Yield " + pct(b.arr_weighted_yield) }), el_("span", { class: "chip", text: "after the plan " + pct(b.weighted_end) })]);
   $("kpis").replaceChildren(kpi(pct(b.arr_weighted_yield), "ARR-weighted Yield now"), kpi(pct(b.weighted_end), "After the plan"), kpi(String(b.customers.length), "Customers"), kpi(String(b.patterns), "Patterns shared across customers"));
   document.querySelector(".bar").hidden = true;
   $("saved-note").textContent = "";
@@ -265,8 +267,14 @@ function kpi(value, label) {
   return el_("div", { class: "kpi" }, el_("b", { text: value }), el_("span", { text: label }));
 }
 
+function fillHead(title, sub, chips) {
+  $("reshead").replaceChildren(el_("div", {}, el_("h1", { text: title }), el_("div", { class: "sub", text: sub })), el_("div", { class: "chips2" }, chips));
+  document.body.classList.add("has-results");
+}
+
 function showResults() {
   const r = state.result;
+  fillHead(r.customer, `As of ${r.as_of} · ${r.profile} catalogue · engine ${r.version}`, [el_("span", { class: "levelbadge lv-" + r.level, text: r.level.charAt(0).toUpperCase() + r.level.slice(1) + (r.level_provisional ? " (provisional)" : "") }), el_("span", { class: "chip", text: "inputs: " + r.confidence + " confidence" })]);
   $("kpis").replaceChildren(kpi(pct(r.yield), "Yield"), kpi(pct(r.reach), "Reach"), kpi(String(r.actions), "Open actions"), kpi(r.level.charAt(0).toUpperCase() + r.level.slice(1) + (r.level_provisional ? " (provisional)" : ""), "Maturity level"), kpi(r.confidence, "Confidence in the inputs"), kpi(r.profile, "Catalogue profile"), kpi(r.customer, "Customer as of " + r.as_of));
   renderCompare();
   document.querySelector(".bar").hidden = false;
@@ -287,17 +295,17 @@ function renderCompare() {
 
 // ---------- tabs
 const SINGLE_TABS = [
-  { id: "overview", label: "Overview", kind: "view", view: "overview" },
-  { id: "prep", label: "Prep a call", kind: "view", view: "prepView" },
-  { id: "actions", label: "Actions", kind: "view", view: "actionsView" },
-  { id: "accounts", label: "Accounts", kind: "view", view: "accountsView" },
-  { id: "findings", label: "Findings", kind: "view", view: "findingsView" },
-  { id: "news", label: "News", kind: "view", view: "newsView" },
-  { id: "planview", label: "Plan & what-if", kind: "view", view: "planView" },
-  { id: "maturity", label: "Maturity", kind: "view", view: "maturityView" },
-  { id: "renewal", label: "Renewal & trust", kind: "view", view: "renewalView" },
-  { id: "changes", label: "Changes", kind: "view", view: "changesView" },
-  { id: "report", sep: true, label: "Report", key: "report_html", file: "beyond90-report.html", type: "text/html", kind: "html" },
+  { id: "overview", label: "Overview", kind: "view", view: "overview", icon: "overview", group: "Customer" },
+  { id: "prep", label: "Prep a call", kind: "view", view: "prepView", icon: "prep" },
+  { id: "actions", label: "Actions", kind: "view", view: "actionsView", icon: "actions" },
+  { id: "accounts", label: "Accounts", kind: "view", view: "accountsView", icon: "accounts" },
+  { id: "findings", label: "Findings", kind: "view", view: "findingsView", icon: "findings" },
+  { id: "news", label: "News", kind: "view", view: "newsView", icon: "news" },
+  { id: "planview", label: "Plan & what-if", kind: "view", view: "planView", icon: "planview", group: "Plan and review" },
+  { id: "maturity", label: "Maturity", kind: "view", view: "maturityView", icon: "maturity" },
+  { id: "renewal", label: "Renewal & trust", kind: "view", view: "renewalView", icon: "renewal" },
+  { id: "changes", label: "Changes", kind: "view", view: "changesView", icon: "changes" },
+  { id: "report", sep: true, icon: "doc", group: "Documents", label: "Report", key: "report_html", file: "beyond90-report.html", type: "text/html", kind: "html" },
   { id: "qbr", label: "QBR draft", key: "qbr_markdown", file: "beyond90-qbr.md", type: "text/markdown", kind: "md" },
   { id: "plan", label: "Success plan", key: "success_plan_markdown", file: "beyond90-success-plan.md", type: "text/markdown", kind: "md" },
   { id: "roadmap", label: "Roadmap", key: "roadmap_markdown", file: "beyond90-roadmap.md", type: "text/markdown", kind: "md" },
@@ -305,9 +313,9 @@ const SINGLE_TABS = [
   { id: "json", label: "JSON", key: "score_json", file: "beyond90-score.json", type: "application/json", kind: "json" },
 ];
 const BOOK_TABS = [
-  { id: "week", label: "This week", kind: "view", view: "weekView" },
-  { id: "bookmap", label: "Portfolio map", kind: "view", view: "bookView" },
-  { id: "portfolio", label: "Portfolio", key: "portfolio_markdown", file: "beyond90-portfolio.md", type: "text/markdown", kind: "md" },
+  { id: "week", label: "This week", kind: "view", view: "weekView", icon: "week", group: "Your book" },
+  { id: "bookmap", label: "Portfolio map", kind: "view", view: "bookView", icon: "bookmap" },
+  { id: "portfolio", label: "Portfolio", icon: "doc", group: "Documents", key: "portfolio_markdown", file: "beyond90-portfolio.md", type: "text/markdown", kind: "md" },
   { id: "book", label: "Where your hours go", key: "book_markdown", file: "beyond90-book.md", type: "text/markdown", kind: "md" },
   { id: "bookreport", label: "Book report", key: "book_html", file: "beyond90-book.html", type: "text/html", kind: "html" },
 ];
@@ -316,11 +324,14 @@ let tabDefs = SINGLE_TABS;
 function renderTabs(defs) {
   tabDefs = defs;
   $("tabs").replaceChildren(...defs.flatMap((t) => {
-    const b = Object.assign(document.createElement("button"), { type: "button", textContent: t.label });
+    const b = el_("button", { type: "button" }, icon(t.icon || "doc"), el_("span", { text: t.label }));
     b.setAttribute("role", "tab");
     b.dataset.tab = t.id;
     b.addEventListener("click", () => selectTab(t.id));
-    return t.sep ? [Object.assign(document.createElement("span"), { className: "sep", ariaHidden: "true" }), b] : [b];
+    const out = [];
+    if (t.group) out.push(el_("span", { class: "grp", "aria-hidden": "true", text: t.group }));
+    if (t.sep) out.push(el_("span", { class: "sep", "aria-hidden": "true" }));
+    return [...out, b];
   }));
 }
 
@@ -788,5 +799,20 @@ document.addEventListener("keydown", (e) => {
     const t = SINGLE_TABS[Number(e.key) - 1]; if (t) selectTab(t.id);
   }
 });
+
+// ---------- first impression
+for (const e of document.querySelectorAll("[data-i]")) e.prepend(icon(e.dataset.i, e.classList.contains("fi") ? 20 : 16));
+function drawHero() {
+  const stage = (v, n, d) => ({ value: v, numerator: n, denominator: d });
+  const rows = [["L1", "Connected", 0.901, "var(--s1)"], ["L2", "Inventoried", 0.973, "var(--s2)"], ["L3", "Controls on", 0.927, "var(--s3)"], ["L4", "Decided", 0.894, "var(--s4)"]];
+  void stage; void STAGE;
+  $("hero-art").replaceChildren(el_("div", { class: "preview" },
+    el_("div", { class: "pv-head" }, el_("span", { text: "Northwind (mock) · sample data" }), el_("span", { class: "levelbadge small lv-bronze", text: "Bronze" })),
+    el_("div", { class: "pv-grid" }, gauge({ value: 0.726, marker: 0.92, size: 200, ticks: [] }),
+      el_("div", { class: "pv-bars" }, rows.map(([k, name, v, c]) => el_("div", { class: "pv-bar" }, el_("span", { text: `${k} ${name}` }), el_("span", {}, el_("i", { style: `width:${v * 100}%;background:${c}` })), el_("b", { text: (v * 100).toFixed(0) + "%" }))))),
+    el_("div", { class: "pv-opp" }, [["L4", "Give unowned findings an owner", "+4.0"], ["L3", "Adopt workflow automation on 31 accounts", "+2.1"], ["L1", "Connect 3 accounts owned by retail", "+2.0"]].map(([k, t, e]) => el_("div", { class: "pv-o" }, el_("span", { class: "stagepip", style: `border-color:var(--s${k.slice(1)})`, text: k }), el_("b", { text: t }), el_("span", { text: e + " pts" }))))),
+    el_("div", { class: "pv-badge" }, icon("news", 16), el_("span", { text: "2 advisories touch uncovered accounts" })));
+}
+drawHero();
 renderTabs(SINGLE_TABS);
 boot();

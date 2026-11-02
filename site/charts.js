@@ -42,7 +42,7 @@ export function waterfall(stages) {
     const st = stages[k], after = acc * st.value, y = 8 + i * rowH;
     svg.append(s("text", { x: 0, y: y + 17, class: "lbl" }, k + "  " + STAGE_NAME[k]), s("text", { x: 0, y: y + 33, class: "sub" }, `${st.numerator} of ${st.denominator}`));
     const g = s("g", {}, s("title", {}, `${k}: ${pct(st.value)} pass (${st.numerator}/${st.denominator}); Yield after this stage ${pct(after)}`));
-    g.append(s("rect", { x: x(0), y, width: x(after) - x(0), height: 26, rx: 4, fill: STAGE[k] }));
+    g.append(s("rect", { x: x(0), y, width: x(after) - x(0), height: 26, rx: 4, fill: STAGE[k], class: "grow", style: `animation-delay:${i * 90}ms` }));
     if (acc - after > 0.0005) g.append(s("rect", { x: x(after), y, width: x(acc) - x(after), height: 26, rx: 4, fill: "url(#hatch2)", stroke: "var(--ink2)", "stroke-width": 0.8 }));
     g.append(s("text", { x: Math.max(x(0) + 6, x(after) - 6), y: y + 18, "text-anchor": x(after) - x(0) > 60 ? "end" : "start", class: "bar-val", fill: x(after) - x(0) > 60 ? "var(--on)" : "var(--ink)" }, pct(after)));
     if (acc - after > 0.0005) g.append(s("text", { x: x(acc) + 6, y: y + 18, class: "sub" }, "−" + ((acc - after) * 100).toFixed(1)));

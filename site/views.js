@@ -3,7 +3,7 @@ import { h, chip, pct, pts, num, cap, dataTable, chipFilter, searchBox, toCsv, s
 import { gauge, waterfall, lineChart, contributions, timeline, shareBar, STAGE, STAGE_NAME } from "./charts.js";
 
 const card = (title, body, { sub = "", cls = "", actions = null } = {}) =>
-  h("section", { class: "card " + cls }, h("header", { class: "cardhead" }, h("h3", { text: title }), actions), sub ? h("p", { class: "note first", text: sub }) : null, body);
+  h("section", { class: "card " + cls }, h("header", { class: "cardhead" }, h("h2", { text: title }), actions), sub ? h("p", { class: "note first", text: sub }) : null, body);
 const stat = (value, label, kind = "") => h("div", { class: "stat " + kind }, h("b", { text: value }), h("span", { text: label }));
 const SEV = { critical: "bad", high: "warn", medium: "", low: "" };
 const STATUS_KIND = { ok: "good", pass: "good", watch: "warn", risk: "bad", fail: "bad", note: "", warn: "warn", unknown: "" };
@@ -79,7 +79,7 @@ export function actionsView({ dash, score, focus }) {
   ];
   const t = dataTable({ columns: cols, rows, pageSize: 25, label: "Actions", empty: "No action matches.",
     expand: (r) => h("div", { class: "expand" },
-      r.steps.length ? h("div", {}, h("h4", { text: "Steps" }), h("ol", {}, r.steps.map((s) => h("li", { text: s })))) : null,
+      r.steps.length ? h("div", {}, h("h3", { text: "Steps" }), h("ol", {}, r.steps.map((s) => h("li", { text: s })))) : null,
       r.success ? h("p", {}, h("b", { text: "Done when: " }), r.success) : null,
       r.question ? h("p", {}, h("b", { text: "Ask the customer: " }), r.question) : null,
       r.commit ? h("p", {}, h("b", { text: "We commit to: " }), r.commit) : null,
@@ -198,7 +198,7 @@ export function planView({ dash, score, files, engine, options }) {
   }
   draw();
   return h("div", {},
-    h("div", { class: "card controls" }, h("h3", { text: "What if…" }), h("div", { class: "sliders" }, inputs.hours.el, inputs.weeks.el, inputs.real.el),
+    h("div", { class: "card controls" }, h("h2", { text: "What if…" }), h("div", { class: "sliders" }, inputs.hours.el, inputs.weeks.el, inputs.real.el),
       h("div", { class: "row left" }, h("button", { class: "btn small", type: "button", text: "Reset", onclick: () => { for (const [k, v] of [["hours", base.hours_per_week], ["weeks", base.horizon_weeks], ["real", base.realization]]) { const i = inputs[k].el.querySelector("input"); i.value = v; i.dispatchEvent(new Event("input")); } } }), status),
       h("p", { class: "note", text: "The plan is a model: it spends your hours on the action with the best gain per hour, applies a ramp for new connections, and recomputes. Use it to compare scenarios, not to promise dates." })),
     out);
@@ -235,7 +235,7 @@ function rateBars(items) {
 export function renewalView({ score, dash }) {
   const r = dash.renewal, rel = score.relationship, u = score.universe, ent = score.entitlements || [];
   const head = r ? h("div", { class: "card callout " + (r.status === "at_risk" ? "bad" : r.status === "watch" ? "warn" : "good") },
-    h("h3", { text: `Renewal ${r.date} · in ${r.days} days` }), h("p", { text: `${r.status.replace("_", " ")}${r.arr_at_risk ? `; ${num(r.arr_at_risk)} of annual revenue involved` : ""}.` })) : card("Renewal", h("p", { class: "note", text: "Add renewal_date to customer.toml to see renewal readiness." }));
+    h("h2", { text: `Renewal ${r.date} · in ${r.days} days` }), h("p", { text: `${r.status.replace("_", " ")}${r.arr_at_risk ? `; ${num(r.arr_at_risk)} of annual revenue involved` : ""}.` })) : card("Renewal", h("p", { class: "note", text: "Add renewal_date to customer.toml to see renewal readiness." }));
   const sig = r ? card("Signals", h("ul", { class: "checks" }, r.signals.map((s) => h("li", {}, chip(s.status, STATUS_KIND[s.status] || ""), h("span", {}, h("b", { text: s.label }), h("small", { class: "block", text: s.detail })))))) : null;
   const licences = ent.length ? card("Licences", h("ul", { class: "rates" }, ent.map((e) => h("li", {}, h("span", { class: "rl", text: e.unit }), h("span", { class: "rb" }, h("i", { style: `width:${Math.min(1, e.utilization) * 100}%;background:${e.below_target ? "var(--neg)" : "var(--pos)"}` })), h("span", { class: "rn", text: pct(e.utilization, 0) }), h("small", { text: `${num(e.used)} of ${num(e.licensed)}, target ${pct(e.target, 0)}` }))))) : null;
   const universe = u && u.estimable ? card("How complete is the universe?", h("div", {}, h("div", { class: "kpiline" }, stat(String(u.observed), `${score.terms.units} known`), stat(`~${u.unseen_estimate.toFixed(1)}`, "estimated unseen"), stat(pct(u.completeness, 0), "completeness"), stat(pct(u.pessimistic_l1), "L1 if all unseen are unconnected")),
@@ -282,7 +282,7 @@ const STATE_KIND = { never: "bad", overdue: "bad", due_soon: "warn", ok: "good" 
 /** The agenda for a call, as the engine built it. */
 function agenda(prep) {
   return h("div", { class: "agenda" }, prep.items.map((it, i) => h("section", { class: "agitem" },
-    h("h4", {}, h("span", { class: "agn", text: String(i + 1) }), it.title), h("p", { class: "note first", text: it.why }), h("ul", {}, it.points.map((p) => h("li", { text: p }))))));
+    h("h3", {}, h("span", { class: "agn", text: String(i + 1) }), it.title), h("p", { class: "note first", text: it.why }), h("ul", {}, it.points.map((p) => h("li", { text: p }))))));
 }
 
 function briefButtons(markdown, name) {
@@ -305,13 +305,13 @@ export function weekView({ book, openCustomer, markdown }) {
   ];
   const rows = w.rows.map((r, i) => ({ ...r, n: i + 1, id: r.key }));
   const t = dataTable({ columns: cols, rows, label: "The week", pageSize: 100,
-    expand: (r) => { const p = book.preps[r.key]; return h("div", { class: "expand wide" }, h("div", { class: "cardhead" }, h("h4", { text: "Call prep" }), briefButtons(p.markdown, `beyond90-prep-${r.key}.md`)), agenda(p.prep), h("button", { class: "btn small", type: "button", text: "Open the customer's dashboard", onclick: () => openCustomer(r.key) })); } });
+    expand: (r) => { const p = book.preps[r.key]; return h("div", { class: "expand wide" }, h("div", { class: "cardhead" }, h("h3", { text: "Call prep" }), briefButtons(p.markdown, `beyond90-prep-${r.key}.md`)), agenda(p.prep), h("button", { class: "btn small", type: "button", text: "Open the customer's dashboard", onclick: () => openCustomer(r.key) })); } });
   const top = rows.filter((r) => r.class === "top"), mid = rows.filter((r) => r.class === "mid");
   return h("div", {},
     h("div", { class: "kpiline" }, stat(String(top.length), "top-tier customers"), stat(String(mid.length), "mid-tier customers"), stat(String(rows.filter((r) => r.touch.state === "overdue" || r.touch.state === "never").length), "touches overdue", rows.some((r) => r.touch.state === "overdue") ? "bad" : ""), stat(w.hours_per_week + " h", "budget for the week"), stat(String(book.advisories), "advisories loaded")),
-    w.over_budget ? h("div", { class: "card callout bad" }, h("h3", { text: "The week does not fit" }), h("p", { text: `Calls and preparation alone need ${w.fixed_hours} hours. Something has to give: a lower-tier cadence, a shorter call, or help.` })) : null,
+    w.over_budget ? h("div", { class: "card callout bad" }, h("h2", { text: "The week does not fit" }), h("p", { text: `Calls and preparation alone need ${w.fixed_hours} hours. Something has to give: a lower-tier cadence, a shorter call, or help.` })) : null,
     card("Who to talk to, in this order", t.el, { sub: "Priority is a sum of points, each with its reason. Open a row for the prepared call.", actions: briefButtons(book.week_markdown, "beyond90-week.md") }),
-    book.advisories ? null : h("p", { class: "note", text: "No advisories are loaded, so the plan ignores security news. Add a feed in step 1 (News and advisories)." }));
+    book.advisories ? null : h("p", { class: "note", text: "No advisories are loaded, so the plan ignores security news. Add a feed under News and advisories, above." }));
 }
 
 /** One customer: when to call, what to say, in the order that earns attention. */

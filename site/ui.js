@@ -128,3 +128,42 @@ export function searchBox(placeholder, onInput) {
   i.addEventListener("input", () => onInput(i.value.trim().toLowerCase()));
   return i;
 }
+
+// A small set of line icons drawn for this app, so the interface needs no icon font and no request.
+const ICONS = {
+  overview: '<path d="M4 16a8 8 0 1 1 16 0"/><path d="M12 16l4-5"/>',
+  prep: '<path d="M4 5h16v10H9l-5 4z"/><path d="M8 9h8M8 12h5"/>',
+  actions: '<path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/>',
+  accounts: '<rect x="3" y="4" width="18" height="6" rx="1.5"/><rect x="3" y="14" width="18" height="6" rx="1.5"/><path d="M7 7h.01M7 17h.01"/>',
+  findings: '<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M12 8v5M12 16h.01"/>',
+  news: '<path d="M5 4h11v16H7a2 2 0 0 1-2-2z"/><path d="M16 8h3v10a2 2 0 0 1-2 2M8 8h5M8 12h5M8 16h3"/>',
+  planview: '<path d="M4 19V5M4 19h16M8 15l4-4 3 3 5-6"/>',
+  maturity: '<circle cx="12" cy="9" r="5"/><path d="M9 13.5L8 21l4-2 4 2-1-7.5"/>',
+  renewal: '<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/>',
+  changes: '<path d="M7 7h10l-3-3M17 17H7l3 3"/>',
+  doc: '<path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5M10 13h6M10 17h6"/>',
+  week: '<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M8 14h3M13 14h3M8 17h3"/>',
+  bookmap: '<rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/>',
+  lock: '<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+  shield: '<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/>',
+  bolt: '<path d="M13 3L5 14h6l-1 7 8-11h-6z"/>',
+  eye: '<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+  folder: '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
+  layers: '<path d="M12 3l9 5-9 5-9-5zM3 13l9 5 9-5"/>',
+  chip: '<rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 3v3M15 3v3M9 18v3M15 18v3M3 9h3M3 15h3M18 9h3M18 15h3"/>',
+  search: '<circle cx="11" cy="11" r="6"/><path d="M20 20l-4-4"/>',
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6L7 7M17 17l1.4 1.4M5.6 18.4L7 17M17 7l1.4-1.4"/>',
+};
+export function icon(name, size = 18) {
+  const el = document.createElementNS(SVGNS, "svg");
+  el.setAttribute("viewBox", "0 0 24 24"); el.setAttribute("width", size); el.setAttribute("height", size);
+  el.setAttribute("fill", "none"); el.setAttribute("stroke", "currentColor"); el.setAttribute("stroke-width", "1.8");
+  el.setAttribute("stroke-linecap", "round"); el.setAttribute("stroke-linejoin", "round"); el.setAttribute("aria-hidden", "true"); el.setAttribute("class", "ico");
+  // The markup above is ours and fixed; it is turned into elements without parsing HTML, which Trusted Types would rightly refuse.
+  for (const m of (ICONS[name] || "").matchAll(/<(path|circle|rect)\s+([^>]*?)\/>/g)) {
+    const node = document.createElementNS(SVGNS, m[1]);
+    for (const at of m[2].matchAll(/([a-z-]+)="([^"]*)"/g)) node.setAttribute(at[1], at[2]);
+    el.append(node);
+  }
+  return el;
+}
