@@ -1,4 +1,4 @@
-# Beyond 90: specification v0.11
+# Beyond 90: specification v0.12
 
 An adoption engine for Technical Account Managers. It measures how much of a customer's cloud estate is really covered and operated through a security platform, and turns every gap into an action. The bar keeps moving: when a customer grows or the product ships something, the denominators grow with it.
 
@@ -160,13 +160,17 @@ The roadmap records the four stage values every week. The checks that block the 
 
 With a comparison file (`--since`), the two sets of inputs are compared for signs of an export artefact: active units missing now without being marked decommissioned (a warning from 10% of the earlier total, and at least 3; otherwise a note), new units (a note), inventory or activation files more than 25% smaller, open findings that vanished from the file without being closed (a warning from 10% and at least 3), findings with a different opening date, and a comparison dated no earlier than the current file (a warning). These are notes to check before presenting a change, not errors.
 
+## 15m. Automatic collection and the pipeline (0.12)
+
+A configuration (`beyond90.toml`) declares `[[source]]` entries: `type` (`http`, `command`, `file`), `target` (a data file), `map` (column to path or table), and for accounts a `tag`. `sync` fetches each source, maps it, merges by key and writes a data directory atomically; a failing source falls back to its last good rows (reported `stale` with its age), a required column empty for every record fails the source, rows referring to unlisted accounts are dropped and counted, and no accounts at all is an error. `run` then scores the directory, takes the latest earlier snapshot under `state/snapshots/` as the comparison, writes the outputs, appends a record to `runs.jsonl`, saves a snapshot and the history, writes a browser-compatible workspace file (its id is the input hash of the files kept, personal files only if configured), computes alerts and posts a webhook if one is configured and there is something to say. Alert rules: a source stale or failed, level change (warn on a fall), Yield moved by 2 points or more, an increase in open critical findings without an owner, a renewal at risk that is new or within 30 days, drift warnings, dropped rows, input quality turning weak. Safety rules: tokens only from environment variables, https (plain http to localhost only), host and redirect allow-list, no shell, named environment for commands, size, time and page caps. See `docs/automation.md`.
+
 ## 16. Positioning against the platform's own views
 
 Security platforms commonly ship their own adoption or maturity views and an ownership model. Beyond 90 does not replace them: it measures what a platform cannot see about itself (the true universe of units to cover, across a whole portfolio) and reads ownership and decisions rather than rebuilding routing. The research behind this, including a case study of one vendor, is in `docs/research/`.
 
 ## 17. Not yet
 
-- Live connectors to platform APIs. They need a real tenant to verify and will be separate optional modules.
+- Verification against real vendor APIs and CLIs. Collection is configuration-driven and tested against fake services; each real source must be checked with `sync` before it is trusted. No interactive OAuth flow.
 - Weighting by asset criticality.
 - Health scoring. Adoption is one input to a customer health view, not health.
 
@@ -181,8 +185,9 @@ Security platforms commonly ship their own adoption or maturity views and an own
 7. 0.8: input quality, whole-book mode in the browser.
 8. 0.9: profiles (cloud and endpoint), vendor-neutral terms.
 9. 0.10: maturity ladder, use-case and framework views, renewal readiness, success plan.
-10. 0.11 (this): path to the next level, input drift.
-11. 1.0: connector interface and a first verified connector against a real tenant; criticality weighting; readiness checklist import; per-finding ownership sources.
+10. 0.11: path to the next level, input drift.
+11. 0.12 (this): automatic collection, pipeline, alerts, schedules.
+12. 1.0: connector interface and a first verified connector against a real tenant; criticality weighting; readiness checklist import; per-finding ownership sources.
 
 ## References
 

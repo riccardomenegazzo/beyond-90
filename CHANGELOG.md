@@ -2,6 +2,18 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.12.0
+
+Automation: no one has to export a file.
+
+- **Connectors.** `beyond90.toml` declares sources (REST APIs, cloud CLIs, drop folders) and how each record maps to the columns the engine reads; a new vendor needs a mapping, not code. Presets for the AWS, Azure and GCP CLIs. Four pagination styles, token from an environment variable, host allow-list including redirects, https, no shell, size, time and page caps, retries with `Retry-After`.
+- **`sync`.** Merges lists by id keeping every source tag, a last good copy per source when one fails (reported stale with its age), failure when a required column reads nothing, orphan rows dropped and counted, hand-kept rows in `state/manual`, atomic writes.
+- **`run`.** The whole pipeline: collect, score, compare with the previous snapshot found by itself, write the report, QBR, success plan, summary, roadmap and JSON, keep history, export a workspace file the browser app imports, alert on what changed, notify a webhook.
+- **Alerts** only when something changed or needs a person.
+- **`schedule`** prints a GitHub Actions workflow, a cron line or systemd units; `check-config` validates without touching anything.
+- Tests against a local fake API: pagination, auth, retries, redirects, outages, merging, alerts, webhook, secrets never in output, no shell injection, workspace accepted by the browser's own checks.
+- Not verified against any real vendor API or CLI; said in the docs.
+
 ## 0.11.0
 
 - **Path to the next level.** The ladder now says when: the first week from which the stage checks for the next level keep passing, and the hours spent to get there, from the roadmap (dip included). Checks the roadmap cannot move (findings past their deadline, licence use, relationships) are listed as outside it.

@@ -10,3 +10,4 @@ _site/
 build/
 dist/
 node_modules/
+state/

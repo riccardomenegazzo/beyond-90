@@ -419,6 +419,102 @@ def cmd_portfolio(args) -> int:
     return 1 if pf.errors and args.strict else 0
 
 
+def _config(args):
+    from .connect import ConfigError, load_config
+    try:
+        return load_config(args.config)
+    except ConfigError as e:
+        print("Invalid configuration:", file=sys.stderr)
+        for line in e.errors:
+            print(f"  {line}", file=sys.stderr)
+        raise SystemExit(1) from None
+
+
+def _as_of(args):
+    return date.fromisoformat(args.as_of) if getattr(args, "as_of", None) else None
+
+
+def cmd_check_config(args) -> int:
+    import os
+
+    from .connect.schedule import needed_env
+    cfg = _config(args)
+    print(f"{args.config}: valid. Customer {cfg.customer['name']!r}, state in {cfg.state_dir}.")
+    for s in cfg.sources:
+        where = s.url.split("?")[0] if s.type == "http" else " ".join(s.argv[:2]) if s.type == "command" else s.path
+        print(f"  {s.name:<18} {s.type:<8} -> {s.target:<12} {where}")
+    print("Hosts it may reach: " + ", ".join(cfg.allow_hosts) if cfg.allow_hosts else "It reaches no host (no http source).")
+    env = needed_env(cfg)
+    print("Environment variables it reads: " + (", ".join(env) if env else "none"))
+    missing = [n for n in env if n not in os.environ]
+    if missing:
+        print("Not set here: " + ", ".join(missing))
+    return 0
+
+
+def _print_sync(rep) -> None:
+    for r in rep.results:
+        extra = f" ({r.error})" if r.error else ""
+        age = f", {r.age_days} day(s) old" if r.status == "stale" else ""
+        print(f"  {r.name:<18} {r.status:<7} {r.rows:>6} rows{age}{extra}")
+    print("  merged: " + ", ".join(f"{t} {n}" for t, n in rep.counts.items()))
+    for t, n in rep.dropped.items():
+        print(f"  dropped {n} {t} row(s) for accounts that are not in the account list")
+
+
+def cmd_sync(args) -> int:
+    from .connect import SyncError, sync
+    cfg = _config(args)
+    try:
+        rep = sync(cfg, _as_of(args) or date.today())
+    except SyncError as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 1
+    print(f"Data directory: {rep.data_dir}")
+    _print_sync(rep)
+    return 1 if any(r.status == "failed" for r in rep.results) else 0
+
+
+def cmd_run(args) -> int:
+    from .connect import SyncError
+    from .connect.pipeline import PipelineError, run
+    cfg = _config(args)
+    try:
+        res = run(cfg, _as_of(args), notify=not args.no_notify)
+    except (SyncError, PipelineError) as e:
+        print("error:", file=sys.stderr)
+        for line in (e.errors if isinstance(e, PipelineError) else [str(e)]):
+            print(f"  {line}", file=sys.stderr)
+        return 1
+    _print_sync(res.sync)
+    print(f"Yield {res.yield_:.1%}, level {res.level}" + (f", compared with {res.since}" if res.since else ", no earlier snapshot to compare with"))
+    for name, path in res.outputs.items():
+        print(f"  {name:<12} {path}")
+    print(res.message.split("\n", 1)[1] if "\n" in res.message else res.message)
+    if res.notified:
+        print(f"Notification: {res.notified}")
+    if args.fail_under is not None and res.yield_ < args.fail_under:
+        print(f"Yield {res.yield_:.1%} is below --fail-under {args.fail_under:.1%}", file=sys.stderr)
+        return 2
+    if args.fail_on_alert and any(a["level"] == "warn" for a in res.alerts):
+        return 3
+    return 0
+
+
+def cmd_schedule(args) -> int:
+    from .connect import schedule as sch
+    cfg = _config(args)
+    name = Path(args.config).name
+    if args.kind == "github":
+        text = sch.github_workflow(cfg, name, args.at, args.every, args.install_from)
+    elif args.kind == "cron":
+        text = sch.cron_line(cfg, name, args.at, args.every)
+    else:
+        text = sch.systemd_units(cfg, name, args.at, args.every)
+    _emit(text, args.out)
+    return 0
+
+
 def cmd_fingerprint(args) -> int:
     from .provenance import hash_directory, input_hash
     files = hash_directory(args.directory)
@@ -624,6 +720,32 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--strict", action="store_true", help="exit 1 if any customer directory is invalid")
     sp.add_argument("--out")
     sp.set_defaults(func=cmd_portfolio)
+
+    sp = sub.add_parser("check-config", help="validate a pipeline configuration and show what it will read and reach; touches nothing")
+    sp.add_argument("config")
+    sp.set_defaults(func=cmd_check_config)
+
+    sp = sub.add_parser("sync", help="collect every source from beyond90.toml and rebuild the data directory")
+    sp.add_argument("config")
+    sp.add_argument("--as-of", help="date the data describes (default: today)")
+    sp.set_defaults(func=cmd_sync)
+
+    sp = sub.add_parser("run", help="sync, score, compare with the last run, write the reports, keep history, alert: the whole pipeline")
+    sp.add_argument("config")
+    sp.add_argument("--as-of", help="date the data describes (default: today)")
+    sp.add_argument("--no-notify", action="store_true", help="do not send the webhook even if one is configured")
+    sp.add_argument("--fail-under", type=float, help="exit 2 if Yield is below this (0 to 1)")
+    sp.add_argument("--fail-on-alert", action="store_true", help="exit 3 if any alert has level warn")
+    sp.set_defaults(func=cmd_run)
+
+    sp = sub.add_parser("schedule", help="print the file that makes the pipeline run by itself (GitHub Actions, cron or systemd)")
+    sp.add_argument("kind", choices=["github", "cron", "systemd"])
+    sp.add_argument("config")
+    sp.add_argument("--at", default="05:17", help="time of day in UTC, HH:MM")
+    sp.add_argument("--every", choices=["hour", "day", "week"], default="day")
+    sp.add_argument("--install-from", default="beyond90", help='pip requirement for the workflow, e.g. "beyond90 @ git+https://github.com/OWNER/beyond-90@v0.12.0"')
+    sp.add_argument("--out")
+    sp.set_defaults(func=cmd_schedule)
 
     sp = sub.add_parser("fingerprint", help="the hash that names these inputs; reports carry it so a number can be traced to its data")
     sp.add_argument("directory")

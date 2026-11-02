@@ -1,0 +1,110 @@
+# A complete pipeline against the mock vendor API (examples/automation/mock_vendor_api.py).
+# Try it:
+#   python examples/automation/mock_vendor_api.py 8765 &
+#   export VENDOR_TOKEN=demo-token
+#   beyond90 check-config examples/automation/beyond90.toml
+#   beyond90 run examples/automation/beyond90.toml
+# Every value below is invented. A real vendor needs different URLs and field names, nothing else.
+
+[customer]
+name = "Mock Vendor Customer"
+tier = "enterprise"
+arr = 250000
+renewal_date = 2027-03-31
+
+[settings]
+ceiling_version = "2026.4"
+baseline_ceiling = "2026.1"
+
+[state]
+dir = "state"
+
+[security]
+allow_hosts = ["127.0.0.1"]
+timeout_seconds = 10
+
+[outputs]
+make = ["report", "qbr", "successplan", "summary"]
+hours_per_week = 8
+weeks = 26
+
+# The list of units to cover, from the vendor's own tenant list.
+[[source]]
+name = "tenants"
+type = "http"
+url = "http://127.0.0.1:8765/api/tenants"
+target = "accounts"
+tag = "org"
+records = "data"
+connected_if_listed = false
+[source.auth]
+header = "Authorization"
+env = "VENDOR_TOKEN"
+prefix = "Bearer "
+[source.pagination]
+type = "cursor"
+cursor_path = "next"
+cursor_param = "cursor"
+[source.map]
+id = "tenant_id"
+provider = "platform"
+owner = "owner_team"
+connected = { path = "agent_connected", transform = "bool" }
+status = { path = "state", map = { enabled = "active", disabled = "decommissioned" }, default = "active" }
+created_at = { path = "created", transform = "date" }
+
+[[source]]
+name = "assets"
+type = "http"
+url = "http://127.0.0.1:8765/api/assets"
+target = "inventory"
+records = "data"
+[source.auth]
+env = "VENDOR_TOKEN"
+[source.pagination]
+type = "cursor"
+cursor_path = "next"
+cursor_param = "cursor"
+[source.map]
+account_id = "tenant"
+resource_type = "kind"
+count = "total"
+inventoried = { path = "scanned", transform = "bool" }
+
+[[source]]
+name = "capabilities"
+type = "http"
+url = "http://127.0.0.1:8765/api/capabilities"
+target = "activations"
+records = "data"
+[source.auth]
+env = "VENDOR_TOKEN"
+[source.pagination]
+type = "cursor"
+cursor_path = "next"
+cursor_param = "cursor"
+[source.map]
+account_id = "tenant"
+module_id = "capability"
+active = { path = "enabled", transform = "bool" }
+
+[[source]]
+name = "findings"
+type = "http"
+url = "http://127.0.0.1:8765/api/findings"
+target = "findings"
+records = "data"
+[source.auth]
+env = "VENDOR_TOKEN"
+[source.pagination]
+type = "cursor"
+cursor_path = "next"
+cursor_param = "cursor"
+[source.map]
+id = "key"
+account_id = "tenant"
+severity = { path = "sev", transform = "lower" }
+opened_at = { path = "opened", transform = "date" }
+closed_at = { path = "closed", transform = "date" }
+owner = "assignee"
+decision = "triage"

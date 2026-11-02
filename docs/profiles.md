@@ -61,6 +61,10 @@ The fit is best where the product has a coverage question (what is connected), a
 4. Override only the playbooks whose wording would be wrong for your product.
 5. Run with `--catalogue-dir path/to/your/profile`, check it with `beyond90 catalogue --catalogue-dir ...`, and read `tests/test_profiles.py` for the consistency rules a profile must satisfy.
 
+## Collection
+
+For any product, describe the API or export in `beyond90.toml` (see [automation.md](automation.md)): no code, only a mapping from the product's fields to the columns above.
+
 ## Importers
 
 `import aws-org`, `azure` and `gcp` read cloud exports. For any other product use `import csv` with the export your product gives you (a list of tenants, sites or organizations with an id column), and the reconcile command to see how your independent lists overlap.

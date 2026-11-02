@@ -2,6 +2,10 @@
 
 How the pieces fit into a working month. Every command runs locally on files you control. The outputs referred to below are committed in [docs/example](example/) so you can read them without installing anything.
 
+## Or let it do all of this by itself
+
+Everything below can be automated: describe your sources once in `beyond90.toml` and `beyond90 run` collects them, builds the data, scores, compares with the previous run and tells you what changed. See [automation.md](automation.md). The manual steps remain for sources that have no API.
+
 ## Day 0: build the universe
 
 Adoption is measured against the accounts you know, so start there. For each independent list you can get, import its native export:
