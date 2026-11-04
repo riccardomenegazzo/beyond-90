@@ -179,6 +179,7 @@ async function run(compareId) {
     state.compareId = base ? base.id : "";
     say(res.warnings.length ? res.warnings.length + " warning(s): " + res.warnings.join("; ") : "");
     showResults();
+    if ($("autosave").checked) await saveSnapshot({ quiet: true });   // the history a review is built from
   } catch (e) {
     if (e.cancelled) say("Cancelled. The engine was restarted.");
     else showErrors(["Unexpected error: " + e.message]);
@@ -309,6 +310,7 @@ const SINGLE_TABS = [
   { id: "maturity", label: "Maturity", kind: "view", view: "maturityView", icon: "maturity" },
   { id: "renewal", label: "Renewal & trust", kind: "view", view: "renewalView", icon: "renewal" },
   { id: "changes", label: "Changes", kind: "view", view: "changesView", icon: "changes" },
+  { id: "execqbr", label: "Executive QBR", kind: "view", view: "execQbrView", icon: "doc" },
   { id: "report", sep: true, icon: "doc", group: "Documents", label: "Report", key: "report_html", file: "beyond90-report.html", type: "text/html", kind: "html" },
   { id: "qbr", label: "QBR draft", key: "qbr_markdown", file: "beyond90-qbr.md", type: "text/markdown", kind: "md" },
   { id: "plan", label: "Success plan", key: "success_plan_markdown", file: "beyond90-success-plan.md", type: "text/markdown", kind: "md" },
@@ -368,7 +370,8 @@ function context() {
   if (state.book) return { book: state.book, advisories: state.advisories, openCustomer: (key, tab = "prep") => { state.mode = "single"; state.files = { ...state.groups[key] }; state.book = null; state.tab = tab; renderLoaded(); run(); } };
   const r = state.result;
   if (r && state.parsedFor !== r) { state.parsed = JSON.parse(r.score_json); state.parsedFor = r; }
-  return { result: r, dash: r.dashboard, score: state.parsed, engine: state.engine, files: state.files, options: options(), advisories: state.advisories, logTouch, go: (tab, extra) => selectTab(tab, extra) };
+  return { result: r, dash: r.dashboard, score: state.parsed, engine: state.engine, files: state.files, options: options(), advisories: state.advisories, logTouch, go: (tab, extra) => selectTab(tab, extra),
+    saved: state.saved, frameHtml: (frame, html) => { frame.srcdoc = reportPolicy ? reportPolicy.createHTML(html) : html; } };
 }
 
 function renderView(t) {
@@ -447,13 +450,16 @@ async function copy() {
 // ---------- workspace (local-first)
 const wsSay = (t) => { $("ws-status").textContent = t; };
 
-async function saveSnapshot() {
+async function saveSnapshot({ quiet = false } = {}) {
   const r = state.result;
-  if ((await store.getVault()) && !store.unlocked() && !(await unlockVaultUi())) { $("saved-note").textContent = "Saved data is protected; unlock it to save."; return; }
+  if ((await store.getVault()) && !store.unlocked()) {
+    if (quiet) { $("saved-note").textContent = "Not added to the history: saved data is locked."; return; }
+    if (!(await unlockVaultUi())) { $("saved-note").textContent = "Saved data is protected; unlock it to save."; return; }
+  }
   try {
     const snap = await W.makeSnapshot(state.files, { customer: r.customer, asOf: r.as_of, includePersonal: $("personal").checked, savedOn: new Date().toISOString().slice(0, 10) });
     const added = await store.put([snap]);
-    $("saved-note").textContent = added ? `Saved ${snap.as_of} (${snap.id.slice(0, 8)})${snap.personal_excluded ? ", without contacts and commitments" : ""}.` : "This exact snapshot is already saved; nothing changed.";
+    $("saved-note").textContent = added ? `${quiet ? "Added to the history" : "Saved"}: ${snap.customer}, ${snap.as_of} (${snap.id.slice(0, 8)})${snap.personal_excluded ? ", without contacts and commitments" : ""}.` : quiet ? $("saved-note").textContent : "This exact snapshot is already saved; nothing changed.";
     if (navigator.storage && navigator.storage.persist) navigator.storage.persist();
     await refreshHistory();
     renderCompare();
@@ -468,6 +474,7 @@ async function refreshHistory() {
   const has = state.saved.length > 0;
   $("history-empty").hidden = has;
   $("history-body").hidden = !has;
+  $("demo-prev").parentElement.hidden = state.saved.some((s) => s.customer === "Northwind (mock)" && s.as_of === "2026-09-30");
   const tbody = $("hist-table").tBodies[0];
   tbody.replaceChildren();
   for (const s of state.saved) {
@@ -495,17 +502,15 @@ let yieldRun = 0;
 async function computeYields() {
   const mine = ++yieldRun;
   if (!state.engine || !state.engine.version) return;
-  let changed = false;
   for (const s of state.saved) {
     if (mine !== yieldRun) return;
     if (state.yields.has(s.id)) continue;
     try {
       const r = await state.engine.json("summarize", { files: s.files });
       state.yields.set(s.id, r.ok ? r.yield : null);
-      changed = true;
     } catch (e) { if (e.cancelled) return; }
   }
-  if (changed && mine === yieldRun) { fillYields(); drawTrend(); }
+  if (mine === yieldRun) { fillYields(); drawTrend(); }        // also when an interrupted run already filled the cache
 }
 function fillYields() {
   const rows = $("hist-table").tBodies[0].rows;
@@ -600,7 +605,9 @@ $("run").addEventListener("click", () => run());
 $("cancel").addEventListener("click", cancel);
 $("copy").addEventListener("click", copy);
 $("download").addEventListener("click", download);
-$("save").addEventListener("click", saveSnapshot);
+$("save").addEventListener("click", () => saveSnapshot());
+try { $("autosave").checked = localStorage.getItem("b90-autosave") !== "off"; } catch { /* storage blocked: keep the default */ }
+$("autosave").addEventListener("change", () => { try { localStorage.setItem("b90-autosave", $("autosave").checked ? "on" : "off"); } catch { /* ignore */ } });
 $("compare").addEventListener("change", (e) => run(e.target.value));
 $("export").addEventListener("click", exportWorkspace);
 $("import").addEventListener("change", (e) => e.target.files[0] && importWorkspace(e.target.files[0]).then(() => { e.target.value = ""; }));
@@ -732,7 +739,7 @@ async function latestFeed() {
     const r = await fetch("./feed/advisories.json");
     if (!r.ok) return null;
     const d = await r.json();
-    return isDaily(d) && Array.isArray(d.threats) && d.threats.length <= 2000 ? d : null;
+    return isDaily(d) && Array.isArray(d.threats) && d.threats.length > 0 && d.threats.length <= 2000 ? d : null;
   } catch { return null; }
 }
 latestFeed().then((d) => {
@@ -793,7 +800,7 @@ function commands() {
     { label: "Load the book demo (3 customers)", hint: "demo", when: () => !$("demo-book").disabled, run: loadDemoBook },
     { label: "Load the endpoint demo", hint: "demo", when: () => !$("demo-endpoint").disabled, run: loadDemoEndpoint },
     ...SINGLE_TABS.map((t) => go(t.id, t.label)),
-    { label: "Save snapshot in this browser", hint: "action", when: hasResult, run: saveSnapshot },
+    { label: "Save snapshot in this browser", hint: "action", when: hasResult, run: () => saveSnapshot() },
     { label: "Copy a five-line summary for chat", hint: "action", when: hasResult, run: copySummary },
     { label: "Download the current document", hint: "action", when: () => hasResult() && current().kind !== "view", run: download },
     { label: "Download interactions.csv", hint: "action", when: () => !!state.files["interactions.csv"], run: downloadInteractions },

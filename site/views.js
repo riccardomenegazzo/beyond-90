@@ -733,3 +733,57 @@ export function teamsView({ dash }) {
       h("div", { class: "row left" }, h("button", { class: "btn small", type: "button", text: "Copy message", onclick: (e) => copyText(t.message).then((ok) => { e.target.textContent = ok ? "Copied" : "Copy not available"; }) }))),
       { sub: t.contacts.length ? t.contacts.map((c) => c.role ? `${c.name} (${c.role})` : c.name).join(", ") : "No contact on record for this team." }))));
 }
+
+// ------------------------------------------------------------------ executive QBR
+const quarterOf = (iso) => { const [y, m] = iso.split("-").map(Number); const q = Math.floor((m - 1) / 3); const s = `${y}-${String(3 * q + 1).padStart(2, "0")}-01`;
+  const e = new Date(Date.UTC(y, 3 * q + 3, 0)).toISOString().slice(0, 10); return { from: s, to: e, label: `Q${q + 1} ${y}` }; };
+
+/** The review a CISO reads, built when it is needed from everything saved for this customer. */
+export function execQbrView({ score, result, engine, files, saved, advisories, frameHtml }) {
+  const mine = (saved || []).filter((s) => s.customer === score.customer).sort((a, b) => a.as_of.localeCompare(b.as_of));
+  const dates = [...new Set([...mine.map((s) => s.as_of), result.as_of])].sort();
+  const quarters = [...new Map(dates.map((d) => [quarterOf(d).label, quarterOf(d)])).values()].reverse();
+  const preset = h("select", { "aria-label": "Period" }, quarters.map((q) => h("option", { value: q.label, text: q.label })), h("option", { value: "custom", text: "Custom dates" }));
+  const from = h("input", { type: "date", "aria-label": "From", value: quarters[0].from }), to = h("input", { type: "date", "aria-label": "To", value: quarters[0].to });
+  const used = h("p", { class: "note", role: "status" });
+  const out = h("div", {});
+  const showUsed = () => {
+    const before = dates.filter((d) => d < from.value), inside = dates.filter((d) => d >= from.value && d <= to.value);
+    used.textContent = inside.length ? `Compared with ${before.length ? before[before.length - 1] + " (the last snapshot before the period)" : inside[0] + " (the first in the period)"}; ${inside.length} snapshot(s) in the period: ${inside.join(", ")}.`
+      : "No snapshot falls in this period.";
+  };
+  preset.addEventListener("change", () => { const q = quarters.find((x) => x.label === preset.value); if (q) { from.value = q.from; to.value = q.to; } from.disabled = to.disabled = !!q; showUsed(); });
+  from.disabled = to.disabled = true;
+  for (const i of [from, to]) i.addEventListener("change", showUsed);
+  showUsed();
+  const build = h("button", { class: "btn primary", type: "button", text: "Build the executive review" });
+  build.addEventListener("click", async () => {
+    build.disabled = true; out.replaceChildren(h("p", { class: "note", role: "status", text: "Building from the history…" }));
+    try {
+      const r = await engine.json("execqbr", { snapshots: [...mine.map((s) => s.files), files], from: from.value, to: to.value, advisories });
+      if (!r.ok) { out.replaceChildren(h("p", { class: "bad-text", role: "alert", text: r.errors.join(" ") })); return; }
+      const q = r.review, name = `beyond90-executive-review-${q.period.label.replace(/\W+/g, "-")}`;
+      const frame = h("iframe", { class: "qbrframe", title: "Executive review preview", sandbox: "" });
+      frameHtml(frame, r.html);
+      out.replaceChildren(
+        h("div", { class: "card callout good" }, h("h2", { text: `${q.customer}: ${q.period.label}` }), h("ul", {}, q.headline.map((x) => h("li", { text: x + "." }))),
+          h("span", { class: "btnrow" },
+            h("button", { class: "btn small primary", type: "button", text: "Download (.html, prints to PDF)", onclick: () => saveBlob(r.html, name + ".html", "text/html") }),
+            h("button", { class: "btn small", type: "button", text: "Download (.md)", onclick: () => saveBlob(r.markdown, name + ".md", "text/markdown") }),
+            h("button", { class: "btn small", type: "button", text: "Copy as Markdown", onclick: (e) => copyText(r.markdown).then((ok) => { e.target.textContent = ok ? "Copied" : "Copy not available"; }) }))),
+        q.decisions.length ? card("Decisions to ask for", h("ol", {}, q.decisions.map((d) => h("li", { text: d })))) : null,
+        card("Preview", frame, { sub: `Built from ${q.snapshots.length} snapshot(s): ${q.snapshots.join(", ")}. Written for an executive reader: no internal scores or stage names.` }));
+    } catch (e) { if (!e.cancelled) out.replaceChildren(h("p", { class: "bad-text", role: "alert", text: "Could not build it: " + e.message })); }
+    finally { build.disabled = false; }
+  });
+  const timeline = h("ol", { class: "snaptl", "aria-label": "Saved snapshots" }, dates.map((d) => h("li", {}, h("span", { class: "dot" }), h("b", { text: d }), h("small", { text: mine.some((s) => s.as_of === d) ? "saved" : "this analysis, not saved" }))));
+  return h("div", {},
+    card(`History of ${score.customer}`, h("div", {}, timeline,
+      h("p", { class: "note", text: mine.length ? `${mine.length} saved snapshot(s) in this browser. Every analysis is added automatically (step 1, "Keep every analysis in the customer's history"); export the workspace to keep it elsewhere.` : "Nothing saved yet for this customer: this analysis will be the only point. Turn on “Keep every analysis” in step 1 and each run adds to the history." })),
+      { sub: "Contacts, commitments and interactions are saved only if you choose so; the review takes them from the latest analysis." }),
+    card("Build a review", h("div", {},
+      h("div", { class: "formgrid" }, h("label", {}, "Period", preset), h("label", {}, "From", from), h("label", {}, "To", to)),
+      used, h("div", { class: "row left" }, build)),
+      { sub: "One page per section when printed: where they stand, what the quarter delivered, working together, exposure today, next quarter and the decisions you need." }),
+    out);
+}

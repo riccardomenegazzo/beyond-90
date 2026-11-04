@@ -483,6 +483,19 @@ def cmd_feeds(args) -> int:
     return 0
 
 
+def cmd_exec_qbr(args) -> int:
+    from datetime import date as _date
+
+    from . import execqbr
+    from .radar import load_threats
+    cat = Catalogue.for_directory(args.snapshots[0])
+    datas = [load_customer(d, cat, require_accounts=True)[0] for d in args.snapshots]
+    threats = load_threats(args.threats, cat) if args.threats else None
+    q = execqbr.build(datas, cat, start=_date.fromisoformat(args.from_) if args.from_ else None, end=_date.fromisoformat(args.to) if args.to else None, threats=threats)
+    _emit(json.dumps(q, indent=2) if args.format == "json" else execqbr.render_html(q) if args.format == "html" else execqbr.render_markdown(q), args.out)
+    return 0
+
+
 def cmd_history(args) -> int:
     store = Store(args.store)
     rows = store.history(args.customer)
@@ -844,6 +857,15 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--out")
     sp.set_defaults(func=cmd_feeds)
 
+    sp = sub.add_parser("exec-qbr", help="an executive review (for a CISO) of one customer over a period, from its saved snapshots")
+    sp.add_argument("snapshots", nargs="+", help="data directories of the same customer, one per snapshot, in any order")
+    sp.add_argument("--from", dest="from_", help="first day of the period (default: the quarter of the latest snapshot)")
+    sp.add_argument("--to", help="last day of the period")
+    sp.add_argument("--threats", help="an advisory feed, to show the threats that touched the customer")
+    sp.add_argument("--format", choices=["html", "markdown", "json"], default="html")
+    sp.add_argument("--out")
+    sp.set_defaults(func=cmd_exec_qbr)
+
     sp = sub.add_parser("history", help="show stored snapshots for a customer")
     sp.add_argument("customer", help="customer name as in customer.toml")
     sp.add_argument("--store", required=True)
@@ -885,7 +907,7 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("config")
     sp.add_argument("--at", default="05:17", help="time of day in UTC, HH:MM")
     sp.add_argument("--every", choices=["hour", "day", "week"], default="day")
-    sp.add_argument("--install-from", default="beyond90", help='pip requirement for the workflow, e.g. "beyond90 @ git+https://github.com/OWNER/beyond-90@v0.20.0"')
+    sp.add_argument("--install-from", default="beyond90", help='pip requirement for the workflow, e.g. "beyond90 @ git+https://github.com/OWNER/beyond-90@v0.21.0"')
     sp.add_argument("--out")
     sp.set_defaults(func=cmd_schedule)
 

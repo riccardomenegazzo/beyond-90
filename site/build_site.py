@@ -54,11 +54,14 @@ def build(out: Path, pyodide: Path, feed: Optional[Path] = None) -> None:
     ep = {p.name: p.read_text(encoding="utf-8") for p in sorted(DEMO_ENDPOINT.iterdir()) if p.suffix in (".csv", ".toml")}
     (out / "demo-endpoint.json").write_text(json.dumps(ep, ensure_ascii=False), encoding="utf-8")
     shutil.copy(ROOT / "examples" / "threats.json", out / "demo-advisories.json")
+    # Always a feed file, so the page never asks for one that is missing; an empty one when none was collected.
+    doc = {"schema": "beyond90-feed/1", "as_of": "", "window_days": 0, "sources": [], "threats": [], "general": [], "note": "No feed was collected for this build."}
     if feed is not None and feed.is_file():
-        doc = json.loads(feed.read_text(encoding="utf-8"))          # parsed and written again: only JSON reaches the site
-        if doc.get("schema") == "beyond90-feed/1" and isinstance(doc.get("threats"), list):
-            (out / "feed").mkdir(exist_ok=True)
-            (out / "feed" / "advisories.json").write_text(json.dumps(doc, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+        got = json.loads(feed.read_text(encoding="utf-8"))          # parsed and written again: only JSON reaches the site
+        if got.get("schema") == "beyond90-feed/1" and isinstance(got.get("threats"), list):
+            doc = got
+    (out / "feed").mkdir(exist_ok=True)
+    (out / "feed" / "advisories.json").write_text(json.dumps(doc, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     shutil.copy(ROOT / "THIRD_PARTY.md", out / "THIRD_PARTY.md")
     shutil.copy(ROOT / "LICENSE", out / "LICENSE.txt")
     write_service_worker(out)

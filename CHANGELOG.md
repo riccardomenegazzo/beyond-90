@@ -2,6 +2,14 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.21.0
+
+The customer's history, and the executive QBR built from it.
+
+- **A history that keeps itself.** Every analysis of a customer is added to its history in the browser (on by default, one switch to turn it off). Input files only, the same data once, contacts and interactions only if you choose, sealed with the passphrase when one is set. The demo's earlier snapshot can be added at any time.
+- **Executive QBR on demand.** Pick a quarter or custom dates: the period is compared with the last snapshot before it, and the review is written for a CISO: effective coverage and its four parts (connected, visible, protected, handled) with the trend, what the quarter delivered, the work done together, exposure today and the threats that touched the customer, what happens if nothing is done, next quarter's priorities and the decisions needed. No internal score or stage names. Preview in a sandbox, download as HTML (prints one page per section) or Markdown. Also `beyond90 exec-qbr DIR...`.
+- The history's trend chart is redrawn reliably after an interrupted refresh.
+
 ## 0.20.0
 
 Always aligned on cloud security news.

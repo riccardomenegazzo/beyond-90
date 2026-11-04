@@ -28,6 +28,7 @@ const ops = {
   plan: (a) => call("w.plan_json(_a, _b)", JSON.stringify(a.files), JSON.stringify(a.options || {})),
   summarize: (a) => call("w.summarize_json(_a)", JSON.stringify(a.files)),
   fingerprint: (a) => call("w.fingerprint_json(_a)", JSON.stringify(a.files)),
+  execqbr: (a) => call("w.exec_qbr_json(_a)", JSON.stringify({ snapshots: a.snapshots || [], from: a.from || "", to: a.to || "", advisories: a.advisories || null })),
   probe: async () => {
     // Try to send something to another origin. A working policy blocks it, and says so.
     const before = violations.length;

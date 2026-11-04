@@ -360,3 +360,39 @@ def summarize_json(files_json: str) -> str:
 
 def fingerprint_json(files_json: str) -> str:
     return fingerprint_files(json.loads(files_json))
+
+
+def exec_qbr_files(snapshots: list[Mapping[str, str]], start: str = "", end: str = "", advisories: Any = None) -> dict[str, Any]:
+    """The executive review of one customer from its saved snapshots (each a mapping of file name to text)."""
+    from datetime import date as _date
+
+    from . import execqbr
+    if not snapshots:
+        return {"ok": False, "errors": ["No saved snapshot for this customer yet: run and save an analysis first."], "version": __version__}
+    if len(snapshots) > 200:
+        return {"ok": False, "errors": ["At most 200 snapshots per review."], "version": __version__}
+    with tempfile.TemporaryDirectory() as tmp:
+        datas, cat = [], None
+        try:
+            for i, files in enumerate(snapshots):
+                root = Path(tmp) / f"s{i}"
+                root.mkdir()
+                _write(root, files)
+                c = Catalogue.for_directory(root)
+                if cat is not None and c.profile != cat.profile:
+                    return {"ok": False, "errors": ["The snapshots use different catalogues."], "version": __version__}
+                cat = c
+                datas.append(load_customer(root, c, require_accounts=True)[0])
+            assert cat is not None
+            threats = parse_threats(advisories, cat, "the advisories", []) if advisories else []
+            q = execqbr.build(datas, cat, start=_date.fromisoformat(start) if start else None, end=_date.fromisoformat(end) if end else None, threats=threats)
+        except DataError as e:
+            return {"ok": False, "errors": [m.replace(tmp + "/", "") for m in e.errors], "version": __version__}
+        except ValueError as e:
+            return {"ok": False, "errors": [str(e).replace(tmp + "/", "")], "version": __version__}
+    return {"ok": True, "version": __version__, "review": q, "markdown": execqbr.render_markdown(q), "html": execqbr.render_html(q)}
+
+
+def exec_qbr_json(args_json: str) -> str:
+    a = json.loads(args_json)
+    return json.dumps(exec_qbr_files(a.get("snapshots") or [], str(a.get("from") or ""), str(a.get("to") or ""), a.get("advisories")), ensure_ascii=False)

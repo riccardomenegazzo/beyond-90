@@ -102,6 +102,7 @@
       <label class="inline">Explain what changed since
         <select id="compare"><option value="">nothing (no comparison)</option></select>
       </label>
+      <label class="inline check"><input type="checkbox" id="autosave" checked> Keep every analysis in the customer's history</label>
       <label class="inline check"><input type="checkbox" id="personal"> Keep contacts and commitments when I save</label>
       <button class="btn" id="save" type="button">Save snapshot in this browser</button>
     </div>
@@ -124,9 +125,9 @@
     <h2 id="hist">Saved in this browser</h2>
     <p class="note first">Only your input files are kept, on this device, never results (those are recomputed, so they can never disagree with the data). Contacts and commitments are left out unless you tick the box. Nothing is synced anywhere: to move work between devices, export and import. Importing merges, and importing the same file twice changes nothing.</p>
     <div id="history-empty" class="empty" hidden>
-      <p>Nothing saved yet. Run an analysis and press <strong>Save snapshot</strong>, or add the demo's earlier quarter to see a comparison.</p>
-      <button class="btn" id="demo-prev" type="button">Add the demo's September snapshot</button>
+      <p>Nothing saved yet. Every analysis you run is added here (you can turn that off in step 1), and an executive review can be built from it at any time.</p>
     </div>
+    <p class="row left"><button class="btn" id="demo-prev" type="button">Add the demo's September snapshot</button></p>
     <div id="history-body" hidden>
       <div id="trend"></div>
       <table class="hist" id="hist-table"><thead><tr><th>Customer</th><th>As of</th><th class="n">Yield</th><th>Snapshot</th><th><span class="sr">Actions</span></th></tr></thead><tbody></tbody></table>

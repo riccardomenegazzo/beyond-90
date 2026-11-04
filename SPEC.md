@@ -1,4 +1,4 @@
-# Beyond 90: specification v0.20
+# Beyond 90: specification v0.21
 
 An adoption engine for Technical Account Managers. It measures how much of a customer's cloud estate is really covered and operated through a security platform, and turns every gap into an action. The bar keeps moving: when a customer grows or the product ships something, the denominators grow with it.
 
@@ -194,6 +194,10 @@ Input: text files are decoded as UTF-8 (with or without a byte-order mark) or UT
 
 In the book, each story is matched to every customer (the threat radar) and ranked by KEV, customers with uncovered accounts, severity and ARR at stake. The customer briefing lists at most five stories touching the customer, KEV and uncovered first, without scores. Automated runs alert once per KEV or critical story with uncovered accounts. See `docs/news.md`.
 
+## 15t. History and the executive QBR (0.21)
+
+Each single-customer analysis is saved as a snapshot (input files only, content-addressed, personal files excluded unless chosen) unless the user turns it off. `build(snapshots, start, end)` keeps one snapshot per date (the later save wins), defaults to the quarter of the latest snapshot, takes as baseline the last snapshot before `start` (else the first inside), and as final the last inside. It reports a series of points (coverage, weighted coverage, the four parts, critical findings open and internet-exposed, accounts connected) for the baseline and every snapshot inside; the value receipt between baseline and final; interactions and commitments of the final snapshot within the period; exposure, the outlook in plain words, the threats touching the final estate; four priorities ranked by effect per hour; and at most four decisions (unconnected spend of 5% or more, critical findings without an owner, the two largest onboarding waves, slipped commitments). The rendering uses no internal stage names, maturity labels or Yield. See `docs/exec-qbr.md`.
+
 ## 16. Positioning against the platform's own views
 
 Security platforms commonly ship their own adoption or maturity views and an ownership model. Beyond 90 does not replace them: it measures what a platform cannot see about itself (the true universe of units to cover, across a whole portfolio) and reads ownership and decisions rather than rebuilding routing. The research behind this, including a case study of one vendor, is in `docs/research/`.
@@ -224,8 +228,9 @@ Security platforms commonly ship their own adoption or maturity views and an own
 16. 0.17: read-only check commands per cause, onboarding progress and forecast, a status page for the customer.
 17. 0.18: the outlook if nothing is done, and coverage weighted by what is at stake.
 18. 0.19: the value receipt, team digests and the recap after the call.
-19. 0.20 (this): the daily cloud security news, merged, ranked and matched to every customer.
-20. 1.0: connector interface and a first verified connector against a real tenant; criticality weighting; readiness checklist import; per-finding ownership sources.
+19. 0.20: the daily cloud security news, merged, ranked and matched to every customer.
+20. 0.21 (this): the customer's history kept automatically, and an executive QBR built from it on demand.
+21. 1.0: connector interface and a first verified connector against a real tenant; criticality weighting; readiness checklist import; per-finding ownership sources.
 
 ## References
 
