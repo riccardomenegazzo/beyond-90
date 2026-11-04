@@ -47,7 +47,7 @@ One caveat: about 6 account(s) are probably known to no source at all; if they a
    - Fix accepted risks with no or expired review date (6): 6 finding(s) past the 7-day triage window are accepted risks with no expiry.
 2. **Accounts outside the platform.** 9 open action(s), worth about 8.0 points.
    - Connect 3 account(s) owned by bu-retail: 3 account(s) not connected, last spend 10,871: aws-043, aws-065, aws-039.
-   - Connect 3 account(s) owned by platform: 3 account(s) not connected, last spend 14,685: azure-029, azure-009, aws-035.
+   - Connect 3 account(s) owned by platform: 3 account(s) not connected, last spend 33,514: aws-035, azure-029, azure-009.
    - Connect 1 account(s) owned by data: 1 account(s) not connected, last spend 5,532: azure-016.
 3. **Controls that are not switched on.** 9 open action(s), worth about 5.7 points.
    - Adopt Workflow and remediation automation on 31 account(s): Workflow and remediation automation (since 2026.3) is relevant on 109 account(s) and inactive on 31: aws-001, aws-005, aws-009, aws-020, aws-021, aws-022, aws-026, aws-028 (+23 more).

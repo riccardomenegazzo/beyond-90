@@ -41,9 +41,29 @@ export function overview({ result, dash, score, go }) {
     h("div", { class: "col2" },
       card("Where Yield is lost", waterfall(st), { sub: `Yield = ${Object.keys(st).join(" × ")}. Each stage is measured against its own denominator of ${unit}.` }),
       card("Needs attention", flags.length ? h("ul", { class: "flags" }, flags.map((f) => h("li", { class: f.kind }, h("b", { text: f.title }), h("span", { text: f.text }), f.go ? h("button", { class: "link", type: "button", text: f.cta || "Open", onclick: () => go(f.go) }) : null))) : h("p", { class: "note", text: "Nothing stands out." }))),
+    stakeAndDecay({ dash, go }),
     h("div", { class: "col2" },
       card("Biggest opportunities", opp, { sub: "Ranked by points of Yield per hour of work. Effects interact; the plan accounts for that.", actions: h("button", { class: "btn small", type: "button", text: "All actions", onclick: () => go("actions") }) }),
       card("If you follow the plan", planChart, { sub: `${p.hours_per_week} h a week for ${p.horizon_weeks} weeks at ${Math.round(p.realization * 100)}% realization: ` + (p.milestones["90%"] != null ? `90% in week ${p.milestones["90%"]}.` : "90% is not reached in this horizon."), actions: h("button", { class: "btn small", type: "button", text: "What-if", onclick: () => go("planview") }) })));
+}
+
+function stakeAndDecay({ dash, go }) {
+  const o = dash.outlook, st = dash.stake;
+  if (!o || !st) return null;
+  const rows = ["L1", "L2", "L3", "L4"].map((k) => h("li", {}, h("span", { class: "rl", text: `${k} ${STAGE_NAME[k]}` }),
+    h("span", { class: "rb two" }, h("i", { class: "cnt", style: `width:${st.count[k] * 100}%` }), h("i", { class: "wgt", style: `width:${st.stages[k] * 100}%` })),
+    h("span", { class: "rn", text: `${pct(st.count[k], 0)} → ${pct(st.stages[k], 0)}` })));
+  const first = o.events.find((e) => (e.points || 0) < 0);
+  return h("div", { class: "col2" },
+    card("Weighted by what is at stake", h("div", {},
+      h("div", { class: "kpiline" }, stat(pct(st.yield), "Yield, by count"), stat(pct(st.value), "Yield, by spend and exposure", st.value < st.yield - 0.02 ? "bad" : st.value > st.yield + 0.02 ? "good" : "")),
+      st.say.length ? h("p", { class: "bad-text", text: st.say[0] }) : h("p", { class: "note first", text: "Counting and weighting agree: the gaps are where the stake is, not more or less." }),
+      h("ul", { class: "rates wide" }, rows), h("p", { class: "legendline note" }, h("i", { class: "sw cnt" }), " by count ", h("i", { class: "sw wgt" }), " by stake")),
+      { sub: `Accounts weigh their ${st.weights.accounts}; findings weigh ${st.weights.findings}.` }),
+    card("If nothing is done", h("div", {},
+      h("div", { class: "kpiline" }, stat(`${o.loss_points.toFixed(1)} pts`, `in ${o.horizon_days} days`, o.loss_points < -1 ? "bad" : ""), first ? stat(first.date, "first drop", "warn") : null, stat(String(o.events.length), "dated events")),
+      lineChart({ series: [{ label: "If nothing is done", points: o.curve.map((c) => [c.day, c.yield]), color: "var(--neg)" }], xLabel: "days", H: 170, yMax: Math.min(1, o.curve[0].yield + 0.05) })),
+      { sub: "Scored on future dates with only what the data already dates: secrets, acceptances, triage windows.", actions: h("button", { class: "btn small", type: "button", text: "Outlook", onclick: () => go("outlook") }) }));
 }
 
 function attention({ result, dash, score }) {
@@ -541,12 +561,46 @@ export function bookOnboardView({ book }) {
     { key: "stalled", label: "Stuck > 1 week", num: true },
     { key: "secrets", label: "Secrets expiring", num: true },
     { key: "security", label: "Security notes", num: true },
+    { key: "loss_points_90d", label: "90 days, if idle", num: true, render: (c) => h("span", { class: c.loss_points_90d < -2 ? "bad-text" : "", text: `${c.loss_points_90d.toFixed(1)} pts` }) },
     { key: "top", label: "Unblock first", sort: (c) => (c.top_wave ? -c.top_wave.per_hour : 0), render: (c) => (c.top_wave ? h("span", {}, c.top_wave.title, h("small", { class: "block", text: `${c.top_wave.count} · ${c.top_wave.owner}` })) : h("span", { class: "dim", text: "nothing blocked" })) },
   ];
   return h("div", {},
     card("Onboarding across the book", dataTable({ columns: cols, rows, label: "Onboarding by customer", pageSize: 100 }).el, { sub: "Healthy counts connectors that actually work; Counted is what L1 believes. A gap between them is a connector that broke after it was counted." }),
     card("Causes more than one customer shares", ob.shared.length ? h("ul", { class: "checks" }, ob.shared.map((x) => h("li", {}, chip(`${x.customers.length} customers`, "warn"), h("span", {}, h("b", { text: x.title }), h("small", { class: "block", text: `${x.accounts} accounts: ${x.customers.join(", ")}` }))))) : h("p", { class: "note", text: "No cause is shared." }),
       { sub: "Write the fix once, as a short guide or a template, and use it everywhere." }));
+}
+
+// ------------------------------------------------------------------ outlook: if nothing is done
+const EVENT_LABEL = { secret_expiry: "secret expires", acceptance_expiry: "acceptance expires", triage_entry: "enters triage", sla_critical: "critical deadline", sla_high: "high deadline",
+  commitment: "our promise due", cadence: "touch due", renewal: "renewal" };
+const EVENT_KIND = { secret_expiry: "bad", acceptance_expiry: "warn", triage_entry: "warn", sla_critical: "bad", sla_high: "warn", commitment: "warn", cadence: "", renewal: "bad" };
+
+export function outlookView({ dash, result }) {
+  const o = dash.outlook;
+  const curve = lineChart({ series: [{ label: "If nothing is done", points: o.curve.map((c) => [c.day, c.yield]), color: "var(--neg)" }], marks: [{ y: o.curve[0].yield, label: "today" }], xLabel: "days from now", yMax: Math.min(1, o.curve[0].yield + 0.05) });
+  let who = new Set(), kinds = new Set();
+  const rows = o.events.map((e, i) => ({ ...e, id: String(i) }));
+  const t = dataTable({ label: "Dated events", rows, pageSize: 40, empty: "Nothing is dated in this window.", columns: [
+    { key: "date", label: "Date" },
+    { key: "kind", label: "What", render: (e) => chip(EVENT_LABEL[e.kind] || e.kind, EVENT_KIND[e.kind] || "") },
+    { key: "text", label: "Detail", render: (e) => h("span", {}, e.text, e.refs.length ? h("small", { class: "block dim", text: e.refs.slice(0, 8).join(", ") + (e.refs.length > 8 ? ` +${e.refs.length - 8}` : "") }) : null) },
+    { key: "points", label: "Effect", num: true, sort: (e) => e.points || 0, render: (e) => (e.points ? h("span", { class: e.points < 0 ? "bad-text" : "", text: `${e.points > 0 ? "+" : ""}${e.points.toFixed(1)} pts` }) : h("span", { class: "dim", text: "—" })) },
+    { key: "who", label: "Whose move", render: (e) => ({ customer: "theirs", us: "ours", both: "both" })[e.who] || e.who },
+  ] });
+  const apply = () => t.setFilter((e) => (!who.size || who.has(e.who)) && (!kinds.size || kinds.has(e.kind)));
+  const present = [...new Set(rows.map((e) => e.kind))];
+  const lvl = o.curve.filter((c) => c.level);
+  return h("div", {},
+    h("div", { class: "card callout " + (o.loss_points <= -2 ? "bad" : o.loss_points < 0 ? "" : "good") }, h("h2", { text: o.loss_points < 0 ? `Waiting costs ${Math.abs(o.loss_points).toFixed(1)} points in ${o.horizon_days} days` : "Nothing already dated lowers the score" }), h("p", { text: o.summary })),
+    h("div", { class: "col2" }, card("Yield if nothing is done", curve, { sub: o.note + (lvl.length ? " Level: " + lvl.map((c) => `day ${c.day} ${c.level}`).join(", ") + "." : "") }),
+      card("The first things to break", h("ul", { class: "checks" }, o.events.filter((e) => (e.points || 0) < 0 || e.kind === "sla_critical" || e.kind === "secret_expiry").slice(0, 6).map((e) => h("li", {}, chip(e.date, EVENT_KIND[e.kind] || ""), h("span", {}, h("b", { text: EVENT_LABEL[e.kind] || e.kind }), h("small", { class: "block", text: e.text + (e.points ? ` ${e.points.toFixed(1)} pts.` : "") }))))),
+        { sub: "Each one has a date, so each one can be prevented." })),
+    card("Every dated event in the next " + o.horizon_days + " days", h("div", {},
+      h("div", { class: "toolbar" }, chipFilter("Whose move", [{ label: "theirs", value: "customer" }, { label: "ours", value: "us" }, { label: "both", value: "both" }], (v) => { who = v; apply(); }),
+        chipFilter("What", present.map((k) => ({ label: EVENT_LABEL[k] || k, value: k })), (v) => { kinds = v; apply(); }),
+        h("button", { class: "btn small primary", type: "button", text: "Add to calendar (.ics)", onclick: () => saveBlob(result.outlook_ics, `beyond90-outlook-${result.as_of}.ics`, "text/calendar") }),
+        csvButton("beyond90-outlook.csv", [{ key: "date", label: "date" }, { key: "kind", label: "kind" }, { key: "text", label: "detail" }, { key: "points", label: "points" }, { key: "who", label: "whose_move" }], () => t.rows())),
+      t.el), { sub: "The effect is exact: the estate is scored the day before and the day of each event, with nothing else changed." }));
 }
 
 // ------------------------------------------------------------------ changes

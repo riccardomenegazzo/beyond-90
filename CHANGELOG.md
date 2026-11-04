@@ -2,6 +2,15 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.18.0
+
+Two questions most tools leave to intuition.
+
+- **If nothing is done.** The estate is scored again on future dates with only what the data already dates: secrets that expire, accepted risks that reach their review date, unowned findings that age into the triage window, deadlines, promises, the cadence, the renewal. Every event has a date, whose move it is, and, where the score moves, its exact effect in points (the day before against the day itself). A 90-day curve, the level at 30, 60 and 90 days, one sentence for the call, a CSV and a calendar file. It invents nothing: it is the floor of what waiting costs.
+- **Weighted by what is at stake.** Yield again, with accounts weighted by spend and findings by severity and exposure, next to the count. In the demo, 90% of accounts but 79% of spend are connected: the production accounts held back are few and expensive.
+- Both reach the overview, the call brief ("What breaks if we wait", "Where the gap matters"), the week plan (points lost within seven days), the book (90 days if idle, per customer) and the customer's status page ("Coming up if nothing changes").
+- The demo's held-back production accounts now carry production-sized spend; nothing else in the examples changes.
+
 ## 0.17.0
 
 Onboarding, for the call with the customer.

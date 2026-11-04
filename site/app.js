@@ -298,6 +298,7 @@ const SINGLE_TABS = [
   { id: "overview", label: "Overview", kind: "view", view: "overview", icon: "overview", group: "Customer" },
   { id: "prep", label: "Prep a call", kind: "view", view: "prepView", icon: "prep" },
   { id: "onboarding", label: "Onboarding", kind: "view", view: "onboardingView", icon: "onboarding" },
+  { id: "outlook", label: "If nothing is done", kind: "view", view: "outlookView", icon: "outlook" },
   { id: "actions", label: "Actions", kind: "view", view: "actionsView", icon: "actions" },
   { id: "accounts", label: "Accounts", kind: "view", view: "accountsView", icon: "accounts" },
   { id: "findings", label: "Findings", kind: "view", view: "findingsView", icon: "findings" },

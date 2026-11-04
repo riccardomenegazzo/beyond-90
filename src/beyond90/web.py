@@ -13,7 +13,7 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Any, Optional
 
-from . import __version__, dashboard, onboarding, rhythm
+from . import __version__, dashboard, onboarding, outlook, rhythm, stake
 from .attribution import explain
 from .book import build_book_plan, render_book_html, render_book_markdown
 from .candor import candor_items
@@ -81,10 +81,12 @@ def analyze(
     exposures = rhythm.customer_exposures(data, threats, cat)
     expansion = rhythm.expansion_signals(data, score, actions, exposures)
     onb = onboarding.diagnose(data)
+    look = outlook.outlook(data, cat)
+    weighted = stake.weighted(data, score, cat)
     if old is not None:
         onb["delta"] = onboarding.delta(onboarding.diagnose(old), onb, old.as_of, data.as_of)
-    status = onboarding.customer_status(onb, score.customer, str(score.as_of), cat.terms["units"], onb.get("delta"))
-    prep = rhythm.build_prep(data, score, actions, {**extras, "onboarding": onb}, exposures, expansion)
+    status = onboarding.customer_status(onb, score.customer, str(score.as_of), cat.terms["units"], onb.get("delta"), coming=[e for e in look["events"] if e["who"] == "customer"])
+    prep = rhythm.build_prep(data, score, actions, {**extras, "onboarding": onb, "outlook": look, "stake": weighted}, exposures, expansion)
     rh = {"touch": prep["touch"], "prep": prep, "prep_markdown": rhythm.render_prep_markdown(prep), "exposures": exposures, "expansion": expansion}
     summary = score.to_dict()
     return {
@@ -106,7 +108,8 @@ def analyze(
         "onboarding_markdown": onboarding.render_markdown(onb, score.customer, cat.terms["units"]),
         "onboarding_status_markdown": status["markdown"],
         "onboarding_status_html": status["html"],
-        "dashboard": dashboard.build(data, score, cat, plan, {**extras, "rhythm": rh, "onboarding": onb}, actions),
+        "outlook_ics": outlook.ics(look["events"], score.customer),
+        "dashboard": dashboard.build(data, score, cat, plan, {**extras, "rhythm": rh, "onboarding": onb, "outlook": look, "stake": weighted}, actions),
         "report_html": render_html(score, actions, None, previous, **extras),
         "report_markdown": render_markdown(score, actions, None, previous, **extras),
         "qbr_markdown": render_qbr(score, actions, previous, quarter, **extras),
@@ -255,9 +258,12 @@ def analyze_book(
             onb_summary[keys[n]] = {"name": n, "complete": next(f["reached"] for f in onb["funnel"] if f["stage"] == "complete"), "total": len([a for a in d.accounts if a.status == "active"]),
                                     "healthy_l1": onb["healthy_l1"], "listed_l1": onb["listed_l1"], "stalled": len(onb["stalled"]), "causes": onb["causes"], "secrets": len(onb["secrets"]),
                                     "security": len(onb["security"]), "top_wave": onb["waves"][0] if onb["waves"] else None}
-            prep = rhythm.build_prep(d, ent.score, ent.actions, {"renewal": ren, "onboarding": onb}, expo, exp)
+            look = outlook.outlook(d, cat)
+            onb_summary[keys[n]]["loss_points_90d"] = look["loss_points"]
+            onb_summary[keys[n]]["first_drop"] = look["first_drop"]
+            prep = rhythm.build_prep(d, ent.score, ent.actions, {"renewal": ren, "onboarding": onb, "outlook": look, "stake": stake.weighted(d, ent.score, cat)}, expo, exp)
             preps[keys[n]] = {"markdown": rhythm.render_prep_markdown(prep), "prep": prep, "exposures": expo, "expansion": exp}
-            week_rows.append({"key": keys[n], "name": n, "data": d, "score": ent.score, "renewal": ren, "exposures": expo, "expansion": exp, "onboarding": onb})
+            week_rows.append({"key": keys[n], "name": n, "data": d, "score": ent.score, "renewal": ren, "exposures": expo, "expansion": exp, "onboarding": onb, "outlook": look})
         week = rhythm.week_plan(week_rows, week_hours)
         as_of = max(d.as_of for _, d in customers).isoformat()
         return {

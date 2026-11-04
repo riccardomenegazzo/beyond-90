@@ -277,6 +277,11 @@ def build(name: str, p: dict) -> None:
         if k < p["recent_unconnected"]:
             a["created"] = AS_OF - timedelta(days=rng.randint(3, 25))
             a["owner"] = "bu-retail" if name == "northwind" else a["owner"]
+    # The accounts left out are often production ones, held back by a change freeze: few, but expensive.
+    held_back = {"northwind": 4, "fabrikam-labs": 2}.get(name, 0)
+    big = random.Random(p["seed"] + 7)                    # a separate stream, so the rest of the example does not change
+    for a in sorted((x for x in accounts if not x["connected"] and x["in_plan"]), key=lambda x: x["id"])[:held_back]:
+        a["spend"] = round(big.uniform(18000, 34000), 0)
     accounts.sort(key=lambda a: a["id"])
     write_csv(
         out / "accounts.csv",

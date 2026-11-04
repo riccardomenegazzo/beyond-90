@@ -1,6 +1,6 @@
 id,provider,sources,connected,owner,last_spend,status,in_plan,created_at
-aws-001,aws,billing;plan,false,data,1375,active,true,2026-03-28
-aws-002,aws,billing;org;plan,false,data,1798,active,true,2025-06-12
+aws-001,aws,billing;plan,false,data,19807,active,true,2026-03-28
+aws-002,aws,billing;org;plan,false,data,20094,active,true,2025-06-12
 aws-003,aws,org;plan,true,retail-it,3702,active,true,2024-11-30
 aws-004,aws,billing;org;plan,true,security,2463,active,true,2025-05-14
 aws-005,aws,billing;org;plan,true,security,1027,active,true,2026-06-08

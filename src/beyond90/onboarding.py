@@ -457,7 +457,8 @@ def delta(old: dict[str, Any], new: dict[str, Any], old_as_of: date, new_as_of: 
 VENDOR_SIDE = {"vendor support"}
 
 
-def customer_status(d: dict[str, Any], customer: str, as_of: str, units: str = "accounts", change: Optional[dict[str, Any]] = None) -> dict[str, str]:
+def customer_status(d: dict[str, Any], customer: str, as_of: str, units: str = "accounts", change: Optional[dict[str, Any]] = None,
+                    coming: Optional[list[dict[str, Any]]] = None) -> dict[str, str]:
     """An onboarding status the customer can read: what is done, what waits on whom, what to run to check. No internal scoring."""
     f = {x["stage"]: x["reached"] for x in d["funnel"]}
     total, done = f["discovered"], f["complete"]
@@ -481,16 +482,20 @@ def customer_status(d: dict[str, Any], customer: str, as_of: str, units: str = "
             md += ["", "To check (read-only):", "", "```"] + w["checks"] + ["```"]
         md += ["", f"Done when: {w['verify']}", ""]
     md += ["## On our side", ""] + ([f"- {w['title']} ({w['count']} {units}): we are following up with support." for w in ours] or ["Nothing open."])
+    soon = [e for e in (coming or []) if e["kind"] in ("secret_expiry", "acceptance_expiry", "sla_critical")][:8]
+    if soon:
+        md += ["", "## Coming up if nothing changes", ""] + [f"- {e['date']}: {e['text']}" for e in soon]
     if d["secrets"]:
         md += ["", "## Credentials to rotate", ""] + [f"- {s['connector']}: {'expired on' if s['state'] == 'expired' else 'expires on'} {s['expires_on']}." for s in d["secrets"]]
     if d["security"]:
         md += ["", "## Recommendations for the connectors", ""] + [f"- {x['connector']}: {x['title'].lower()}. {x['fix']}" for x in d["security"]]
     md += ["", "Prepared with Beyond 90 from the connector list. Check each step against your vendor's documentation."]
     text = "\n".join(md) + "\n"
-    return {"markdown": text, "html": _html(customer, as_of, done, total, units, change, theirs, ours, d)}
+    return {"markdown": text, "html": _html(customer, as_of, done, total, units, change, theirs, ours, d, soon)}
 
 
-def _html(customer: str, as_of: str, done: int, total: int, units: str, change: Optional[dict[str, Any]], theirs: list[dict[str, Any]], ours: list[dict[str, Any]], d: dict[str, Any]) -> str:
+def _html(customer: str, as_of: str, done: int, total: int, units: str, change: Optional[dict[str, Any]], theirs: list[dict[str, Any]], ours: list[dict[str, Any]], d: dict[str, Any],
+          soon: Optional[list[dict[str, Any]]] = None) -> str:
     from html import escape as e
     pct = round(100 * done / total) if total else 100
     parts = [f"<h1>Onboarding status: {e(customer)}</h1><p class=m>As of {e(as_of)}</p>",
@@ -509,6 +514,8 @@ def _html(customer: str, as_of: str, done: int, total: int, units: str, change: 
         parts.append(f"<section><h3>{e(w['title'])}</h3><p class=m>{e(w['owner'])} · {w['count']} {e(units)}{' · one change fixes all' if w['once'] else ''}</p><p>{e(w['why'])}</p><ol>"
                      + "".join(f"<li>{e(s)}</li>" for s in w["steps"]) + f"</ol>{checks}<p><b>Done when:</b> {e(w['verify'])}</p><p class=m>{e(', '.join(w['accounts']))}</p></section>")
     parts.append("<h2>On our side</h2>" + ("<ul>" + "".join(f"<li>{e(w['title'])} ({w['count']}): we are following up with support.</li>" for w in ours) + "</ul>" if ours else "<p>Nothing open.</p>"))
+    if soon:
+        parts.append("<h2>Coming up if nothing changes</h2><ul>" + "".join(f"<li>{e(x['date'])}: {e(x['text'])}</li>" for x in soon) + "</ul>")
     if d["secrets"]:
         parts.append("<h2>Credentials to rotate</h2><ul>" + "".join(f"<li>{e(s['connector'])}: {'expired on' if s['state'] == 'expired' else 'expires on'} {e(s['expires_on'])}</li>" for s in d["secrets"]) + "</ul>")
     if d["security"]:

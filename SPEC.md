@@ -1,4 +1,4 @@
-# Beyond 90: specification v0.17
+# Beyond 90: specification v0.18
 
 An adoption engine for Technical Account Managers. It measures how much of a customer's cloud estate is really covered and operated through a security platform, and turns every gap into an action. The bar keeps moving: when a customer grows or the product ships something, the denominators grow with it.
 
@@ -176,6 +176,12 @@ Input: text files are decoded as UTF-8 (with or without a byte-order mark) or UT
 
 `connectors.csv` (optional) lists connectors with kind, status, the platform's error text, dates, scope, region counts, missing permissions, authentication and privilege. Each active account is placed on the first stage it has not passed: discovered, deployed, authenticated, authorized, scanning, complete. An error is classified by the first matching entry of `data/connector_issues.json` (provider and kind filtered); the account reached the stage before the cause's stage. Stale (no success for `connector_stale_days`), partial scope, missing permissions, never scanned, disabled and expired secrets are recognised from the columns. Waves group blocked accounts by cause; a cause with organization scope costs its hours once; three or more undeployed accounts of a provider become one organization-level deployment; waves are ordered by accounts per hour. The security review flags administrative privilege (critical at organization or management group scope), long-lived secrets and AWS roles without an external ID, labelled with STRIDE. Healthy rate counts complete accounts (and partial scope) over active accounts; it does not replace L1. Each cause carries read-only `checks` (aws, az, gcloud, kubectl; read verbs only, `az rest` only with GET); values are filled only when they match a safe pattern, otherwise a `<placeholder>` remains. With an earlier snapshot, `delta` lists accounts that moved forward or back, causes fixed and new, connectors newly broken, completions per week and a forecast date (remaining divided by the recent pace; "stalled" without progress). The customer status page lists what waits on the customer's teams, what is on the vendor's side, credentials to rotate and connector recommendations, without scores. See `docs/onboarding.md`.
 
+## 15q. Outlook and stake (0.18)
+
+`outlook(data, horizon=90)` lists events dated within the horizon: connector secret expiry (the day after), acceptance expiry (the day after), findings without owner or decision entering the triage window (grouped by day), critical and high findings passing `sla_days` (the day after), open commitments falling due, the cadence running out, the renewal date. `project(data, day)` returns the estate on `day` with `as_of = day` and cloud connectors whose secret expires on or after today and before `day` counted as not connected; nothing else changes. For each day with a score-moving event (secret, acceptance, triage), the effect is Yield on that day minus Yield the day before, in points. The curve is scored at 0, 7, 14, 30, 60 and 90 days, with the maturity level at 0, 30, 60 and 90.
+
+`weighted(data, score)` computes L1 to L3 with each active account weighted by `last_spend` (equal when all are zero), L2 and L3 as the spend-weighted mean of each connected account's own pass rate, and L4 with triaged open findings weighted 8, 4, 2, 1 by severity and doubled for internet exposure. It reports the weighted Yield next to Yield and the heaviest gaps. See `docs/outlook.md`.
+
 ## 16. Positioning against the platform's own views
 
 Security platforms commonly ship their own adoption or maturity views and an ownership model. Beyond 90 does not replace them: it measures what a platform cannot see about itself (the true universe of units to cover, across a whole portfolio) and reads ownership and decisions rather than rebuilding routing. The research behind this, including a case study of one vendor, is in `docs/research/`.
@@ -203,8 +209,9 @@ Security platforms commonly ship their own adoption or maturity views and an own
 13. 0.14: a native dashboard in the browser app: explorer tables, what-if planning, portfolio map, command palette, themes.
 14. 0.15: the weekly rhythm for a book (tiers, cadence, call prep, advisories, trust-gated expansion) and a hardened browser app (Trusted Types, sealed storage, pinned supply chain).
 15. 0.16: onboarding diagnosis: connector stages, a catalogue of causes, waves, connector security review, pre-flight.
-16. 0.17 (this): read-only check commands per cause, onboarding progress and forecast, a status page for the customer.
-17. 1.0: connector interface and a first verified connector against a real tenant; criticality weighting; readiness checklist import; per-finding ownership sources.
+16. 0.17: read-only check commands per cause, onboarding progress and forecast, a status page for the customer.
+17. 0.18 (this): the outlook if nothing is done, and coverage weighted by what is at stake.
+18. 1.0: connector interface and a first verified connector against a real tenant; criticality weighting; readiness checklist import; per-finding ownership sources.
 
 ## References
 

@@ -258,9 +258,12 @@ def run_sync(cfg, **kw):
 def test_sync_builds_a_data_directory_the_engine_can_load(api, tmp_path):
     cfg = cfg_for(tmp_path, config_text(api.base, customer_extra='renewal_date = 2027-03-31\nprofile = "cnapp"'))
     rep = run_sync(cfg)
-    assert rep.counts == {"accounts": 8, "inventory": 16, "activations": 8, "findings": 5} and all(r.status == "ok" for r in rep.results)
+    status = [(r.name, r.status, r.rows, r.error) for r in rep.results]       # printed if this ever fails, so the cause is visible
+    assert all(r.status == "ok" for r in rep.results), status
+    assert rep.counts == {"accounts": 8, "inventory": 16, "activations": 8, "findings": 5}, (rep.counts, status)
     data, warnings = load_customer(rep.data_dir)
-    assert data.name == "Test Co" and data.as_of == AS_OF and data.renewal_date == date(2027, 3, 31) and len(data.accounts) == 8 and warnings == []
+    assert warnings == [], warnings
+    assert data.name == "Test Co" and data.as_of == AS_OF and data.renewal_date == date(2027, 3, 31) and len(data.accounts) == 8
     t1 = next(a for a in data.accounts if a.id == "t1")
     assert t1.connected is True and t1.sources == ("org",) and t1.owner == "retail"
     assert next(a for a in data.accounts if a.id == "t3").connected is False

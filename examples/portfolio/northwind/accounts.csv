@@ -2,7 +2,7 @@ id,provider,sources,connected,owner,last_spend,status,in_plan,created_at
 aws-001,aws,billing;org;sso;plan,true,finance-it,6266,active,true,2025-03-09
 aws-002,aws,billing;plan,true,retail-it,1418,active,true,2025-11-09
 aws-003,aws,org;sso;plan,true,security,8163,active,true,2024-11-12
-aws-004,aws,billing;org;plan,false,retail-it,6737,active,true,2024-05-14
+aws-004,aws,billing;org;plan,false,retail-it,19070,active,true,2024-05-14
 aws-005,aws,billing;org;plan,true,retail-it,2789,active,true,2025-05-15
 aws-006,aws,billing;org;plan,true,retail-it,6547,active,true,2025-08-14
 aws-007,aws,org;plan,true,data,6657,active,true,2024-09-05
@@ -11,7 +11,7 @@ aws-009,aws,org;sso,true,platform,5060,active,false,2026-03-30
 aws-010,aws,billing;plan,true,bu-retail,3036,active,true,2025-10-25
 aws-012,aws,org;plan,true,data,2614,active,true,2026-05-09
 aws-013,aws,org;plan,true,bu-retail,5091,active,true,2025-01-20
-aws-014,aws,billing;sso;plan,false,security,2649,active,true,2025-04-28
+aws-014,aws,billing;sso;plan,false,security,24612,active,true,2025-04-28
 aws-015,aws,billing;org;sso;plan,true,finance-it,1129,active,true,2025-06-28
 aws-016,aws,billing;org;sso,true,bu-retail,3045,active,false,2025-05-16
 aws-017,aws,billing;org;sso;plan,true,ml-research,5513,active,true,2026-06-07
@@ -32,7 +32,7 @@ aws-031,aws,billing;org;plan,true,bu-retail,325,active,true,2025-01-03
 aws-032,aws,billing;org;sso;plan,true,security,3160,active,true,2025-02-12
 aws-033,aws,org;plan,true,ml-research,2173,active,true,2026-04-24
 aws-034,aws,org;plan,true,ml-research,807,active,true,2024-09-08
-aws-035,aws,billing;org;sso;plan,false,platform,939,active,true,2025-04-21
+aws-035,aws,billing;org;sso;plan,false,platform,19768,active,true,2025-04-21
 aws-036,aws,billing;org;sso;plan,true,payments,1097,active,true,2025-08-29
 aws-037,aws,billing;plan,true,data,2311,active,true,2024-12-15
 aws-038,aws,billing;org;sso,true,platform,8996,active,false,2024-08-14
@@ -66,7 +66,7 @@ aws-065,aws,billing;sso,false,bu-retail,3102,active,false,2026-10-21
 aws-066,aws,org;sso;plan,true,retail-it,7435,active,true,2025-05-19
 azure-001,azure,plan,true,finance-it,5215,active,true,2024-08-18
 azure-002,azure,sso;plan,true,payments,4496,active,true,2025-09-27
-azure-003,azure,billing;org;sso;plan,false,ml-research,3944,active,true,2024-05-31
+azure-003,azure,billing;org;sso;plan,false,ml-research,30034,active,true,2024-05-31
 azure-004,azure,billing;org;plan,true,ml-research,3296,active,true,2025-03-26
 azure-005,azure,billing;sso,true,retail-it,2215,active,false,2024-08-12
 azure-006,azure,billing;plan,true,payments,765,active,true,2025-05-12

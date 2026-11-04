@@ -13,6 +13,7 @@ sequence of actions for a person, and every ordering rule is a plain sum of poin
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import date
 from typing import Any
 
 from .catalogue import Catalogue
@@ -188,6 +189,16 @@ def build_prep(data: CustomerData, score: Score, actions: list[Any], extras: dic
             pts.append(f"{len(onb['secrets'])} connector secret(s) expire within a month or already have.")
         items.append({"id": "onboarding", "title": "Unblock onboarding", "why": "A connector that is stuck is adoption the customer has paid for and cannot see; the fix is usually one guardrail, one consent or one template.", "points": pts})
 
+    look = extras.get("outlook")
+    if look and look.get("events"):
+        hits = sorted((e for e in look["events"] if e.get("points", 0) < 0 or e["kind"] in ("sla_critical", "secret_expiry")), key=lambda e: e["date"])[:3]
+        if hits:
+            items.append({"id": "decay", "title": "What breaks if we wait", "why": look["summary"],
+                          "points": [f"{e['date']}: {e['text']}" + (f" ({e['points']:+.1f} pts)" if e.get("points") else "") for e in hits]})
+    st = extras.get("stake")
+    if st and st.get("say"):
+        items.append({"id": "stake", "title": "Where the gap matters", "why": "Counting accounts treats a sandbox like production; spend and exposure do not.", "points": st["say"]})
+
     top = actions[:3]
     if top:
         items.append({"id": "gaps", "title": "Where the score leaks", "why": "Three things, ranked by points per hour, each with an owner.",
@@ -303,6 +314,13 @@ def week_plan(rows: list[dict[str, Any]], hours_per_week: float) -> dict[str, An
             if any(sec["days_left"] <= 14 for sec in onb.get("secrets") or []):
                 pts += 8
                 why.append("a connector secret expires within two weeks")
+        look = r.get("outlook")
+        if look:
+            soon = [e for e in look["events"] if e.get("points", 0) < 0 and (date.fromisoformat(e["date"]) - data.as_of).days <= 7]
+            lost = -sum(e["points"] for e in soon)
+            if lost >= 0.5:
+                pts += min(15, 5 * lost)
+                why.append(f"{lost:.1f} points of Yield are lost within a week if nothing is done")
         mult = {"top": 1.0, "mid": 0.85, "other": 0.7}[cls]
         out.append(WeekRow(r["key"], r["name"], data.tier, cls, data.arr, pts * mult + {"top": 6, "mid": 3, "other": 0}[cls], why or ["on cadence, nothing pressing"], "", 0.0, touch))
     out.sort(key=lambda w: (-w.priority, -w.arr, w.name))

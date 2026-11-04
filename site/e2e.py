@@ -124,6 +124,16 @@ def main(site: str) -> int:
         page.get_by_role("button", name="Build the checklist").click()
         page.wait_for_selector("#view .preflight-out .agitem")
         check("Who must be in the room" in page.inner_text("#view .preflight-out"), "the pre-flight checklist is built")
+        page.click("[data-tab=overview]")
+        check("Weighted by what is at stake" in page.inner_text("#view") and "by spend" in page.inner_text("#view"), "the overview weighs coverage by spend and exposure")
+        page.click("[data-tab=outlook]")
+        view = page.inner_text("#view")
+        check("Waiting costs" in view and page.locator("#view tbody tr").count() >= 10, "the outlook lists the dated events and what waiting costs")
+        page.get_by_role("button", name="ours", exact=True).click()
+        check(all("ours" in t for t in page.locator("#view tbody tr td:nth-child(5)").all_inner_texts()), "the outlook filters by whose move it is")
+        with page.expect_download() as dl:
+            page.get_by_role("button", name="Add to calendar (.ics)").click()
+        check(Path(dl.value.path()).read_text().startswith("BEGIN:VCALENDAR"), "the outlook exports a calendar file")
         page.click("[data-tab=maturity]")
         check(page.locator("#view .rung").count() == 3 and page.locator("#view .checks li").count() >= 20, "maturity shows the ladder and every check")
         page.click("[data-tab=renewal]")
@@ -229,7 +239,7 @@ def main(site: str) -> int:
         check(page.locator("#kpis img, #kpis b b").count() == 0 and "<img" in page.inner_text("#kpis"), "a hostile customer name is shown as text in the tiles")
         page.click("[data-tab=qbr]")
         check(page.locator("#doc img, #doc script").count() == 0 and "Injected" in page.inner_text("#doc"), "and in the rendered Markdown")
-        for tab in ("overview", "onboarding", "actions", "accounts", "findings", "maturity", "renewal"):
+        for tab in ("overview", "onboarding", "outlook", "actions", "accounts", "findings", "maturity", "renewal"):
             page.click(f"[data-tab={tab}]")
             check(page.locator("#view img, #view script, #view iframe").count() == 0, f"and in the {tab} view")
         page.click("[data-tab=report]")
@@ -280,7 +290,7 @@ def main(site: str) -> int:
         page.locator("#view tbody tr").first.get_by_role("button", name="Open").click()
         page.wait_for_selector("#run:not([disabled])", timeout=180_000)
         page.wait_for_selector("#book-table[hidden]", state="attached")
-        check("Yield" in page.inner_text("#kpis") and page.locator("#tabs button").count() == 17, "opening a customer from the book shows its own report")
+        check("Yield" in page.inner_text("#kpis") and page.locator("#tabs button").count() == 18, "opening a customer from the book shows its own report")
         examples = Path(__file__).resolve().parent.parent / "examples" / "portfolio"
         page.set_input_files("#folder", str(examples))
         page.wait_for_selector("#status:has-text('customers found')")
