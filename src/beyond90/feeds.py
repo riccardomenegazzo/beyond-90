@@ -87,7 +87,8 @@ def check_config(cfg: dict[str, Any]) -> list[dict[str, Any]]:
             continue
         out.append({"id": sid, "name": str(s.get("name") or sid)[:80], "url": url, "kind": kind, "cloud": bool(s.get("cloud", False)),
                     "providers": [str(p).lower() for p in s.get("providers", [])], "types": [str(t) for t in s.get("types", [])],
-                    "keep": "provider_or_type" if s.get("keep") == "provider_or_type" else "provider"})
+                    "keep": "provider_or_type" if s.get("keep") == "provider_or_type" else "provider",
+                    "keep_types": [str(t) for t in s.get("keep_types", [])]})
     if errors:
         raise ValueError("invalid feed sources:\n  " + "\n  ".join(errors))
     return out
@@ -351,7 +352,8 @@ def collect(cfg: Optional[dict[str, Any]] = None, *, cat: Catalogue, today: Opti
             # every cloud, so a Kubernetes advisory read in one provider's bulletin still concerns every cluster.
             match = sorted((set(c["providers"]) or set(s["providers"])) - {"kubernetes"})
             types = sorted(set(c["types"]) | set(s["types"]))
-            if not s["cloud"] and not providers and not (s["keep"] == "provider_or_type" and types):
+            by_type = s["keep"] == "provider_or_type" and (set(types) & set(s["keep_types"]) if s["keep_types"] else types)
+            if not s["cloud"] and not providers and not by_type:
                 st["dropped"]["not_cloud"] += 1
                 continue                                            # a general source: only what names something cloud
             cves = sorted({x.upper() for x in CVE.findall(f"{it.get('guid', '')} {title} {text}")})[:20]

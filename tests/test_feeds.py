@@ -234,3 +234,13 @@ def test_the_cap_applies_after_the_cloud_filter(monkeypatch):
     assert [e["title"] for e in f["threats"]] == ["Azure Kubernetes Service node escape (mock)"]
     st = f["sources"][0]
     assert st["kept"] == 1 and st["dropped"]["not_cloud"] == 30 and st["dropped"]["over_cap"] == 0
+
+
+def test_the_exploited_catalogue_leaves_out_network_appliances():
+    kev = {"vulnerabilities": [
+        {"cveID": "CVE-2026-91001", "vendorProject": "Acme", "product": "Secure Firewall", "vulnerabilityName": "Firewall VPN gateway authentication bypass (mock)", "dateAdded": "2026-10-30"},
+        {"cveID": "CVE-2026-91002", "vendorProject": "Linux", "product": "Kernel", "vulnerabilityName": "Linux kernel race condition (mock)", "dateAdded": "2026-10-30"},
+        {"cveID": "CVE-2026-91003", "vendorProject": "Acme", "product": "Docs Server", "vulnerabilityName": "Path traversal while rendering images (mock)", "dateAdded": "2026-10-30"}]}
+    cfg = {"sources": [s for s in feeds.default_config()["sources"] if s["id"] == "kev"], "epss": ""}
+    f = feeds.collect(cfg, cat=CAT, today=TODAY, fetch=lambda url, hosts: json.dumps(kev).encode())
+    assert [e["id"] for e in f["threats"]] == ["CVE-2026-91002"]
