@@ -76,6 +76,11 @@ class Entitlement:
     used: float
 
 
+CONNECTOR_KINDS = ("cloud", "kubernetes", "sensor", "registry", "code", "logs")
+CONNECTOR_STATUSES = ("ok", "partial", "pending", "error", "disabled")
+CONNECTOR_AUTH = ("role", "role_external_id", "access_key", "sp_secret", "sp_certificate", "federated", "sa_key", "sa_impersonation", "token", "agent")
+CONNECTOR_PRIVILEGE = ("readonly", "custom", "admin")
+CONNECTOR_SCOPES = ("account", "organization", "management_group", "folder", "project", "cluster")
 INTERACTION_KINDS = ("call", "meeting", "email", "qbr", "workshop", "support", "advisory", "escalation", "other")
 CONTACT_ROLES = ("executive_sponsor", "security_leader", "champion", "procurement", "practitioner", "skeptic")
 DEFAULT_INFLUENCE = {"executive_sponsor": 3, "security_leader": 3, "champion": 2, "procurement": 2, "skeptic": 2, "practitioner": 1}
@@ -118,6 +123,27 @@ class Interaction:
     next_due: Optional[_dt.date] = None
 
 
+@dataclass(frozen=True)
+class Connector:
+    """How the platform reaches one account or cluster, as the platform reports it. Optional: without it, onboarding is
+    read from accounts.csv alone."""
+    account_id: str
+    kind: str
+    status: str
+    name: str = ""
+    error: str = ""
+    deployed_at: Optional[_dt.date] = None
+    first_scan_at: Optional[_dt.date] = None
+    last_success_at: Optional[_dt.date] = None
+    scope: str = ""
+    regions_expected: int = 0
+    regions_scanned: int = 0
+    permissions_missing: tuple[str, ...] = ()
+    auth: str = ""
+    secret_expires_on: Optional[_dt.date] = None
+    privilege: str = ""
+
+
 @dataclass
 class Settings:
     ceiling_version: str = "2026.4"
@@ -129,6 +155,8 @@ class Settings:
     commitment_lookback_days: int = 90
     renewal_window_days: int = 180
     cadence_days: int = 0                   # 0 = the default for the tier (see rhythm.py)
+    connector_stale_days: int = 2           # a connector with no success for longer is stale
+    onboarding_stall_days: int = 7          # an account stuck at one stage for longer is stalled
     downgrade_window_days: int = 3
     mttr_lookback_days: int = 90
     entitlement_target: float = 0.8
@@ -153,6 +181,7 @@ class CustomerData:
     contacts: list[Contact] = field(default_factory=list)
     commitments: list[Commitment] = field(default_factory=list)
     interactions: list[Interaction] = field(default_factory=list)
+    connectors: list[Connector] = field(default_factory=list)
     inputs: dict[str, str] = field(default_factory=dict)      # file name -> fingerprint, set by the loader
     schema_version: int = 1
     renewal_date: Optional[date] = None

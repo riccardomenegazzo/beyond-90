@@ -24,7 +24,7 @@ from . import __version__
 SCHEMA_VERSION = 1
 INPUT_FILES = (
     "customer.toml", "accounts.csv", "inventory.csv", "activations.csv", "findings.csv",
-    "teams.csv", "entitlements.csv", "contacts.csv", "commitments.csv", "interactions.csv",
+    "teams.csv", "entitlements.csv", "contacts.csv", "commitments.csv", "interactions.csv", "connectors.csv",
 )
 
 

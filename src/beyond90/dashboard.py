@@ -119,5 +119,6 @@ def build(data: CustomerData, score: Score, cat: Catalogue, plan: Plan, extras: 
         "drift": _plain(extras.get("drift")),
         "candor": _plain(extras.get("candor")),
         "rhythm": _plain(extras.get("rhythm")),
+        "onboarding": _plain(extras.get("onboarding")),
         "as_of": date.fromisoformat(str(score.as_of)).isoformat(),
     }

@@ -37,6 +37,8 @@ mttr_lookback_days = 90
 entitlement_target = 0.8
 renewal_window_days = 180       # a renewal this close, with a risk signal, puts its ARR "at risk"
 cadence_days = 0                # how often to be in touch; 0 means the default for the tier (see docs/rhythm.md)
+connector_stale_days = 2        # a connector with no success for longer is stale
+onboarding_stall_days = 7       # an account stuck at one stage for longer is stalled
 
 [settings.sla_days]
 critical = 7
@@ -110,6 +112,10 @@ The universe must come from somewhere other than the platform itself: billing ex
 ## interactions.csv (optional)
 
 `date, kind` are required. `contact_id, summary, next_step, next_due` are optional. Kinds: `call`, `meeting`, `email`, `qbr`, `workshop`, `support`, `advisory`, `escalation`, `other`. `contact_id` must exist in `contacts.csv`; `date` cannot be after `as_of`. This log is what the cadence is measured against; see [rhythm.md](rhythm.md). Contains personal data: do not publish it.
+
+## connectors.csv (optional)
+
+`account_id, kind, status` are required; see [onboarding.md](onboarding.md) for every column. One row per connector as the platform reports it, including the error text as shown. It drives the onboarding diagnosis and never changes Yield.
 
 ## Where to get the data
 

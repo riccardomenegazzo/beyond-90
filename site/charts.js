@@ -107,6 +107,22 @@ export function timeline(jobs, weeks) {
   return svg;
 }
 
+/** Onboarding funnel: how many units reached each stage, and how many stopped there. */
+export function funnel(stages) {
+  const W = 560, rowH = 36, left = 150, right = 70, H = stages.length * rowH + 8, total = Math.max(1, stages[0].reached);
+  const X = (n) => (n / total) * (W - left - right);
+  const svg = s("svg", { viewBox: `0 0 ${W} ${H}`, class: "chart", role: "img", "aria-label": "Onboarding funnel: " + stages.map((st) => `${st.label} ${st.reached}`).join(", ") });
+  stages.forEach((st, i) => {
+    const y = 4 + i * rowH, w = Math.max(2, X(st.reached)), lost = i ? stages[i - 1].reached - st.reached : 0;
+    svg.append(s("text", { x: 0, y: y + 18, class: "lbl" }, st.label));
+    svg.append(s("rect", { x: left, y: y + 4, width: X(total), height: 20, rx: 5, fill: "var(--grid)" }));
+    svg.append(s("rect", { x: left, y: y + 4, width: w, height: 20, rx: 5, fill: i === stages.length - 1 ? "var(--pos)" : "var(--accent)", class: "grow", style: `animation-delay:${i * 70}ms` }, s("title", {}, `${st.label}: ${st.reached} of ${total}`)));
+    svg.append(s("text", { x: left + w + 6, y: y + 18, class: "bar-val" }, String(st.reached)));
+    if (lost > 0) svg.append(s("text", { x: W - 2, y: y + 18, "text-anchor": "end", class: "sub" }, `−${lost}`));
+  });
+  return svg;
+}
+
 /** A tiny trend line for tiles. */
 export function spark(values, w = 90, hgt = 26) {
   if (values.length < 2) return h("span");

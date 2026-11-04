@@ -31,6 +31,11 @@ from typing import Optional
 from .catalogue import Catalogue, parse_version
 from .models import (
     ACCOUNT_STATUSES,
+    CONNECTOR_AUTH,
+    CONNECTOR_KINDS,
+    CONNECTOR_PRIVILEGE,
+    CONNECTOR_SCOPES,
+    CONNECTOR_STATUSES,
     CONTACT_ROLES,
     DECISIONS,
     DEFAULT_INFLUENCE,
@@ -40,6 +45,7 @@ from .models import (
     Account,
     Activation,
     Commitment,
+    Connector,
     Contact,
     CustomerData,
     Entitlement,
@@ -228,11 +234,13 @@ KNOWN_COLUMNS: dict[str, tuple[str, ...]] = {
     "contacts.csv": ("id", "name", "role", "team", "influence", "last_contact", "credibility", "reliability", "intimacy", "self_orientation"),
     "commitments.csv": ("id", "contact_id", "description", "promised_on", "due_on", "done_on"),
     "interactions.csv": ("date", "kind", "contact_id", "summary", "next_step", "next_due"),
+    "connectors.csv": ("account_id", "kind", "status", "name", "error", "deployed_at", "first_scan_at", "last_success_at", "scope",
+                       "regions_expected", "regions_scanned", "permissions_missing", "auth", "secret_expires_on", "privilege"),
 }
 KNOWN_CUSTOMER_KEYS = ("name", "tier", "arr", "as_of", "schema_version", "profile", "renewal_date")
 KNOWN_SETTINGS_KEYS = ("ceiling_version", "baseline_ceiling", "triage_window_days", "new_account_days", "access_review_days",
                        "downgrade_window_days", "mttr_lookback_days", "contact_stale_days", "commitment_lookback_days",
-                       "renewal_window_days", "cadence_days", "entitlement_target", "sla_days")
+                       "renewal_window_days", "cadence_days", "connector_stale_days", "onboarding_stall_days", "entitlement_target", "sla_days")
 
 
 def _suggest(name: str, known: tuple[str, ...]) -> str:
@@ -271,7 +279,7 @@ def _settings(raw: dict, errors: list[str]) -> Settings:
             except ValueError as exc:
                 errors.append(f"customer.toml: settings.{key}: {exc}")
     for key in ("triage_window_days", "new_account_days", "access_review_days", "downgrade_window_days", "mttr_lookback_days",
-                "contact_stale_days", "commitment_lookback_days", "renewal_window_days", "cadence_days"):
+                "contact_stale_days", "commitment_lookback_days", "renewal_window_days", "cadence_days", "connector_stale_days", "onboarding_stall_days"):
         if key in raw:
             value = raw[key]
             if isinstance(value, int) and not isinstance(value, bool) and value >= 0:
@@ -551,6 +559,39 @@ def load_customer(
     interactions = _read_csv(base / "interactions.csv", ("date", "kind"), errors, parse_interaction, warnings)
     interactions.sort(key=lambda i: (i.date, i.kind, i.summary))
 
+    def parse_connector(row: dict, c: _Ctx):
+        aid = c.text(row, "account_id", required=True)
+        kind = c.choice(row, "kind", CONNECTOR_KINDS)
+        status = c.choice(row, "status", CONNECTOR_STATUSES)
+        if aid and aid not in account_ids:
+            c.err(f"account_id {aid!r} is not in accounts.csv")
+            return None
+        if not aid or not kind or not status:
+            return None
+        dates = {k: c.date_(row, k) for k in ("deployed_at", "first_scan_at", "last_success_at", "secret_expires_on")}
+        for k in ("deployed_at", "first_scan_at", "last_success_at"):
+            when = dates[k]
+            if when is not None and when > as_of:
+                c.err(f"{k} {when} is after as_of {as_of}")
+                return None
+        dep, first = dates["deployed_at"], dates["first_scan_at"]
+        if dep is not None and first is not None and first < dep:
+            c.err("first_scan_at is before deployed_at")
+        expected = int(c.number(row, "regions_expected"))
+        scanned = int(c.number(row, "regions_scanned"))
+        if expected and scanned > expected:
+            c.err("regions_scanned is larger than regions_expected")
+        missing = tuple(sorted({p.strip() for p in (row.get("permissions_missing") or "").split(";") if p.strip()}))
+        return Connector(
+            account_id=aid, kind=kind, status=status, name=c.text(row, "name"), error=c.text(row, "error")[:2000],
+            deployed_at=dates["deployed_at"], first_scan_at=dates["first_scan_at"], last_success_at=dates["last_success_at"],
+            scope=c.choice(row, "scope", CONNECTOR_SCOPES, required=False), regions_expected=expected, regions_scanned=scanned,
+            permissions_missing=missing, auth=c.choice(row, "auth", CONNECTOR_AUTH, required=False), secret_expires_on=dates["secret_expires_on"],
+            privilege=c.choice(row, "privilege", CONNECTOR_PRIVILEGE, required=False),
+        )
+
+    connectors = _read_csv(base / "connectors.csv", ("account_id", "kind", "status"), errors, parse_connector, warnings)
+
     if errors:
         raise DataError(errors)
 
@@ -566,7 +607,7 @@ def load_customer(
         CustomerData(
             name=name, tier=clean_text(str(cust.get("tier", ""))), arr=float(arr), as_of=as_of, settings=settings,
             accounts=accounts, inventory=inventory, activations=activations, findings=findings,
-            teams=teams, entitlements=entitlements, contacts=contacts, commitments=commitments, interactions=interactions,
+            teams=teams, entitlements=entitlements, contacts=contacts, commitments=commitments, interactions=interactions, connectors=connectors,
             inputs=hash_directory(base), schema_version=schema_version, renewal_date=renewal,
         ),
         warnings,

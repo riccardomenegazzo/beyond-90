@@ -1,0 +1,707 @@
+{
+ "version": "2026.11",
+ "note": "Why connectors fail during onboarding, written for a vendor-neutral audience. Patterns are case-insensitive regular expressions matched against the error text a platform reports; the first matching entry wins, in this order. Check each fix against your vendor's documentation.",
+ "stages": [
+  "discovered",
+  "deployed",
+  "authenticated",
+  "authorized",
+  "scanning",
+  "complete"
+ ],
+ "issues": [
+  {
+   "id": "aws_scp_deny",
+   "title": "An organization guardrail (SCP) blocks the connector",
+   "providers": [
+    "aws"
+   ],
+   "stage": "authorized",
+   "scope": "org",
+   "owner": "cloud platform team",
+   "hours": 2,
+   "patterns": [
+    "service control polic",
+    "explicit deny in a service control",
+    "\\bSCP\\b"
+   ],
+   "why": "A service control policy denies read actions for every principal in the affected accounts, including the connector's role. The role itself is fine; the guardrail above it wins.",
+   "steps": [
+    "Find the SCP attached to the account's organizational unit that denies the failing action.",
+    "Add an exception for the connector role, for example a condition on aws:PrincipalArn that matches the role name.",
+    "Keep the exception read-only: exempt the connector from the deny, do not widen what it may do."
+   ],
+   "verify": "Re-run the connection test; the same API call should now succeed from the member account."
+  },
+  {
+   "id": "aws_permission_boundary",
+   "title": "A permissions boundary caps the connector role",
+   "providers": [
+    "aws"
+   ],
+   "stage": "authorized",
+   "scope": "account",
+   "owner": "IAM team",
+   "hours": 1,
+   "patterns": [
+    "permissions? boundary"
+   ],
+   "why": "The role has the right policy attached, but a permissions boundary limits it to fewer actions.",
+   "steps": [
+    "Remove the boundary from the connector role, or add the read-only actions the connector needs to it."
+   ],
+   "verify": "The policy simulator shows the failing action as allowed for the role."
+  },
+  {
+   "id": "aws_external_id",
+   "title": "The external ID does not match",
+   "providers": [
+    "aws"
+   ],
+   "stage": "authenticated",
+   "scope": "account",
+   "owner": "cloud platform team",
+   "hours": 0.5,
+   "patterns": [
+    "external ?id"
+   ],
+   "why": "The role trusts the platform only when it presents a specific external ID. A copied template or a reused stack often carries the external ID of another tenant.",
+   "steps": [
+    "Copy the external ID shown in the platform for this tenant.",
+    "Update the sts:ExternalId condition in the role's trust policy, or redeploy the template with the right parameter."
+   ],
+   "verify": "The connection test passes the assume-role step."
+  },
+  {
+   "id": "aws_assume_role",
+   "title": "The platform cannot assume the connector role",
+   "providers": [
+    "aws"
+   ],
+   "stage": "authenticated",
+   "scope": "account",
+   "owner": "cloud platform team",
+   "hours": 1,
+   "patterns": [
+    "sts:AssumeRole",
+    "AssumeRole.*(denied|not authorized)",
+    "not authorized to perform: sts",
+    "NoSuchEntity",
+    "role .*(does not exist|cannot be found)"
+   ],
+   "why": "The role is missing, has a different name or ARN than the one registered, or its trust policy does not trust the platform's principal.",
+   "steps": [
+    "Check that the role exists in the account with the exact name the platform expects.",
+    "Check the trust policy: the principal must be the platform's account or role, with the external ID condition.",
+    "If the stack was deleted or failed, redeploy it."
+   ],
+   "verify": "aws iam get-role returns the role, and the connection test passes."
+  },
+  {
+   "id": "aws_stackset",
+   "title": "The organization-wide deployment did not reach some accounts",
+   "providers": [
+    "aws"
+   ],
+   "stage": "deployed",
+   "scope": "org",
+   "owner": "cloud platform team",
+   "hours": 2,
+   "patterns": [
+    "stack ?set",
+    "trusted access",
+    "CREATE_FAILED",
+    "ROLLBACK_(COMPLETE|IN_PROGRESS)",
+    "OUTDATED"
+   ],
+   "why": "Deploying the connector to every account at once depends on trusted access for stack sets in the organization and on each member account accepting the stack. Accounts in an excluded unit, suspended, or with a conflicting role name are skipped or roll back.",
+   "steps": [
+    "Enable trusted access for stack sets in the organization (or use a delegated administrator).",
+    "Check the stack instances list for accounts in FAILED or OUTDATED state and read the first failure reason.",
+    "Fix the cause (often a role with the same name already exists) and retry the failed instances only.",
+    "Target the organization root or the right units so new accounts get the connector automatically."
+   ],
+   "verify": "Every stack instance is CURRENT, and accounts created next week are picked up without anyone asking."
+  },
+  {
+   "id": "aws_region_optin",
+   "title": "Some regions are not enabled or not reachable",
+   "providers": [
+    "aws"
+   ],
+   "stage": "complete",
+   "scope": "account",
+   "owner": "cloud platform team",
+   "hours": 0.5,
+   "patterns": [
+    "OptInRequired",
+    "region.*(not enabled|disabled|opt-?in)",
+    "InvalidClientTokenId.*region",
+    "UnrecognizedClientException"
+   ],
+   "why": "Opt-in regions must be enabled before any API call there works, and some guardrails deny all but approved regions. The connector reports these regions as failures.",
+   "steps": [
+    "List the regions the platform expects and the regions enabled in the account.",
+    "Either enable the region, or exclude it from the connector's scope so it stops reporting errors.",
+    "If a guardrail restricts regions, align the connector's region list with it."
+   ],
+   "verify": "Scanned regions equal expected regions for the account."
+  },
+  {
+   "id": "aws_kms",
+   "title": "Encrypted disks cannot be read by agentless scanning",
+   "providers": [
+    "aws"
+   ],
+   "stage": "complete",
+   "scope": "account",
+   "owner": "security team",
+   "hours": 2,
+   "patterns": [
+    "kms",
+    "CreateGrant",
+    "KMSKeyNotAccessible",
+    "encrypted (volume|snapshot|disk)"
+   ],
+   "why": "Agentless workload scanning copies a snapshot of each disk. When a disk is encrypted with a customer-managed key, the key policy must let the scanner use the key; otherwise those workloads are silently skipped.",
+   "steps": [
+    "Find the keys protecting the skipped volumes.",
+    "Add a key policy statement that lets the scanner role create grants and decrypt for snapshot copies only, or use the vendor's documented condition keys.",
+    "Where policy forbids it, accept the gap explicitly and record it as a known blind spot."
+   ],
+   "verify": "The skipped-workload count for the account drops to zero on the next scan."
+  },
+  {
+   "id": "aws_static_keys",
+   "title": "The connector uses access keys that expired or were rotated",
+   "providers": [
+    "aws"
+   ],
+   "stage": "authenticated",
+   "scope": "account",
+   "owner": "IAM team",
+   "hours": 1,
+   "patterns": [
+    "ExpiredToken",
+    "SignatureDoesNotMatch",
+    "InvalidAccessKeyId",
+    "security token included in the request is (invalid|expired)"
+   ],
+   "why": "Long-lived access keys break when they are rotated or deactivated, and they are a credential to steal. A role with an external ID needs no stored secret.",
+   "steps": [
+    "Switch the connector to a cross-account role with an external ID.",
+    "Deactivate and delete the old keys once the role works."
+   ],
+   "verify": "No access key is associated with the connector any more."
+  },
+  {
+   "id": "az_consent",
+   "title": "Admin consent was never granted to the connector's application",
+   "providers": [
+    "azure"
+   ],
+   "stage": "authenticated",
+   "scope": "org",
+   "owner": "identity team",
+   "hours": 0.5,
+   "patterns": [
+    "AADSTS65001",
+    "AADSTS90094",
+    "admin (approval|consent)",
+    "consent"
+   ],
+   "why": "The connector is an application in the customer's directory. Until a global or privileged role administrator grants consent, it cannot sign in with the permissions it asks for.",
+   "steps": [
+    "Ask an administrator with the right role to open the consent link from the platform.",
+    "Review the permissions requested: they should be read-only."
+   ],
+   "verify": "The enterprise application shows admin consent granted, and sign-in logs show successful sign-ins."
+  },
+  {
+   "id": "az_app_missing",
+   "title": "The application is not present in this tenant",
+   "providers": [
+    "azure"
+   ],
+   "stage": "deployed",
+   "scope": "org",
+   "owner": "identity team",
+   "hours": 0.5,
+   "patterns": [
+    "AADSTS700016",
+    "AADSTS7000229",
+    "application with identifier .* was not found",
+    "service principal.*not found"
+   ],
+   "why": "The connector was configured against a different tenant, or its service principal was deleted.",
+   "steps": [
+    "Confirm the tenant ID registered in the platform.",
+    "Re-create the service principal by completing the consent flow again."
+   ],
+   "verify": "The service principal exists in the right tenant."
+  },
+  {
+   "id": "az_secret",
+   "title": "The client secret expired or is wrong",
+   "providers": [
+    "azure"
+   ],
+   "stage": "authenticated",
+   "scope": "account",
+   "owner": "identity team",
+   "hours": 0.5,
+   "patterns": [
+    "AADSTS7000222",
+    "AADSTS7000215",
+    "client secret",
+    "invalid_client"
+   ],
+   "why": "Client secrets expire, usually after six to twenty-four months, and the connector stops on that day without warning.",
+   "steps": [
+    "Prefer a federated credential or a certificate, which do not need a shared secret.",
+    "If a secret is required, rotate it now and record the new expiry date so the next one is planned."
+   ],
+   "verify": "The connector authenticates and the expiry date is tracked."
+  },
+  {
+   "id": "az_conditional_access",
+   "title": "A conditional access policy blocks the connector",
+   "providers": [
+    "azure"
+   ],
+   "stage": "authenticated",
+   "scope": "org",
+   "owner": "identity team",
+   "hours": 1,
+   "patterns": [
+    "AADSTS53003",
+    "AADSTS50158",
+    "conditional access"
+   ],
+   "why": "Policies written for people (location, device, MFA) can also apply to workload identities and block a service that signs in from the vendor's network.",
+   "steps": [
+    "Find the policy in the sign-in log entry for the failure.",
+    "Exclude the connector's service principal, or add a workload identity policy that allows it from the vendor's documented addresses."
+   ],
+   "verify": "Sign-in logs show the connector succeeding."
+  },
+  {
+   "id": "az_scope",
+   "title": "The connector has no role at the right scope",
+   "providers": [
+    "azure"
+   ],
+   "stage": "authorized",
+   "scope": "org",
+   "owner": "cloud platform team",
+   "hours": 1,
+   "patterns": [
+    "AuthorizationFailed",
+    "does not have authorization to perform action",
+    "Microsoft\\.Authorization",
+    "management group"
+   ],
+   "why": "Read access was granted on a few subscriptions instead of the management group above them, so other and new subscriptions are invisible.",
+   "steps": [
+    "Assign the read roles the vendor requires at the tenant root management group, or the group that holds every subscription in scope.",
+    "Remove the per-subscription assignments once the group assignment works."
+   ],
+   "verify": "New subscriptions appear without anyone touching the connector."
+  },
+  {
+   "id": "az_directory_read",
+   "title": "The connector cannot read the directory",
+   "providers": [
+    "azure"
+   ],
+   "stage": "complete",
+   "scope": "org",
+   "owner": "identity team",
+   "hours": 0.5,
+   "patterns": [
+    "Insufficient privileges to complete the operation",
+    "Authorization_RequestDenied",
+    "Directory\\.Read"
+   ],
+   "why": "Identity analysis needs read access to users, groups and roles in the directory; without it the cloud scan works but identity findings are incomplete.",
+   "steps": [
+    "Grant the directory read permission the vendor documents and give admin consent."
+   ],
+   "verify": "Identity inventory shows users and groups."
+  },
+  {
+   "id": "az_subscription_state",
+   "title": "The subscription is disabled, moved or missing a resource provider",
+   "providers": [
+    "azure"
+   ],
+   "stage": "scanning",
+   "scope": "account",
+   "owner": "cloud platform team",
+   "hours": 0.5,
+   "patterns": [
+    "SubscriptionNotFound",
+    "ReadOnlyDisabledSubscription",
+    "subscription.*(disabled|warned|not found)",
+    "MissingSubscriptionRegistration",
+    "NoRegisteredProviderFound",
+    "resource provider.*not registered"
+   ],
+   "why": "Disabled subscriptions cannot be read, and some services answer only once their resource provider is registered.",
+   "steps": [
+    "If the subscription is retired, mark it decommissioned so it leaves the universe.",
+    "Otherwise register the resource providers the vendor lists."
+   ],
+   "verify": "The subscription scans without provider errors."
+  },
+  {
+   "id": "gcp_api_disabled",
+   "title": "A required API is disabled",
+   "providers": [
+    "gcp"
+   ],
+   "stage": "authorized",
+   "scope": "account",
+   "owner": "cloud platform team",
+   "hours": 0.5,
+   "patterns": [
+    "SERVICE_DISABLED",
+    "API has not been used in project",
+    "is disabled\\. Enable it",
+    "accessNotConfigured"
+   ],
+   "why": "Google Cloud answers only for APIs enabled in the project the connector's service account lives in. A new host project often lacks the asset and resource manager APIs.",
+   "steps": [
+    "Enable the APIs the vendor lists in the connector's host project.",
+    "Wait a few minutes; enabling an API is not instant."
+   ],
+   "verify": "The connection test reaches the asset inventory."
+  },
+  {
+   "id": "gcp_org_policy",
+   "title": "An organization policy blocks the connector's identity",
+   "providers": [
+    "gcp"
+   ],
+   "stage": "authenticated",
+   "scope": "org",
+   "owner": "cloud platform team",
+   "hours": 1,
+   "patterns": [
+    "constraints/",
+    "org(anization)? policy",
+    "disableServiceAccountKeyCreation",
+    "allowedPolicyMemberDomains",
+    "domain restricted sharing"
+   ],
+   "why": "Two common guardrails get in the way: no service account keys, and no bindings for identities outside the customer's domain. Both are good policies; the connector has to fit them.",
+   "steps": [
+    "Prefer workload identity federation or impersonation, which need no key.",
+    "If an outside principal must be bound, add the vendor's customer ID to the allowed list for that constraint, at the narrowest folder that works."
+   ],
+   "verify": "The binding is created and the policy still applies to everyone else."
+  },
+  {
+   "id": "gcp_vpc_sc",
+   "title": "A service perimeter blocks the API calls",
+   "providers": [
+    "gcp"
+   ],
+   "stage": "authorized",
+   "scope": "org",
+   "owner": "network team",
+   "hours": 2,
+   "patterns": [
+    "VPC Service Controls",
+    "vpcServiceControlsUniqueIdentifier",
+    "SECURITY_POLICY_VIOLATED"
+   ],
+   "why": "Projects inside a service perimeter refuse API calls from outside it, including read-only ones.",
+   "steps": [
+    "Add an ingress rule for the connector's identity and the read methods it needs.",
+    "Test in dry-run mode first."
+   ],
+   "verify": "Perimeter logs show the calls allowed."
+  },
+  {
+   "id": "gcp_permission",
+   "title": "The service account lacks a role at the organization or folder",
+   "providers": [
+    "gcp"
+   ],
+   "stage": "authorized",
+   "scope": "org",
+   "owner": "cloud platform team",
+   "hours": 1,
+   "patterns": [
+    "PERMISSION_DENIED",
+    "IAM_PERMISSION_DENIED",
+    "does not have .*permission",
+    "403"
+   ],
+   "why": "Roles granted on one project do not cover the others. Granting at the organization or a top folder covers every project, including new ones.",
+   "steps": [
+    "Grant the vendor's read-only roles to the connector's service account at the organization or the top folder in scope.",
+    "Remove project-level grants afterwards."
+   ],
+   "verify": "Projects created after the change appear on their own."
+  },
+  {
+   "id": "gcp_project_state",
+   "title": "The project is deleted or has billing disabled",
+   "providers": [
+    "gcp"
+   ],
+   "stage": "scanning",
+   "scope": "account",
+   "owner": "cloud platform team",
+   "hours": 0.25,
+   "patterns": [
+    "BILLING_DISABLED",
+    "billing account.*(disabled|not found)",
+    "project .*(not found|deleted|pending deletion)"
+   ],
+   "why": "A project being deleted, or without billing, rejects most API calls.",
+   "steps": [
+    "If the project is gone or going, mark it decommissioned.",
+    "Otherwise restore billing."
+   ],
+   "verify": "The project is either scanning or out of the universe."
+  },
+  {
+   "id": "k8s_unreachable",
+   "title": "The cluster API is not reachable from the platform",
+   "providers": [],
+   "kinds": [
+    "kubernetes"
+   ],
+   "stage": "authenticated",
+   "scope": "account",
+   "owner": "platform team",
+   "hours": 2,
+   "patterns": [
+    "dial tcp",
+    "i/o timeout",
+    "connection refused",
+    "no route to host",
+    "context deadline exceeded",
+    "private endpoint",
+    "unable to connect to the server"
+   ],
+   "why": "Private clusters expose their API server only inside the network, which is the right default. An outside connector cannot reach it.",
+   "steps": [
+    "Use the in-cluster connector that dials out to the platform, instead of opening the API server.",
+    "If an outside connection is required, allow only the vendor's documented addresses."
+   ],
+   "verify": "The cluster shows a recent heartbeat."
+  },
+  {
+   "id": "k8s_admission",
+   "title": "Pod security or an admission policy blocks the sensor",
+   "providers": [],
+   "kinds": [
+    "sensor",
+    "kubernetes"
+   ],
+   "stage": "deployed",
+   "scope": "org",
+   "owner": "platform team",
+   "hours": 2,
+   "patterns": [
+    "violates PodSecurity",
+    "pod ?security",
+    "admission webhook .* denied",
+    "denied the request",
+    "gatekeeper",
+    "kyverno",
+    "privileged.*(not allowed|forbidden)",
+    "hostPID"
+   ],
+   "why": "A runtime sensor runs as a privileged DaemonSet with host access, which is exactly what a restricted pod security level or an admission policy is meant to stop. The policy is right for workloads and wrong for the one tool that watches them.",
+   "steps": [
+    "Run the sensor in its own namespace and label that namespace with the privileged pod security level, nothing else.",
+    "If a policy engine is used, add a narrow exception for the sensor's service account and image, not for the namespace's every pod.",
+    "Record the exception and its owner so an audit finds it explained."
+   ],
+   "verify": "The DaemonSet shows one ready pod per eligible node."
+  },
+  {
+   "id": "k8s_rbac",
+   "title": "The connector's service account is forbidden from reading the cluster",
+   "providers": [],
+   "kinds": [
+    "kubernetes",
+    "sensor"
+   ],
+   "stage": "authorized",
+   "scope": "account",
+   "owner": "platform team",
+   "hours": 0.5,
+   "patterns": [
+    "forbidden: User",
+    "cannot (list|get|watch) resource",
+    "is forbidden",
+    "clusterrole"
+   ],
+   "why": "Kubernetes RBAC denies by default; the connector's cluster role or binding is missing or was not applied with the chart.",
+   "steps": [
+    "Apply the cluster role and binding from the vendor's chart, read-only verbs only (get, list, watch).",
+    "Check with kubectl auth can-i --as for the service account."
+   ],
+   "verify": "kubectl auth can-i list pods --as the connector's service account answers yes."
+  },
+  {
+   "id": "k8s_egress",
+   "title": "Outbound traffic, a proxy or TLS inspection breaks the connection",
+   "providers": [],
+   "kinds": [
+    "sensor",
+    "kubernetes",
+    "registry"
+   ],
+   "stage": "authenticated",
+   "scope": "org",
+   "owner": "network team",
+   "hours": 2,
+   "patterns": [
+    "x509",
+    "certificate signed by unknown authority",
+    "TLS handshake",
+    "(egress|outbound).*(blocked|denied)",
+    "proxy"
+   ],
+   "why": "Clusters often reach the internet only through a proxy that inspects TLS with the company's own certificate authority. The sensor does not trust that authority, or does not know the proxy.",
+   "steps": [
+    "Allow the vendor's backend host names through the egress firewall.",
+    "Configure the proxy address in the chart, and add the company's CA bundle to the sensor if TLS is inspected, or exempt the vendor's hosts from inspection."
+   ],
+   "verify": "The sensor reports a heartbeat and no TLS errors appear in its logs."
+  },
+  {
+   "id": "k8s_image_pull",
+   "title": "The sensor image cannot be pulled",
+   "providers": [],
+   "kinds": [
+    "sensor",
+    "kubernetes"
+   ],
+   "stage": "deployed",
+   "scope": "account",
+   "owner": "platform team",
+   "hours": 1,
+   "patterns": [
+    "ImagePullBackOff",
+    "ErrImagePull",
+    "manifest unknown",
+    "pull access denied",
+    "toomanyrequests"
+   ],
+   "why": "Clusters without internet access pull from an internal mirror, and public registries rate-limit anonymous pulls.",
+   "steps": [
+    "Mirror the sensor image to the internal registry and point the chart at it.",
+    "Add a pull secret if the registry needs one."
+   ],
+   "verify": "Pods start without pull errors."
+  },
+  {
+   "id": "k8s_unsupported_nodes",
+   "title": "The nodes do not run DaemonSets",
+   "providers": [],
+   "kinds": [
+    "sensor"
+   ],
+   "stage": "deployed",
+   "scope": "account",
+   "owner": "platform team",
+   "hours": 2,
+   "patterns": [
+    "fargate",
+    "autopilot",
+    "virtual node",
+    "serverless",
+    "daemonset.*not supported"
+   ],
+   "why": "Serverless node types do not let a DaemonSet run on the host, so a host sensor has nowhere to go.",
+   "steps": [
+    "Use the vendor's sidecar or serverless option for those workloads, or accept API-only coverage and record it as a known gap."
+   ],
+   "verify": "Coverage for those workloads is either present or listed as a known gap."
+  },
+  {
+   "id": "sensor_kernel",
+   "title": "The host kernel does not support the sensor",
+   "providers": [],
+   "kinds": [
+    "sensor"
+   ],
+   "stage": "deployed",
+   "scope": "account",
+   "owner": "platform team",
+   "hours": 2,
+   "patterns": [
+    "kernel .*(not supported|too old|unsupported)",
+    "\\bBTF\\b",
+    "ebpf.*(fail|not supported|error)",
+    "bpf\\(\\)",
+    "CAP_BPF",
+    "CAP_SYS_ADMIN",
+    "lockdown",
+    "operation not permitted"
+   ],
+   "why": "eBPF sensors need a recent enough kernel with type information, and the right capabilities. Old images, kernel lockdown or a hardened profile that drops capabilities stop them loading.",
+   "steps": [
+    "List the node images and kernel versions on the affected nodes.",
+    "Move those node pools to a supported image, or use the vendor's fallback mode if one exists.",
+    "If capabilities are dropped by policy, grant only those the sensor documents, to the sensor alone."
+   ],
+   "verify": "The sensor reports as running on every node in the pool."
+  },
+  {
+   "id": "sensor_resources",
+   "title": "The sensor is starved or crashing",
+   "providers": [],
+   "kinds": [
+    "sensor"
+   ],
+   "stage": "scanning",
+   "scope": "account",
+   "owner": "platform team",
+   "hours": 1,
+   "patterns": [
+    "CrashLoopBackOff",
+    "OOMKilled",
+    "Insufficient (cpu|memory)",
+    "Evicted"
+   ],
+   "why": "Without requests, limits and a priority class, the sensor is the first pod evicted on a busy node.",
+   "steps": [
+    "Set the requests and limits the vendor recommends and a high priority class for the sensor.",
+    "Read the previous container's logs to confirm the cause."
+   ],
+   "verify": "No restarts over a day."
+  },
+  {
+   "id": "api_throttling",
+   "title": "The cloud provider is throttling the connector",
+   "providers": [],
+   "stage": "scanning",
+   "scope": "account",
+   "owner": "vendor support",
+   "hours": 0.5,
+   "patterns": [
+    "Throttling",
+    "Rate exceeded",
+    "TooManyRequests",
+    "RequestLimitExceeded",
+    "\\b429\\b",
+    "RESOURCE_EXHAUSTED"
+   ],
+   "why": "Large accounts and other tools calling the same APIs exhaust the provider's limits. Usually transient; repeated, it delays scans.",
+   "steps": [
+    "Check whether other tools scan at the same time and stagger them.",
+    "Ask the vendor about scan scheduling or quota increases for that account."
+   ],
+   "verify": "Scans complete within their usual time."
+  }
+ ]
+}

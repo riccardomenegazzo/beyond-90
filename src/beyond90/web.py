@@ -13,7 +13,7 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Any, Optional
 
-from . import __version__, dashboard, rhythm
+from . import __version__, dashboard, onboarding, rhythm
 from .attribution import explain
 from .book import build_book_plan, render_book_html, render_book_markdown
 from .candor import candor_items
@@ -80,7 +80,8 @@ def analyze(
     extras["candor"] = candor_items(score, data, cat, plan=plan, forecast=extras.get("forecast"), attribution=extras.get("attribution"))
     exposures = rhythm.customer_exposures(data, threats, cat)
     expansion = rhythm.expansion_signals(data, score, actions, exposures)
-    prep = rhythm.build_prep(data, score, actions, extras, exposures, expansion)
+    onb = onboarding.diagnose(data)
+    prep = rhythm.build_prep(data, score, actions, {**extras, "onboarding": onb}, exposures, expansion)
     rh = {"touch": prep["touch"], "prep": prep, "prep_markdown": rhythm.render_prep_markdown(prep), "exposures": exposures, "expansion": expansion}
     summary = score.to_dict()
     return {
@@ -99,7 +100,8 @@ def analyze(
         "reach": (score.reach or {}).get("value") if isinstance(score.reach, dict) else None,
         "actions": len(actions),
         "prep_markdown": rh["prep_markdown"],
-        "dashboard": dashboard.build(data, score, cat, plan, {**extras, "rhythm": rh}, actions),
+        "onboarding_markdown": onboarding.render_markdown(onb, score.customer, cat.terms["units"]),
+        "dashboard": dashboard.build(data, score, cat, plan, {**extras, "rhythm": rh, "onboarding": onb}, actions),
         "report_html": render_html(score, actions, None, previous, **extras),
         "report_markdown": render_markdown(score, actions, None, previous, **extras),
         "qbr_markdown": render_qbr(score, actions, previous, quarter, **extras),
@@ -238,15 +240,19 @@ def analyze_book(
         plan = build_book_plan(customers, cat, hours_per_week=hours, horizon_weeks=weeks, realization=realization, weighting=weighting,
                                ramp=RampModel(ramp_weeks), baselines=baselines)
         by_name = {e.name: e for e in pf.entries}
-        week_rows, preps = [], {}
+        week_rows, preps, onb_summary = [], {}, {}
         for n, d in customers:
             ent = by_name[n]
             expo = rhythm.customer_exposures(d, threats, cat)
             exp = rhythm.expansion_signals(d, ent.score, ent.actions, expo)
             ren = compute_renewal(d, ent.score, None)
-            prep = rhythm.build_prep(d, ent.score, ent.actions, {"renewal": ren}, expo, exp)
+            onb = onboarding.diagnose(d)
+            onb_summary[keys[n]] = {"name": n, "complete": next(f["reached"] for f in onb["funnel"] if f["stage"] == "complete"), "total": len([a for a in d.accounts if a.status == "active"]),
+                                    "healthy_l1": onb["healthy_l1"], "listed_l1": onb["listed_l1"], "stalled": len(onb["stalled"]), "causes": onb["causes"], "secrets": len(onb["secrets"]),
+                                    "security": len(onb["security"]), "top_wave": onb["waves"][0] if onb["waves"] else None}
+            prep = rhythm.build_prep(d, ent.score, ent.actions, {"renewal": ren, "onboarding": onb}, expo, exp)
             preps[keys[n]] = {"markdown": rhythm.render_prep_markdown(prep), "prep": prep, "exposures": expo, "expansion": exp}
-            week_rows.append({"key": keys[n], "name": n, "data": d, "score": ent.score, "renewal": ren, "exposures": expo, "expansion": exp})
+            week_rows.append({"key": keys[n], "name": n, "data": d, "score": ent.score, "renewal": ren, "exposures": expo, "expansion": exp, "onboarding": onb})
         week = rhythm.week_plan(week_rows, week_hours)
         as_of = max(d.as_of for _, d in customers).isoformat()
         return {
@@ -256,6 +262,7 @@ def analyze_book(
             "week": week,
             "week_markdown": rhythm.render_week_markdown(week, as_of),
             "preps": preps,
+            "onboarding": {"customers": onb_summary, "shared": _shared_causes(onb_summary)},
             "advisories": len(threats),
             "arr_weighted_yield": pf.arr_weighted_yield,
             "weighted_start": plan.weighted_start,
@@ -275,6 +282,17 @@ def analyze_book(
         }
 
 
+def _shared_causes(summary: dict[str, Any]) -> list[dict[str, Any]]:
+    """Causes found at two customers or more: one write-up, one fix pattern, used many times."""
+    seen: dict[str, dict[str, Any]] = {}
+    for s in summary.values():
+        for c in s["causes"]:
+            e = seen.setdefault(c["issue"], {"issue": c["issue"], "title": c["title"], "customers": [], "accounts": 0})
+            e["customers"].append(s["name"])
+            e["accounts"] += c["count"]
+    return sorted((e for e in seen.values() if len(e["customers"]) >= 2), key=lambda e: (-len(e["customers"]), -e["accounts"], e["issue"]))
+
+
 def analyze_book_json(groups_json: str, options_json: str = "{}") -> str:
     return json.dumps(analyze_book(json.loads(groups_json), **json.loads(options_json)), ensure_ascii=False)
 
@@ -284,6 +302,15 @@ def analyze_json(files_json: str, options_json: str = "{}") -> str:
     opts = json.loads(options_json)
     since = opts.pop("since_files", None)
     return json.dumps(analyze_files(json.loads(files_json), since_files=since, **opts), ensure_ascii=False)
+
+
+def triage_json(text: str, options_json: str = "{}") -> str:
+    o = json.loads(options_json)
+    return json.dumps(onboarding.triage(text, str(o.get("provider", "")), str(o.get("kind", ""))), ensure_ascii=False)
+
+
+def preflight_json(options_json: str) -> str:
+    return json.dumps(onboarding.preflight(json.loads(options_json)), ensure_ascii=False)
 
 
 def plan_json(files_json: str, options_json: str = "{}") -> str:

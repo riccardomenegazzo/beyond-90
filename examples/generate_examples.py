@@ -132,6 +132,101 @@ def write_csv(path: Path, header: list[str], rows: list[list]) -> None:
         w.writerows(rows)
 
 
+# Connector errors as a platform would report them (invented, provider wording paraphrased).
+ERR = {
+    "scp": "AccessDenied: User arn:aws:sts::{acct}:assumed-role/ReadOnlyConnector/session is not authorized to perform: ec2:DescribeInstances with an explicit deny in a service control policy",
+    "extid": "AccessDenied when calling AssumeRole: the external ID in the request does not match the trust policy",
+    "consent": "AADSTS65001: The user or administrator has not consented to use the application",
+    "api": "Error 403: Cloud Asset API has not been used in project before or it is disabled. Enable it by visiting the console",
+    "optin": "OptInRequired: the account is not subscribed to region me-central-1",
+    "kms": "Skipped 6 volumes: KMSKeyNotAccessible, the key policy does not allow kms:CreateGrant for snapshot copy",
+    "secret": "AADSTS7000222: The provided client secret keys for the application are expired",
+    "stackset": "StackSet instance CREATE_FAILED: ReadOnlyConnector already exists in this account",
+    "orgpolicy": "FAILED_PRECONDITION: constraints/iam.allowedPolicyMemberDomains does not allow the member to be added",
+    "gatekeeper": "admission webhook \"validation.gatekeeper.sh\" denied the request: privileged containers are not allowed",
+    "pull": "Back-off pulling image: ImagePullBackOff, pull access denied for the sensor image",
+    "kernel": "sensor failed to load eBPF program: kernel 4.14 not supported (no BTF)",
+}
+
+
+def connectors_for(name: str, accounts: list[dict], rng: random.Random) -> list[list]:
+    """One cloud connector per account that has one, plus a few clusters and sensors."""
+    auth = {"aws": "role_external_id", "azure": "federated", "gcp": "sa_impersonation"}
+    scope = {"aws": "organization", "azure": "management_group", "gcp": "organization"}
+    regions = {"aws": 17, "azure": 1, "gcp": 1}
+    plan = {
+        "northwind": {"broken": {"optin": 2, "kms": 1, "secret": 1}, "blocked": {"scp": 3, "extid": 2, "consent": 2, "api": 1}, "pending": 1},
+        "contoso-bank": {"broken": {}, "blocked": {}, "pending": 0},
+        "fabrikam-labs": {"broken": {}, "blocked": {"stackset": 3, "orgpolicy": 1}, "pending": 0},
+    }[name]
+    rows = []
+    conn = sorted((a for a in accounts if a["connected"]), key=lambda a: a["id"])
+    unconn = sorted((a for a in accounts if not a["connected"]), key=lambda a: a["id"])
+
+    def row(a, status="ok", error="", deployed=None, first=None, last=None, scanned=None, au=None, expires="", priv="readonly", kind="cloud", nm=""):
+        p = a["provider"]
+        exp = regions.get(p, 1) if kind == "cloud" else 0
+        return [a["id"], kind, status, nm, error, deployed or "", first or "", last or "", scope.get(p, "account") if kind == "cloud" else "cluster",
+                exp or "", (exp if scanned is None else scanned) if exp else "", "", au or (auth.get(p, "role") if kind == "cloud" else "agent"), expires, priv]
+
+    def dates(a, lag=(1, 40)):
+        dep = min(a["created"] + timedelta(days=rng.randint(*lag)), AS_OF - timedelta(days=4))
+        first = min(dep + timedelta(days=rng.randint(0, 2)), AS_OF - timedelta(days=2))
+        return dep.isoformat(), first.isoformat()
+
+    assigned: dict[str, str] = {}
+    for cause, n in plan["broken"].items():
+        fits = [x for x in conn if x["provider"] == ("azure" if cause == "secret" else "aws") and x["id"] not in assigned]
+        for x in fits[:n]:
+            assigned[x["id"]] = cause
+    for a in conn:
+        dep, first = dates(a)
+        last = (AS_OF - timedelta(days=rng.randint(0, 1))).isoformat()
+        cause = assigned.get(a["id"])
+        if cause == "optin":
+            rows.append(row(a, "partial", ERR["optin"], dep, first, last, scanned=16))
+        elif cause == "kms":
+            rows.append(row(a, "partial", ERR["kms"], dep, first, last))
+        elif cause == "secret":
+            rows.append(row(a, "error", ERR["secret"], dep, first, (AS_OF - timedelta(days=9)).isoformat(), au="sp_secret", expires=(AS_OF - timedelta(days=9)).isoformat()))
+        else:
+            rows.append(row(a, "ok", "", dep, first, last))
+    # one Azure secret about to expire, one administrator policy, one access key: the security review has something to say
+    az = [r for r in rows if r[0].startswith("azure") and r[2] == "ok"]
+    if az:
+        az[0][12], az[0][13] = "sp_secret", (AS_OF + timedelta(days=12 if name == "contoso-bank" else 20)).isoformat()
+    aws_rows = [r for r in rows if r[0].startswith("aws") and r[2] == "ok"]
+    if name == "northwind" and len(aws_rows) > 2:
+        aws_rows[0][14] = "admin"
+        aws_rows[1][12] = "access_key"
+    if name == "contoso-bank" and aws_rows:
+        aws_rows[0][12] = "role"
+    blocked = [k for k, n in plan["blocked"].items() for _ in range(n)]
+    want = {"scp": "aws", "extid": "aws", "stackset": "aws", "consent": "azure", "api": "gcp", "orgpolicy": "gcp"}
+    pool = list(unconn)
+    for cause in blocked:
+        a = next((x for x in pool if x["provider"] == want[cause]), None)
+        if a is None:
+            continue
+        pool.remove(a)
+        dep = (AS_OF - timedelta(days=rng.randint(8, 30))).isoformat()
+        rows.append(row(a, "error", ERR[cause].replace("{acct}", a["id"][-3:]), dep, None, None, scanned=0))
+    for _ in range(plan["pending"]):
+        if pool:
+            a = pool.pop(0)
+            rows.append(row(a, "pending", "", (AS_OF - timedelta(days=1)).isoformat(), None, None, scanned=0))
+    # clusters and sensors on a few connected accounts
+    hosts = [a for a in conn if a["provider"] in ("aws", "azure", "gcp")][:4]
+    ext = {"northwind": [("kubernetes", "ok", ""), ("kubernetes", "error", ERR["gatekeeper"]), ("sensor", "error", ERR["pull"]), ("sensor", "error", ERR["kernel"])],
+           "contoso-bank": [("kubernetes", "ok", ""), ("sensor", "ok", ""), ("sensor", "ok", ""), ("kubernetes", "ok", "")],
+           "fabrikam-labs": [("kubernetes", "ok", "")]}[name]
+    for (kind, status, err), a in zip(ext, hosts):
+        dep, first = dates(a)
+        rows.append(row(a, status, err, dep, first if status == "ok" else None, (AS_OF - timedelta(days=1)).isoformat() if status == "ok" else None,
+                        kind=kind, nm=f"{a['id']}-{'cluster' if kind == 'kubernetes' else 'sensor'}"))
+    return rows
+
+
 def build(name: str, p: dict) -> None:
     rng = random.Random(p["seed"])
     cat_types = json.loads((CATALOGUE / "resource_types.json").read_text())
@@ -292,6 +387,9 @@ def build(name: str, p: dict) -> None:
               [[cid, nm, role, team, "", (AS_OF - timedelta(days=ago)).isoformat(), *ratings] for cid, nm, role, team, ago, ratings in CONTACTS[name]])
     write_csv(out / "commitments.csv", ["id", "contact_id", "description", "promised_on", "due_on", "done_on"], [list(c) for c in COMMITMENTS[name]])
 
+    write_csv(out / "connectors.csv", ["account_id", "kind", "status", "name", "error", "deployed_at", "first_scan_at", "last_success_at", "scope",
+                                       "regions_expected", "regions_scanned", "permissions_missing", "auth", "secret_expires_on", "privilege"],
+              connectors_for(name, accounts, random.Random(p["seed"] + 101)))
     write_csv(out / "interactions.csv", ["date", "kind", "contact_id", "summary", "next_step", "next_due"],
               [[(AS_OF - timedelta(days=ago)).isoformat(), kind, who, text, step, (AS_OF + timedelta(days=due)).isoformat() if due is not None else ""]
                for ago, kind, who, text, step, due in INTERACTIONS[name]])

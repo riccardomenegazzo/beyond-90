@@ -11,7 +11,7 @@
 
 export const INPUT_FILES = [
   "customer.toml", "accounts.csv", "inventory.csv", "activations.csv", "findings.csv",
-  "teams.csv", "entitlements.csv", "contacts.csv", "commitments.csv", "interactions.csv",
+  "teams.csv", "entitlements.csv", "contacts.csv", "commitments.csv", "interactions.csv", "connectors.csv",
 ];
 export const PERSONAL_FILES = ["contacts.csv", "commitments.csv", "interactions.csv"];
 export const WORKSPACE_FORMAT = "beyond90-workspace";

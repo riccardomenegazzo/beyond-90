@@ -4,6 +4,8 @@
 
 Most adoption reporting stops at "90% of accounts connected" (or sites, tenants, organizations: whatever your product connects). That number leaves out units nobody planned for, asset types the product never inventoried, controls that are switched off and findings nobody owns. Beyond 90 measures the whole pipeline against independent denominators, turns every gap into an action, and then goes further than a dashboard can.
 
+**It unblocks onboarding.** With the connector list the platform already has, it shows the stage every account is stuck at, the cause behind the error message, who fixes it and in what order, which connectors are counted as connected but broken, which secrets are about to expire, and whether the connectors themselves are over-privileged. Paste an error to have it explained; generate a pre-flight checklist for a kickoff. See [docs/onboarding.md](docs/onboarding.md).
+
 **It runs the week of a TAM with a book.** Tiers set a cadence; [This week](docs/rhythm.md) orders the customers with the reason for each place; each call has a prepared agenda (what we owe, what changed, the security news that touches them, the questions worth asking); a commercial conversation is offered only when trust has been earned. See [docs/rhythm.md](docs/rhythm.md).
 
 **It collects its own data.** A config file points at your sources (REST APIs, cloud CLIs, a drop folder) and `beyond90 run` does the rest on a schedule: collect, score, compare with last time, write the review, alert only on what changed. See [docs/automation.md](docs/automation.md).
@@ -128,6 +130,7 @@ beyond90 explain acme --store history.db   # what changed since the last stored 
 - [docs/profiles.md](docs/profiles.md): one engine for any security product (cloud, endpoint, and how to map others)
 - [docs/research/](docs/research/): the research behind the design, including a case study of one vendor's TAM motion
 - [docs/architecture.md](docs/architecture.md): how the data is treated (system of record, snapshots, compatibility, sync)
+- [docs/onboarding.md](docs/onboarding.md): connector stages, causes and fixes, waves, healthy versus counted, secrets, connector security, pre-flight
 - [docs/rhythm.md](docs/rhythm.md): tiers, cadence, the week, call prep, advisories, growth only when earned
 - [docs/threat-model.md](docs/threat-model.md): what is protected, from what, and what is not claimed
 - [docs/automation.md](docs/automation.md): collect data from APIs and CLIs by configuration, run on a schedule, alert on change

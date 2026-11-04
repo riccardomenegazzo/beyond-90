@@ -16,7 +16,7 @@ from typing import Any, Optional
 from ..loader import KNOWN_COLUMNS
 from .mapping import MapError, validate_spec
 
-TARGETS = ("accounts", "inventory", "activations", "findings", "teams", "entitlements", "contacts", "commitments", "interactions")
+TARGETS = ("accounts", "inventory", "activations", "findings", "teams", "entitlements", "contacts", "commitments", "interactions", "connectors")
 REQUIRED = {
     "accounts": ("id", "provider"),
     "inventory": ("account_id", "resource_type", "count", "inventoried"),
@@ -27,8 +27,9 @@ REQUIRED = {
     "contacts": ("id", "role"),
     "commitments": ("id", "due_on"),
     "interactions": ("date", "kind"),
+    "connectors": ("account_id", "kind", "status"),
 }
-KEYS_OF = {"inventory": ("account_id", "resource_type"), "activations": ("account_id", "module_id"), "entitlements": ("unit",)}
+KEYS_OF = {"inventory": ("account_id", "resource_type"), "activations": ("account_id", "module_id"), "entitlements": ("unit",), "connectors": ("account_id", "kind", "name")}
 SOURCE_TAGS = ("billing", "org", "sso", "manual", "plan")
 SOURCE_KEYS = {"name", "type", "target", "tag", "preset", "argv", "url", "path", "format", "records", "map", "auth", "headers", "pagination",
                "connected_if_listed", "env", "timeout_seconds", "delimiter", "optional"}

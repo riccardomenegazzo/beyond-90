@@ -1,0 +1,28 @@
+account_id,kind,status,name,error,deployed_at,first_scan_at,last_success_at,scope,regions_expected,regions_scanned,permissions_missing,auth,secret_expires_on,privilege
+aws-003,cloud,ok,,,2025-01-02,2025-01-02,2026-10-30,organization,17,17,,role_external_id,,readonly
+aws-004,cloud,ok,,,2025-05-19,2025-05-21,2026-10-30,organization,17,17,,role_external_id,,readonly
+aws-005,cloud,ok,,,2026-06-23,2026-06-24,2026-10-31,organization,17,17,,role_external_id,,readonly
+aws-006,cloud,ok,,,2024-10-29,2024-10-30,2026-10-30,organization,17,17,,role_external_id,,readonly
+aws-008,cloud,ok,,,2024-07-06,2024-07-08,2026-10-30,organization,17,17,,role_external_id,,readonly
+aws-009,cloud,ok,,,2026-03-21,2026-03-23,2026-10-31,organization,17,17,,role_external_id,,readonly
+aws-010,cloud,ok,,,2025-12-13,2025-12-14,2026-10-30,organization,17,17,,role_external_id,,readonly
+aws-011,cloud,ok,,,2026-04-26,2026-04-27,2026-10-31,organization,17,17,,role_external_id,,readonly
+aws-012,cloud,ok,,,2025-09-07,2025-09-09,2026-10-30,organization,17,17,,role_external_id,,readonly
+aws-013,cloud,ok,,,2026-05-04,2026-05-04,2026-10-30,organization,17,17,,role_external_id,,readonly
+aws-014,cloud,ok,,,2026-07-14,2026-07-15,2026-10-31,organization,17,17,,role_external_id,,readonly
+aws-018,cloud,ok,,,2025-12-12,2025-12-13,2026-10-30,organization,17,17,,role_external_id,,readonly
+aws-019,cloud,ok,,,2025-09-02,2025-09-02,2026-10-30,organization,17,17,,role_external_id,,readonly
+aws-020,cloud,ok,,,2024-07-20,2024-07-20,2026-10-30,organization,17,17,,role_external_id,,readonly
+gcp-001,cloud,ok,,,2025-06-27,2025-06-29,2026-10-31,organization,1,1,,sa_impersonation,,readonly
+gcp-003,cloud,ok,,,2024-11-13,2024-11-13,2026-10-30,organization,1,1,,sa_impersonation,,readonly
+gcp-004,cloud,ok,,,2024-12-05,2024-12-06,2026-10-30,organization,1,1,,sa_impersonation,,readonly
+gcp-005,cloud,ok,,,2025-12-30,2026-01-01,2026-10-31,organization,1,1,,sa_impersonation,,readonly
+gcp-006,cloud,ok,,,2025-03-03,2025-03-05,2026-10-31,organization,1,1,,sa_impersonation,,readonly
+gcp-009,cloud,ok,,,2024-10-16,2024-10-17,2026-10-30,organization,1,1,,sa_impersonation,,readonly
+gcp-010,cloud,ok,,,2026-03-04,2026-03-05,2026-10-30,organization,1,1,,sa_impersonation,,readonly
+gcp-011,cloud,ok,,,2025-03-13,2025-03-15,2026-10-31,organization,1,1,,sa_impersonation,,readonly
+aws-001,cloud,error,,StackSet instance CREATE_FAILED: ReadOnlyConnector already exists in this account,2026-10-16,,,organization,17,0,,role_external_id,,readonly
+aws-002,cloud,error,,StackSet instance CREATE_FAILED: ReadOnlyConnector already exists in this account,2026-10-22,,,organization,17,0,,role_external_id,,readonly
+aws-017,cloud,error,,StackSet instance CREATE_FAILED: ReadOnlyConnector already exists in this account,2026-10-09,,,organization,17,0,,role_external_id,,readonly
+gcp-002,cloud,error,,FAILED_PRECONDITION: constraints/iam.allowedPolicyMemberDomains does not allow the member to be added,2026-10-03,,,organization,1,0,,sa_impersonation,,readonly
+aws-003,kubernetes,ok,aws-003-cluster,,2024-12-07,2024-12-08,2026-10-30,cluster,,,,agent,,readonly

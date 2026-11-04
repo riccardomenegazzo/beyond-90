@@ -2,6 +2,19 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.16.0
+
+Onboarding: where connectors stall, why, and what unblocks them.
+
+- **Stages.** A new optional file, `connectors.csv`, places every account on a stage: discovered, connector deployed, signs in, can read, first scan done, complete and fresh. Without it, onboarding is read from the account list.
+- **Causes.** A catalogue of about thirty causes for AWS, Azure, Google Cloud, Kubernetes clusters and runtime sensors (guardrails, external IDs, consent, conditional access, management group scope, disabled APIs, organization policies, service perimeters, opt-in regions, customer-managed keys, private API servers, RBAC, pod security and admission policies, egress proxies, image pulls, kernels), each with an owner, steps and a way to verify.
+- **Unblock in this order.** Blocked accounts grouped by cause and ordered by accounts unblocked per hour; organization-level fixes counted once; several undeployed accounts become one organization-level deployment. Each wave copies as a ticket.
+- **Healthy versus counted.** The connectors that actually work, next to what L1 counts, and the accounts in between.
+- **Time to connect**, stuck accounts, **expiring secrets**, and a **security review of the connectors** themselves with STRIDE labels.
+- **Explain a connector error**: paste a message, get the cause and the fix, in the page or with `beyond90 triage`.
+- **Pre-flight checklist** for a kickoff, in the page or with `beyond90 preflight`.
+- **Book mode**: onboarding for every customer and the causes they share. The call brief, the week plan and the alerts take onboarding into account; `connectors` is a target for automation; `beyond90 onboarding DIR` prints the plan.
+
 ## 0.15.1
 
 A visual pass on the browser app. No change to any number.

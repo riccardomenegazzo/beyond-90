@@ -181,6 +181,13 @@ def build_prep(data: CustomerData, score: Score, actions: list[Any], extras: dic
         items.append({"id": "news", "title": "News that touches them", "why": "Staying ahead of what the customer reads is how a TAM stays useful between reviews.",
                       "points": [(f"{e['id']} ({e['severity']}): {e['title']}. {e['uncovered']} of {e['exposed']} exposed {score.terms['units']} have no mitigating capability on." if e["uncovered"] else f"{e['id']} ({e['severity']}): {e['title']}. All {e['exposed']} exposed {score.terms['units']} are covered; say so before they ask.") if e["exposed"] else f"{e['id']} ({e['severity']}): {e['title']}. {e['unknown']} {score.terms['units']} cannot be assessed because inventory is incomplete." for e in news]})
 
+    onb = extras.get("onboarding")
+    if onb and onb.get("waves"):
+        pts = [f"{w['title']}: {w['count']} {score.terms['units']}, owner {w['owner']}{' (one fix covers them all)' if w['once'] else ''}." for w in onb["waves"][:3]]
+        if onb.get("secrets"):
+            pts.append(f"{len(onb['secrets'])} connector secret(s) expire within a month or already have.")
+        items.append({"id": "onboarding", "title": "Unblock onboarding", "why": "A connector that is stuck is adoption the customer has paid for and cannot see; the fix is usually one guardrail, one consent or one template.", "points": pts})
+
     top = actions[:3]
     if top:
         items.append({"id": "gaps", "title": "Where the score leaks", "why": "Three things, ranked by points per hour, each with an owner.",
@@ -283,6 +290,19 @@ def week_plan(rows: list[dict[str, Any]], hours_per_week: float) -> dict[str, An
             why.append(f"{unowned} critical finding(s) with no owner")
         elif crit:
             pts += 4
+        onb = r.get("onboarding")
+        if onb and onb.get("has_detail"):
+            broken = len(onb.get("listed_but_broken") or [])
+            blocked = sum(1 for a in onb["accounts"] if a["issue"] and a["stage"] not in ("complete",) and a["issue"] != "not_deployed")
+            if broken:
+                pts += min(20, 8 * broken)
+                why.append(f"{broken} connector(s) that worked are failing")
+            elif blocked:
+                pts += min(12, 3 * blocked)
+                why.append(f"{blocked} {r['score'].terms['units']} blocked in onboarding")
+            if any(sec["days_left"] <= 14 for sec in onb.get("secrets") or []):
+                pts += 8
+                why.append("a connector secret expires within two weeks")
         mult = {"top": 1.0, "mid": 0.85, "other": 0.7}[cls]
         out.append(WeekRow(r["key"], r["name"], data.tier, cls, data.arr, pts * mult + {"top": 6, "mid": 3, "other": 0}[cls], why or ["on cadence, nothing pressing"], "", 0.0, touch))
     out.sort(key=lambda w: (-w.priority, -w.arr, w.name))

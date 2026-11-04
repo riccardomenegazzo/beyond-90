@@ -152,6 +152,7 @@ const ICONS = {
   layers: '<path d="M12 3l9 5-9 5-9-5zM3 13l9 5 9-5"/>',
   chip: '<rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 3v3M15 3v3M9 18v3M15 18v3M3 9h3M3 15h3M18 9h3M18 15h3"/>',
   search: '<circle cx="11" cy="11" r="6"/><path d="M20 20l-4-4"/>',
+  onboarding: '<path d="M9 2v6M15 2v6M6 8h12v3a6 6 0 0 1-12 0z"/><path d="M12 17v5"/>',
   sun: '<circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6L7 7M17 17l1.4 1.4M5.6 18.4L7 17M17 7l1.4-1.4"/>',
 };
 export function icon(name, size = 18) {

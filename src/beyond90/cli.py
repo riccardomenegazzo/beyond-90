@@ -387,6 +387,45 @@ def cmd_successplan(args) -> int:
     return 0
 
 
+def cmd_onboarding(args) -> int:
+    from . import onboarding
+    cat = _catalogue(args)
+    data, _ = load_customer(args.directory, cat, require_accounts=True)
+    d = onboarding.diagnose(data)
+    _emit(json.dumps(d, indent=2) if args.format == "json" else onboarding.render_markdown(d, data.name, cat.terms["units"]), args.out)
+    return 0
+
+
+def cmd_triage(args) -> int:
+    from . import onboarding
+    text = sys.stdin.read() if args.text == "-" else args.text
+    r = onboarding.triage(text, args.provider or "", args.kind or "")
+    if args.format == "json":
+        print(json.dumps(r, indent=2))
+        return 0 if r["match"] else 3
+    m = r["match"]
+    if not m:
+        print("No known cause matches this message. Collect the full error, the connector ID and the time, and open a support case.")
+        return 3
+    print(f"{m['title']}  [{m['id']}, owner: {m['owner']}, about {m['hours']:g} h{', fix once for the organization' if m['scope'] == 'org' else ''}]")
+    print(f"\nWhy: {m['why']}\n\nFix:")
+    for i, s in enumerate(m["steps"], 1):
+        print(f"  {i}. {s}")
+    print(f"\nVerify: {m['verify']}")
+    for o in r["also"]:
+        print(f"\nAlso possible: {o['title']} [{o['id']}]")
+    return 0
+
+
+def cmd_preflight(args) -> int:
+    from . import onboarding
+    opts = {"providers": [p.strip().lower() for p in args.providers.split(",") if p.strip()], "org": not args.per_account}
+    for k in ("kubernetes", "sensor", "cmk", "guardrails", "private_clusters", "pod_security", "proxy"):
+        opts[k] = bool(getattr(args, k))
+    _emit(onboarding.preflight(opts)["markdown"], args.out)
+    return 0
+
+
 def cmd_history(args) -> int:
     store = Store(args.store)
     rows = store.history(args.customer)
@@ -702,6 +741,29 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--out")
     sp.set_defaults(func=cmd_successplan)
 
+    sp = sub.add_parser("onboarding", help="where each account stands in onboarding, why connectors fail, and what to fix first")
+    common(sp)
+    sp.add_argument("--format", choices=["markdown", "json"], default="markdown")
+    sp.add_argument("--out")
+    sp.set_defaults(func=cmd_onboarding)
+
+    sp = sub.add_parser("triage", help='explain a connector error message: cause, owner, fix, how to verify (use "-" to read stdin)')
+    sp.add_argument("text")
+    sp.add_argument("--provider", choices=["aws", "azure", "gcp", "oci", "kubernetes"])
+    sp.add_argument("--kind", choices=["cloud", "kubernetes", "sensor", "registry", "code", "logs"])
+    sp.add_argument("--format", choices=["text", "json"], default="text")
+    sp.set_defaults(func=cmd_triage)
+
+    sp = sub.add_parser("preflight", help="a checklist for the onboarding kickoff, before any connector exists")
+    sp.add_argument("--providers", default="aws", help="comma-separated: aws,azure,gcp,oci")
+    sp.add_argument("--per-account", action="store_true", help="the customer will connect account by account, not at the organization level")
+    for k, h in (("kubernetes", "clusters will be connected"), ("sensor", "a runtime sensor will be deployed"), ("cmk", "disks use customer-managed keys"),
+                 ("guardrails", "SCPs, Azure policies or organization policies are in force"), ("private_clusters", "cluster API servers are private"),
+                 ("pod_security", "pod security or admission policies are enforced"), ("proxy", "egress goes through a proxy or TLS inspection")):
+        sp.add_argument("--" + k.replace("_", "-"), dest=k, action="store_true", help=h)
+    sp.add_argument("--out")
+    sp.set_defaults(func=cmd_preflight)
+
     sp = sub.add_parser("history", help="show stored snapshots for a customer")
     sp.add_argument("customer", help="customer name as in customer.toml")
     sp.add_argument("--store", required=True)
@@ -743,7 +805,7 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("config")
     sp.add_argument("--at", default="05:17", help="time of day in UTC, HH:MM")
     sp.add_argument("--every", choices=["hour", "day", "week"], default="day")
-    sp.add_argument("--install-from", default="beyond90", help='pip requirement for the workflow, e.g. "beyond90 @ git+https://github.com/OWNER/beyond-90@v0.15.1"')
+    sp.add_argument("--install-from", default="beyond90", help='pip requirement for the workflow, e.g. "beyond90 @ git+https://github.com/OWNER/beyond-90@v0.16.0"')
     sp.add_argument("--out")
     sp.set_defaults(func=cmd_schedule)
 

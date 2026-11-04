@@ -1,6 +1,6 @@
 // The dashboard views. Each takes a context {result, dash, score, engine, files, options, go} and returns a Node.
 import { h, chip, pct, pts, num, cap, dataTable, chipFilter, searchBox, toCsv, saveBlob, copyText } from "./ui.js";
-import { gauge, waterfall, lineChart, contributions, timeline, shareBar, STAGE, STAGE_NAME } from "./charts.js";
+import { gauge, waterfall, lineChart, contributions, timeline, shareBar, funnel, STAGE, STAGE_NAME } from "./charts.js";
 
 const card = (title, body, { sub = "", cls = "", actions = null } = {}) =>
   h("section", { class: "card " + cls }, h("header", { class: "cardhead" }, h("h2", { text: title }), actions), sub ? h("p", { class: "note first", text: sub }) : null, body);
@@ -48,6 +48,9 @@ export function overview({ result, dash, score, go }) {
 
 function attention({ result, dash, score }) {
   const out = [], o = score.outcomes, u = score.universe;
+  const ob = dash.onboarding;
+  if (ob && (ob.listed_but_broken.length || ob.stalled.length)) out.push({ kind: ob.listed_but_broken.length ? "bad" : "warn", title: ob.listed_but_broken.length ? `${ob.listed_but_broken.length} connector(s) counted as connected are failing` : `${ob.stalled.length} ${score.terms.units} stuck in onboarding`, text: ob.waves[0] ? `Unblock first: ${ob.waves[0].title} (${ob.waves[0].count}).` : "", go: "onboarding", cta: "See onboarding" });
+  if (ob && ob.secrets.some((x) => x.days_left <= 14)) out.push({ kind: "warn", title: "A connector secret expires within two weeks", text: ob.secrets.filter((x) => x.days_left <= 14).map((x) => `${x.connector} (${x.expires_on})`).join(", "), go: "onboarding" });
   const rh = dash.rhythm;
   if (rh && (rh.touch.state === "overdue" || rh.touch.state === "never")) out.unshift({ kind: "bad", title: rh.touch.state === "never" ? "No touch on record" : `${rh.touch.days_since} days since the last touch`, text: `The cadence for this customer is every ${rh.touch.cadence_days} days.`, go: "prep", cta: "Prepare the call" });
   const news = rh ? rh.exposures.filter((e) => e.uncovered && (e.severity === "critical" || e.severity === "high")) : [];
@@ -369,6 +372,159 @@ function customerNote(e, score) {
   else lines.push(`${e.exposed} of your ${units} are in scope. ${e.uncovered} do not yet have ${e.mitigated_by.join(" or ")} switched on, which is what addresses this.`, "", `Suggested next step: enable it on ${e.uncovered_ids.slice(0, 5).join(", ")}${e.uncovered > 5 ? " and the rest" : ""}. We can do it with you this week.`);
   if (e.unknown) lines.push("", `${e.unknown} more ${units} are not inventoried yet, so we cannot say whether they are affected.`);
   return lines.join("\n");
+}
+
+// ------------------------------------------------------------------ onboarding
+const STAGE_KIND = { discovered: "bad", deployed: "warn", authenticated: "warn", authorized: "warn", scanning: "", complete: "good" };
+const SEC_KIND = { critical: "bad", high: "bad", medium: "warn", low: "" };
+
+function waveTicket(w, customer, units) {
+  return [`[${customer}] ${w.title}`, "", w.why, "", `${units}: ${w.accounts.join(", ")}`, `Owner: ${w.owner} · About ${w.hours} h${w.once ? " · one fix covers them all" : ""}`, "", "Steps:",
+    ...w.steps.map((x, i) => `${i + 1}. ${x}`), "", `Verify: ${w.verify}`].join("\n");
+}
+
+export function onboardingView({ dash, score, result, engine }) {
+  const o = dash.onboarding, units = score.terms.units, Unit = cap(score.terms.unit);
+  const f = Object.fromEntries(o.funnel.map((x) => [x.stage, x.reached]));
+  const stageLabel = Object.fromEntries(o.stages.map((x) => [x.id, x.label]));
+  const head = h("div", { class: "kpiline" },
+    stat(`${f.complete} of ${f.discovered}`, "complete and fresh", f.complete === f.discovered ? "good" : ""),
+    stat(pct(o.healthy_l1), "healthy connection rate", o.healthy_l1 < o.listed_l1 - 0.0005 ? "warn" : "good"),
+    stat(pct(o.listed_l1), "counted as connected (L1)"),
+    stat(String(o.stalled.length), "stuck for more than a week", o.stalled.length ? "bad" : "good"),
+    stat(o.time_to_deploy.median == null ? "n/a" : `${o.time_to_deploy.median} d`, "median time to connect"),
+    stat(String(o.secrets.length), "secrets expiring", o.secrets.length ? "warn" : ""));
+  const gap = o.listed_but_broken.length ? h("div", { class: "card callout bad" }, h("h2", { text: `${o.listed_but_broken.length} ${o.listed_but_broken.length === 1 ? score.terms.unit + " is" : units + " are"} counted as connected, but the connector is failing` }),
+    h("p", { text: `L1 says ${pct(o.listed_l1)}; connectors that actually work say ${pct(o.healthy_l1)}. ${o.listed_but_broken.join(", ")}.` })) : null;
+  const noDetail = o.has_detail ? null : h("div", { class: "card callout" }, h("h2", { text: "Add connectors.csv for the full diagnosis" }),
+    h("p", { text: "Without it, onboarding is read from accounts.csv alone: discovered or connected. With one row per connector (status, the error the platform shows, dates, scope, how it signs in), each account gets a stage, a cause, an owner and a fix. See docs/onboarding.md." }));
+
+  const waves = o.waves.length ? h("div", { class: "waves" }, o.waves.map((w, i) => h("details", { class: "wave" },
+    h("summary", {}, h("span", { class: "agn", text: String(i + 1) }), h("span", { class: "wt" }, h("b", { text: w.title }), h("small", { class: "block", text: `${w.count} ${w.count === 1 ? score.terms.unit : units} · about ${w.hours} h · ${w.owner}` })),
+      w.once ? chip("fix once", "good") : null),
+    h("div", { class: "expand" }, h("p", { class: "note first", text: w.why }), h("ol", {}, w.steps.map((x) => h("li", { text: x }))), h("p", {}, h("b", { text: "Verify: " }), w.verify),
+      h("p", { class: "note", text: `${Unit}s: ${w.accounts.join(", ")}` }),
+      h("button", { class: "btn small", type: "button", text: "Copy as ticket", onclick: (e) => copyText(waveTicket(w, result.customer, Unit + "s")).then((ok) => { e.target.textContent = ok ? "Copied" : "Copy not available"; }) }))))) : h("p", { class: "note", text: "Nothing is blocked." });
+
+  let q = "", st = new Set(), pv = new Set();
+  const cols = [
+    { key: "id", label: Unit, render: (r) => h("b", { text: r.id }) },
+    { key: "provider", label: "Provider" },
+    { key: "stage", label: "Stage", sort: (r) => o.stages.findIndex((x) => x.id === r.stage), render: (r) => chip(stageLabel[r.stage], STAGE_KIND[r.stage]) },
+    { key: "issue", label: "Cause", render: (r) => (r.issue ? causeTitle(o, r.issue) : h("span", { class: "dim", text: "—" })) },
+    { key: "days_in_stage", label: "Days at stage", num: true, render: (r) => (r.stage === "complete" ? "" : h("span", { class: r.stalled ? "bad-text" : "", text: r.days_in_stage == null ? "?" : String(r.days_in_stage) })) },
+    { key: "owner", label: "Owner", render: (r) => r.owner || h("span", { class: "dim", text: "—" }) },
+  ];
+  const rows = o.accounts.map((r) => ({ ...r }));
+  const t = dataTable({ columns: cols, rows, pageSize: 30, label: "Onboarding by account", empty: "Nothing matches.",
+    expand: (r) => h("div", { class: "expand" },
+      r.error ? h("p", {}, h("b", { text: "The platform says: " }), h("code", { class: "err", text: r.error })) : null,
+      r.issue ? fixBlock(o, r.issue) : h("p", { class: "dim", text: "No problem found." }),
+      r.connector ? h("p", { class: "note", text: `Connector: ${r.connector.status}${r.connector.scope ? ", scope " + r.connector.scope : ""}${r.connector.auth ? ", signs in with " + r.connector.auth.replace(/_/g, " ") : ""}${r.connector.deployed_at ? ", deployed " + r.connector.deployed_at : ""}${r.connector.last_success_at ? ", last success " + r.connector.last_success_at : ""}${r.connector.regions[1] ? `, regions ${r.connector.regions[0]} of ${r.connector.regions[1]}` : ""}.` }) : null,
+      r.extensions.length ? h("p", { class: "note", text: "Also here: " + r.extensions.map((e) => `${e.kind} ${e.name || ""} ${e.ok ? "ok" : "failing"}`).join("; ") }) : null) });
+  const apply = () => t.setFilter((r) => (!st.size || st.has(r.stage)) && (!pv.size || pv.has(r.provider)) && (!q || (r.id + " " + r.owner + " " + (r.issue || "") + " " + r.error).toLowerCase().includes(q)));
+  const providers = [...new Set(rows.map((r) => r.provider))].sort();
+
+  const ext = o.extensions.failing.length ? card("Clusters and sensors that are failing", h("ul", { class: "checks" }, o.extensions.failing.map((e) => h("li", {}, chip(e.kind, "warn"),
+    h("span", {}, h("b", { text: `${e.account_id}${e.name ? " / " + e.name : ""}` }), h("small", { class: "block", text: e.issue ? causeTitle(o, e.issue) : "unclassified" }), e.error ? h("small", { class: "block dim", text: e.error }) : null))))) : null;
+  const secrets = o.secrets.length ? card("Secrets that expire", h("ul", { class: "checks" }, o.secrets.map((x) => h("li", {}, chip(x.state === "expired" ? "expired" : `${x.days_left} days`, x.state === "expired" || x.days_left <= 14 ? "bad" : "warn"),
+    h("span", {}, h("b", { text: x.connector }), h("small", { class: "block", text: `${x.auth.replace(/_/g, " ")} expires ${x.expires_on}. A connector that worked stops on that day.` }))))),
+    { sub: "Rotate early, and move to a role, federation or certificate where there is nothing to expire." }) : null;
+  const sec = card("Connector security review", o.security.length ? h("ul", { class: "checks" }, o.security.map((x) => h("li", {}, chip(x.severity, SEC_KIND[x.severity]),
+    h("span", {}, h("b", { text: `${x.connector}: ${x.title}` }), h("small", { class: "block", text: `${x.stride}. ${x.fix}` }))))) : h("p", { class: "note", text: o.has_detail ? "Every connector reads only and signs in without a long-lived secret." : "Needs connectors.csv (auth and privilege columns)." }),
+    { sub: "The connectors are an attack surface of their own: they hold standing access to every account. Read-only and secret-free is the goal." });
+
+  return h("div", {},
+    head, gap, noDetail,
+    h("div", { class: "col2" }, card("Where accounts stop", funnel(o.funnel), { sub: o.has_detail ? `Median ${o.time_to_deploy.median ?? "n/a"} days from discovery to a deployed connector (90th percentile ${o.time_to_deploy.p90 ?? "n/a"}); ${o.time_to_first_scan.median ?? "n/a"} days from deployment to the first scan.` : "From accounts.csv only." }),
+      card("Unblock in this order", waves, { sub: "Grouped by cause and ordered by accounts unblocked per hour. Causes fixed once for the organization come first when they hold many back.",
+        actions: h("button", { class: "btn small", type: "button", text: "Download plan", onclick: () => saveBlob(result.onboarding_markdown, "beyond90-onboarding.md", "text/markdown") }) })),
+    card("Every " + score.terms.unit + ", by stage", h("div", {},
+      h("div", { class: "toolbar" }, searchBox(`Search ${units}, owner, cause or error`, (v) => { q = v; apply(); }),
+        chipFilter("Stage", o.stages.filter((x) => rows.some((r) => r.stage === x.id)).map((x) => ({ label: x.label, value: x.id })), (v) => { st = v; apply(); }),
+        chipFilter("Provider", providers, (v) => { pv = v; apply(); }),
+        csvButton("beyond90-onboarding.csv", [{ key: "id", label: "id" }, { key: "provider", label: "provider" }, { key: "stage", label: "stage" }, { key: "issue", label: "cause" }, { key: "days_in_stage", label: "days_at_stage" }, { key: "owner", label: "owner" }, { key: "error", label: "error" }], () => t.rows())),
+      t.el)),
+    h("div", { class: "col2" }, h("div", {}, ext, secrets), sec),
+    h("div", { class: "col2" }, triageCard(engine), preflightCard(engine)));
+}
+
+function causeTitle(o, id) {
+  const c = o.causes.find((x) => x.issue === id);
+  return c ? c.title : id.replace(/_/g, " ");
+}
+
+function fixBlock(o, id) {
+  const w = o.waves.find((x) => x.issue === id || (id === "not_deployed" && x.issue === "deploy_org"));
+  if (!w) return h("p", { text: causeTitle(o, id) });
+  return h("div", {}, h("p", {}, h("b", { text: causeTitle(o, id) + ". " }), w.why), h("ol", {}, w.steps.map((x) => h("li", { text: x }))), h("p", { class: "note", text: "Verify: " + w.verify + " Owner: " + w.owner + "." }));
+}
+
+/** Paste what the customer sees; get the cause, the owner and the fix. The text stays in this tab. */
+function triageCard(engine) {
+  const ta = h("textarea", { rows: 5, placeholder: "Paste the error a connector shows, for example: AADSTS65001: The user or administrator has not consented…", "aria-label": "Error message", maxlength: 4000 });
+  const prov = h("select", { "aria-label": "Provider" }, ["", "aws", "azure", "gcp", "oci"].map((p) => h("option", { value: p, text: p || "any provider" })));
+  const kind = h("select", { "aria-label": "Connector kind" }, ["", "cloud", "kubernetes", "sensor", "registry"].map((k) => h("option", { value: k, text: k || "any connector" })));
+  const out = h("div", { class: "triage-out", role: "status" });
+  const run = async () => {
+    if (!ta.value.trim()) { out.replaceChildren(h("p", { class: "note", text: "Paste a message first." })); return; }
+    out.replaceChildren(h("p", { class: "note", text: "Reading…" }));
+    try {
+      const r = await engine.json("triage", { text: ta.value, options: { provider: prov.value, kind: kind.value } });
+      const m = r.match;
+      if (!m) { out.replaceChildren(h("p", { class: "note", text: "No known cause matches. Collect the full error, the connector ID and the time, and open a support case." })); return; }
+      out.replaceChildren(h("div", { class: "card inset" }, h("h3", { text: m.title }), h("p", { class: "note first", text: `${m.owner} · about ${m.hours} h${m.scope === "org" ? " · one fix covers the organization" : ""}` }),
+        h("p", { text: m.why }), h("ol", {}, m.steps.map((x) => h("li", { text: x }))), h("p", {}, h("b", { text: "Verify: " }), m.verify),
+        r.also.length ? h("p", { class: "note", text: "Also possible: " + r.also.map((x) => x.title).join("; ") }) : null));
+    } catch (e) { if (!e.cancelled) out.replaceChildren(h("p", { class: "note", text: "Could not read it: " + e.message })); }
+  };
+  return card("Explain a connector error", h("div", { class: "triage" }, ta, h("div", { class: "row left" }, prov, kind, h("button", { class: "btn small primary", type: "button", text: "Explain", onclick: run })), out),
+    { sub: "Matched against a catalogue of the usual causes for cloud accounts, clusters and sensors. Nothing leaves this page." });
+}
+
+/** The kickoff checklist, before any connector exists. */
+function preflightCard(engine) {
+  const boxes = {}, provs = {};
+  const opt = (k, label) => { const i = h("input", { type: "checkbox" }); boxes[k] = i; return h("label", { class: "inline check" }, i, label); };
+  const prov = (k, label) => { const i = h("input", { type: "checkbox", checked: k === "aws" }); provs[k] = i; return h("label", { class: "inline check" }, i, label); };
+  const out = h("div", { class: "preflight-out" });
+  let md = "";
+  const go = async () => {
+    const options = { providers: Object.keys(provs).filter((k) => provs[k].checked), org: !boxes.per_account.checked };
+    for (const k of ["kubernetes", "sensor", "cmk", "guardrails", "private_clusters", "pod_security", "proxy"]) options[k] = boxes[k].checked;
+    try {
+      const r = await engine.json("preflight", { options });
+      md = r.markdown;
+      out.replaceChildren(...r.sections.map((sct) => h("section", { class: "agitem" }, h("h3", { text: sct.title }), h("ul", { class: "todo" }, sct.items.map((x) => h("li", {}, h("input", { type: "checkbox", "aria-label": x }), " ", x))))),
+        h("div", { class: "row left" }, h("button", { class: "btn small", type: "button", text: "Copy", onclick: (e) => copyText(md).then((ok) => { e.target.textContent = ok ? "Copied" : "Copy not available"; }) }),
+          h("button", { class: "btn small", type: "button", text: "Download .md", onclick: () => saveBlob(md, "beyond90-preflight.md", "text/markdown") })));
+    } catch (e) { if (!e.cancelled) out.replaceChildren(h("p", { class: "note", text: "Could not build it: " + e.message })); }
+  };
+  return card("Pre-flight checklist for a kickoff", h("div", {},
+    h("div", { class: "row left wrap" }, prov("aws", "AWS"), prov("azure", "Azure"), prov("gcp", "Google Cloud"), prov("oci", "Oracle Cloud")),
+    h("div", { class: "row left wrap" }, opt("per_account", "account by account"), opt("guardrails", "guardrails in force"), opt("cmk", "customer-managed keys"),
+      opt("kubernetes", "clusters"), opt("sensor", "runtime sensor"), opt("private_clusters", "private clusters"), opt("pod_security", "pod security enforced"), opt("proxy", "egress proxy")),
+    h("div", { class: "row left" }, h("button", { class: "btn small primary", type: "button", text: "Build the checklist", onclick: go })), out),
+    { sub: "What to prepare and who must be in the room, so deployment day is not where the blockers are found." });
+}
+
+/** Book mode: onboarding across customers, and the causes they share. */
+export function bookOnboardView({ book }) {
+  const ob = book.onboarding, rows = Object.entries(ob.customers).map(([key, c]) => ({ key, ...c, id: key }));
+  const cols = [
+    { key: "name", label: "Customer", render: (c) => h("b", { text: c.name }) },
+    { key: "complete", label: "Complete", num: true, sort: (c) => c.complete / Math.max(1, c.total), render: (c) => `${c.complete} of ${c.total}` },
+    { key: "healthy_l1", label: "Healthy", num: true, render: (c) => h("span", { class: c.healthy_l1 < c.listed_l1 - 0.0005 ? "bad-text" : "", text: pct(c.healthy_l1) }) },
+    { key: "listed_l1", label: "Counted (L1)", num: true, render: (c) => pct(c.listed_l1) },
+    { key: "stalled", label: "Stuck > 1 week", num: true },
+    { key: "secrets", label: "Secrets expiring", num: true },
+    { key: "security", label: "Security notes", num: true },
+    { key: "top", label: "Unblock first", sort: (c) => (c.top_wave ? -c.top_wave.per_hour : 0), render: (c) => (c.top_wave ? h("span", {}, c.top_wave.title, h("small", { class: "block", text: `${c.top_wave.count} · ${c.top_wave.owner}` })) : h("span", { class: "dim", text: "nothing blocked" })) },
+  ];
+  return h("div", {},
+    card("Onboarding across the book", dataTable({ columns: cols, rows, label: "Onboarding by customer", pageSize: 100 }).el, { sub: "Healthy counts connectors that actually work; Counted is what L1 believes. A gap between them is a connector that broke after it was counted." }),
+    card("Causes more than one customer shares", ob.shared.length ? h("ul", { class: "checks" }, ob.shared.map((x) => h("li", {}, chip(`${x.customers.length} customers`, "warn"), h("span", {}, h("b", { text: x.title }), h("small", { class: "block", text: `${x.accounts} accounts: ${x.customers.join(", ")}` }))))) : h("p", { class: "note", text: "No cause is shared." }),
+      { sub: "Write the fix once, as a short guide or a template, and use it everywhere." }));
 }
 
 // ------------------------------------------------------------------ changes

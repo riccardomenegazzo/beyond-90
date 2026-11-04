@@ -297,6 +297,7 @@ function renderCompare() {
 const SINGLE_TABS = [
   { id: "overview", label: "Overview", kind: "view", view: "overview", icon: "overview", group: "Customer" },
   { id: "prep", label: "Prep a call", kind: "view", view: "prepView", icon: "prep" },
+  { id: "onboarding", label: "Onboarding", kind: "view", view: "onboardingView", icon: "onboarding" },
   { id: "actions", label: "Actions", kind: "view", view: "actionsView", icon: "actions" },
   { id: "accounts", label: "Accounts", kind: "view", view: "accountsView", icon: "accounts" },
   { id: "findings", label: "Findings", kind: "view", view: "findingsView", icon: "findings" },
@@ -315,6 +316,7 @@ const SINGLE_TABS = [
 const BOOK_TABS = [
   { id: "week", label: "This week", kind: "view", view: "weekView", icon: "week", group: "Your book" },
   { id: "bookmap", label: "Portfolio map", kind: "view", view: "bookView", icon: "bookmap" },
+  { id: "bookonboard", label: "Onboarding", kind: "view", view: "bookOnboardView", icon: "onboarding" },
   { id: "portfolio", label: "Portfolio", icon: "doc", group: "Documents", key: "portfolio_markdown", file: "beyond90-portfolio.md", type: "text/markdown", kind: "md" },
   { id: "book", label: "Where your hours go", key: "book_markdown", file: "beyond90-book.md", type: "text/markdown", kind: "md" },
   { id: "bookreport", label: "Book report", key: "book_html", file: "beyond90-book.html", type: "text/html", kind: "html" },

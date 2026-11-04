@@ -18,7 +18,8 @@ def _a(key: str, level: str, text: str) -> dict[str, str]:
 
 
 def compute_alerts(*, score: Any, metrics: dict[str, Optional[float]], previous: Optional[dict[str, Any]], sync_problems: list[dict[str, Any]],
-                   drift: Optional[dict[str, Any]], renewal: Optional[dict[str, Any]], dropped: Optional[dict[str, int]] = None) -> list[dict[str, str]]:
+                   drift: Optional[dict[str, Any]], renewal: Optional[dict[str, Any]], dropped: Optional[dict[str, int]] = None,
+                   onboarding: Optional[dict[str, Any]] = None) -> list[dict[str, str]]:
     out: list[dict[str, str]] = []
     for p in sync_problems:
         if p["status"] == "stale":
@@ -45,6 +46,18 @@ def compute_alerts(*, score: Any, metrics: dict[str, Optional[float]], previous:
         for i in drift["items"]:
             if i["status"] == "warn":
                 out.append(_a(f"drift:{i['id']}", "warn", i["text"]))
+    if onboarding and onboarding.get("has_detail"):
+        broken = onboarding.get("listed_but_broken") or []
+        before = set((previous or {}).get("broken_connectors") or [])
+        new = [b for b in broken if b not in before]
+        if new:
+            out.append(_a("connectors", "warn", f"{len(new)} connector(s) that worked are now failing: {', '.join(new[:6])}."))
+        soon = [s for s in onboarding.get("secrets") or [] if s["days_left"] <= 14]
+        if soon:
+            out.append(_a("secrets", "warn", f"{len(soon)} connector secret(s) expire within 14 days or already have: " + ", ".join(f"{s['connector']} ({s['expires_on']})" for s in soon[:5]) + "."))
+        crit = [x for x in onboarding.get("security") or [] if x["severity"] == "critical"]
+        if crit and not (previous and previous.get("connector_critical")):
+            out.append(_a("connector_security", "warn", f"{len(crit)} connector(s) have administrative rights at the organization level; they only need to read."))
     weak = (score.quality or {}).get("weak", 0)
     if weak and not (previous and previous.get("quality_weak")):
         out.append(_a("quality", "warn", f"{weak} input check(s) are weak; some figures may mislead."))

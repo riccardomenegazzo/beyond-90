@@ -1,4 +1,4 @@
-# Beyond 90: specification v0.15
+# Beyond 90: specification v0.16
 
 An adoption engine for Technical Account Managers. It measures how much of a customer's cloud estate is really covered and operated through a security platform, and turns every gap into an action. The bar keeps moving: when a customer grows or the product ships something, the denominators grow with it.
 
@@ -172,6 +172,10 @@ Input: text files are decoded as UTF-8 (with or without a byte-order mark) or UT
 
 `tier` classes (top, mid, other) set a default cadence of 7, 14 and 30 days, overridden by `settings.cadence_days`. A touch is a line of `interactions.csv` (personal; date not after `as_of`; kinds fixed) or a contact's `last_contact`; the state is on cadence, due soon (two days or fewer), overdue or none. Only the latest line's `next_step` is open. `week_plan` orders a book by a printed sum of points (touch state, overdue follow-up, overdue promises, renewal, uncovered advisories, critical findings without an owner) scaled by tier, and splits the weekly hours after preparation and calls. The call brief is built from existing results in a fixed order: what we owe, what changed, news, leaks, questions, renewal, growth, next steps. Advisories use the threat radar's matching; a feed for another catalogue is skipped with a warning; text is cleaned and only http(s) links are kept. Expansion signals (capacity above 90% of a licence, cross-sell actions, uncovered advisories) are shown as questions, and marked as not yet when the trust gate is closed: Yield below 75%, an overdue promise, a critical finding without an owner, or a fragile relationship. See `docs/rhythm.md`.
 
+## 15p. Onboarding (0.16)
+
+`connectors.csv` (optional) lists connectors with kind, status, the platform's error text, dates, scope, region counts, missing permissions, authentication and privilege. Each active account is placed on the first stage it has not passed: discovered, deployed, authenticated, authorized, scanning, complete. An error is classified by the first matching entry of `data/connector_issues.json` (provider and kind filtered); the account reached the stage before the cause's stage. Stale (no success for `connector_stale_days`), partial scope, missing permissions, never scanned, disabled and expired secrets are recognised from the columns. Waves group blocked accounts by cause; a cause with organization scope costs its hours once; three or more undeployed accounts of a provider become one organization-level deployment; waves are ordered by accounts per hour. The security review flags administrative privilege (critical at organization or management group scope), long-lived secrets and AWS roles without an external ID, labelled with STRIDE. Healthy rate counts complete accounts (and partial scope) over active accounts; it does not replace L1. See `docs/onboarding.md`.
+
 ## 16. Positioning against the platform's own views
 
 Security platforms commonly ship their own adoption or maturity views and an ownership model. Beyond 90 does not replace them: it measures what a platform cannot see about itself (the true universe of units to cover, across a whole portfolio) and reads ownership and decisions rather than rebuilding routing. The research behind this, including a case study of one vendor, is in `docs/research/`.
@@ -197,8 +201,9 @@ Security platforms commonly ship their own adoption or maturity views and an own
 11. 0.12: automatic collection, pipeline, alerts, schedules.
 12. 0.13: hardening: encodings, hostile inputs, network chaos, run lock, retention, workspace limits.
 13. 0.14: a native dashboard in the browser app: explorer tables, what-if planning, portfolio map, command palette, themes.
-14. 0.15 (this): the weekly rhythm for a book (tiers, cadence, call prep, advisories, trust-gated expansion) and a hardened browser app (Trusted Types, sealed storage, pinned supply chain).
-15. 1.0: connector interface and a first verified connector against a real tenant; criticality weighting; readiness checklist import; per-finding ownership sources.
+14. 0.15: the weekly rhythm for a book (tiers, cadence, call prep, advisories, trust-gated expansion) and a hardened browser app (Trusted Types, sealed storage, pinned supply chain).
+15. 0.16 (this): onboarding diagnosis: connector stages, a catalogue of causes, waves, connector security review, pre-flight.
+16. 1.0: connector interface and a first verified connector against a real tenant; criticality weighting; readiness checklist import; per-finding ownership sources.
 
 ## References
 
