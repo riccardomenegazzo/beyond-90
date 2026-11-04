@@ -8,6 +8,6 @@
     {"id": "gke", "name": "GKE security bulletins", "url": "https://docs.cloud.google.com/feeds/gke-security-bulletins.xml", "kind": "xml", "providers": ["gcp", "kubernetes"], "types": ["kubernetes"], "cloud": true},
     {"id": "cvdb", "name": "Open Cloud Vulnerability Database", "url": "https://www.cloudvulndb.org/rss/feed.xml", "kind": "xml", "cloud": true},
     {"id": "msrc", "name": "Microsoft security update guide", "url": "https://api.msrc.microsoft.com/update-guide/rss", "kind": "xml"},
-    {"id": "kev", "name": "Known exploited vulnerabilities (CISA)", "url": "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json", "kind": "kev"}
+    {"id": "kev", "name": "Known exploited vulnerabilities (CISA)", "url": "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json", "kind": "kev", "keep": "provider_or_type"}
   ]
 }

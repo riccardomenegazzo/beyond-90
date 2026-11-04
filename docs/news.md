@@ -13,10 +13,10 @@ A TAM earns trust between reviews by being the first to tell a customer about a 
 | GKE security bulletins | Issues in managed Kubernetes on Google Cloud, often with the upstream CVE |
 | Open Cloud Vulnerability Database | Cloud provider security issues that usually get no CVE, with what customers can check |
 | Microsoft security update guide | Kept only where it names something cloud (Azure, Entra, AKS and similar) |
-| Known exploited vulnerabilities (CISA) | Which CVEs are exploited in the wild; kept only where they name something cloud |
+| Known exploited vulnerabilities (CISA) | Which CVEs are exploited in the wild; kept where they name a provider or software that cloud workloads run (kernel, containers, databases, identity) |
 | Exploit prediction (EPSS) | The probability that each CVE is exploited in the next 30 days |
 
-To follow more, such as the research blogs of security vendors and independent researchers, copy the file, add any RSS, Atom or JSON Feed over https and pass it with `--sources`. A source can say it is cloud by nature (`"cloud": true`: every item is kept) and give default `providers` and resource `types`.
+To follow more, such as the research blogs of security vendors and independent researchers, copy the file, add any RSS, Atom or JSON Feed over https and pass it with `--sources`. A source can say it is cloud by nature (`"cloud": true`: every item is kept), that a resource type is enough to keep an item (`"keep": "provider_or_type"`), and give default `providers` and resource `types`. Each run reports, per source, how many items it read, kept and dropped (no date, too old, not cloud, over the cap) and the newest date it saw, so a source that changed its format shows up at once.
 
 ## What happens to each item
 

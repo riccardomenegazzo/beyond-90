@@ -12,6 +12,7 @@ Always aligned on cloud security news.
 - **For one customer:** badges (known exploited, EPSS, new, ransomware), sources, and a **security briefing** ready to send, without internal scores; also written by automated runs as `security-briefing.md`.
 - **For the book:** a "Cloud news" view with every story against every customer, ranked by known exploitation and by customers left uncovered, with filters by provider, exploited, uncovered and new.
 - A known exploited story on uncovered accounts moves the customer up the week, leads the news part of the call, and raises one alert in automated runs.
+- Each source reports what it read, kept and dropped, and the newest date it saw, in the feed and on the command line.
 - Safe reading: https only, redirects only to configured hosts, size and time caps, XML with entity declarations refused, everything reduced to plain text.
 
 ## 0.19.0

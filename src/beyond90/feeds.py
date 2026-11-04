@@ -10,8 +10,8 @@ advisories in the format the rest of the engine already matches against inventor
   source, XML with a DOCTYPE or an entity declaration refused before parsing, HTML reduced to plain text, links kept
   only if they are http(s). A source that fails is reported and the others still count.
 * **Cloud only.** Each item is tied to providers and resource types by whole-word terms (``data/cloud_terms.json``).
-  Sources that are cloud by nature keep every item; general sources (an operating-system vendor's guide, the
-  exploited catalogue) keep only items that name something cloud.
+  Sources that are cloud by nature keep every item; general sources keep only items that name a provider, or, when
+  the source says ``"keep": "provider_or_type"`` (the exploited catalogue), a cloud resource type such as compute.
 * **One story, several sources.** Items that share a CVE (or a link) are merged: the story lists every source.
 * **Prioritised for a reason.** Known exploited (KEV) is critical; an exploit probability (EPSS) of 0.5 or more
   is at least high and 0.9 or more critical; otherwise words in the text. Every severity carries the sentence that explains it.
@@ -40,6 +40,7 @@ from .catalogue import Catalogue
 MAX_BYTES = 16 * 1024 * 1024
 TIMEOUT = 25.0
 PER_SOURCE = 300
+PARSE_CAP = 5000
 TOTAL = 400
 CVE = re.compile(r"\bCVE-\d{4}-\d{4,7}\b", re.I)
 KINDS = ("jsonfeed", "xml", "kev")
@@ -85,7 +86,8 @@ def check_config(cfg: dict[str, Any]) -> list[dict[str, Any]]:
         if errors:
             continue
         out.append({"id": sid, "name": str(s.get("name") or sid)[:80], "url": url, "kind": kind, "cloud": bool(s.get("cloud", False)),
-                    "providers": [str(p).lower() for p in s.get("providers", [])], "types": [str(t) for t in s.get("types", [])]})
+                    "providers": [str(p).lower() for p in s.get("providers", [])], "types": [str(t) for t in s.get("types", [])],
+                    "keep": "provider_or_type" if s.get("keep") == "provider_or_type" else "provider"})
     if errors:
         raise ValueError("invalid feed sources:\n  " + "\n  ".join(errors))
     return out
@@ -192,7 +194,7 @@ def parse_xml(body: bytes) -> list[dict[str, Any]]:
         raise FeedError(f"not valid XML ({e})") from None
     items = [el for el in root.iter() if _local(el.tag) in ("item", "entry")]
     out = []
-    for it in items[:PER_SOURCE]:
+    for it in items[:PARSE_CAP]:
         link = ""
         for c in it:
             if _local(c.tag) == "link":
@@ -220,7 +222,7 @@ def parse_jsonfeed(body: bytes) -> list[dict[str, Any]]:
     if not isinstance(items, list):
         raise FeedError("a JSON Feed has an 'items' list")
     out = []
-    for it in items[:PER_SOURCE]:
+    for it in items[:PARSE_CAP]:
         if not isinstance(it, dict):
             continue
         out.append({"title": it.get("title") or it.get("id") or "", "url": it.get("url") or it.get("external_url") or "",
@@ -315,7 +317,8 @@ def collect(cfg: Optional[dict[str, Any]] = None, *, cat: Catalogue, today: Opti
     clf = Classifier()
     report, raw = [], []
     for s in sources:
-        st: dict[str, Any] = {"id": s["id"], "name": s["name"], "url": s["url"], "ok": False, "read": 0, "kept": 0, "error": ""}
+        st: dict[str, Any] = {"id": s["id"], "name": s["name"], "url": s["url"], "ok": False, "read": 0, "kept": 0, "error": "",
+                              "dropped": {"undated": 0, "old": 0, "not_cloud": 0, "over_cap": 0}, "newest": ""}
         try:
             items = PARSERS[s["kind"]](get(s["url"], hosts))
             st["ok"], st["read"] = True, len(items)
@@ -323,10 +326,20 @@ def collect(cfg: Optional[dict[str, Any]] = None, *, cat: Catalogue, today: Opti
             st["error"] = str(e)[:200]
             report.append(st)
             continue
+        dated = []
         for it in items:
             pub = _date(it.get("published"))
-            if pub is None or pub < since or pub > today + timedelta(days=1):
+            if pub is None:
+                st["dropped"]["undated"] += 1
                 continue
+            st["newest"] = max(st["newest"], pub.isoformat())
+            if pub < since or pub > today + timedelta(days=1):
+                st["dropped"]["old"] += 1
+                continue
+            dated.append((pub, it))
+        dated.sort(key=lambda x: x[0], reverse=True)               # feeds differ in order; keep the newest
+        st["dropped"]["over_cap"] = max(0, len(dated) - PER_SOURCE)
+        for pub, it in dated[:PER_SOURCE]:
             title = plain(it.get("title"), 240)
             text = plain(it.get("text"))
             if not title:
@@ -338,7 +351,8 @@ def collect(cfg: Optional[dict[str, Any]] = None, *, cat: Catalogue, today: Opti
             # every cloud, so a Kubernetes advisory read in one provider's bulletin still concerns every cluster.
             match = sorted((set(c["providers"]) or set(s["providers"])) - {"kubernetes"})
             types = sorted(set(c["types"]) | set(s["types"]))
-            if not s["cloud"] and not providers:
+            if not s["cloud"] and not providers and not (s["keep"] == "provider_or_type" and types):
+                st["dropped"]["not_cloud"] += 1
                 continue                                            # a general source: only what names something cloud
             cves = sorted({x.upper() for x in CVE.findall(f"{it.get('guid', '')} {title} {text}")})[:20]
             raw.append({"title": title, "url": safe_link(it.get("url")), "published": pub, "summary": plain(it.get("text"), 320),

@@ -51,7 +51,7 @@ def test_one_story_per_cve_across_sources_with_every_source_listed(feed):
     assert "kubernetes" in e["resource_types"] and "container_security" in e["mitigated_by"]
     assert e["providers"] == [] and {"gcp", "kubernetes"} <= set(e["platforms"]), "Kubernetes software concerns clusters on every cloud"
     assert sum(1 for x in feed["threats"] if "CVE-2026-90001" in x["cves"]) == 1
-    assert feed["threats"][0]["id"] == "CVE-2026-90001", "known exploited comes first"
+    assert feed["threats"][0]["kev"] and feed["threats"][1]["kev"] and not feed["threats"][2]["kev"], "known exploited comes first"
 
 
 def test_general_sources_keep_only_what_names_something_cloud(feed):
@@ -168,7 +168,7 @@ def test_the_book_lists_each_story_with_the_customers_it_touches(feed):
     b = analyze_book(_groups(), advisories=json.loads(json.dumps(feed)), week_hours=30)
     assert b["ok"] and b["news"]
     top = b["news"][0]
-    assert top["id"] == "CVE-2026-90001" and top["kev"] and top["customers"]
+    assert top["kev"] and top["customers"]
     assert all({"key", "name", "exposed", "uncovered", "unknown"} <= set(c) for c in top["customers"])
     flags = [(not e.get("kev"), -e["uncovered_customers"]) for e in b["news"]]
     assert flags[0] <= min(flags)
@@ -213,3 +213,11 @@ def test_the_cli_writes_the_feed_and_refuses_to_overwrite_when_nothing_was_read(
     stale.write_text("{}")
     assert cli.main(["feeds", "--out", str(stale)]) == 1 and stale.read_text() == "{}"
     assert "nothing written" in capsys.readouterr().err
+
+
+def test_the_exploited_catalogue_keeps_cloud_workload_software_and_says_what_it_dropped(feed):
+    k = by_id(feed, "CVE-2026-90050")
+    assert k["kev"] and "compute" in k["resource_types"] and k["providers"] == []
+    st = next(s for s in feed["sources"] if s["id"] == "kev")
+    assert st["dropped"]["not_cloud"] == 1 and st["dropped"]["old"] == 1 and st["newest"] == "2026-10-31"
+    assert next(s for s in feed["sources"] if s["id"] == "k8s")["dropped"]["old"] == 1

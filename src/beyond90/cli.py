@@ -474,7 +474,8 @@ def cmd_feeds(args) -> int:
             print(f"{args.previous}: not valid JSON; first-seen dates start today", file=sys.stderr)
     feed = feeds.collect(cfg, cat=Catalogue.load(), previous=previous)
     for st in feed["sources"]:
-        print(f"{st['id']:>6}  " + (f"{st['kept']} kept of {st['read']}" if st["ok"] else f"not read: {st['error']}"), file=sys.stderr)
+        why = ", ".join(f"{n} {k.replace('_', ' ')}" for k, n in (st.get("dropped") or {}).items() if n)
+        print(f"{st['id']:>6}  " + (f"{st['kept']} kept of {st['read']}" + (f" (dropped: {why}; newest {st['newest'] or 'n/a'})" if why else "") if st["ok"] else f"not read: {st['error']}"), file=sys.stderr)
     if not any(st["ok"] for st in feed["sources"] if st["id"] != "epss"):
         print("No source could be read; nothing written.", file=sys.stderr)
         return 1
