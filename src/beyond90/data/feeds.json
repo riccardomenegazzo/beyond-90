@@ -1,0 +1,13 @@
+{
+  "note": "Public sources read by `beyond90 feeds`. Copy this file, add the blogs and bulletins you follow (any RSS, Atom or JSON Feed over https) and pass it with --sources.",
+  "window_days": 30,
+  "epss": "https://api.first.org/data/v1/epss",
+  "sources": [
+    {"id": "k8s", "name": "Kubernetes official CVE feed", "url": "https://kubernetes.io/docs/reference/issues-security/official-cve-feed/index.json", "kind": "jsonfeed", "providers": ["kubernetes"], "types": ["kubernetes"], "cloud": true},
+    {"id": "aws", "name": "AWS security bulletins", "url": "https://aws.amazon.com/security/security-bulletins/rss/feed/", "kind": "xml", "providers": ["aws"], "cloud": true},
+    {"id": "gke", "name": "GKE security bulletins", "url": "https://docs.cloud.google.com/feeds/gke-security-bulletins.xml", "kind": "xml", "providers": ["gcp", "kubernetes"], "types": ["kubernetes"], "cloud": true},
+    {"id": "cvdb", "name": "Open Cloud Vulnerability Database", "url": "https://www.cloudvulndb.org/rss/feed.xml", "kind": "xml", "cloud": true},
+    {"id": "msrc", "name": "Microsoft security update guide", "url": "https://api.msrc.microsoft.com/update-guide/rss", "kind": "xml"},
+    {"id": "kev", "name": "Known exploited vulnerabilities (CISA)", "url": "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json", "kind": "kev"}
+  ]
+}

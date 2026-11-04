@@ -33,7 +33,7 @@ KEYS_OF = {"inventory": ("account_id", "resource_type"), "activations": ("accoun
 SOURCE_TAGS = ("billing", "org", "sso", "manual", "plan")
 SOURCE_KEYS = {"name", "type", "target", "tag", "preset", "argv", "url", "path", "format", "records", "map", "auth", "headers", "pagination",
                "connected_if_listed", "env", "timeout_seconds", "delimiter", "optional"}
-OUTPUTS = ("report", "qbr", "successplan", "summary", "roadmap", "json", "prep", "status", "receipt")
+OUTPUTS = ("report", "qbr", "successplan", "summary", "roadmap", "json", "prep", "status", "receipt", "briefing")
 TOP_KEYS = {"customer", "settings", "state", "security", "source", "notify", "export", "outputs", "advisories"}
 
 PRESETS: dict[str, dict[str, Any]] = {

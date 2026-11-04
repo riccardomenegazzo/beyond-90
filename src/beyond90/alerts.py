@@ -17,9 +17,14 @@ def _a(key: str, level: str, text: str) -> dict[str, str]:
     return {"key": key, "level": level, "text": text}
 
 
+def news_to_alert(exposures: Optional[list[dict[str, Any]]]) -> list[dict[str, Any]]:
+    """Advisories worth interrupting someone for: known exploited or critical, and landing on accounts with no mitigation."""
+    return [e for e in exposures or [] if e["uncovered"] and (e.get("kev") or e["severity"] == "critical")]
+
+
 def compute_alerts(*, score: Any, metrics: dict[str, Optional[float]], previous: Optional[dict[str, Any]], sync_problems: list[dict[str, Any]],
                    drift: Optional[dict[str, Any]], renewal: Optional[dict[str, Any]], dropped: Optional[dict[str, int]] = None,
-                   onboarding: Optional[dict[str, Any]] = None) -> list[dict[str, str]]:
+                   onboarding: Optional[dict[str, Any]] = None, exposures: Optional[list[dict[str, Any]]] = None) -> list[dict[str, str]]:
     out: list[dict[str, str]] = []
     for p in sync_problems:
         if p["status"] == "stale":
@@ -58,6 +63,11 @@ def compute_alerts(*, score: Any, metrics: dict[str, Optional[float]], previous:
         crit = [x for x in onboarding.get("security") or [] if x["severity"] == "critical"]
         if crit and not (previous and previous.get("connector_critical")):
             out.append(_a("connector_security", "warn", f"{len(crit)} connector(s) have administrative rights at the organization level; they only need to read."))
+    told = set((previous or {}).get("news_alerted") or [])
+    for e in news_to_alert(exposures):
+        if e["id"] not in told:
+            why = "known to be exploited" if e.get("kev") else f"{e['severity']}"
+            out.append(_a(f"news:{e['id']}", "warn", f"{e['id']} ({why}): {e['title']}. It touches {e['uncovered']} {score.terms['units']} without a mitigating capability."))
     weak = (score.quality or {}).get("weak", 0)
     if weak and not (previous and previous.get("quality_weak")):
         out.append(_a("quality", "warn", f"{weak} input check(s) are weak; some figures may mislead."))

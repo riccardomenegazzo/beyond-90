@@ -133,10 +133,59 @@ def customer_exposures(data: CustomerData, threats: list[Threat], cat: Catalogue
             out.append({"id": t.id, "title": t.title, "severity": t.severity, "published": t.published.isoformat() if t.published else "",
                         "age_days": rep.age_days, "summary": t.summary, "url": t.url, "source": t.source, "mitigated_by": t.mitigated_by,
                         "exposed": c.exposed_accounts, "covered": c.covered_accounts, "uncovered": len(c.uncovered_ids), "unknown": len(c.unknown_ids),
-                        "uncovered_ids": c.uncovered_ids[:12], "unknown_ids": c.unknown_ids[:12], "yield_gain_points": c.yield_gain_points})
+                        "uncovered_ids": c.uncovered_ids[:12], "unknown_ids": c.unknown_ids[:12], "yield_gain_points": c.yield_gain_points,
+                        "providers": t.providers, "resource_types": t.resource_types, **t.extra})
     order = {"critical": 0, "high": 1, "medium": 2, "low": 3}
     out.sort(key=lambda e: (order[e["severity"]], -e["uncovered"], e["id"]))
     return out
+
+
+def news_line(e: dict[str, Any], units: str) -> str:
+    """One advisory, said the way a customer can act on it: why it matters now, then where it lands in their estate."""
+    head = f"{e['id']} ({e['severity']}): {e['title']}."
+    if e.get("kev"):
+        head += " Known to be exploited" + (f"; agencies must fix it by {e['kev_due']}" if e.get("kev_due") else "") + "."
+    elif e.get("epss") is not None and e["epss"] >= 0.1:
+        head += f" Exploit probability {e['epss']:.0%} in the next 30 days."
+    if e["exposed"] and e["uncovered"]:
+        return head + f" {e['uncovered']} of {e['exposed']} exposed {units} have no mitigating capability on."
+    if e["exposed"]:
+        return head + f" All {e['exposed']} exposed {units} are covered; say so before they ask."
+    return head + f" {e['unknown']} {units} cannot be assessed because inventory is incomplete."
+
+
+def customer_briefing(customer: str, as_of: str, exposures: list[dict[str, Any]], units: str, limit: int = 5) -> str:
+    """A security note the customer can read as it is: the news that touches their estate, worst first, in their terms.
+
+    No internal scores. Each item says whether they are in scope, whether the protection is already on, and what to do."""
+    items = sorted(exposures, key=lambda e: (not e.get("kev"), not e["uncovered"], {"critical": 0, "high": 1, "medium": 2, "low": 3}[e["severity"]]))[:limit]
+    if not items:
+        return ""
+    L = [f"# Cloud security briefing for {customer}", "", f"As of {as_of}. The advisories below touch the kinds of resources you run; each says whether you are in scope and what we suggest.", ""]
+    for e in items:
+        L.append(f"## {e['title']}")
+        meta = [e["severity"].capitalize()]
+        if e.get("kev"):
+            meta.append("known to be exploited" + (f" (fix by {e['kev_due']} for public agencies)" if e.get("kev_due") else ""))
+        elif e.get("epss") is not None and e["epss"] >= 0.1:
+            meta.append(f"{e['epss']:.0%} chance of exploitation in the next 30 days")
+        if e.get("cves"):
+            meta.append(", ".join(e["cves"][:3]))
+        L += ["", " · ".join(meta) + ".", ""]
+        if e.get("summary"):
+            L += [e["summary"], ""]
+        if not e["exposed"]:
+            L.append(f"We found none of the affected resources in your inventoried {units}." + (f" {e['unknown']} {units} are not inventoried yet, so we cannot rule them out." if e["unknown"] else ""))
+        elif not e["uncovered"]:
+            L.append(f"{e['exposed']} of your {units} are in scope and all of them already have the protection that addresses this. No action is needed.")
+        else:
+            L.append(f"{e['exposed']} of your {units} are in scope; {e['uncovered']} do not yet have {' or '.join(m.replace('_', ' ') for m in e['mitigated_by'][:2])} switched on. "
+                     f"Suggested next step: switch it on for {', '.join(e['uncovered_ids'][:5])}{' and the rest' if e['uncovered'] > 5 else ''}.")
+        links = [s for s in e.get("sources", []) if s.get("url")] or ([{"name": e.get("source") or "source", "url": e["url"]}] if e.get("url") else [])
+        if links:
+            L += ["", "Read more: " + "; ".join(f"[{s['name']}]({s['url']})" for s in links[:3])]
+        L.append("")
+    return "\n".join(L)
 
 
 # --------------------------------------------------------------------- the brief
@@ -177,10 +226,10 @@ def build_prep(data: CustomerData, score: Score, actions: list[Any], extras: dic
             pts.append(f"{f.label}: {f.points:+.1f} pts")
         items.append({"id": "changed", "title": "What changed", "why": "The number only means something against the last conversation.", "points": pts})
 
-    news = [e for e in exposures if e["severity"] in ("critical", "high") or e["uncovered"]][:3]
+    news = sorted([e for e in exposures if e["severity"] in ("critical", "high") or e["uncovered"]], key=lambda e: (not e.get("kev"), not e["uncovered"]))[:3]
     if news:
         items.append({"id": "news", "title": "News that touches them", "why": "Staying ahead of what the customer reads is how a TAM stays useful between reviews.",
-                      "points": [(f"{e['id']} ({e['severity']}): {e['title']}. {e['uncovered']} of {e['exposed']} exposed {score.terms['units']} have no mitigating capability on." if e["uncovered"] else f"{e['id']} ({e['severity']}): {e['title']}. All {e['exposed']} exposed {score.terms['units']} are covered; say so before they ask.") if e["exposed"] else f"{e['id']} ({e['severity']}): {e['title']}. {e['unknown']} {score.terms['units']} cannot be assessed because inventory is incomplete." for e in news]})
+                      "points": [news_line(e, score.terms["units"]) for e in news]})
 
     onb = extras.get("onboarding")
     if onb and onb.get("waves"):
@@ -291,9 +340,10 @@ def week_plan(rows: list[dict[str, Any]], hours_per_week: float) -> dict[str, An
             pts += 25 if ren["status"] == "at_risk" else 12
             why.append(f"renewal in {ren['days']} days ({ren['status'].replace('_', ' ')})")
         worst = max((SEVERITY_POINTS[e["severity"]] for e in r.get("exposures", []) if e["uncovered"]), default=0)
+        exploited = [e for e in r.get("exposures", []) if e["uncovered"] and e.get("kev")]
         if worst:
-            pts += worst
-            why.append("security news touching uncovered " + r["score"].terms["units"])
+            pts += worst + (10 if exploited else 0)
+            why.append((f"known exploited {exploited[0]['id']} on uncovered " if exploited else "security news touching uncovered ") + r["score"].terms["units"])
         crit = r["score"].outcomes.get("critical_open", 0)
         unowned = sum(1 for f in data.findings if f.closed_at is None and f.severity == "critical" and not f.owner)
         if unowned:

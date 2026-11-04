@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"><channel><title>Update guide (mock)</title>
+<item><title>CVE-2026-90030 Desktop shell spoofing vulnerability (mock)</title><link>https://msrc.example.com/CVE-2026-90030</link><pubDate>Tue, 27 Oct 2026 07:00:00 GMT</pubDate><description>Affects a desktop component only.</description></item>
+<item><title>CVE-2026-90031 Azure Arc-enabled agent elevation of privilege (mock)</title><link>https://msrc.example.com/CVE-2026-90031</link><pubDate>Tue, 27 Oct 2026 07:00:00 GMT</pubDate><description>An agent on virtual machines allows privilege escalation.</description></item>
+</channel></rss>

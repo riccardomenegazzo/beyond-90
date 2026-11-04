@@ -15,6 +15,7 @@ import shutil
 import sys
 import zipfile
 from pathlib import Path
+from typing import Optional
 
 ROOT = Path(__file__).resolve().parent.parent
 PYODIDE_FILES = ("pyodide.mjs", "pyodide.asm.mjs", "pyodide.asm.wasm", "python_stdlib.zip", "pyodide-lock.json", "package.json")
@@ -23,7 +24,7 @@ DEMO_ENDPOINT = ROOT / "examples" / "profiles" / "endpoint" / "acme-endpoint"
 DEMO_PREVIOUS = ROOT / "examples" / "history" / "northwind-2026-09"
 
 
-def build(out: Path, pyodide: Path) -> None:
+def build(out: Path, pyodide: Path, feed: Optional[Path] = None) -> None:
     if out.exists():
         shutil.rmtree(out)
     out.mkdir(parents=True)
@@ -53,6 +54,11 @@ def build(out: Path, pyodide: Path) -> None:
     ep = {p.name: p.read_text(encoding="utf-8") for p in sorted(DEMO_ENDPOINT.iterdir()) if p.suffix in (".csv", ".toml")}
     (out / "demo-endpoint.json").write_text(json.dumps(ep, ensure_ascii=False), encoding="utf-8")
     shutil.copy(ROOT / "examples" / "threats.json", out / "demo-advisories.json")
+    if feed is not None and feed.is_file():
+        doc = json.loads(feed.read_text(encoding="utf-8"))          # parsed and written again: only JSON reaches the site
+        if doc.get("schema") == "beyond90-feed/1" and isinstance(doc.get("threats"), list):
+            (out / "feed").mkdir(exist_ok=True)
+            (out / "feed" / "advisories.json").write_text(json.dumps(doc, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     shutil.copy(ROOT / "THIRD_PARTY.md", out / "THIRD_PARTY.md")
     shutil.copy(ROOT / "LICENSE", out / "LICENSE.txt")
     write_service_worker(out)
@@ -74,8 +80,9 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--out", default="_site")
     ap.add_argument("--pyodide", required=True, help="the node_modules/pyodide folder")
+    ap.add_argument("--feed", help="a feed written by `beyond90 feeds`, published as feed/advisories.json")
     a = ap.parse_args()
-    build(Path(a.out), Path(a.pyodide))
+    build(Path(a.out), Path(a.pyodide), Path(a.feed) if a.feed else None)
     print(f"built {a.out}")
 
 

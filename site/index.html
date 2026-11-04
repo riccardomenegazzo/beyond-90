@@ -65,8 +65,9 @@
 
     <div class="advrow">
       <strong>News and advisories</strong>
-      <span class="note">A JSON feed of security advisories. Each one is matched to what the customer has inventoried. Nothing is fetched from the internet.</span>
+      <span class="note">Cloud security news, matched to what each customer has inventoried. The daily feed is collected from public sources (provider bulletins, the Kubernetes CVE feed, cloud vulnerability databases, the catalogue of exploited vulnerabilities) and published with this page; your data never leaves the browser.</span>
       <div class="row left">
+        <button class="btn small primary" id="latest-adv" type="button" hidden>Use today's cloud news</button>
         <label class="btn small">Add a feed<input id="advfile" type="file" accept=".json,application/json" hidden></label>
         <button class="btn small" id="demo-adv" type="button">Use the demo advisories</button>
         <button class="btn small" id="clear-adv" type="button" hidden>Remove</button>

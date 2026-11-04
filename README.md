@@ -8,6 +8,8 @@ Most adoption reporting stops at "90% of accounts connected" (or sites, tenants,
 
 **It shows what the work was worth, and to whom to say it.** Between two snapshots it writes a value receipt: accounts connected and the spend now watched, findings closed, decisions taken, the customer's own points apart from the bar moving, each logged touch next to what followed it (followed, not caused) and what did not move. It splits the estate by the customer's teams, ranked by what is at stake on each side, with a message per team, and drafts the recap after a call. See [docs/value.md](docs/value.md).
 
+**It reads the cloud security news every morning, and says whom it touches.** Provider bulletins, the Kubernetes CVE feed, cloud vulnerability databases and the catalogue of exploited vulnerabilities are read daily, merged into one story per issue, ranked by known exploitation and exploit probability, and matched to each customer's inventory: who is exposed, who is covered, who cannot be assessed. Each customer gets a briefing ready to send. See [docs/news.md](docs/news.md).
+
 **It unblocks onboarding.** With the connector list the platform already has, it shows the stage every account is stuck at, the cause behind the error message, who fixes it and in what order, which connectors are counted as connected but broken, which secrets are about to expire, and whether the connectors themselves are over-privileged. Paste an error to have it explained; generate a pre-flight checklist for a kickoff. See [docs/onboarding.md](docs/onboarding.md).
 
 **It runs the week of a TAM with a book.** Tiers set a cadence; [This week](docs/rhythm.md) orders the customers with the reason for each place; each call has a prepared agenda (what we owe, what changed, the security news that touches them, the questions worth asking); a commercial conversation is offered only when trust has been earned. See [docs/rhythm.md](docs/rhythm.md).
@@ -134,6 +136,7 @@ beyond90 explain acme --store history.db   # what changed since the last stored 
 - [docs/profiles.md](docs/profiles.md): one engine for any security product (cloud, endpoint, and how to map others)
 - [docs/research/](docs/research/): the research behind the design, including a case study of one vendor's TAM motion
 - [docs/architecture.md](docs/architecture.md): how the data is treated (system of record, snapshots, compatibility, sync)
+- [docs/news.md](docs/news.md): the daily cloud security news, merged, ranked and matched to each customer, with a briefing to send
 - [docs/value.md](docs/value.md): a value receipt between two snapshots, one digest per customer team, a recap after the call
 - [docs/outlook.md](docs/outlook.md): what breaks if nothing is done, with dates and exact effects; coverage weighted by spend and exposure
 - [docs/onboarding.md](docs/onboarding.md): connector stages, causes and fixes, waves, healthy versus counted, secrets, connector security, pre-flight

@@ -459,6 +459,29 @@ def cmd_teams(args) -> int:
     return 0
 
 
+def cmd_feeds(args) -> int:
+    from . import feeds
+    cfg = feeds.default_config()
+    if args.sources:
+        cfg = json.loads(Path(args.sources).read_text(encoding="utf-8"))
+    if args.days:
+        cfg["window_days"] = args.days
+    previous = None
+    if args.previous and Path(args.previous).is_file():
+        try:
+            previous = json.loads(Path(args.previous).read_text(encoding="utf-8"))
+        except ValueError:
+            print(f"{args.previous}: not valid JSON; first-seen dates start today", file=sys.stderr)
+    feed = feeds.collect(cfg, cat=Catalogue.load(), previous=previous)
+    for st in feed["sources"]:
+        print(f"{st['id']:>6}  " + (f"{st['kept']} kept of {st['read']}" if st["ok"] else f"not read: {st['error']}"), file=sys.stderr)
+    if not any(st["ok"] for st in feed["sources"] if st["id"] != "epss"):
+        print("No source could be read; nothing written.", file=sys.stderr)
+        return 1
+    _emit(feeds.render_markdown(feed) if args.format == "markdown" else json.dumps(feed, indent=1, ensure_ascii=False), args.out)
+    return 0
+
+
 def cmd_history(args) -> int:
     store = Store(args.store)
     rows = store.history(args.customer)
@@ -812,6 +835,14 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--out")
     sp.set_defaults(func=cmd_teams)
 
+    sp = sub.add_parser("feeds", help="read public cloud security sources into an advisory feed matched by every other command")
+    sp.add_argument("--sources", help="a JSON file of sources (default: the public sources in data/feeds.json)")
+    sp.add_argument("--previous", help="the last feed, to keep the date each story was first seen")
+    sp.add_argument("--days", type=int, help="how far back to keep items (default 30)")
+    sp.add_argument("--format", choices=["json", "markdown"], default="json")
+    sp.add_argument("--out")
+    sp.set_defaults(func=cmd_feeds)
+
     sp = sub.add_parser("history", help="show stored snapshots for a customer")
     sp.add_argument("customer", help="customer name as in customer.toml")
     sp.add_argument("--store", required=True)
@@ -853,7 +884,7 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("config")
     sp.add_argument("--at", default="05:17", help="time of day in UTC, HH:MM")
     sp.add_argument("--every", choices=["hour", "day", "week"], default="day")
-    sp.add_argument("--install-from", default="beyond90", help='pip requirement for the workflow, e.g. "beyond90 @ git+https://github.com/OWNER/beyond-90@v0.19.0"')
+    sp.add_argument("--install-from", default="beyond90", help='pip requirement for the workflow, e.g. "beyond90 @ git+https://github.com/OWNER/beyond-90@v0.20.0"')
     sp.add_argument("--out")
     sp.set_defaults(func=cmd_schedule)
 

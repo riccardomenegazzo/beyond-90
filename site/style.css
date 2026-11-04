@@ -252,3 +252,4 @@ footer{max-width:1240px;border-top:1px solid var(--border);padding-top:16px}
 .teamgrid .card{margin:0}
 pre.recap{white-space:pre-wrap;word-break:break-word;background:var(--bg2,rgba(127,127,127,.08));border-radius:8px;padding:12px;font-size:.85rem;max-height:340px;overflow:auto;margin:10px 0 0}
 textarea{width:100%;font:inherit;padding:8px;border-radius:8px;border:1px solid var(--line,#ccc);background:inherit;color:inherit;resize:vertical}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}

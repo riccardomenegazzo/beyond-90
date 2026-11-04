@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"><channel><title>Security bulletins (mock)</title>
+<item><title>CVE-2026-90010 - IAM role session tags could be overwritten in an SDK helper (mock)</title><link>https://aws.example.com/security/bulletins/2026-010/</link><pubDate>Thu, 29 Oct 2026 17:00:00 GMT</pubDate><description>&lt;p&gt;An issue in the helper allows &lt;b&gt;privilege escalation&lt;/b&gt; for callers who assume a role.&lt;/p&gt;&lt;script&gt;alert(1)&lt;/script&gt;</description><guid>2026-010</guid></item>
+<item><title>Issue with an S3 presigned URL edge case (mock)</title><link>javascript:alert(1)</link><pubDate>Mon, 26 Oct 2026 10:00:00 GMT</pubDate><description>Objects in a bucket could be read with an expired presigned URL in a narrow case.</description><guid>2026-009</guid></item>
+</channel></rss>

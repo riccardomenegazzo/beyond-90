@@ -10,6 +10,7 @@ import json
 import re
 import tempfile
 from collections.abc import Mapping
+from datetime import date
 from pathlib import Path
 from typing import Any, Optional
 
@@ -27,7 +28,7 @@ from .playbooks import generate_actions
 from .portfolio import load_portfolio, render_portfolio_markdown
 from .provenance import INPUT_FILES, hash_directory, input_hash
 from .qbr import render_qbr
-from .radar import parse_threats
+from .radar import parse_threats, threat_radar
 from .renewal import compute_renewal
 from .report import render_html, render_json, render_markdown
 from .scoring import compute_score
@@ -111,6 +112,7 @@ def analyze(
         "onboarding_status_html": status["html"],
         "outlook_ics": outlook.ics(look["events"], score.customer),
         "receipt_markdown": impact.render(value) if value else "",
+        "briefing_markdown": rhythm.customer_briefing(score.customer, str(score.as_of), exposures, cat.terms["units"]),
         "receipt_html": impact.render(value, html=True) if value else "",
         "dashboard": dashboard.build(data, score, cat, plan, {**extras, "rhythm": rh, "onboarding": onb, "outlook": look, "stake": weighted, "impact": value,
                                                               "teams": teams.digests(data, onb, look, weighted, cat.terms["units"])}, actions),
@@ -270,6 +272,7 @@ def analyze_book(
             week_rows.append({"key": keys[n], "name": n, "data": d, "score": ent.score, "renewal": ren, "exposures": expo, "expansion": exp, "onboarding": onb, "outlook": look})
         week = rhythm.week_plan(week_rows, week_hours)
         as_of = max(d.as_of for _, d in customers).isoformat()
+        news = book_news(customers, threats, cat, keys, as_of)
         return {
             "ok": True,
             "version": __version__,
@@ -279,6 +282,7 @@ def analyze_book(
             "preps": preps,
             "onboarding": {"customers": onb_summary, "shared": _shared_causes(onb_summary)},
             "advisories": len(threats),
+            "news": news,
             "arr_weighted_yield": pf.arr_weighted_yield,
             "weighted_start": plan.weighted_start,
             "weighted_end": plan.weighted_end,
@@ -295,6 +299,24 @@ def analyze_book(
             "book_markdown": render_book_markdown(plan),
             "book_html": render_book_html(plan),
         }
+
+
+def book_news(customers: list[tuple[str, Any]], threats: list[Any], cat: Catalogue, keys: dict[str, str], as_of: str) -> list[dict[str, Any]]:
+    """Every advisory against every customer: which ones it touches, where it is not covered, and where nobody can tell."""
+    if not threats:
+        return []
+    out = []
+    for rep in threat_radar(customers, threats, cat, as_of=date.fromisoformat(as_of)):
+        t = rep.threat
+        touched: list[dict[str, Any]] = [{"key": keys[c.customer], "name": c.customer, "arr": c.arr, "exposed": c.exposed_accounts, "covered": c.covered_accounts,
+                    "uncovered": len(c.uncovered_ids), "unknown": len(c.unknown_ids), "uncovered_ids": c.uncovered_ids[:8]} for c in rep.customers]
+        out.append({"id": t.id, "title": t.title, "severity": t.severity, "published": t.published.isoformat() if t.published else "", "age_days": rep.age_days,
+                    "summary": t.summary, "url": t.url, "source": t.source, "providers": t.providers, "platforms": t.providers, "resource_types": t.resource_types, "mitigated_by": t.mitigated_by,
+                    **t.extra, "customers": touched, "uncovered_customers": sum(1 for c in touched if c["uncovered"]),
+                    "arr_uncovered": sum(c["arr"] for c in touched if c["uncovered"])})
+    sev = {"critical": 0, "high": 1, "medium": 2, "low": 3}
+    out.sort(key=lambda e: (not e.get("kev"), -e["uncovered_customers"], sev[e["severity"]], -e["arr_uncovered"], e["id"]))
+    return out
 
 
 def _shared_causes(summary: dict[str, Any]) -> list[dict[str, Any]]:

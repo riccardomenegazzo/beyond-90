@@ -1,0 +1,5 @@
+{"version": "https://jsonfeed.org/version/1.1", "title": "Kubernetes CVE feed (mock)", "items": [
+ {"id": "CVE-2026-90001", "url": "https://github.com/kubernetes/kubernetes/issues/990001", "title": "ingress-nginx annotation injection allows arbitrary code execution (mock)", "content_text": "A user able to create Ingress objects can inject configuration and run arbitrary code in the controller. Upgrade the controller.", "date_published": "2026-10-28T12:00:00Z"},
+ {"id": "CVE-2026-90002", "url": "https://github.com/kubernetes/kubernetes/issues/990002", "title": "kubelet checkpoint API denial of service (mock)", "content_text": "Nodes can be exhausted through the checkpoint API.", "date_published": "2026-10-20T09:00:00Z"},
+ {"id": "CVE-2024-00001", "url": "https://github.com/kubernetes/kubernetes/issues/1", "title": "An old issue (mock)", "content_text": "Out of the window.", "date_published": "2024-01-01T00:00:00Z"}
+]}

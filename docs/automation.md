@@ -136,8 +136,17 @@ The browser app stays file-based on purpose: a page cannot hold a vendor token s
 
 ```toml
 [advisories]
-path = "advisories.json"    # a threat feed (docs/radar.md), relative to this file; a missing file is fine
+path = "advisories.json"    # a threat feed (docs/news.md), relative to this file; a missing file is fine
 ```
+
+To keep the feed current, run the collector before the pipeline, for example in the same schedule:
+
+```
+beyond90 feeds --previous advisories.json --out advisories.json.new && mv advisories.json.new advisories.json
+beyond90 run beyond90.toml
+```
+
+A story that is known to be exploited, or critical, and lands on accounts with no mitigation raises an alert once (the ids already alerted are kept in `runs.jsonl`). With the `briefing` output, each run also writes `security-briefing.md`: the news that touches the customer, in words they can read, with no internal scores. See [news.md](news.md).
 
 Each run matches the feed to the customer's inventory and writes `call-prep.md` next to the report: the agenda for the next call. Put the feed there from a `file` or `http` source, or by hand. A malformed feed stops the run with the reason; a feed for another catalogue is skipped with a warning.
 

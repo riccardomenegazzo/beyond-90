@@ -21,7 +21,7 @@ from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import Any, Optional
 
-from ..alerts import compute_alerts, render_message
+from ..alerts import compute_alerts, news_to_alert, render_message
 from ..catalogue import Catalogue
 from ..drift import input_drift
 from ..loader import DataError, load_customer
@@ -38,7 +38,7 @@ from .sync import SyncReport, sync
 
 PERSONAL = ("contacts.csv", "commitments.csv", "interactions.csv")
 OUTPUT_FILES = {"report": ("report_html", "report.html"), "qbr": ("qbr_markdown", "qbr.md"), "successplan": ("success_plan_markdown", "success-plan.md"),
-                "summary": ("report_markdown", "summary.md"), "roadmap": ("roadmap_markdown", "roadmap.md"), "json": ("score_json", "score.json"), "prep": ("prep_markdown", "call-prep.md"), "status": ("onboarding_status_html", "onboarding-status.html"), "receipt": ("receipt_html", "value-receipt.html")}
+                "summary": ("report_markdown", "summary.md"), "roadmap": ("roadmap_markdown", "roadmap.md"), "json": ("score_json", "score.json"), "prep": ("prep_markdown", "call-prep.md"), "status": ("onboarding_status_html", "onboarding-status.html"), "receipt": ("receipt_html", "value-receipt.html"), "briefing": ("briefing_markdown", "security-briefing.md")}
 
 
 class PipelineError(Exception):
@@ -242,7 +242,7 @@ def _run(cfg: Config, as_of: date, now: datetime, env: Mapping[str, str], sleep:
     sync_problems = [r.to_dict() for r in rep.problems]
     onb = diagnose_onboarding(data)
     alerts = compute_alerts(score=score, metrics=met, previous=previous, sync_problems=sync_problems, drift=drift, renewal=renewal, dropped=rep.dropped,
-                            onboarding=onb)
+                            onboarding=onb, exposures=result["dashboard"]["rhythm"]["exposures"])
     message = render_message(score.customer, as_of.isoformat(), score, alerts)
 
     out_dir = state / "out" / as_of.isoformat()
@@ -276,6 +276,7 @@ def _run(cfg: Config, as_of: date, now: datetime, env: Mapping[str, str], sleep:
               "input_hash": score.provenance.get("input_hash", ""), "critical_unowned": met.get("critical_unowned"),
               "renewal_status": renewal["status"] if renewal else None, "quality_weak": (score.quality or {}).get("weak", 0),
               "alerts": [a["key"] for a in alerts], "broken_connectors": onb["listed_but_broken"],
+              "news_alerted": sorted({*((previous or {}).get("news_alerted") or []), *(e["id"] for e in news_to_alert(result["dashboard"]["rhythm"]["exposures"]))})[-500:],
               "connector_critical": sum(1 for x in onb["security"] if x["severity"] == "critical"), "sources": {r.name: r.status for r in rep.results}, "warnings": len(warnings)}
     with (state / "runs.jsonl").open("a", encoding="utf-8") as fh:
         fh.write(json.dumps(record) + "\n")

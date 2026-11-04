@@ -111,6 +111,47 @@ class Threat:
     source: str = ""
     summary: str = ""
     url: str = ""
+    extra: dict = field(default_factory=dict)       # kev, epss, cves, sources, kind, severity_why, first_seen: from `beyond90 feeds`
+
+
+KIND_NAMES = ("vulnerability", "exploited", "incident", "technique", "change", "advisory")
+
+
+def _extra(t: dict) -> dict:
+    """The enrichment a collected feed carries, each field checked, because all of it ends up on a page."""
+    e: dict = {}
+    if t.get("kev") is True:
+        e["kev"] = True
+        if re.fullmatch(r"\d{4}-\d{2}-\d{2}", str(t.get("kev_due", ""))):
+            e["kev_due"] = t["kev_due"]
+        if t.get("ransomware") is True:
+            e["ransomware"] = True
+    try:
+        v = float(t["epss"]) if t.get("epss") is not None else None
+        if v is not None and 0.0 <= v <= 1.0:
+            e["epss"] = v
+    except (TypeError, ValueError):
+        pass
+    cves = [str(c).upper() for c in t.get("cves", []) if isinstance(c, str) and re.fullmatch(r"CVE-\d{4}-\d{4,7}", c, re.I)][:20]
+    if cves:
+        e["cves"] = cves
+    srcs = []
+    for s in t.get("sources", [])[:8] if isinstance(t.get("sources"), list) else []:
+        if isinstance(s, dict) and s.get("name"):
+            u = str(s.get("url", ""))
+            srcs.append({"name": clean_text(str(s["name"]))[:80], "url": u if re.match(r"^https?://[^\s<>\"']+$", u) else ""})
+    if srcs:
+        e["sources"] = srcs
+    plats = [str(x).lower() for x in t.get("platforms", []) if isinstance(x, str) and re.fullmatch(r"[a-z0-9_-]{1,24}", x.lower())][:8] if isinstance(t.get("platforms"), list) else []
+    if plats:
+        e["platforms"] = plats
+    if t.get("kind") in KIND_NAMES:
+        e["kind"] = t["kind"]
+    if t.get("severity_why"):
+        e["severity_why"] = clean_text(str(t["severity_why"]))[:200]
+    if re.fullmatch(r"\d{4}-\d{2}-\d{2}", str(t.get("first_seen", ""))):
+        e["first_seen"] = t["first_seen"]
+    return e
 
 
 @dataclass
@@ -182,7 +223,7 @@ def parse_threats(raw: object, cat: Catalogue, path: str = "the feed", skipped: 
                 errors.append(f"{where}: published must be YYYY-MM-DD")
         url = str(t.get("url", "")).strip()
         out.append(Threat(clean_text(tid), clean_text(str(t.get("title", tid)))[:300], sev, pub, types, [p.lower() for p in t.get("providers", [])], mit,
-                          clean_text(str(t.get("source", "")))[:120], clean_text(str(t.get("summary", "")))[:600], url if re.match(r"^https?://[^\s<>\"']+$", url) else ""))
+                          clean_text(str(t.get("source", "")))[:120], clean_text(str(t.get("summary", "")))[:600], url if re.match(r"^https?://[^\s<>\"']+$", url) else "", _extra(t)))
     if errors:
         raise ValueError("invalid threat feed:\n  " + "\n  ".join(errors))
     return out

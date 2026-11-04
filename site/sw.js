@@ -15,6 +15,11 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   const req = event.request;
   if (req.method !== "GET" || new URL(req.url).origin !== location.origin) return;
+  if (new URL(req.url).pathname.endsWith("/feed/advisories.json")) {
+    // The news is rebuilt every day: ask the network first, and fall back to the copy installed with the app.
+    event.respondWith(fetch(req, { cache: "no-store" }).catch(async () => (await (await caches.open(CACHE)).match(req, { ignoreSearch: true })) || Response.error()));
+    return;
+  }
   event.respondWith((async () => {
     const cache = await caches.open(CACHE);
     const hit = await cache.match(req, { ignoreSearch: true });

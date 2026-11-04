@@ -1,0 +1,33 @@
+{
+  "note": "Words that tie a news item to a cloud provider and to the resource types of the catalogue. Matched as whole words, case-insensitive.",
+  "providers": {
+    "aws": ["aws", "amazon web services", "amazon s3", "s3 bucket", "ec2", "lambda", "eks", "ecr", "iam role", "cloudtrail", "amazon bedrock", "sagemaker", "rds", "cloudformation", "aws sdk"],
+    "azure": ["azure", "entra", "entra id", "azure ad", "aks", "azure functions", "cosmos db", "azure storage", "storage account", "azure devops", "azure openai", "microsoft defender for cloud", "arc-enabled"],
+    "gcp": ["google cloud", "gcp", "gke", "cloud run", "cloud functions", "bigquery", "cloud storage", "vertex ai", "cloud sql", "compute engine", "workload identity"],
+    "kubernetes": ["kubernetes", "k8s", "kubelet", "kube-apiserver", "kubectl", "ingress-nginx", "helm", "containerd", "runc", "cri-o", "etcd", "argo cd", "istio", "openshift"],
+    "oci": ["oracle cloud", "oci"]
+  },
+  "types": {
+    "identity": ["iam", "identity", "entra", "oauth", "oidc", "saml", "sso", "token", "tokens", "credential", "credentials", "access key", "access keys", "service account", "service principal", "managed identity", "privilege escalation", "role assumption", "assumerole", "authentication bypass", "mfa"],
+    "storage_object": ["s3", "bucket", "buckets", "blob storage", "storage account", "cloud storage", "object storage", "presigned"],
+    "storage_block": ["ebs", "snapshot", "snapshots", "managed disk", "persistent disk"],
+    "managed_database": ["rds", "aurora", "cosmos db", "cloud sql", "bigquery", "dynamodb", "database", "databases", "postgresql", "mysql", "redis", "mongodb", "elasticsearch"],
+    "kubernetes": ["kubernetes", "k8s", "kubelet", "eks", "aks", "gke", "ingress-nginx", "helm", "pod", "pods", "cluster", "clusters", "admission controller", "cri-o", "openshift"],
+    "container_registry": ["container image", "container images", "registry", "ecr", "acr", "artifact registry", "docker hub", "image", "images", "supply chain"],
+    "compute": ["ec2", "virtual machine", "virtual machines", "vm", "vms", "instance", "instances", "compute engine", "linux kernel", "kernel", "imds", "metadata service", "container escape", "runc", "containerd", "glibc", "openssh", "ssh"],
+    "serverless": ["lambda", "serverless", "azure functions", "cloud functions", "cloud run", "fargate"],
+    "network": ["vpc", "load balancer", "firewall", "gateway", "vpn", "ssrf", "dns", "ingress", "api gateway", "cdn", "waf", "proxy"],
+    "ai_service": ["bedrock", "sagemaker", "azure openai", "vertex ai", "llm", "llms", "ai agent", "ai agents", "model context protocol", "mcp server", "prompt injection", "machine learning"]
+  },
+  "kinds": {
+    "exploited": ["actively exploited", "exploited in the wild", "in the wild", "zero-day", "0-day"],
+    "incident": ["breach", "campaign", "threat actor", "threat actors", "ransomware", "compromised", "malware", "botnet", "cryptomining", "cryptojacking"],
+    "technique": ["technique", "attack path", "misconfiguration", "misconfigurations", "abuse", "abusing", "persistence", "lateral movement", "exfiltration", "living off the land"],
+    "change": ["deprecation", "deprecated", "end of support", "end of life", "retirement", "breaking change", "will be enforced", "now enforced"]
+  },
+  "severity": {
+    "critical": ["critical", "cvss 9", "cvss 10", "cross-tenant", "unauthenticated remote code execution"],
+    "high": ["remote code execution", "rce", "privilege escalation", "authentication bypass", "container escape", "account takeover", "takeover", "arbitrary code", "command injection", "high severity", "sandbox escape"],
+    "low": ["low severity", "informational"]
+  }
+}

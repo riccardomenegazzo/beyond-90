@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom"><title>GKE bulletins (mock)</title>
+<entry><title>GCP-2026-050</title><id>tag:example,2016:gke#gcp-2026-050</id><updated>2026-10-29T00:00:00+00:00</updated>
+<link rel="alternate" href="https://cloud.example.com/kubernetes-engine/security-bulletins#gcp-2026-050"/>
+<content type="html">&lt;p&gt;A vulnerability in ingress-nginx, CVE-2026-90001, allows remote code execution. Upgrade your clusters.&lt;/p&gt;</content></entry>
+<entry><title>GCP-2026-049</title><id>tag:example,2016:gke#gcp-2026-049</id><updated>2026-10-15T00:00:00+00:00</updated>
+<link rel="alternate" href="https://cloud.example.com/kubernetes-engine/security-bulletins#gcp-2026-049"/>
+<content type="html">A Linux kernel flaw allows container escape on nodes (CVE-2026-90020).</content></entry>
+</feed>

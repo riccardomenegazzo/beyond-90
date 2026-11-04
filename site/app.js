@@ -320,6 +320,7 @@ const BOOK_TABS = [
   { id: "week", label: "This week", kind: "view", view: "weekView", icon: "week", group: "Your book" },
   { id: "bookmap", label: "Portfolio map", kind: "view", view: "bookView", icon: "bookmap" },
   { id: "bookonboard", label: "Onboarding", kind: "view", view: "bookOnboardView", icon: "onboarding" },
+  { id: "booknews", label: "Cloud news", kind: "view", view: "bookNewsView", icon: "news" },
   { id: "portfolio", label: "Portfolio", icon: "doc", group: "Documents", key: "portfolio_markdown", file: "beyond90-portfolio.md", type: "text/markdown", kind: "md" },
   { id: "book", label: "Where your hours go", key: "book_markdown", file: "beyond90-book.md", type: "text/markdown", kind: "md" },
   { id: "bookreport", label: "Book report", key: "book_html", file: "beyond90-book.html", type: "text/html", kind: "html" },
@@ -364,7 +365,7 @@ function selectTab(name, extra) {
 }
 
 function context() {
-  if (state.book) return { book: state.book, openCustomer: (key) => { state.mode = "single"; state.files = { ...state.groups[key] }; state.book = null; state.tab = "prep"; renderLoaded(); run(); } };
+  if (state.book) return { book: state.book, advisories: state.advisories, openCustomer: (key, tab = "prep") => { state.mode = "single"; state.files = { ...state.groups[key] }; state.book = null; state.tab = tab; renderLoaded(); run(); } };
   const r = state.result;
   if (r && state.parsedFor !== r) { state.parsed = JSON.parse(r.score_json); state.parsedFor = r; }
   return { result: r, dash: r.dashboard, score: state.parsed, engine: state.engine, files: state.files, options: options(), advisories: state.advisories, logTouch, go: (tab, extra) => selectTab(tab, extra) };
@@ -718,6 +719,38 @@ showAdvisories();
 $("advfile").addEventListener("change", (e) => e.target.files[0] && loadAdvisoryFile(e.target.files[0]).then(() => { e.target.value = ""; }));
 $("demo-adv").addEventListener("click", async () => { setAdvisories(await (await fetch("./demo-advisories.json")).json()); $("adv-status").textContent += " Run the analysis again to match them."; });
 $("clear-adv").addEventListener("click", () => setAdvisories(null));
+
+// The daily feed, published next to the page. Same origin, so the page's policy (connect-src 'self') is unchanged.
+const isDaily = (d) => d && !Array.isArray(d) && d.schema === "beyond90-feed/1";
+function describeFeed(d) {
+  const ok = (d.sources || []).filter((x) => x.ok && x.id !== "epss").length, all = (d.sources || []).filter((x) => x.id !== "epss").length;
+  const kev = (d.threats || []).filter((t) => t.kev).length;
+  return `${(d.threats || []).length} cloud stories as of ${d.as_of}${kev ? `, ${kev} known exploited` : ""} (${ok} of ${all} sources read).`;
+}
+async function latestFeed() {
+  try {
+    const r = await fetch("./feed/advisories.json");
+    if (!r.ok) return null;
+    const d = await r.json();
+    return isDaily(d) && Array.isArray(d.threats) && d.threats.length <= 2000 ? d : null;
+  } catch { return null; }
+}
+latestFeed().then((d) => {
+  if (!d) return;
+  state.latestFeed = d;
+  const b = $("latest-adv");
+  b.hidden = false;
+  b.title = describeFeed(d);
+  if (isDaily(state.advisories) && state.advisories.generated !== d.generated) {
+    setAdvisories(d);                                       // the user chose the daily news before: keep it current
+    $("adv-status").textContent = "Updated to today's news: " + describeFeed(d);
+  }
+});
+$("latest-adv").addEventListener("click", () => {
+  if (!state.latestFeed) return;
+  setAdvisories(state.latestFeed);
+  $("adv-status").textContent = describeFeed(state.latestFeed) + " Run the analysis again to match them.";
+});
 
 // ---------- the interaction log
 function logTouch(e) {

@@ -392,29 +392,84 @@ function logForm({ score, result, logTouch }) {
     { sub: "Adds a line to interactions.csv in this tab, then re-runs. Download the file to keep it; nothing is uploaded. The date cannot be after the customer's as_of." });
 }
 
+/** Badges that say why a story matters now: exploited, likely to be, new, and how many sources carry it. */
+function newsBadges(e, asOf) {
+  const fresh = e.first_seen && asOf && (Date.parse(asOf) - Date.parse(e.first_seen)) / 86400000 <= 7;
+  return [chip(e.severity, SEV[e.severity] || ""), e.kev ? chip("known exploited", "bad") : null, e.ransomware ? chip("ransomware", "bad") : null,
+    e.epss != null && e.epss >= 0.1 ? chip(`EPSS ${Math.round(e.epss * 100)}%`, e.epss >= 0.5 ? "warn" : "") : null,
+    fresh ? chip("new", "good") : null, e.kind && e.kind !== "vulnerability" && e.kind !== "advisory" ? chip(e.kind, "") : null];
+}
+function sourceLinks(e) {
+  const list = (e.sources && e.sources.length ? e.sources : [{ name: e.source || "source", url: e.url }]).filter((x) => x.name);
+  return list.map((x, i) => [i ? " · " : "", x.url && x.url.startsWith("https://") ? h("a", { href: x.url, target: "_blank", rel: "noopener noreferrer", text: x.name }) : h("span", { text: x.name })]);
+}
+
 /** The security news that touches this customer, in plain words, with a note to send. */
-export function newsView({ dash, score, advisories }) {
+export function newsView({ dash, score, result, advisories }) {
   const list = dash.rhythm.exposures;
-  if (!list.length) return card("News and advisories", h("p", { class: "note", text: advisories ? "None of the loaded advisories touch this customer's inventoried resources." : "No advisories are loaded. In step 1, add a feed (a JSON file) or try the demo feed, and each one is matched to this customer's inventory." }));
+  if (!list.length) return card("News and advisories", h("p", { class: "note", text: advisories ? "None of the loaded advisories touch this customer's inventoried resources." : "No advisories are loaded. In step 1, use today's cloud news, add a feed (a JSON file) or try the demo feed, and each one is matched to this customer's inventory." }));
   const units = score.terms.units;
-  return h("div", {}, h("p", { class: "note", text: "Matched against what is inventoried here. An advisory can also touch resources that were never inventoried; those are counted as unknown, not as safe." }),
+  const exploited = list.filter((e) => e.kev && e.uncovered).length;
+  return h("div", {},
+    h("div", { class: "card callout " + (exploited ? "bad" : "") }, h("h2", { text: exploited ? `${exploited} known exploited ${exploited === 1 ? "story lands" : "stories land"} on ${units} with no mitigation` : `${list.length} ${list.length === 1 ? "story touches" : "stories touch"} this customer` }),
+      h("p", { text: "Matched against what is inventoried here. An advisory can also touch resources that were never inventoried; those are counted as unknown, not as safe." }),
+      result.briefing_markdown ? h("span", { class: "btnrow" },
+        h("button", { class: "btn small primary", type: "button", text: "Copy the briefing for the customer", onclick: (ev) => copyText(result.briefing_markdown).then((ok) => { ev.target.textContent = ok ? "Copied" : "Copy not available"; }) }),
+        h("button", { class: "btn small", type: "button", text: "Download briefing (.md)", onclick: () => saveBlob(result.briefing_markdown, `beyond90-security-briefing-${result.as_of}.md`, "text/markdown") })) : null),
     list.map((e) => card(`${e.id}: ${e.title}`, h("div", {},
       h("div", { class: "kpiline" }, stat(String(e.exposed), `exposed ${units}`), stat(String(e.covered), "covered", e.covered ? "good" : ""), stat(String(e.uncovered), "not covered", e.uncovered ? "bad" : "good"), stat(String(e.unknown), "cannot be assessed", e.unknown ? "warn" : ""), e.yield_gain_points ? stat("+" + e.yield_gain_points.toFixed(1) + " pts", "Yield if covered") : null),
       e.summary ? h("p", { text: e.summary }) : null,
-      h("p", { class: "note" }, chip(e.severity, SEV[e.severity] || ""), ` published ${e.published || "n/a"}${e.age_days != null ? ` (${e.age_days} days ago)` : ""}${e.source ? ` · ${e.source}` : ""} · mitigated by ${e.mitigated_by.join(", ")}`, e.url && e.url.startsWith("https://") ? [" · ", h("a", { href: e.url, target: "_blank", rel: "noopener noreferrer", text: "source" })] : null),
+      h("p", { class: "note" }, newsBadges(e, result.as_of), ` published ${e.published || "n/a"}${e.age_days != null ? ` (${e.age_days} days ago)` : ""} · mitigated by ${e.mitigated_by.join(", ")}`, e.severity_why ? ` · ${e.severity} because ${e.severity_why}` : ""),
+      h("p", { class: "note" }, "Sources: ", sourceLinks(e)),
       e.uncovered_ids.length ? h("p", { class: "note", text: `Not covered: ${e.uncovered_ids.join(", ")}${e.uncovered > e.uncovered_ids.length ? ` and ${e.uncovered - e.uncovered_ids.length} more` : ""}` }) : null,
       h("div", { class: "row left" }, h("button", { class: "btn small", type: "button", text: "Copy a note for the customer", onclick: (ev) => copyText(customerNote(e, score)).then((ok) => { ev.target.textContent = ok ? "Copied" : "Copy not available"; }) }))),
       { cls: "news" })));
 }
 
+/** Book mode: every story against every customer, so one advisory becomes one round of calls, worst first. */
+export function bookNewsView({ book, advisories, openCustomer }) {
+  const news = book.news || [];
+  const daily = advisories && !Array.isArray(advisories) && advisories.schema === "beyond90-feed/1" ? advisories : null;
+  if (!news.length) return card("Cloud news across the book", h("p", { class: "note first", text: advisories ? "None of the loaded stories touch a customer in this book." : "No news is loaded. In step 1, use today's cloud news (or the demo advisories), then run the book again." }));
+  const asOf = daily ? daily.as_of : "";
+  let prov = new Set(), only = new Set();
+  const cards = news.map((e) => ({ e, el: card(`${e.id}: ${e.title}`, h("div", {},
+    h("p", { class: "note first" }, newsBadges(e, asOf), ` published ${e.published || "n/a"} · ${(e.platforms.length ? e.platforms : ["any provider"]).join(", ")}${e.providers.length ? "" : " (matched on every provider)"} · ${e.resource_types.join(", ")}`),
+    e.summary ? h("p", { text: e.summary }) : null,
+    h("table", { class: "dt", "aria-label": `Customers touched by ${e.id}` }, h("thead", {}, h("tr", {}, ["Customer", "Exposed", "Not covered", "Cannot tell"].map((t) => h("th", { scope: "col", text: t })), h("th", { scope: "col" }, h("span", { class: "sr-only", text: "Open" })))),
+      h("tbody", {}, e.customers.map((c) => h("tr", {}, h("td", {}, h("b", { text: c.name })), h("td", { class: "num", text: String(c.exposed) }),
+        h("td", { class: "num" }, h("span", { class: c.uncovered ? "bad-text" : "", text: String(c.uncovered) })), h("td", { class: "num", text: String(c.unknown) }),
+        h("td", {}, h("button", { class: "btn small", type: "button", text: "Open", "aria-label": `Open ${c.name} on the news`, onclick: () => openCustomer(c.key, "news") })))))),
+    h("p", { class: "note" }, "Sources: ", sourceLinks(e), e.severity_why ? ` · ${e.severity} because ${e.severity_why}` : "")),
+    { sub: e.uncovered_customers ? `${e.uncovered_customers} customer(s) with exposed resources and no mitigation on.` : e.customers.some((c) => c.exposed) ? "Every exposed customer is covered: a reassuring note is still worth sending." : "No customer is known to be exposed, but some cannot be assessed: their inventory is incomplete.", cls: "news" }) }));
+  const holder = h("div", {}, cards.map((c) => c.el));
+  const apply = () => cards.forEach(({ e, el }) => { el.hidden = (prov.size && !e.platforms.some((p) => prov.has(p))) || (only.has("kev") && !e.kev) || (only.has("uncovered") && !e.uncovered_customers) || (only.has("new") && !(e.first_seen && asOf && (Date.parse(asOf) - Date.parse(e.first_seen)) / 86400000 <= 7)); });
+  const providers = [...new Set(news.flatMap((e) => e.platforms))].sort();
+  const kev = news.filter((e) => e.kev && e.uncovered_customers).length;
+  const general = daily && Array.isArray(daily.general) ? daily.general.slice(0, 12) : [];
+  const failed = daily ? (daily.sources || []).filter((x) => !x.ok) : [];
+  return h("div", {},
+    h("div", { class: "card callout " + (kev ? "bad" : "") }, h("h2", { text: `${news.length} ${news.length === 1 ? "story touches" : "stories touch"} this book${kev ? `; ${kev} known exploited on uncovered accounts` : ""}` }),
+      h("p", { text: "Ranked by known exploitation, then by how many customers have exposed accounts with no mitigation, then by severity and ARR. Open a customer to send them their briefing." }),
+      daily ? h("p", { class: "note", text: `Feed as of ${daily.as_of}, last ${daily.window_days} days.${failed.length ? ` Not read today: ${failed.map((x) => x.name).join(", ")}.` : " Every source was read."}` }) : null),
+    h("div", { class: "toolbar" }, providers.length ? chipFilter("Provider", providers, (v) => { prov = v; apply(); }) : null,
+      chipFilter("Only", [{ label: "known exploited", value: "kev" }, { label: "not covered somewhere", value: "uncovered" }, { label: "new this week", value: "new" }], (v) => { only = v; apply(); })),
+    holder,
+    general.length ? card("Also worth reading", h("ul", { class: "checks" }, general.map((g) => h("li", {}, chip(g.published, ""), h("span", {}, g.url && g.url.startsWith("https://") ? h("a", { href: g.url, target: "_blank", rel: "noopener noreferrer", text: g.title }) : h("b", { text: g.title }), h("small", { class: "block", text: `${g.source}${(g.platforms || g.providers).length ? " · " + (g.platforms || g.providers).join(", ") : ""}` }))))),
+      { sub: "Cloud news that names no resource type the catalogue knows, so it is not matched to inventories." }) : null);
+}
+
 function customerNote(e, score) {
   const units = score.terms.units;
   const lines = [`${e.id}: ${e.title}`, ""];
+  if (e.kev) lines.push(`This one is known to be exploited in the wild${e.kev_due ? `; public agencies must fix it by ${e.kev_due}` : ""}.`, "");
   if (e.summary) lines.push(e.summary, "");
   if (!e.exposed) lines.push(`We could not find the affected resources in your inventoried ${units}.${e.unknown ? ` ${e.unknown} ${units} have not been inventoried, so we cannot rule them out.` : ""}`);
   else if (!e.uncovered) lines.push(`${e.exposed} of your ${units} are in scope, and all of them already have the protection that addresses this switched on. No action is needed from you.`);
   else lines.push(`${e.exposed} of your ${units} are in scope. ${e.uncovered} do not yet have ${e.mitigated_by.join(" or ")} switched on, which is what addresses this.`, "", `Suggested next step: enable it on ${e.uncovered_ids.slice(0, 5).join(", ")}${e.uncovered > 5 ? " and the rest" : ""}. We can do it with you this week.`);
   if (e.unknown) lines.push("", `${e.unknown} more ${units} are not inventoried yet, so we cannot say whether they are affected.`);
+  const links = (e.sources || []).filter((x) => x.url).slice(0, 3);
+  if (links.length || e.url) lines.push("", "Read more: " + (links.length ? links.map((x) => `${x.name} ${x.url}`).join("; ") : e.url));
   return lines.join("\n");
 }
 

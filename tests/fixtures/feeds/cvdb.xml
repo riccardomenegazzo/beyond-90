@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"><channel><title>Cloud vulnerability database (mock)</title>
+<item><title>Cross-tenant access to managed database backups (mock)</title><link>https://cvdb.example.org/cross-tenant-backups</link><pubDate>Sat, 31 Oct 2026 08:00:00 GMT</pubDate><description>A cross-tenant flaw in a managed database service exposed backups to other customers. Azure fixed it; review access logs.</description></item>
+<item><title>Attack path: abusing AI agent tool permissions to read secrets (mock)</title><link>https://cvdb.example.org/ai-agent-secrets</link><pubDate>Fri, 23 Oct 2026 08:00:00 GMT</pubDate><description>A technique where prompt injection makes an AI agent read credentials it was granted.</description></item>
+<item><title>Provider changes default network settings for new projects (mock)</title><link>https://cvdb.example.org/defaults</link><pubDate>Wed, 21 Oct 2026 08:00:00 GMT</pubDate><description>New defaults will be enforced next quarter.</description></item>
+</channel></rss>

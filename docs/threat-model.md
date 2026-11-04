@@ -31,6 +31,20 @@ Not covered: malware or a hostile extension on the device, a person with the unl
 | Two runs corrupting state | Run lock with stale detection; cache and output folders written whole or not at all |
 | State directory read by others | It holds customer data: keep it private; files are created with the process's umask |
 
+## Cloud news collection
+
+`beyond90 feeds` and the daily site build read public sources over the internet; this is the only part of the project that does so on its own.
+
+| Threat | Control |
+|---|---|
+| A source redirecting elsewhere | https only; a redirect is followed only to https on a configured host |
+| Entity expansion or external entities in XML | A document that declares a DOCTYPE or an entity is refused before it is parsed |
+| Script or markup in a story reaching a page | Every field is reduced to plain text without control or direction characters; links kept only if http(s), and the app opens only https links, with `noopener` |
+| A huge or slow source | 16 MB and 25 s per source, 300 items per source, 400 stories in a feed |
+| One source down or hostile | Each source is read on its own and reported in the feed; if every source fails, nothing is written and the site keeps no feed rather than an empty one |
+| The feed changing the page's policy | It is published on the same origin and read with `connect-src 'self'`; the page's policy is unchanged and nothing else is fetched |
+| Customer data leaving | The collector never sees customer data: matching happens in the browser or in your own pipeline |
+
 ## Supply chain
 
 GitHub Actions are pinned to commit SHAs and kept current by Dependabot; every workflow declares minimal permissions and none uses `pull_request_target`; CodeQL scans Python and JavaScript on every push and weekly; releases carry a signed build provenance attestation, an SBOM and checksums. The package has no runtime dependencies to compromise.

@@ -1,4 +1,4 @@
-# Beyond 90: specification v0.19
+# Beyond 90: specification v0.20
 
 An adoption engine for Technical Account Managers. It measures how much of a customer's cloud estate is really covered and operated through a security platform, and turns every gap into an action. The bar keeps moving: when a customer grows or the product ships something, the denominators grow with it.
 
@@ -188,6 +188,12 @@ Input: text files are decoded as UTF-8 (with or without a byte-order mark) or UT
 
 `digests(data)` groups accounts by owner team: accounts, spend share, unconnected accounts and spend, blocked connectors with their cause, gaps, findings not ok past the triage window, outlook events on their accounts, and contacts from `contacts.csv` whose team matches. Stake is 100 × unconnected spend share + 5 per critical finding + 2 per blocked connector + 0.5 per finding. At most three asks; the message uses no internal metric names. See `docs/value.md`.
 
+## 15s. Cloud news (0.20)
+
+`collect(sources)` reads each source (kinds `jsonfeed`, `xml` for RSS 2.0 and Atom, `kev` for the exploited catalogue) with https only, redirects to configured hosts only, 16 MB and 25 s per source, at most 300 items per source. XML declaring a DOCTYPE or an entity is refused. Text is plain; links are http(s) only. An item is kept when it is within the window and either its source is marked cloud or its text names a provider. Providers and resource types come from whole-word terms (`data/cloud_terms.json`) and the source's defaults. Matching providers are the providers named in the text, or else the source's, minus Kubernetes; a story keeps them only if every item agrees, otherwise it matches every provider. Items sharing a CVE, a link or a title of 24 characters or more form one story. Severity: KEV critical; EPSS ≥ 0.9 critical, ≥ 0.5 at least high; otherwise the first severity term found (critical, high, low), default medium. Mitigations: catalogue modules whose `requires_any` meets the types; posture for techniques, changes and stories without a CVE; detection for exploited, incidents and techniques; vulnerability scanning first for CVEs on compute, registries or serverless. Stories without a known resource type go to `general`. `first_seen` carries over from the previous feed. Ranking: KEV, severity, newest, EPSS.
+
+In the book, each story is matched to every customer (the threat radar) and ranked by KEV, customers with uncovered accounts, severity and ARR at stake. The customer briefing lists at most five stories touching the customer, KEV and uncovered first, without scores. Automated runs alert once per KEV or critical story with uncovered accounts. See `docs/news.md`.
+
 ## 16. Positioning against the platform's own views
 
 Security platforms commonly ship their own adoption or maturity views and an ownership model. Beyond 90 does not replace them: it measures what a platform cannot see about itself (the true universe of units to cover, across a whole portfolio) and reads ownership and decisions rather than rebuilding routing. The research behind this, including a case study of one vendor, is in `docs/research/`.
@@ -217,8 +223,9 @@ Security platforms commonly ship their own adoption or maturity views and an own
 15. 0.16: onboarding diagnosis: connector stages, a catalogue of causes, waves, connector security review, pre-flight.
 16. 0.17: read-only check commands per cause, onboarding progress and forecast, a status page for the customer.
 17. 0.18: the outlook if nothing is done, and coverage weighted by what is at stake.
-18. 0.19 (this): the value receipt, team digests and the recap after the call.
-19. 1.0: connector interface and a first verified connector against a real tenant; criticality weighting; readiness checklist import; per-finding ownership sources.
+18. 0.19: the value receipt, team digests and the recap after the call.
+19. 0.20 (this): the daily cloud security news, merged, ranked and matched to every customer.
+20. 1.0: connector interface and a first verified connector against a real tenant; criticality weighting; readiness checklist import; per-finding ownership sources.
 
 ## References
 

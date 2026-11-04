@@ -2,6 +2,18 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.20.0
+
+Always aligned on cloud security news.
+
+- **A daily feed from public sources.** `beyond90 feeds` reads the Kubernetes official CVE feed, AWS and GKE security bulletins, the Open Cloud Vulnerability Database, the Microsoft security update guide and the catalogue of known exploited vulnerabilities, plus any RSS, Atom or JSON Feed you add (`--sources`). It keeps what is about the cloud and recent, merges items that share a CVE into one story with every source, adds the exploit probability (EPSS), and gives every story a severity with its reason: known exploited is critical. The result is an advisory feed every other command already reads.
+- **Published with the site.** The Pages workflow collects it every morning and publishes it next to the app; "Use today's cloud news" loads it and keeps it current. Same origin, same strict policy; customer data never leaves the browser.
+- **Matched to the right estates.** A story about one provider's service touches only that provider's accounts; a Kubernetes CVE touches every cluster, wherever it runs.
+- **For one customer:** badges (known exploited, EPSS, new, ransomware), sources, and a **security briefing** ready to send, without internal scores; also written by automated runs as `security-briefing.md`.
+- **For the book:** a "Cloud news" view with every story against every customer, ranked by known exploitation and by customers left uncovered, with filters by provider, exploited, uncovered and new.
+- A known exploited story on uncovered accounts moves the customer up the week, leads the news part of the call, and raises one alert in automated runs.
+- Safe reading: https only, redirects only to configured hosts, size and time caps, XML with entity declarations refused, everything reduced to plain text.
+
 ## 0.19.0
 
 What the work was worth, who has to move, and what was agreed.
