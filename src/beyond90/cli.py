@@ -392,6 +392,13 @@ def cmd_onboarding(args) -> int:
     cat = _catalogue(args)
     data, _ = load_customer(args.directory, cat, require_accounts=True)
     d = onboarding.diagnose(data)
+    if args.since:
+        old, _ = load_customer(args.since, cat)
+        d["delta"] = onboarding.delta(onboarding.diagnose(old), d, old.as_of, data.as_of)
+    if args.customer_page:
+        page = onboarding.customer_status(d, data.name, data.as_of.isoformat(), cat.terms["units"], d.get("delta"))
+        _emit(page["html"] if args.format == "html" else page["markdown"], args.out)
+        return 0
     _emit(json.dumps(d, indent=2) if args.format == "json" else onboarding.render_markdown(d, data.name, cat.terms["units"]), args.out)
     return 0
 
@@ -743,7 +750,9 @@ def build_parser() -> argparse.ArgumentParser:
 
     sp = sub.add_parser("onboarding", help="where each account stands in onboarding, why connectors fail, and what to fix first")
     common(sp)
-    sp.add_argument("--format", choices=["markdown", "json"], default="markdown")
+    sp.add_argument("--format", choices=["markdown", "json", "html"], default="markdown")
+    sp.add_argument("--since", help="an earlier data directory of the same customer: what moved, and when it will be done")
+    sp.add_argument("--customer-page", action="store_true", help="the status page for the customer (Markdown, or --format html)")
     sp.add_argument("--out")
     sp.set_defaults(func=cmd_onboarding)
 
@@ -805,7 +814,7 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("config")
     sp.add_argument("--at", default="05:17", help="time of day in UTC, HH:MM")
     sp.add_argument("--every", choices=["hour", "day", "week"], default="day")
-    sp.add_argument("--install-from", default="beyond90", help='pip requirement for the workflow, e.g. "beyond90 @ git+https://github.com/OWNER/beyond-90@v0.16.0"')
+    sp.add_argument("--install-from", default="beyond90", help='pip requirement for the workflow, e.g. "beyond90 @ git+https://github.com/OWNER/beyond-90@v0.17.0"')
     sp.add_argument("--out")
     sp.set_defaults(func=cmd_schedule)
 

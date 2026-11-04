@@ -81,6 +81,9 @@ def analyze(
     exposures = rhythm.customer_exposures(data, threats, cat)
     expansion = rhythm.expansion_signals(data, score, actions, exposures)
     onb = onboarding.diagnose(data)
+    if old is not None:
+        onb["delta"] = onboarding.delta(onboarding.diagnose(old), onb, old.as_of, data.as_of)
+    status = onboarding.customer_status(onb, score.customer, str(score.as_of), cat.terms["units"], onb.get("delta"))
     prep = rhythm.build_prep(data, score, actions, {**extras, "onboarding": onb}, exposures, expansion)
     rh = {"touch": prep["touch"], "prep": prep, "prep_markdown": rhythm.render_prep_markdown(prep), "exposures": exposures, "expansion": expansion}
     summary = score.to_dict()
@@ -101,6 +104,8 @@ def analyze(
         "actions": len(actions),
         "prep_markdown": rh["prep_markdown"],
         "onboarding_markdown": onboarding.render_markdown(onb, score.customer, cat.terms["units"]),
+        "onboarding_status_markdown": status["markdown"],
+        "onboarding_status_html": status["html"],
         "dashboard": dashboard.build(data, score, cat, plan, {**extras, "rhythm": rh, "onboarding": onb}, actions),
         "report_html": render_html(score, actions, None, previous, **extras),
         "report_markdown": render_markdown(score, actions, None, previous, **extras),

@@ -30,6 +30,12 @@ Other parts of the view:
 - **Explain a connector error.** Paste the message the customer sees; the page names the cause, the owner, the fix and how to verify. The text never leaves the page. The same thing works on the command line: `beyond90 triage "AADSTS65001: ..." --provider azure`.
 - **Pre-flight checklist.** Before any connector exists: which clouds, at the organization level or account by account, guardrails, customer-managed keys, clusters, sensors, private API servers, pod security, an egress proxy. It answers who must be in the room and what to prepare, so that blockers are found in the kickoff and not on deployment day. `beyond90 preflight --providers aws,azure --kubernetes --pod-security`.
 
+**Commands to check.** Each cause comes with read-only commands for the customer to run (for example the SCPs attached to an account, the trust policy of the role, the role assignments of an application, the enabled APIs of a project, the labels of the sensor's namespace, the kernels of the nodes). Known values are filled in; the rest stay as `<placeholders>`. They never create, change or delete anything.
+
+**Progress and forecast.** When the analysis is compared with an earlier snapshot (saved in the browser, or `--since` on the command line), the view shows what completed, moved forward or went back, the causes fixed and the new ones, and the date everything is complete at the recent pace. The forecast is a direction, not a date to promise.
+
+**A status page for the customer.** One click gives a self-contained page to send: progress, what waits on which of their teams with steps and commands, what is on the vendor's side, credentials to rotate, and recommendations for the connectors. It contains no internal scores. `beyond90 onboarding DIR --customer-page --since OLD --format html --out status.html` does the same, and each automated run writes `onboarding-status.html`.
+
 In book mode, **Onboarding** lists every customer's completion, healthy versus counted rate, stuck accounts, expiring secrets and the first thing to unblock, plus the **causes several customers share**, which are worth one write-up used many times.
 
 The call brief gets an **Unblock onboarding** item when something is blocked, and the week plan moves a customer up when a connector that worked is failing or a secret expires within two weeks.

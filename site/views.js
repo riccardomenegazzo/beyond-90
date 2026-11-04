@@ -403,6 +403,7 @@ export function onboardingView({ dash, score, result, engine }) {
     h("summary", {}, h("span", { class: "agn", text: String(i + 1) }), h("span", { class: "wt" }, h("b", { text: w.title }), h("small", { class: "block", text: `${w.count} ${w.count === 1 ? score.terms.unit : units} · about ${w.hours} h · ${w.owner}` })),
       w.once ? chip("fix once", "good") : null),
     h("div", { class: "expand" }, h("p", { class: "note first", text: w.why }), h("ol", {}, w.steps.map((x) => h("li", { text: x }))), h("p", {}, h("b", { text: "Verify: " }), w.verify),
+      commands(w.checks),
       h("p", { class: "note", text: `${Unit}s: ${w.accounts.join(", ")}` }),
       h("button", { class: "btn small", type: "button", text: "Copy as ticket", onclick: (e) => copyText(waveTicket(w, result.customer, Unit + "s")).then((ok) => { e.target.textContent = ok ? "Copied" : "Copy not available"; }) }))))) : h("p", { class: "note", text: "Nothing is blocked." });
 
@@ -434,8 +435,21 @@ export function onboardingView({ dash, score, result, engine }) {
     h("span", {}, h("b", { text: `${x.connector}: ${x.title}` }), h("small", { class: "block", text: `${x.stride}. ${x.fix}` }))))) : h("p", { class: "note", text: o.has_detail ? "Every connector reads only and signs in without a long-lived secret." : "Needs connectors.csv (auth and privilege columns)." }),
     { sub: "The connectors are an attack surface of their own: they hold standing access to every account. Read-only and secret-free is the goal." });
 
+  const dl = o.delta;
+  const since = dl ? card(`Since ${dl.since}`, h("div", {},
+    h("div", { class: "kpiline" }, stat(`+${dl.finished.length}`, "completed", dl.finished.length ? "good" : ""), stat(String(dl.forward.length), "moved forward"), stat(String(dl.back.length), "went back", dl.back.length ? "bad" : ""),
+      stat(dl.per_week.toFixed(1), `completed per week`), stat(dl.forecast.state === "on_track" ? dl.forecast.date : dl.forecast.state === "done" ? "done" : "no progress", "all complete around", dl.forecast.state === "stalled" ? "bad" : "")),
+    dl.back.length ? h("p", { class: "bad-text", text: "Went back: " + dl.back.map((b) => `${b.id} (${stageLabel[b.from]} → ${stageLabel[b.to]})`).join(", ") }) : null,
+    dl.fixed.length ? h("p", {}, h("b", { text: "Fixed: " }), dl.fixed.map((x) => `${x.title} (${x.count})`).join("; ")) : null,
+    dl.appeared.length ? h("p", {}, h("b", { text: "New: " }), dl.appeared.map((x) => `${x.title} (${x.count})`).join("; ")) : null),
+    { sub: "The forecast extends the pace between the two snapshots. It is a direction, not a date to promise." }) : null;
+  const share = h("div", { class: "row left" },
+    h("button", { class: "btn small primary", type: "button", text: "Status page for the customer (.html)", onclick: () => saveBlob(result.onboarding_status_html, `onboarding-status-${result.as_of}.html`, "text/html") }),
+    h("button", { class: "btn small", type: "button", text: "As Markdown", onclick: () => saveBlob(result.onboarding_status_markdown, `onboarding-status-${result.as_of}.md`, "text/markdown") }),
+    h("button", { class: "btn small", type: "button", text: "Copy for an email", onclick: (e) => copyText(result.onboarding_status_markdown).then((ok) => { e.target.textContent = ok ? "Copied" : "Copy not available"; }) }),
+    h("span", { class: "note", text: "What is done, what waits on whose team, and the read-only commands to check. No internal scores." }));
   return h("div", {},
-    head, gap, noDetail,
+    head, share, gap, noDetail, since,
     h("div", { class: "col2" }, card("Where accounts stop", funnel(o.funnel), { sub: o.has_detail ? `Median ${o.time_to_deploy.median ?? "n/a"} days from discovery to a deployed connector (90th percentile ${o.time_to_deploy.p90 ?? "n/a"}); ${o.time_to_first_scan.median ?? "n/a"} days from deployment to the first scan.` : "From accounts.csv only." }),
       card("Unblock in this order", waves, { sub: "Grouped by cause and ordered by accounts unblocked per hour. Causes fixed once for the organization come first when they hold many back.",
         actions: h("button", { class: "btn small", type: "button", text: "Download plan", onclick: () => saveBlob(result.onboarding_markdown, "beyond90-onboarding.md", "text/markdown") }) })),
@@ -447,6 +461,14 @@ export function onboardingView({ dash, score, result, engine }) {
       t.el)),
     h("div", { class: "col2" }, h("div", {}, ext, secrets), sec),
     h("div", { class: "col2" }, triageCard(engine), preflightCard(engine)));
+}
+
+function commands(list) {
+  if (!list || !list.length) return null;
+  const text = list.join("\n");
+  return h("div", { class: "cmds" }, h("div", { class: "cmdhead" }, h("span", { text: "To check (read-only)" }),
+    h("button", { class: "btn small", type: "button", text: "Copy commands", onclick: (e) => copyText(text).then((ok) => { e.target.textContent = ok ? "Copied" : "Copy not available"; }) })),
+    h("pre", { text }));
 }
 
 function causeTitle(o, id) {
@@ -474,7 +496,7 @@ function triageCard(engine) {
       const m = r.match;
       if (!m) { out.replaceChildren(h("p", { class: "note", text: "No known cause matches. Collect the full error, the connector ID and the time, and open a support case." })); return; }
       out.replaceChildren(h("div", { class: "card inset" }, h("h3", { text: m.title }), h("p", { class: "note first", text: `${m.owner} · about ${m.hours} h${m.scope === "org" ? " · one fix covers the organization" : ""}` }),
-        h("p", { text: m.why }), h("ol", {}, m.steps.map((x) => h("li", { text: x }))), h("p", {}, h("b", { text: "Verify: " }), m.verify),
+        h("p", { text: m.why }), h("ol", {}, m.steps.map((x) => h("li", { text: x }))), commands(m.checks), h("p", {}, h("b", { text: "Verify: " }), m.verify),
         r.also.length ? h("p", { class: "note", text: "Also possible: " + r.also.map((x) => x.title).join("; ") }) : null));
     } catch (e) { if (!e.cancelled) out.replaceChildren(h("p", { class: "note", text: "Could not read it: " + e.message })); }
   };

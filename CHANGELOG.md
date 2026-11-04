@@ -2,6 +2,15 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.17.0
+
+Onboarding, for the call with the customer.
+
+- **Commands to check.** Every cause in the connector catalogue now has read-only commands (`aws`, `az`, `gcloud`, `kubectl`) the customer can run to confirm it, shown in each wave and in the error explainer, ready to copy. Known values such as the account are filled in; anything that is not a plain identifier stays a placeholder, so nothing in the data can turn into shell syntax. A test refuses any command that could change something.
+- **Progress since last time.** With an earlier snapshot, onboarding shows how many accounts completed, moved forward or went back, which causes were fixed and which appeared, which connectors broke, the completions per week, and the date everything is complete at that pace.
+- **A status page for the customer.** A self-contained HTML page (or Markdown, or text to paste in an email): what is done, what waits on which of their teams with the steps and the commands to check, what is on the vendor's side, credentials to rotate, recommendations for the connectors. No internal scores. From the view, from `beyond90 onboarding DIR --customer-page --since OLD --format html`, and written by every automated run as `onboarding-status.html`.
+- The earlier example snapshot has its own connector history, so the demo shows real progress.
+
 ## 0.16.0
 
 Onboarding: where connectors stall, why, and what unblocks them.

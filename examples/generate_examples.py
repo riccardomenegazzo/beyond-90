@@ -476,6 +476,32 @@ def build_previous(name: str, days_back: int = 31) -> None:
     for e in es:
         e["used"] = str(round(float(e["used"]) * 0.88))
     write_csv(out / "entitlements.csv", h, [[e[k] for k in h] for e in es])
+    # Connectors a month earlier: what is blocked now was not yet deployed; what was fixed since was failing then;
+    # a connector that broke since was still working.
+    h, cs = read_csv(src / "connectors.csv")
+    rows, causes = [], ["scp", "extid"]
+    for c in cs:
+        if c["account_id"] not in keep:
+            continue
+        dep = c["deployed_at"] and date.fromisoformat(c["deployed_at"])
+        if not dep or dep > prev:
+            if c["account_id"] in newly and c["kind"] == "cloud":
+                c.update(status="error", error=ERR[causes[len(rows) % 2]].replace("{acct}", c["account_id"][-3:]), first_scan_at="", last_success_at="",
+                         deployed_at=(prev - timedelta(days=12)).isoformat(), regions_scanned="0" if c["regions_expected"] else "")
+                rows.append(c)
+            continue
+        if c["account_id"] in newly and c["kind"] == "cloud":
+            c.update(status="error", error=ERR[causes[len(rows) % 2]].replace("{acct}", c["account_id"][-3:]), first_scan_at="", last_success_at="",
+                     regions_scanned="0" if c["regions_expected"] else "")
+        else:
+            if c["first_scan_at"] and date.fromisoformat(c["first_scan_at"]) > prev:
+                c.update(first_scan_at="", status="pending", last_success_at="")
+            if c["last_success_at"] and date.fromisoformat(c["last_success_at"]) > prev:
+                c["last_success_at"] = (prev - timedelta(days=rng.randint(0, 1))).isoformat()
+            if c["error"].startswith("AADSTS7000222"):          # the secret that has expired since was still valid
+                c.update(status="ok", error="")
+        rows.append(c)
+    write_csv(out / "connectors.csv", h, [[r[k] for k in h] for r in rows])
     toml = (src / "customer.toml").read_text(encoding="utf-8")
     toml = toml.replace(f"as_of = {AS_OF.isoformat()}", f"as_of = {prev.isoformat()}").replace('ceiling_version = "2026.4"', 'ceiling_version = "2026.2"')
     (out / "customer.toml").write_text(toml, encoding="utf-8")

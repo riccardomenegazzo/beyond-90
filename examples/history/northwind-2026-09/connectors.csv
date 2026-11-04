@@ -1,0 +1,114 @@
+account_id,kind,status,name,error,deployed_at,first_scan_at,last_success_at,scope,regions_expected,regions_scanned,permissions_missing,auth,secret_expires_on,privilege
+aws-001,cloud,error,,AccessDenied: User arn:aws:sts::001:assumed-role/ReadOnlyConnector/session is not authorized to perform: ec2:DescribeInstances with an explicit deny in a service control policy,2025-03-21,,,organization,17,0,,role_external_id,,readonly
+aws-002,cloud,error,,AccessDenied when calling AssumeRole: the external ID in the request does not match the trust policy,2025-11-24,,,organization,17,0,,role_external_id,,readonly
+aws-003,cloud,error,,AccessDenied: User arn:aws:sts::003:assumed-role/ReadOnlyConnector/session is not authorized to perform: ec2:DescribeInstances with an explicit deny in a service control policy,2024-11-18,,,organization,17,0,,role_external_id,,readonly
+aws-005,cloud,error,,AccessDenied when calling AssumeRole: the external ID in the request does not match the trust policy,2025-06-16,,,organization,17,0,,role_external_id,,admin
+aws-006,cloud,error,,AccessDenied: User arn:aws:sts::006:assumed-role/ReadOnlyConnector/session is not authorized to perform: ec2:DescribeInstances with an explicit deny in a service control policy,2025-08-20,,,organization,17,0,,access_key,,readonly
+aws-007,cloud,error,,AccessDenied when calling AssumeRole: the external ID in the request does not match the trust policy,2024-10-03,,,organization,17,0,,role_external_id,,readonly
+aws-008,cloud,error,,AccessDenied: User arn:aws:sts::008:assumed-role/ReadOnlyConnector/session is not authorized to perform: ec2:DescribeInstances with an explicit deny in a service control policy,2026-01-20,,,organization,17,0,,role_external_id,,readonly
+aws-009,cloud,ok,,,2026-05-06,2026-05-06,2026-09-29,organization,17,17,,role_external_id,,readonly
+aws-010,cloud,ok,,,2025-11-13,2025-11-14,2026-09-30,organization,17,17,,role_external_id,,readonly
+aws-012,cloud,ok,,,2026-05-20,2026-05-21,2026-09-29,organization,17,17,,role_external_id,,readonly
+aws-013,cloud,ok,,,2025-01-26,2025-01-26,2026-09-30,organization,17,17,,role_external_id,,readonly
+aws-015,cloud,ok,,,2025-07-11,2025-07-13,2026-09-29,organization,17,17,,role_external_id,,readonly
+aws-016,cloud,ok,,,2025-05-30,2025-06-01,2026-09-30,organization,17,17,,role_external_id,,readonly
+aws-017,cloud,ok,,,2026-06-10,2026-06-12,2026-09-30,organization,17,17,,role_external_id,,readonly
+aws-018,cloud,ok,,,2025-03-19,2025-03-21,2026-09-30,organization,17,17,,role_external_id,,readonly
+aws-019,cloud,ok,,,2024-06-24,2024-06-25,2026-09-29,organization,17,17,,role_external_id,,readonly
+aws-020,cloud,ok,,,2024-10-28,2024-10-30,2026-09-30,organization,17,17,,role_external_id,,readonly
+aws-021,cloud,ok,,,2024-12-26,2024-12-28,2026-09-29,organization,17,17,,role_external_id,,readonly
+aws-022,cloud,ok,,,2026-05-19,2026-05-19,2026-09-30,organization,17,17,,role_external_id,,readonly
+aws-023,cloud,ok,,,2025-10-06,2025-10-06,2026-09-29,organization,17,17,,role_external_id,,readonly
+aws-024,cloud,ok,,,2025-08-13,2025-08-14,2026-09-30,organization,17,17,,role_external_id,,readonly
+aws-025,cloud,ok,,,2024-06-13,2024-06-14,2026-09-30,organization,17,17,,role_external_id,,readonly
+aws-026,cloud,ok,,,2024-11-09,2024-11-10,2026-09-29,organization,17,17,,role_external_id,,readonly
+aws-027,cloud,ok,,,2026-04-13,2026-04-15,2026-09-29,organization,17,17,,role_external_id,,readonly
+aws-028,cloud,ok,,,2024-11-02,2024-11-04,2026-09-29,organization,17,17,,role_external_id,,readonly
+aws-029,cloud,ok,,,2025-12-29,2025-12-30,2026-09-30,organization,17,17,,role_external_id,,readonly
+aws-030,cloud,ok,,,2026-06-26,2026-06-28,2026-09-29,organization,17,17,,role_external_id,,readonly
+aws-031,cloud,ok,,,2025-02-04,2025-02-04,2026-09-30,organization,17,17,,role_external_id,,readonly
+aws-032,cloud,ok,,,2025-03-02,2025-03-02,2026-09-29,organization,17,17,,role_external_id,,readonly
+aws-033,cloud,ok,,,2026-04-26,2026-04-26,2026-09-29,organization,17,17,,role_external_id,,readonly
+aws-034,cloud,ok,,,2024-09-13,2024-09-14,2026-09-30,organization,17,17,,role_external_id,,readonly
+aws-036,cloud,ok,,,2025-10-02,2025-10-02,2026-09-29,organization,17,17,,role_external_id,,readonly
+aws-037,cloud,ok,,,2025-01-24,2025-01-24,2026-09-29,organization,17,17,,role_external_id,,readonly
+aws-038,cloud,ok,,,2024-09-03,2024-09-05,2026-09-30,organization,17,17,,role_external_id,,readonly
+aws-040,cloud,ok,,,2026-04-24,2026-04-26,2026-09-29,organization,17,17,,role_external_id,,readonly
+aws-041,cloud,ok,,,2025-02-24,2025-02-24,2026-09-30,organization,17,17,,role_external_id,,readonly
+aws-042,cloud,ok,,,2026-01-22,2026-01-23,2026-09-29,organization,17,17,,role_external_id,,readonly
+aws-044,cloud,ok,,,2025-05-28,2025-05-29,2026-09-29,organization,17,17,,role_external_id,,readonly
+aws-045,cloud,ok,,,2025-07-31,2025-08-02,2026-09-29,organization,17,17,,role_external_id,,readonly
+aws-046,cloud,ok,,,2024-07-27,2024-07-28,2026-09-30,organization,17,17,,role_external_id,,readonly
+aws-047,cloud,ok,,,2024-10-27,2024-10-29,2026-09-30,organization,17,17,,role_external_id,,readonly
+aws-048,cloud,ok,,,2026-02-04,2026-02-05,2026-09-29,organization,17,17,,role_external_id,,readonly
+aws-049,cloud,ok,,,2025-03-25,2025-03-26,2026-09-30,organization,17,17,,role_external_id,,readonly
+aws-050,cloud,ok,,,2024-11-22,2024-11-23,2026-09-29,organization,17,17,,role_external_id,,readonly
+aws-051,cloud,ok,,,2025-03-20,2025-03-22,2026-09-30,organization,17,17,,role_external_id,,readonly
+aws-052,cloud,ok,,,2024-09-09,2024-09-11,2026-09-29,organization,17,17,,role_external_id,,readonly
+aws-053,cloud,ok,,,2025-03-25,2025-03-27,2026-09-30,organization,17,17,,role_external_id,,readonly
+aws-054,cloud,ok,,,2024-11-29,2024-11-29,2026-09-29,organization,17,17,,role_external_id,,readonly
+aws-055,cloud,ok,,,2025-01-11,2025-01-12,2026-09-29,organization,17,17,,role_external_id,,readonly
+aws-056,cloud,ok,,,2025-12-06,2025-12-06,2026-09-30,organization,17,17,,role_external_id,,readonly
+aws-057,cloud,ok,,,2025-11-07,2025-11-08,2026-09-29,organization,17,17,,role_external_id,,readonly
+aws-058,cloud,ok,,,2024-10-13,2024-10-15,2026-09-30,organization,17,17,,role_external_id,,readonly
+aws-059,cloud,ok,,,2025-07-03,2025-07-05,2026-09-30,organization,17,17,,role_external_id,,readonly
+aws-060,cloud,ok,,,2025-06-01,2025-06-01,2026-09-29,organization,17,17,,role_external_id,,readonly
+aws-061,cloud,ok,,,2025-03-29,2025-03-29,2026-09-30,organization,17,17,,role_external_id,,readonly
+aws-062,cloud,ok,,,2026-05-18,2026-05-18,2026-09-30,organization,17,17,,role_external_id,,readonly
+aws-063,cloud,ok,,,2025-04-18,2025-04-19,2026-09-29,organization,17,17,,role_external_id,,readonly
+aws-064,cloud,ok,,,2026-02-01,2026-02-01,2026-09-30,organization,17,17,,role_external_id,,readonly
+aws-066,cloud,ok,,,2025-05-26,2025-05-26,2026-09-30,organization,17,17,,role_external_id,,readonly
+azure-001,cloud,ok,,,2024-09-16,2024-09-18,2026-09-30,management_group,1,1,,sp_secret,2026-10-22,readonly
+azure-002,cloud,ok,,,2025-11-06,2025-11-07,2026-09-30,management_group,1,1,,sp_secret,2026-11-20,readonly
+azure-004,cloud,ok,,,2025-04-07,2025-04-09,2026-09-29,management_group,1,1,,federated,,readonly
+azure-005,cloud,ok,,,2024-08-21,2024-08-21,2026-09-29,management_group,1,1,,federated,,readonly
+azure-006,cloud,ok,,,2025-06-18,2025-06-20,2026-09-30,management_group,1,1,,federated,,readonly
+azure-007,cloud,ok,,,2024-10-06,2024-10-06,2026-09-30,management_group,1,1,,federated,,readonly
+azure-008,cloud,ok,,,2024-07-22,2024-07-22,2026-09-29,management_group,1,1,,federated,,readonly
+azure-010,cloud,ok,,,2025-06-24,2025-06-26,2026-09-29,management_group,1,1,,federated,,readonly
+azure-011,cloud,ok,,,2024-07-14,2024-07-14,2026-09-30,management_group,1,1,,federated,,readonly
+azure-012,cloud,ok,,,2024-10-19,2024-10-21,2026-09-30,management_group,1,1,,federated,,readonly
+azure-014,cloud,ok,,,2025-12-17,2025-12-17,2026-09-30,management_group,1,1,,federated,,readonly
+azure-015,cloud,ok,,,2025-01-10,2025-01-12,2026-09-30,management_group,1,1,,federated,,readonly
+azure-017,cloud,ok,,,2024-07-25,2024-07-27,2026-09-29,management_group,1,1,,federated,,readonly
+azure-018,cloud,ok,,,2025-09-23,2025-09-25,2026-09-30,management_group,1,1,,federated,,readonly
+azure-020,cloud,ok,,,2024-10-12,2024-10-12,2026-09-30,management_group,1,1,,federated,,readonly
+azure-021,cloud,ok,,,2024-12-12,2024-12-13,2026-09-29,management_group,1,1,,federated,,readonly
+azure-022,cloud,ok,,,2024-10-07,2024-10-08,2026-09-30,management_group,1,1,,federated,,readonly
+azure-024,cloud,ok,,,2024-06-10,2024-06-10,2026-09-29,management_group,1,1,,federated,,readonly
+azure-025,cloud,ok,,,2025-01-07,2025-01-08,2026-09-30,management_group,1,1,,federated,,readonly
+azure-026,cloud,ok,,,2025-05-20,2025-05-20,2026-09-29,management_group,1,1,,federated,,readonly
+azure-027,cloud,ok,,,2025-09-24,2025-09-26,2026-09-29,management_group,1,1,,federated,,readonly
+azure-028,cloud,ok,,,2025-05-19,2025-05-19,2026-09-29,management_group,1,1,,federated,,readonly
+azure-030,cloud,ok,,,2026-01-25,2026-01-25,2026-09-30,management_group,1,1,,federated,,readonly
+azure-031,cloud,ok,,,2025-01-19,2025-01-20,2026-09-29,management_group,1,1,,federated,,readonly
+azure-032,cloud,ok,,,2025-05-03,2025-05-04,2026-09-29,management_group,1,1,,federated,,readonly
+azure-033,cloud,ok,,,2025-08-12,2025-08-14,2026-09-30,management_group,1,1,,federated,,readonly
+azure-034,cloud,ok,,,2025-05-27,2025-05-28,2026-09-30,management_group,1,1,,federated,,readonly
+azure-035,cloud,ok,,,2025-11-26,2025-11-28,2026-09-29,management_group,1,1,,federated,,readonly
+azure-036,cloud,ok,,,2025-05-20,2025-05-21,2026-09-30,management_group,1,1,,federated,,readonly
+azure-037,cloud,ok,,,2025-12-13,2025-12-13,2026-09-29,management_group,1,1,,federated,,readonly
+gcp-001,cloud,ok,,,2025-11-23,2025-11-24,2026-09-29,organization,1,1,,sa_impersonation,,readonly
+gcp-002,cloud,ok,,,2025-10-07,2025-10-09,2026-09-29,organization,1,1,,sa_impersonation,,readonly
+gcp-003,cloud,ok,,,2025-07-17,2025-07-19,2026-09-29,organization,1,1,,sa_impersonation,,readonly
+gcp-004,cloud,ok,,,2025-07-17,2025-07-19,2026-09-29,organization,1,1,,sa_impersonation,,readonly
+gcp-006,cloud,ok,,,2025-01-15,2025-01-17,2026-09-30,organization,1,1,,sa_impersonation,,readonly
+gcp-008,cloud,ok,,,2025-10-05,2025-10-06,2026-09-29,organization,1,1,,sa_impersonation,,readonly
+gcp-009,cloud,ok,,,2026-01-27,2026-01-28,2026-09-30,organization,1,1,,sa_impersonation,,readonly
+gcp-010,cloud,ok,,,2024-12-12,2024-12-13,2026-09-30,organization,1,1,,sa_impersonation,,readonly
+gcp-011,cloud,ok,,,2025-12-06,2025-12-08,2026-09-30,organization,1,1,,sa_impersonation,,readonly
+gcp-012,cloud,ok,,,2025-06-04,2025-06-04,2026-09-30,organization,1,1,,sa_impersonation,,readonly
+gcp-013,cloud,ok,,,2025-12-04,2025-12-06,2026-09-30,organization,1,1,,sa_impersonation,,readonly
+gcp-014,cloud,ok,,,2025-06-29,2025-07-01,2026-09-30,organization,1,1,,sa_impersonation,,readonly
+gcp-015,cloud,ok,,,2025-03-12,2025-03-14,2026-09-29,organization,1,1,,sa_impersonation,,readonly
+gcp-016,cloud,ok,,,2024-05-27,2024-05-28,2026-09-30,organization,1,1,,sa_impersonation,,readonly
+gcp-017,cloud,ok,,,2025-05-06,2025-05-08,2026-09-30,organization,1,1,,sa_impersonation,,readonly
+gcp-018,cloud,ok,,,2026-03-13,2026-03-13,2026-09-29,organization,1,1,,sa_impersonation,,readonly
+gcp-019,cloud,ok,,,2025-08-31,2025-09-02,2026-09-29,organization,1,1,,sa_impersonation,,readonly
+gcp-020,cloud,ok,,,2025-06-19,2025-06-20,2026-09-30,organization,1,1,,sa_impersonation,,readonly
+gcp-021,cloud,ok,,,2026-07-19,2026-07-21,2026-09-29,organization,1,1,,sa_impersonation,,readonly
+gcp-022,cloud,ok,,,2026-07-16,2026-07-16,2026-09-29,organization,1,1,,sa_impersonation,,readonly
+aws-001,kubernetes,ok,aws-001-cluster,,2025-03-24,2025-03-25,2026-09-29,cluster,,,,agent,,readonly
+aws-002,kubernetes,error,aws-002-cluster,"admission webhook ""validation.gatekeeper.sh"" denied the request: privileged containers are not allowed",2025-12-02,,,cluster,,,,agent,,readonly
+aws-003,sensor,error,aws-003-sensor,"Back-off pulling image: ImagePullBackOff, pull access denied for the sensor image",2024-11-25,,,cluster,,,,agent,,readonly
+aws-005,sensor,error,aws-005-sensor,sensor failed to load eBPF program: kernel 4.14 not supported (no BTF),2025-06-13,,,cluster,,,,agent,,readonly

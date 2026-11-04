@@ -31,7 +31,11 @@
     "Add an exception for the connector role, for example a condition on aws:PrincipalArn that matches the role name.",
     "Keep the exception read-only: exempt the connector from the deny, do not widen what it may do."
    ],
-   "verify": "Re-run the connection test; the same API call should now succeed from the member account."
+   "verify": "Re-run the connection test; the same API call should now succeed from the member account.",
+   "checks": [
+    "aws organizations list-policies-for-target --target-id {account} --filter SERVICE_CONTROL_POLICY",
+    "aws organizations describe-policy --policy-id {policy}"
+   ]
   },
   {
    "id": "aws_permission_boundary",
@@ -50,7 +54,10 @@
    "steps": [
     "Remove the boundary from the connector role, or add the read-only actions the connector needs to it."
    ],
-   "verify": "The policy simulator shows the failing action as allowed for the role."
+   "verify": "The policy simulator shows the failing action as allowed for the role.",
+   "checks": [
+    "aws iam get-role --role-name {role} --query Role.PermissionsBoundary"
+   ]
   },
   {
    "id": "aws_external_id",
@@ -70,7 +77,10 @@
     "Copy the external ID shown in the platform for this tenant.",
     "Update the sts:ExternalId condition in the role's trust policy, or redeploy the template with the right parameter."
    ],
-   "verify": "The connection test passes the assume-role step."
+   "verify": "The connection test passes the assume-role step.",
+   "checks": [
+    "aws iam get-role --role-name {role} --query Role.AssumeRolePolicyDocument"
+   ]
   },
   {
    "id": "aws_assume_role",
@@ -95,7 +105,11 @@
     "Check the trust policy: the principal must be the platform's account or role, with the external ID condition.",
     "If the stack was deleted or failed, redeploy it."
    ],
-   "verify": "aws iam get-role returns the role, and the connection test passes."
+   "verify": "aws iam get-role returns the role, and the connection test passes.",
+   "checks": [
+    "aws iam get-role --role-name {role}",
+    "aws iam list-attached-role-policies --role-name {role}"
+   ]
   },
   {
    "id": "aws_stackset",
@@ -121,7 +135,11 @@
     "Fix the cause (often a role with the same name already exists) and retry the failed instances only.",
     "Target the organization root or the right units so new accounts get the connector automatically."
    ],
-   "verify": "Every stack instance is CURRENT, and accounts created next week are picked up without anyone asking."
+   "verify": "Every stack instance is CURRENT, and accounts created next week are picked up without anyone asking.",
+   "checks": [
+    "aws cloudformation describe-organizations-access",
+    "aws cloudformation list-stack-instances --stack-set-name {stackset} --filters Name=DETAILED_STATUS,Values=FAILED"
+   ]
   },
   {
    "id": "aws_region_optin",
@@ -145,7 +163,10 @@
     "Either enable the region, or exclude it from the connector's scope so it stops reporting errors.",
     "If a guardrail restricts regions, align the connector's region list with it."
    ],
-   "verify": "Scanned regions equal expected regions for the account."
+   "verify": "Scanned regions equal expected regions for the account.",
+   "checks": [
+    "aws account list-regions --region-opt-status-contains ENABLED ENABLED_BY_DEFAULT --query \"Regions[].RegionName\""
+   ]
   },
   {
    "id": "aws_kms",
@@ -169,7 +190,11 @@
     "Add a key policy statement that lets the scanner role create grants and decrypt for snapshot copies only, or use the vendor's documented condition keys.",
     "Where policy forbids it, accept the gap explicitly and record it as a known blind spot."
    ],
-   "verify": "The skipped-workload count for the account drops to zero on the next scan."
+   "verify": "The skipped-workload count for the account drops to zero on the next scan.",
+   "checks": [
+    "aws ec2 describe-volumes --filters Name=encrypted,Values=true --query \"Volumes[].KmsKeyId\" --region {region}",
+    "aws kms get-key-policy --key-id {key} --policy-name default --region {region}"
+   ]
   },
   {
    "id": "aws_static_keys",
@@ -192,7 +217,10 @@
     "Switch the connector to a cross-account role with an external ID.",
     "Deactivate and delete the old keys once the role works."
    ],
-   "verify": "No access key is associated with the connector any more."
+   "verify": "No access key is associated with the connector any more.",
+   "checks": [
+    "aws iam list-access-keys --user-name {user}"
+   ]
   },
   {
    "id": "az_consent",
@@ -215,7 +243,11 @@
     "Ask an administrator with the right role to open the consent link from the platform.",
     "Review the permissions requested: they should be read-only."
    ],
-   "verify": "The enterprise application shows admin consent granted, and sign-in logs show successful sign-ins."
+   "verify": "The enterprise application shows admin consent granted, and sign-in logs show successful sign-ins.",
+   "checks": [
+    "az ad sp show --id {app_id} --query \"{name:displayName,enabled:accountEnabled}\"",
+    "az ad app permission list-grants --id {app_id}"
+   ]
   },
   {
    "id": "az_app_missing",
@@ -238,7 +270,11 @@
     "Confirm the tenant ID registered in the platform.",
     "Re-create the service principal by completing the consent flow again."
    ],
-   "verify": "The service principal exists in the right tenant."
+   "verify": "The service principal exists in the right tenant.",
+   "checks": [
+    "az account show --query tenantId",
+    "az ad sp show --id {app_id}"
+   ]
   },
   {
    "id": "az_secret",
@@ -261,7 +297,10 @@
     "Prefer a federated credential or a certificate, which do not need a shared secret.",
     "If a secret is required, rotate it now and record the new expiry date so the next one is planned."
    ],
-   "verify": "The connector authenticates and the expiry date is tracked."
+   "verify": "The connector authenticates and the expiry date is tracked.",
+   "checks": [
+    "az ad app credential list --id {app_id} --query \"[].{hint:hint,expires:endDateTime}\""
+   ]
   },
   {
    "id": "az_conditional_access",
@@ -283,7 +322,10 @@
     "Find the policy in the sign-in log entry for the failure.",
     "Exclude the connector's service principal, or add a workload identity policy that allows it from the vendor's documented addresses."
    ],
-   "verify": "Sign-in logs show the connector succeeding."
+   "verify": "Sign-in logs show the connector succeeding.",
+   "checks": [
+    "az rest --method get --url https://graph.microsoft.com/v1.0/identity/conditionalAccess/policies --query \"value[].{name:displayName,state:state}\""
+   ]
   },
   {
    "id": "az_scope",
@@ -306,7 +348,10 @@
     "Assign the read roles the vendor requires at the tenant root management group, or the group that holds every subscription in scope.",
     "Remove the per-subscription assignments once the group assignment works."
    ],
-   "verify": "New subscriptions appear without anyone touching the connector."
+   "verify": "New subscriptions appear without anyone touching the connector.",
+   "checks": [
+    "az role assignment list --assignee {app_id} --all --query \"[].{role:roleDefinitionName,scope:scope}\""
+   ]
   },
   {
    "id": "az_directory_read",
@@ -327,7 +372,10 @@
    "steps": [
     "Grant the directory read permission the vendor documents and give admin consent."
    ],
-   "verify": "Identity inventory shows users and groups."
+   "verify": "Identity inventory shows users and groups.",
+   "checks": [
+    "az ad app permission list --id {app_id}"
+   ]
   },
   {
    "id": "az_subscription_state",
@@ -352,7 +400,11 @@
     "If the subscription is retired, mark it decommissioned so it leaves the universe.",
     "Otherwise register the resource providers the vendor lists."
    ],
-   "verify": "The subscription scans without provider errors."
+   "verify": "The subscription scans without provider errors.",
+   "checks": [
+    "az account show --subscription {subscription} --query state",
+    "az provider list --subscription {subscription} --query \"[?registrationState!='Registered'].namespace\""
+   ]
   },
   {
    "id": "gcp_api_disabled",
@@ -375,7 +427,10 @@
     "Enable the APIs the vendor lists in the connector's host project.",
     "Wait a few minutes; enabling an API is not instant."
    ],
-   "verify": "The connection test reaches the asset inventory."
+   "verify": "The connection test reaches the asset inventory.",
+   "checks": [
+    "gcloud services list --enabled --project {project}"
+   ]
   },
   {
    "id": "gcp_org_policy",
@@ -399,7 +454,11 @@
     "Prefer workload identity federation or impersonation, which need no key.",
     "If an outside principal must be bound, add the vendor's customer ID to the allowed list for that constraint, at the narrowest folder that works."
    ],
-   "verify": "The binding is created and the policy still applies to everyone else."
+   "verify": "The binding is created and the policy still applies to everyone else.",
+   "checks": [
+    "gcloud resource-manager org-policies describe iam.allowedPolicyMemberDomains --organization {org} --effective",
+    "gcloud resource-manager org-policies describe iam.disableServiceAccountKeyCreation --organization {org} --effective"
+   ]
   },
   {
    "id": "gcp_vpc_sc",
@@ -421,7 +480,10 @@
     "Add an ingress rule for the connector's identity and the read methods it needs.",
     "Test in dry-run mode first."
    ],
-   "verify": "Perimeter logs show the calls allowed."
+   "verify": "Perimeter logs show the calls allowed.",
+   "checks": [
+    "gcloud access-context-manager perimeters list --policy {access_policy}"
+   ]
   },
   {
    "id": "gcp_permission",
@@ -444,7 +506,10 @@
     "Grant the vendor's read-only roles to the connector's service account at the organization or the top folder in scope.",
     "Remove project-level grants afterwards."
    ],
-   "verify": "Projects created after the change appear on their own."
+   "verify": "Projects created after the change appear on their own.",
+   "checks": [
+    "gcloud organizations get-iam-policy {org} --flatten=bindings[].members --filter=bindings.members:{service_account} --format=\"table(bindings.role)\""
+   ]
   },
   {
    "id": "gcp_project_state",
@@ -466,7 +531,11 @@
     "If the project is gone or going, mark it decommissioned.",
     "Otherwise restore billing."
    ],
-   "verify": "The project is either scanning or out of the universe."
+   "verify": "The project is either scanning or out of the universe.",
+   "checks": [
+    "gcloud projects describe {project} --format=\"value(lifecycleState)\"",
+    "gcloud billing projects describe {project}"
+   ]
   },
   {
    "id": "k8s_unreachable",
@@ -493,7 +562,11 @@
     "Use the in-cluster connector that dials out to the platform, instead of opening the API server.",
     "If an outside connection is required, allow only the vendor's documented addresses."
    ],
-   "verify": "The cluster shows a recent heartbeat."
+   "verify": "The cluster shows a recent heartbeat.",
+   "checks": [
+    "kubectl cluster-info",
+    "kubectl get --raw /readyz"
+   ]
   },
   {
    "id": "k8s_admission",
@@ -523,7 +596,13 @@
     "If a policy engine is used, add a narrow exception for the sensor's service account and image, not for the namespace's every pod.",
     "Record the exception and its owner so an audit finds it explained."
    ],
-   "verify": "The DaemonSet shows one ready pod per eligible node."
+   "verify": "The DaemonSet shows one ready pod per eligible node.",
+   "checks": [
+    "kubectl get namespace {namespace} --show-labels",
+    "kubectl get validatingwebhookconfigurations",
+    "kubectl describe daemonset -n {namespace}",
+    "kubectl get events -n {namespace} --field-selector reason=FailedCreate"
+   ]
   },
   {
    "id": "k8s_rbac",
@@ -548,7 +627,11 @@
     "Apply the cluster role and binding from the vendor's chart, read-only verbs only (get, list, watch).",
     "Check with kubectl auth can-i --as for the service account."
    ],
-   "verify": "kubectl auth can-i list pods --as the connector's service account answers yes."
+   "verify": "kubectl auth can-i list pods --as the connector's service account answers yes.",
+   "checks": [
+    "kubectl auth can-i list pods --all-namespaces --as=system:serviceaccount:{namespace}:{service_account}",
+    "kubectl get clusterrolebindings -o wide"
+   ]
   },
   {
    "id": "k8s_egress",
@@ -575,7 +658,10 @@
     "Allow the vendor's backend host names through the egress firewall.",
     "Configure the proxy address in the chart, and add the company's CA bundle to the sensor if TLS is inspected, or exempt the vendor's hosts from inspection."
    ],
-   "verify": "The sensor reports a heartbeat and no TLS errors appear in its logs."
+   "verify": "The sensor reports a heartbeat and no TLS errors appear in its logs.",
+   "checks": [
+    "kubectl logs -n {namespace} daemonset/{daemonset} --tail=50"
+   ]
   },
   {
    "id": "k8s_image_pull",
@@ -601,7 +687,11 @@
     "Mirror the sensor image to the internal registry and point the chart at it.",
     "Add a pull secret if the registry needs one."
    ],
-   "verify": "Pods start without pull errors."
+   "verify": "Pods start without pull errors.",
+   "checks": [
+    "kubectl get events -n {namespace} --field-selector reason=Failed",
+    "kubectl get pods -n {namespace} -o wide"
+   ]
   },
   {
    "id": "k8s_unsupported_nodes",
@@ -625,7 +715,10 @@
    "steps": [
     "Use the vendor's sidecar or serverless option for those workloads, or accept API-only coverage and record it as a known gap."
    ],
-   "verify": "Coverage for those workloads is either present or listed as a known gap."
+   "verify": "Coverage for those workloads is either present or listed as a known gap.",
+   "checks": [
+    "kubectl get nodes -o wide"
+   ]
   },
   {
    "id": "sensor_kernel",
@@ -654,7 +747,10 @@
     "Move those node pools to a supported image, or use the vendor's fallback mode if one exists.",
     "If capabilities are dropped by policy, grant only those the sensor documents, to the sensor alone."
    ],
-   "verify": "The sensor reports as running on every node in the pool."
+   "verify": "The sensor reports as running on every node in the pool.",
+   "checks": [
+    "kubectl get nodes -o custom-columns=NAME:.metadata.name,KERNEL:.status.nodeInfo.kernelVersion,OS:.status.nodeInfo.osImage"
+   ]
   },
   {
    "id": "sensor_resources",
@@ -678,7 +774,11 @@
     "Set the requests and limits the vendor recommends and a high priority class for the sensor.",
     "Read the previous container's logs to confirm the cause."
    ],
-   "verify": "No restarts over a day."
+   "verify": "No restarts over a day.",
+   "checks": [
+    "kubectl get pods -n {namespace} -o wide",
+    "kubectl logs -n {namespace} {pod} --previous --tail=50"
+   ]
   },
   {
    "id": "api_throttling",
@@ -701,7 +801,10 @@
     "Check whether other tools scan at the same time and stagger them.",
     "Ask the vendor about scan scheduling or quota increases for that account."
    ],
-   "verify": "Scans complete within their usual time."
+   "verify": "Scans complete within their usual time.",
+   "checks": [
+    "aws cloudtrail lookup-events --lookup-attributes AttributeKey=ErrorCode,AttributeValue=ThrottlingException --max-results 20"
+   ]
   }
  ]
 }

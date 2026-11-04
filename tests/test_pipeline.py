@@ -41,7 +41,7 @@ def test_one_run_collects_scores_writes_everything_and_keeps_history(api, tmp_pa
     res = go(cfg, 2)
     out = cfg.state_dir / "out"
     assert (out / "2026-11-02" / "report.html").read_text().startswith("<!doctype html") and (out / "latest" / "qbr.md").exists()
-    assert {"report", "qbr", "successplan", "summary", "roadmap", "json", "prep", "workspace"} == set(res.outputs)
+    assert {"report", "qbr", "successplan", "summary", "roadmap", "json", "prep", "status", "workspace"} == set(res.outputs)
     assert (cfg.state_dir / "history.db").exists() and (cfg.state_dir / "snapshots" / "2026-11-02" / "accounts.csv").exists()
     rec = json.loads((cfg.state_dir / "runs.jsonl").read_text().splitlines()[-1])
     assert rec["as_of"] == "2026-11-02" and rec["input_hash"] == res.input_hash and rec["sources"]["tenants"] == "ok"
