@@ -176,8 +176,22 @@ def main(site: str) -> int:
         check(page.input_value("#compare") != "", "the comparison is chosen automatically and shown")
         page.click("[data-tab=onboarding]")
         check("Since 2026-09-30" in page.inner_text("#view") and "all complete around" in page.inner_text("#view"), "onboarding shows progress since the earlier snapshot and a forecast")
+        page.click("[data-tab=value]")
+        view = page.inner_text("#view")
+        check("2026-09-30" in view and "findings closed" in view and "What did not move" in view, "the value receipt shows what moved and what did not")
+        with page.expect_download() as dl:
+            page.get_by_role("button", name="Download receipt (.html)").click()
+        receipt = Path(dl.value.path()).read_text()
+        check(receipt.startswith("<!doctype html>") and "followed, not necessarily caused" in receipt, "the receipt downloads as a self-contained page")
+        page.click("[data-tab=teams]")
+        check(page.locator("#view .teamgrid > .card").count() >= 2 and page.get_by_role("button", name="Copy message").count() >= 2, "each customer team gets its own digest and message")
+        page.click("[data-tab=prep]")
+        page.fill("#view textarea[aria-label='Agreed next steps']", "Grant admin consent | identity team | 2026-11-11")
+        check("Grant admin consent (identity team, by 2026-11-11)" in page.inner_text("#view pre.recap"), "the recap after the call lists what was agreed")
         page.select_option("#compare", "")
         page.wait_for_selector("#run:not([disabled])")
+        page.click("[data-tab=value]")
+        check("Pick a saved snapshot" in page.inner_text("#view"), "without a comparison the receipt explains what it needs")
         page.click("[data-tab=summary]")
         check("What changed" not in page.inner_text("#doc"), "choosing 'nothing' removes the comparison")
 
@@ -239,7 +253,7 @@ def main(site: str) -> int:
         check(page.locator("#kpis img, #kpis b b").count() == 0 and "<img" in page.inner_text("#kpis"), "a hostile customer name is shown as text in the tiles")
         page.click("[data-tab=qbr]")
         check(page.locator("#doc img, #doc script").count() == 0 and "Injected" in page.inner_text("#doc"), "and in the rendered Markdown")
-        for tab in ("overview", "onboarding", "outlook", "actions", "accounts", "findings", "maturity", "renewal"):
+        for tab in ("overview", "onboarding", "outlook", "teams", "prep", "actions", "accounts", "findings", "maturity", "renewal"):
             page.click(f"[data-tab={tab}]")
             check(page.locator("#view img, #view script, #view iframe").count() == 0, f"and in the {tab} view")
         page.click("[data-tab=report]")
@@ -290,7 +304,7 @@ def main(site: str) -> int:
         page.locator("#view tbody tr").first.get_by_role("button", name="Open").click()
         page.wait_for_selector("#run:not([disabled])", timeout=180_000)
         page.wait_for_selector("#book-table[hidden]", state="attached")
-        check("Yield" in page.inner_text("#kpis") and page.locator("#tabs button").count() == 18, "opening a customer from the book shows its own report")
+        check("Yield" in page.inner_text("#kpis") and page.locator("#tabs button").count() == 20, "opening a customer from the book shows its own report")
         examples = Path(__file__).resolve().parent.parent / "examples" / "portfolio"
         page.set_input_files("#folder", str(examples))
         page.wait_for_selector("#status:has-text('customers found')")

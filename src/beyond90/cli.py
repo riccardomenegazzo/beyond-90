@@ -433,6 +433,32 @@ def cmd_preflight(args) -> int:
     return 0
 
 
+def cmd_receipt(args) -> int:
+    from . import impact
+    cat = _catalogue(args)
+    old, _ = load_customer(args.since, cat)
+    new, _ = load_customer(args.directory, cat, require_accounts=True)
+    r = impact.receipt(old, new, cat)
+    _emit(json.dumps(r, indent=2) if args.format == "json" else impact.render(r, html=args.format == "html"), args.out)
+    return 0
+
+
+def cmd_teams(args) -> int:
+    from . import onboarding, outlook, stake, teams
+    cat = _catalogue(args)
+    data, _ = load_customer(args.directory, cat, require_accounts=True)
+    score = compute_score(data, cat)
+    d = teams.digests(data, onboarding.diagnose(data), outlook.outlook(data, cat), stake.weighted(data, score, cat), cat.terms["units"])
+    if args.format == "json":
+        _emit(json.dumps(d, indent=2), args.out)
+        return 0
+    parts = [f"# Each team's part: {data.name}", ""]
+    for t in d["teams"]:
+        parts += [f"## {t['name']} ({t['accounts']} {cat.terms['units']}, {t['spend_share']:.0%} of spend)", "", "```", t["message"].rstrip(), "```", ""]
+    _emit("\n".join(parts), args.out)
+    return 0
+
+
 def cmd_history(args) -> int:
     store = Store(args.store)
     rows = store.history(args.customer)
@@ -773,6 +799,19 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--out")
     sp.set_defaults(func=cmd_preflight)
 
+    sp = sub.add_parser("receipt", help="what improved between two snapshots and the work that came before it, for a renewal or a review")
+    common(sp)
+    sp.add_argument("--since", required=True, help="the earlier data directory of the same customer")
+    sp.add_argument("--format", choices=["markdown", "html", "json"], default="markdown")
+    sp.add_argument("--out")
+    sp.set_defaults(func=cmd_receipt)
+
+    sp = sub.add_parser("teams", help="each customer team's part, ranked by stake, with a message it can act on")
+    common(sp)
+    sp.add_argument("--format", choices=["markdown", "json"], default="markdown")
+    sp.add_argument("--out")
+    sp.set_defaults(func=cmd_teams)
+
     sp = sub.add_parser("history", help="show stored snapshots for a customer")
     sp.add_argument("customer", help="customer name as in customer.toml")
     sp.add_argument("--store", required=True)
@@ -814,7 +853,7 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("config")
     sp.add_argument("--at", default="05:17", help="time of day in UTC, HH:MM")
     sp.add_argument("--every", choices=["hour", "day", "week"], default="day")
-    sp.add_argument("--install-from", default="beyond90", help='pip requirement for the workflow, e.g. "beyond90 @ git+https://github.com/OWNER/beyond-90@v0.18.0"')
+    sp.add_argument("--install-from", default="beyond90", help='pip requirement for the workflow, e.g. "beyond90 @ git+https://github.com/OWNER/beyond-90@v0.19.0"')
     sp.add_argument("--out")
     sp.set_defaults(func=cmd_schedule)
 

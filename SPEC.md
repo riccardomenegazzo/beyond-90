@@ -1,4 +1,4 @@
-# Beyond 90: specification v0.18
+# Beyond 90: specification v0.19
 
 An adoption engine for Technical Account Managers. It measures how much of a customer's cloud estate is really covered and operated through a security platform, and turns every gap into an action. The bar keeps moving: when a customer grows or the product ships something, the denominators grow with it.
 
@@ -182,6 +182,12 @@ Input: text files are decoded as UTF-8 (with or without a byte-order mark) or UT
 
 `weighted(data, score)` computes L1 to L3 with each active account weighted by `last_spend` (equal when all are zero), L2 and L3 as the spend-weighted mean of each connected account's own pass rate, and L4 with triaged open findings weighted 8, 4, 2, 1 by severity and doubled for internet exposure. It reports the weighted Yield next to Yield and the heaviest gaps. See `docs/outlook.md`.
 
+## 15r. Value receipt and team digests (0.19)
+
+`receipt(old, new)` compares two snapshots of the same customer: accounts active and connected in `new` but not in `old` (with their `last_spend`), and the reverse; inventory units gained and lost; capability activations gained, by module; findings open in `old` and closed in `new`, by severity and with critical internet-exposed counted apart; findings that gained an owner or a decision; exact attribution (customer points against bar points); weighted Yield before and after; commitments delivered and delivered on time. Each interaction in the window is matched by topic (connections, findings, capabilities, coverage) to the outcomes of the same topic dated within 21 days after it; the wording is "followed", never "caused". `remaining` names what did not move. The HTML is self-contained, escaped, with a CSP that allows no script and no network.
+
+`digests(data)` groups accounts by owner team: accounts, spend share, unconnected accounts and spend, blocked connectors with their cause, gaps, findings not ok past the triage window, outlook events on their accounts, and contacts from `contacts.csv` whose team matches. Stake is 100 × unconnected spend share + 5 per critical finding + 2 per blocked connector + 0.5 per finding. At most three asks; the message uses no internal metric names. See `docs/value.md`.
+
 ## 16. Positioning against the platform's own views
 
 Security platforms commonly ship their own adoption or maturity views and an ownership model. Beyond 90 does not replace them: it measures what a platform cannot see about itself (the true universe of units to cover, across a whole portfolio) and reads ownership and decisions rather than rebuilding routing. The research behind this, including a case study of one vendor, is in `docs/research/`.
@@ -210,8 +216,9 @@ Security platforms commonly ship their own adoption or maturity views and an own
 14. 0.15: the weekly rhythm for a book (tiers, cadence, call prep, advisories, trust-gated expansion) and a hardened browser app (Trusted Types, sealed storage, pinned supply chain).
 15. 0.16: onboarding diagnosis: connector stages, a catalogue of causes, waves, connector security review, pre-flight.
 16. 0.17: read-only check commands per cause, onboarding progress and forecast, a status page for the customer.
-17. 0.18 (this): the outlook if nothing is done, and coverage weighted by what is at stake.
-18. 1.0: connector interface and a first verified connector against a real tenant; criticality weighting; readiness checklist import; per-finding ownership sources.
+17. 0.18: the outlook if nothing is done, and coverage weighted by what is at stake.
+18. 0.19 (this): the value receipt, team digests and the recap after the call.
+19. 1.0: connector interface and a first verified connector against a real tenant; criticality weighting; readiness checklist import; per-finding ownership sources.
 
 ## References
 

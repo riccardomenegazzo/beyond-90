@@ -38,7 +38,7 @@ from .sync import SyncReport, sync
 
 PERSONAL = ("contacts.csv", "commitments.csv", "interactions.csv")
 OUTPUT_FILES = {"report": ("report_html", "report.html"), "qbr": ("qbr_markdown", "qbr.md"), "successplan": ("success_plan_markdown", "success-plan.md"),
-                "summary": ("report_markdown", "summary.md"), "roadmap": ("roadmap_markdown", "roadmap.md"), "json": ("score_json", "score.json"), "prep": ("prep_markdown", "call-prep.md"), "status": ("onboarding_status_html", "onboarding-status.html")}
+                "summary": ("report_markdown", "summary.md"), "roadmap": ("roadmap_markdown", "roadmap.md"), "json": ("score_json", "score.json"), "prep": ("prep_markdown", "call-prep.md"), "status": ("onboarding_status_html", "onboarding-status.html"), "receipt": ("receipt_html", "value-receipt.html")}
 
 
 class PipelineError(Exception):
@@ -253,6 +253,8 @@ def _run(cfg: Config, as_of: date, now: datetime, env: Mapping[str, str], sleep:
     outputs: dict[str, Path] = {}
     for name in cfg.outputs:
         key, fname = OUTPUT_FILES[name]
+        if not result.get(key):
+            continue                                      # e.g. the value receipt needs an earlier snapshot
         (build / fname).write_text(result[key], encoding="utf-8")
         outputs[name] = out_dir / fname
     (build / "sync.json").write_text(json.dumps([r.to_dict() for r in rep.results], indent=2), encoding="utf-8")

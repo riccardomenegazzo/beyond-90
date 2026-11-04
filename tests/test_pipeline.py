@@ -56,6 +56,7 @@ def test_the_next_run_finds_the_previous_snapshot_by_itself_and_explains_the_cha
     api.routes["/caps"] = paged(caps)
     res = go(cfg, 9)
     assert res.since == "2026-11-02"
+    assert "receipt" in res.outputs and (cfg.state_dir / "out" / "latest" / "value-receipt.html").read_text().startswith("<!doctype html>")
     summary = (cfg.state_dir / "out" / "latest" / "summary.md").read_text()
     assert "## What changed" in summary and "Did the inputs change since 2026-11-02" in summary
     assert res.yield_ > json.loads((cfg.state_dir / "runs.jsonl").read_text().splitlines()[0])["yield"]

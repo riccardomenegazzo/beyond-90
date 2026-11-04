@@ -1,5 +1,6 @@
 // The dashboard views. Each takes a context {result, dash, score, engine, files, options, go} and returns a Node.
 import { h, chip, pct, pts, num, cap, dataTable, chipFilter, searchBox, toCsv, saveBlob, copyText } from "./ui.js";
+import { recap } from "./recap.js";
 import { gauge, waterfall, lineChart, contributions, timeline, shareBar, funnel, STAGE, STAGE_NAME } from "./charts.js";
 
 const card = (title, body, { sub = "", cls = "", actions = null } = {}) =>
@@ -351,7 +352,30 @@ export function prepView({ dash, score, result, logTouch }) {
     { sub: "A commercial conversation follows adoption and trust; it does not lead them." });
   return h("div", {},
     h("div", { class: "col2" }, h("div", {}, touchCard, logForm({ score, result, logTouch })), card("The call, in order", h("div", {}, h("div", { class: "cardhead" }, h("span", { class: "note", text: "Derived from the customer's files." }), briefButtons(rh.prep_markdown, "beyond90-call-prep.md")), agenda(prep)))),
-    expCard);
+    expCard, recapCard({ score, result, prep, contacts: (score.relationship && score.relationship.contacts) || [] }));
+}
+
+/** After the call: a recap email from the agenda and what was agreed. Nothing is sent; it is copied or downloaded. */
+function recapCard({ score, result, prep, contacts }) {
+  const covered = prep.items.filter((it) => !["close", "ask"].includes(it.id)).map((it) => it.title);
+  const ours = prep.items.filter((it) => it.id === "owed").flatMap((it) => it.points);
+  const lead = contacts.find((c) => /champion|sponsor|lead|owner/i.test(c.role || "")) || contacts[0];
+  const to = h("select", { "aria-label": "Recap addressed to" }, h("option", { value: "", text: "(everyone)" }), contacts.map((c) => h("option", { value: c.name, text: c.name })));
+  if (lead) to.value = lead.name;
+  const agreed = h("textarea", { rows: 4, maxlength: 2000, "aria-label": "Agreed next steps", placeholder: "One per line: what | who | by when\nGrant admin consent | identity team | 2026-11-11" });
+  const out = h("pre", { class: "recap", tabindex: "0", "aria-label": "Recap draft" });
+  let draft = null;
+  const build = () => {
+    const lines = agreed.value.split("\n").map((l) => l.split("|").map((x) => x.trim())).filter((x) => x[0]);
+    draft = recap({ customer: score.customer, contact: to.value, date: result.as_of, covered, agreed: lines.map(([what, who, when]) => ({ what, who, when })), ours });
+    out.textContent = `Subject: ${draft.subject}\n\n${draft.body}`;
+  };
+  to.addEventListener("change", build); agreed.addEventListener("input", build); build();
+  return card("Recap after the call", h("div", {},
+    h("div", { class: "formgrid" }, h("label", {}, "To", to), h("label", { class: "wide2" }, "What we agreed", agreed)),
+    h("div", { class: "row left" }, h("button", { class: "btn small primary", type: "button", text: "Copy recap", onclick: (e) => copyText(out.textContent).then((ok) => { e.target.textContent = ok ? "Copied" : "Copy not available"; }) }),
+      h("button", { class: "btn small", type: "button", text: "Download .txt", onclick: () => saveBlob(out.textContent, `beyond90-recap-${result.as_of}.txt`, "text/plain") })),
+    out), { sub: "Covered = the agenda; promises = what we owe. Written in the customer's words, with no scores. Nothing leaves the browser." });
 }
 
 function logForm({ score, result, logTouch }) {
@@ -613,4 +637,44 @@ export function changesView({ dash }) {
     card("Contribution of each factor", contributions(items), { sub: "Exact: the contributions sum to the change. The hatched-looking bars are headroom from newer capabilities, not the customer's doing." }),
     a.notes.length ? h("ul", {}, a.notes.map((n) => h("li", { text: n }))) : null,
     dash.drift ? card("Did the inputs change?", h("ul", { class: "checks" }, dash.drift.items.map((i) => h("li", {}, chip(i.status, STATUS_KIND[i.status] || ""), h("span", { text: i.text })))), { sub: "These look for artefacts of the export, not for progress." }) : null);
+}
+
+// ------------------------------------------------------------------ value
+/** What changed since the last snapshot, as evidence: what moved, what we did around it, and what did not move. */
+export function valueView({ dash, result }) {
+  const v = dash.impact;
+  if (!v) return h("div", {}, card("Value receipt", h("p", { class: "note first", text: "Pick a saved snapshot in \u201cCompare with\u201d to see what moved since then. The receipt needs a before and an after." })));
+  const sev = v.findings.by_severity || {};
+  const buttons = h("span", { class: "btnrow" },
+    h("button", { class: "btn small primary", type: "button", text: "Download receipt (.html)", onclick: () => saveBlob(result.receipt_html, `beyond90-value-receipt-${result.as_of}.html`, "text/html") }),
+    h("button", { class: "btn small", type: "button", text: "Copy as Markdown", onclick: (e) => copyText(result.receipt_markdown).then((ok) => { e.target.textContent = ok ? "Copied" : "Copy not available"; }) }));
+  const tl = v.touches.timeline;
+  return h("div", {},
+    h("div", { class: "card callout " + (v.headline.length ? "good" : "") }, h("h2", { text: `${v.from} \u2192 ${v.to} (${v.days} days)` }),
+      h("p", { text: v.headline.length ? v.headline.join("; ") + "." : "Nothing measurable moved in this window." }), buttons),
+    h("div", { class: "kpiline" }, stat(String(v.connected.accounts.length), "accounts connected", v.connected.accounts.length ? "good" : ""),
+      stat(num(v.connected.spend), "monthly spend now watched"), stat(String(v.findings.closed), "findings closed", v.findings.closed ? "good" : ""),
+      stat(String(sev.critical || 0), "of them critical", sev.critical ? "good" : ""), stat(String(v.capabilities.gained), "capability activations"),
+      stat(`${v.yield.customer_points >= 0 ? "+" : ""}${v.yield.customer_points.toFixed(1)}`, "points from the customer's work", v.yield.customer_points > 0 ? "good" : v.yield.customer_points < 0 ? "bad" : "")),
+    h("div", { class: "col2" },
+      card("What happened around it", tl.length ? h("ul", { class: "checks" }, tl.map((t) => h("li", {}, chip(t.date, ""), h("span", {}, h("b", { text: `${t.kind}: ${t.summary}` }),
+        h("small", { class: "block", text: t.followed_count ? `Followed within 21 days by: ${t.followed_by.join("; ")}${t.followed_count > t.followed_by.length ? ` (+${t.followed_count - t.followed_by.length})` : ""}` : "Nothing measurable followed within 21 days." }))))) : h("p", { class: "note first", text: "No touches logged in this window." }),
+        { sub: `Followed, not caused: a timeline is evidence for a conversation, not proof. Promises kept: ${v.promises.kept} (${v.promises.on_time} on time).` }),
+      card("What did not move", v.remaining.length ? h("ul", {}, v.remaining.map((r) => h("li", { text: r }))) : h("p", { class: "note first", text: "No open gap worth naming." }),
+        { sub: v.connected.lost.length ? `Also lost: ${v.connected.lost.length} account(s) no longer connected.` : "A receipt that hides the gaps is a sales sheet." })));
+}
+
+// ------------------------------------------------------------------ teams
+/** One digest per customer team, ranked by what is at stake on their side, each with a message ready to send. */
+export function teamsView({ dash }) {
+  const list = dash.teams.teams;
+  return h("div", {},
+    h("p", { class: "note", text: "A champion cannot fix everything. Each team gets only its own accounts, its own blockers and at most three asks, ranked by spend not connected, critical findings and blocked connectors." }),
+    h("div", { class: "teamgrid" }, list.map((t, i) => card(`${i + 1}. ${t.name}`, h("div", {},
+      h("div", { class: "kpiline" }, stat(String(t.accounts), "accounts"), stat(pct(t.spend_share), "of spend"),
+        stat(String(t.unconnected.length), "not connected", t.unconnected.length ? "warn" : "good"), stat(String(t.findings.filter((f) => f.severity === "critical").length), "critical open", t.findings.some((f) => f.severity === "critical") ? "bad" : "good")),
+      t.asks.length ? h("ol", {}, t.asks.map((a) => h("li", { text: a }))) : h("p", { class: "note first", text: "Nothing to ask this month." }),
+      h("details", {}, h("summary", { text: t.contacts.length ? `Message for ${t.contacts.map((c) => c.name).join(", ")}` : "Message (no contact on record)" }), h("pre", { class: "recap", tabindex: "0", text: t.message })),
+      h("div", { class: "row left" }, h("button", { class: "btn small", type: "button", text: "Copy message", onclick: (e) => copyText(t.message).then((ok) => { e.target.textContent = ok ? "Copied" : "Copy not available"; }) }))),
+      { sub: t.contacts.length ? t.contacts.map((c) => c.role ? `${c.name} (${c.role})` : c.name).join(", ") : "No contact on record for this team." }))));
 }

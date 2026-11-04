@@ -13,7 +13,7 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Any, Optional
 
-from . import __version__, dashboard, onboarding, outlook, rhythm, stake
+from . import __version__, dashboard, impact, onboarding, outlook, rhythm, stake, teams
 from .attribution import explain
 from .book import build_book_plan, render_book_html, render_book_markdown
 from .candor import candor_items
@@ -83,6 +83,7 @@ def analyze(
     onb = onboarding.diagnose(data)
     look = outlook.outlook(data, cat)
     weighted = stake.weighted(data, score, cat)
+    value = impact.maybe(old, data, cat)
     if old is not None:
         onb["delta"] = onboarding.delta(onboarding.diagnose(old), onb, old.as_of, data.as_of)
     status = onboarding.customer_status(onb, score.customer, str(score.as_of), cat.terms["units"], onb.get("delta"), coming=[e for e in look["events"] if e["who"] == "customer"])
@@ -109,7 +110,10 @@ def analyze(
         "onboarding_status_markdown": status["markdown"],
         "onboarding_status_html": status["html"],
         "outlook_ics": outlook.ics(look["events"], score.customer),
-        "dashboard": dashboard.build(data, score, cat, plan, {**extras, "rhythm": rh, "onboarding": onb, "outlook": look, "stake": weighted}, actions),
+        "receipt_markdown": impact.render(value) if value else "",
+        "receipt_html": impact.render(value, html=True) if value else "",
+        "dashboard": dashboard.build(data, score, cat, plan, {**extras, "rhythm": rh, "onboarding": onb, "outlook": look, "stake": weighted, "impact": value,
+                                                              "teams": teams.digests(data, onb, look, weighted, cat.terms["units"])}, actions),
         "report_html": render_html(score, actions, None, previous, **extras),
         "report_markdown": render_markdown(score, actions, None, previous, **extras),
         "qbr_markdown": render_qbr(score, actions, previous, quarter, **extras),

@@ -2,6 +2,15 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.19.0
+
+What the work was worth, who has to move, and what was agreed.
+
+- **Value receipt.** With an earlier snapshot, one page of what moved between the two dates: accounts connected and the monthly spend they bring under watch, findings closed by severity, findings that gained an owner and a decision, capability activations, the points earned by the customer's own work kept apart from the bar moving, promises kept. Each logged touch is listed with the outcomes of the same kind in the 21 days after it: followed, not caused. And it ends with what did not move. In the browser, from `beyond90 receipt DIR --since OLD --format html|markdown|json`, and written by every automated run that has a previous snapshot as `value-receipt.html`. In the demo: 7 accounts connected, 37 findings closed (4 critical).
+- **Team digests.** The estate split by the customer's own teams and ranked by what is at stake on their side (spend not connected, critical findings, blocked connectors): their accounts, blockers with causes in plain words, their findings, their dated events, at most three asks, and a message addressed to their contact, with no internal scores. A champion forwards one note per team instead of one list for everyone. In the browser and from `beyond90 teams DIR`.
+- **Recap after the call.** In "Prep a call", the follow-up email is drafted from the agenda, the promises we owe and the next steps typed in (what, who, by when). Copy or download; nothing is sent.
+- Automated runs skip an output that is empty (for example the receipt on the first run) instead of writing an empty file.
+
 ## 0.18.0
 
 Two questions most tools leave to intuition.

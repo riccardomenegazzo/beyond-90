@@ -299,6 +299,8 @@ const SINGLE_TABS = [
   { id: "prep", label: "Prep a call", kind: "view", view: "prepView", icon: "prep" },
   { id: "onboarding", label: "Onboarding", kind: "view", view: "onboardingView", icon: "onboarding" },
   { id: "outlook", label: "If nothing is done", kind: "view", view: "outlookView", icon: "outlook" },
+  { id: "value", label: "Value receipt", kind: "view", view: "valueView", icon: "renewal" },
+  { id: "teams", label: "Teams", kind: "view", view: "teamsView", icon: "accounts" },
   { id: "actions", label: "Actions", kind: "view", view: "actionsView", icon: "actions" },
   { id: "accounts", label: "Accounts", kind: "view", view: "accountsView", icon: "accounts" },
   { id: "findings", label: "Findings", kind: "view", view: "findingsView", icon: "findings" },

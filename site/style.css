@@ -248,3 +248,7 @@ h1,h2,h3{letter-spacing:-.02em}
 footer{max-width:1240px;border-top:1px solid var(--border);padding-top:16px}
 
 @media print{.appbar,.intro,#data-panel,.tabs,.toolbar,.actions,#history-panel,footer,.btn,.bar{display:none!important}body{background:#fff}.panel{border:0;box-shadow:none;padding:0}.card{break-inside:avoid}}
+.teamgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px;margin-top:10px}
+.teamgrid .card{margin:0}
+pre.recap{white-space:pre-wrap;word-break:break-word;background:var(--bg2,rgba(127,127,127,.08));border-radius:8px;padding:12px;font-size:.85rem;max-height:340px;overflow:auto;margin:10px 0 0}
+textarea{width:100%;font:inherit;padding:8px;border-radius:8px;border:1px solid var(--line,#ccc);background:inherit;color:inherit;resize:vertical}
