@@ -33,6 +33,9 @@ jobs:
           python -m pip install --no-deps .
           curl -fsS --max-time 30 "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/feed/advisories.json" -o previous-feed.json || rm -f previous-feed.json
           beyond90 feeds --previous previous-feed.json --out feed.json || rm -f feed.json
+          if [ -f feed.json ]; then
+            python -c "import json, beyond90.feeds as f; print(f.render_markdown(json.load(open('feed.json')), limit=40))" | tee -a "$GITHUB_STEP_SUMMARY"
+          fi
       - run: python site/build_site.py --out _site --pyodide site/npm/node_modules/pyodide $( [ -f feed.json ] && echo --feed feed.json )
       - run: python -m pip install playwright && python -m playwright install --with-deps chromium
       - run: python site/e2e.py _site
