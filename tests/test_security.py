@@ -57,10 +57,36 @@ def test_every_workflow_action_is_pinned_to_a_commit(wf):
 
 
 @pytest.mark.parametrize("wf", WORKFLOWS, ids=lambda p: p.name)
-def test_workflows_declare_their_permissions(wf):
+def test_workflows_grant_nothing_by_default_and_each_job_only_what_it_needs(wf):
     text = wf.read_text(encoding="utf-8")
-    assert re.search(r"^permissions:", text, re.M), f"{wf.name} does not restrict the token's permissions"
+    assert re.search(r"^permissions: \{\}$", text, re.M), f"{wf.name}: the token must start with no permissions"
+    jobs = re.split(r"^  (?=[a-z][\w-]*:$)", text.split("\njobs:\n", 1)[1], flags=re.M)
+    assert all("permissions:" in j for j in jobs if j.strip()), f"{wf.name}: every job declares its permissions"
     assert "pull_request_target" not in text, "pull_request_target runs untrusted code with secrets"
+
+
+@pytest.mark.parametrize("wf", WORKFLOWS, ids=lambda p: p.name)
+def test_checkouts_keep_no_credentials_and_scripts_expand_no_event_data(wf):
+    text = wf.read_text(encoding="utf-8")
+    assert text.count("actions/checkout@") == text.count("persist-credentials: false"), f"{wf.name}: a checkout keeps the token on disk"
+    for block in re.findall(r"run: \|\n((?:\s{10,}.*\n)+)|run: (.*)", text):
+        script = "".join(block)
+        assert "${{" not in script, f"{wf.name}: a script expands a template; pass it through env instead: {script.strip()[:80]}"
+
+
+@pytest.mark.parametrize("wf", WORKFLOWS, ids=lambda p: p.name)
+def test_python_tools_are_installed_from_hashed_locks(wf):
+    for line in wf.read_text(encoding="utf-8").splitlines():
+        if "pip install" in line and "--no-deps" not in line.split("&&")[0]:
+            assert "--require-hashes -r requirements/" in line, f"{wf.name}: {line.strip()}"
+
+
+def test_every_lock_file_pins_versions_with_hashes():
+    for f in (ROOT / "requirements").glob("*.txt"):
+        pkgs = [ln for ln in f.read_text(encoding="utf-8").splitlines() if re.match(r"^[a-z0-9]", ln, re.I)]
+        assert pkgs, f"{f.name} is empty"
+        assert all("==" in p for p in pkgs), f"{f.name}: every package is pinned"
+        assert f.read_text(encoding="utf-8").count("--hash=sha256:") >= len(pkgs), f"{f.name}: every package has a hash"
 
 
 def test_the_npm_lock_pins_every_package_with_an_integrity_hash():

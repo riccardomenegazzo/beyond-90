@@ -40,13 +40,13 @@ def test_errors_are_collected_with_file_and_line(tmp_path):
 
 
 def test_missing_files_and_bad_toml(tmp_path):
-    with pytest.raises(DataError, match="customer.toml"):
+    with pytest.raises(DataError, match=r"customer\.toml"):
         load_customer(tmp_path)
     (tmp_path / "customer.toml").write_text("not = [valid")
     with pytest.raises(DataError, match="invalid TOML"):
         load_customer(tmp_path)
     (tmp_path / "customer.toml").write_text(TOML)
-    with pytest.raises(DataError, match="accounts.csv: not found"):
+    with pytest.raises(DataError, match=r"accounts\.csv: not found"):
         load_customer(tmp_path)
 
 
@@ -103,3 +103,10 @@ def test_relationship_files_are_validated(tmp_path, contacts, commitments, needl
     with pytest.raises(DataError) as e:
         load_customer(write(tmp_path, **files))
     assert needle in str(e.value)
+
+
+def test_an_unknown_account_source_is_named(tmp_path):
+    write(tmp_path, accounts="id,provider,sources,connected\na1,aws,billing;rumour,true\n")
+    with pytest.raises(DataError) as exc:
+        load_customer(tmp_path)
+    assert any("rumour is not one of billing;org;sso;manual;plan;platform" in e for e in exc.value.errors)

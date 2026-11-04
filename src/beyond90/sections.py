@@ -6,7 +6,7 @@ Each section exists in Markdown and HTML form so the two renderers stay in step.
 from __future__ import annotations
 
 from html import escape as e
-from typing import Optional
+from typing import Any, Optional
 
 from .attribution import Attribution
 from .ladder import describe
@@ -67,7 +67,7 @@ def html_attribution(a: Attribution) -> str:
 _MARK = {"ok": "ok", "note": "note", "weak": "weak"}
 
 
-def md_quality(q: dict) -> list[str]:
+def md_quality(q: dict[str, Any]) -> list[str]:
     if not q:
         return []
     L = ["## How far to trust this number", "",
@@ -76,10 +76,10 @@ def md_quality(q: dict) -> list[str]:
     ok = [c["title"] for c in q["checks"] if c["status"] == "ok"]
     if ok:
         L.append(f"- ok: {'; '.join(ok)}.")
-    return L + [""]
+    return [*L, ""]
 
 
-def html_quality(q: dict) -> str:
+def html_quality(q: dict[str, Any]) -> str:
     if not q:
         return ""
     rows = "".join(f'<tr><td>{e(_MARK[c["status"]])}</td><td><strong>{e(c["title"])}</strong><br><span class="warn">{e(c["detail"])}</span></td></tr>' for c in q["checks"])
@@ -89,19 +89,19 @@ def html_quality(q: dict) -> str:
             f'<table><tbody>{rows}</tbody></table></section>')
 
 
-def md_universe(u: dict) -> list[str]:
+def md_universe(u: dict[str, Any]) -> list[str]:
     if not u or not u.get("estimable"):
         return []
     L = ["## How complete is the universe?", "",
          f"{u['observed']} {u.get('units', 'accounts')} are known from {', '.join(u['sources'])}. {u['seen_by_one']} are seen by one source only, {u['seen_by_two']} by two, {u['seen_by_all']} by all.",
-         f"Estimated {u.get('units', 'accounts')} no source has seen: about {u['unseen_estimate']:.1f} (lower bound, {u['method']}). "
-         f"Completeness {pct(u['completeness'])} ({u['confidence']} confidence).",
+         (f"Estimated {u.get('units', 'accounts')} no source has seen: about {u['unseen_estimate']:.1f} (lower bound, {u['method']}). "
+         f"Completeness {pct(u['completeness'])} ({u['confidence']} confidence)."),
          f"If those {u.get('units', 'accounts')} are unconnected, L1 would be {pct(u['pessimistic_l1'])} instead of the reported value.", ""]
     L += [f"- Warning: {w}" for w in u["warnings"]]
     return L + ([""] if u["warnings"] else [])
 
 
-def html_universe(u: dict) -> str:
+def html_universe(u: dict[str, Any]) -> str:
     if not u or not u.get("estimable"):
         return ""
     rows = "".join(f"<tr><td>Only in {e(s)}</td><td class=\"n\">{n}</td></tr>" for s, n in u["only_in"].items())
@@ -117,12 +117,12 @@ def html_universe(u: dict) -> str:
 
 # ------------------------------------------------------------------ forecast
 
-def _forecast_lines(f: dict) -> list[str]:
+def _forecast_lines(f: dict[str, Any]) -> list[str]:
     if not f["available"]:
         return [f["reason"]]
     if f["state"] == "zero":
-        return [f"Zero critical now. A new critical appears within 30 days with probability {f['p_new_critical_30d']:.0%} and within 90 days {f['p_new_critical_90d']:.0%} "
-                f"(about {f['arrivals_per_week']} per week). Typical recovery: {f['median_days_to_recover']} days."]
+        return [(f"Zero critical now. A new critical appears within 30 days with probability {f['p_new_critical_30d']:.0%} and within 90 days {f['p_new_critical_90d']:.0%} "
+                f"(about {f['arrivals_per_week']} per week). Typical recovery: {f['median_days_to_recover']} days.")]
     p50 = "not within a year" if f["p50_days"] is None else f"{f['p50_days']} days ({f['p50_date']})"
     p90 = "not within a year" if f["p90_days"] is None else f"{f['p90_days']} days ({f['p90_date']})"
     z = f["p_zero_within"]
@@ -134,13 +134,13 @@ def _forecast_lines(f: dict) -> list[str]:
     return L
 
 
-def md_forecast(f: Optional[dict]) -> list[str]:
+def md_forecast(f: Optional[dict[str, Any]]) -> list[str]:
     if f is None:
         return []
     return ["## Zero-critical forecast", ""] + [x + "  " for x in _forecast_lines(f)] + ["", f"Monte Carlo, {f['runs']} runs, seed {f['seed']}, learned from this customer's own history.", ""]
 
 
-def html_forecast(f: Optional[dict]) -> str:
+def html_forecast(f: Optional[dict[str, Any]]) -> str:
     if f is None:
         return ""
     body = "".join(f"<p>{e(x)}</p>" for x in _forecast_lines(f))
@@ -151,8 +151,8 @@ def html_forecast(f: Optional[dict]) -> str:
 # -------------------------------------------------------------------- roadmap
 
 def md_plan(p: Plan, top: int = 12) -> list[str]:
-    L = ["## Roadmap", "", f"{p.hours_per_week:g} hours a week for {p.horizon_weeks} weeks, {p.realization:.0%} of each action assumed to succeed. "
-         f"Yield {pct(p.start_yield)} to {pct(p.end_yield)}.", ""]
+    L = ["## Roadmap", "", (f"{p.hours_per_week:g} hours a week for {p.horizon_weeks} weeks, {p.realization:.0%} of each action assumed to succeed. "
+         f"Yield {pct(p.start_yield)} to {pct(p.end_yield)}."), ""]
     ms = ", ".join(f"{k} in week {v}" if v is not None else f"{k} not reached" for k, v in p.milestones.items())
     L += [f"Checkpoints: {ms}.", ""]
     for d in p.dips:
@@ -219,7 +219,7 @@ def html_plan(p: Plan, top: int = 12) -> str:
 
 # --------------------------------------------------------------- relationship
 
-def md_relationship(rel: Optional[dict]) -> list[str]:
+def md_relationship(rel: Optional[dict[str, Any]]) -> list[str]:
     if not rel:
         return []
     L = ["## Relationship", "", "Reported next to adoption and never averaged with it: a well-used platform and a sponsor who has stopped answering are different problems.", ""]
@@ -240,7 +240,7 @@ def md_relationship(rel: Optional[dict]) -> list[str]:
     return L
 
 
-def html_relationship(rel: Optional[dict]) -> str:
+def html_relationship(rel: Optional[dict[str, Any]]) -> str:
     if not rel:
         return ""
     r = rel["reliability"]
@@ -259,7 +259,7 @@ def html_relationship(rel: Optional[dict]) -> str:
     return ('<section aria-labelledby="rl"><h2 id="rl">Relationship</h2><p class="warn">Reported next to adoption and never averaged with it.</p>' + "".join(bits) + "</section>")
 
 
-def html_candor(items: Optional[list]) -> str:
+def html_candor(items: Optional[list[Any]]) -> str:
     if not items:
         return ""
     lis = "".join(f'<li><strong>{e(i.say)}</strong><br><span class="warn">Evidence: {e(i.evidence)}<br>Why say it: {e(i.why)}</span></li>' for i in items)
@@ -282,17 +282,17 @@ def _fmt_metric(name: str, v: float) -> str:
     return f"{v:g}"
 
 
-def _fmt_target(c: dict) -> str:
+def _fmt_target(c: dict[str, Any]) -> str:
     return f"{c['op']} {_fmt_metric(c['metric'], c['target'])}"
 
 
-def _closing_actions(c: dict, actions: Optional[list]) -> list[str]:
+def _closing_actions(c: dict[str, Any], actions: Optional[list[Any]]) -> list[str]:
     if not actions or not c["playbooks"]:
         return []
     return [a.title for a in actions if a.playbook in c["playbooks"]][:2]
 
 
-def rubric_headline(r: dict) -> str:
+def rubric_headline(r: dict[str, Any]) -> str:
     level = r["level"].capitalize()
     tail = " (provisional: some checks could not be measured)" if r["provisional"] else ""
     if not r["next_level"]:
@@ -304,7 +304,7 @@ def rubric_headline(r: dict) -> str:
     return f"Maturity level: **{level}**{tail}. {n} check{'s' if n != 1 else ''} stand{'s' if n == 1 else ''} between you and {nxt}."
 
 
-def md_rubric(r: dict, actions: Optional[list] = None, ladder: Optional[dict] = None) -> list[str]:
+def md_rubric(r: dict[str, Any], actions: Optional[list[Any]] = None, ladder: Optional[dict[str, Any]] = None) -> list[str]:
     if not r or not r.get("checks"):
         return []
     L = ["## Maturity level", "", rubric_headline(r), "",
@@ -319,7 +319,7 @@ def md_rubric(r: dict, actions: Optional[list] = None, ladder: Optional[dict] = 
             L.append(f"- {c['title']}: now {_fmt_metric(c['metric'], c['value'])}, needs {_fmt_target(c)}." + (f" Closes with: {'; '.join(close)}." if close else ""))
         L.append("")
     if ladder:
-        L += describe(ladder) + [""]
+        L += [*describe(ladder), ""]
     if r["unmeasured"]:
         L.append("Not measured, so neither passed nor blocking: " + "; ".join(c["title"] for c in r["unmeasured"][:5]) + ("." if len(r["unmeasured"]) <= 5 else f" (+{len(r['unmeasured']) - 5} more)."))
         L.append("")
@@ -327,7 +327,7 @@ def md_rubric(r: dict, actions: Optional[list] = None, ladder: Optional[dict] = 
     return L
 
 
-def html_rubric(r: dict, actions: Optional[list] = None, ladder: Optional[dict] = None) -> str:
+def html_rubric(r: dict[str, Any], actions: Optional[list[Any]] = None, ladder: Optional[dict[str, Any]] = None) -> str:
     if not r or not r.get("checks"):
         return ""
     head = e(rubric_headline(r).replace("**", ""))
@@ -357,7 +357,7 @@ def _bar(rate: float) -> str:
             'background:var(--s1);height:8px;border-radius:4px"></div></div>')
 
 
-def md_views(v: dict) -> list[str]:
+def md_views(v: dict[str, Any]) -> list[str]:
     if not v:
         return []
     L = ["## Adoption by use case", "", "Capability switched on, against capability that applies, grouped by what it is for.", "",
@@ -371,10 +371,10 @@ def md_views(v: dict) -> list[str]:
         L.append(f"| {f.capitalize()} | " + (f"{x['active']} of {x['relevant']} | {x['rate']:.0%} |" if x["rate"] is not None else "no capability in this catalogue serves it | - |"))
     if v["csf"]["note"]:
         L += ["", v["csf"]["note"]]
-    return L + [""]
+    return [*L, ""]
 
 
-def html_views(v: dict) -> str:
+def html_views(v: dict[str, Any]) -> str:
     if not v:
         return ""
     rows = "".join(f'<tr><td>{e(u["label"])}</td><td class="n">{u["active"]} of {u["relevant"]}</td><td>{_bar(u["rate"])}</td><td class="n">{u["rate"]:.0%}</td>'
@@ -395,12 +395,12 @@ def html_views(v: dict) -> str:
 _STATUS_WORD = {"ready": "ready", "watch": "watch", "at_risk": "at risk"}
 
 
-def renewal_headline(r: dict) -> str:
+def renewal_headline(r: dict[str, Any]) -> str:
     when = (f"in {r['days']} days" if r["days"] >= 0 else f"{-r['days']} days ago") + f" ({r['date']})"
     return f"Renewal {when}: **{_STATUS_WORD[r['status']]}**" + (f", {r['arr']:,.0f} of annual revenue on the line." if r["status"] != "ready" else ".")
 
 
-def md_renewal(r: Optional[dict]) -> list[str]:
+def md_renewal(r: Optional[dict[str, Any]]) -> list[str]:
     if not r:
         return []
     L = ["## Renewal readiness", "", renewal_headline(r), "", "| Signal | Status | Evidence |", "|---|---|---|"]
@@ -413,7 +413,7 @@ def md_renewal(r: Optional[dict]) -> list[str]:
     return L
 
 
-def html_renewal(r: Optional[dict]) -> str:
+def html_renewal(r: Optional[dict[str, Any]]) -> str:
     if not r:
         return ""
     rows = "".join(f'<tr><td>{e(s["label"])}</td><td>{e(s["status"].replace("_", " "))}</td><td>{e(s["detail"])}</td></tr>' for s in r["signals"])

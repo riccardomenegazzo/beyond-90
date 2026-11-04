@@ -25,7 +25,7 @@ import re
 from dataclasses import asdict, dataclass, field
 from datetime import date
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 from .catalogue import Catalogue, parse_version
 from .loader import clean_text
@@ -111,15 +111,15 @@ class Threat:
     source: str = ""
     summary: str = ""
     url: str = ""
-    extra: dict = field(default_factory=dict)       # kev, epss, cves, sources, kind, severity_why, first_seen: from `beyond90 feeds`
+    extra: dict[str, Any] = field(default_factory=dict[str, Any])       # kev, epss, cves, sources, kind, severity_why, first_seen: from `beyond90 feeds`
 
 
 KIND_NAMES = ("vulnerability", "exploited", "incident", "technique", "change", "advisory")
 
 
-def _extra(t: dict) -> dict:
+def _extra(t: dict[str, Any]) -> dict[str, Any]:
     """The enrichment a collected feed carries, each field checked, because all of it ends up on a page."""
-    e: dict = {}
+    e: dict[str, Any] = {}
     if t.get("kev") is True:
         e["kev"] = True
         if re.fullmatch(r"\d{4}-\d{2}-\d{2}", str(t.get("kev_due", ""))):

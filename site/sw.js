@@ -1,6 +1,6 @@
 // Offline support. The whole app is cached under one version name when it is installed, and a new version
-// waits until every tab using the old one is closed. That avoids the case the book warns about: old and
-// new code running together, a page from one build asking for a worker or an engine from another.
+// waits until every tab using the old one is closed, so a page from one build never asks for a worker or an
+// engine from another.
 const CACHE = "__CACHE__";
 const ASSETS = __ASSETS__;
 

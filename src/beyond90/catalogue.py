@@ -18,7 +18,7 @@ import tomllib
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 from .provenance import normalize
 from .rubric import validate as validate_rubric
@@ -93,7 +93,7 @@ class Catalogue:
         profile: str = BASE_PROFILE,
         terms: Optional[dict[str, str]] = None,
         description: str = "",
-        rubric: Optional[dict] = None,
+        rubric: Optional[dict[str, Any]] = None,
         use_cases: Optional[dict[str, str]] = None,
     ) -> None:
         self.resource_types = resource_types
@@ -147,7 +147,7 @@ class Catalogue:
         validate_rubric(rubric)
         rt = json.loads(files[0].read_text(encoding="utf-8"))
         mods = json.loads(files[1].read_text(encoding="utf-8"))
-        merged: dict[str, dict] = {}
+        merged: dict[str, dict[str, Any]] = {}
         for f in pb_files:
             for pid, p in json.loads(f.read_text(encoding="utf-8"))["playbooks"].items():
                 merged[pid] = {**merged.get(pid, {}), **p}
@@ -205,5 +205,3 @@ class Catalogue:
         limit = parse_version(ceiling)
         return [m for m in self.modules if parse_version(m.since) <= limit]
 
-    def module(self, module_id: str) -> Optional[Module]:
-        return next((m for m in self.modules if m.id == module_id), None)

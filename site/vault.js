@@ -4,10 +4,11 @@
 //  - each snapshot is sealed on its own with AES-256-GCM, a fresh random 12-byte nonce, and its id as associated data,
 //    so a sealed record cannot be swapped for another one and any change to it is detected
 //  - a small check value tells a wrong passphrase from damaged data without revealing anything about the content
-//  - there is no recovery: a forgotten passphrase means the saved copy is gone (an exported workspace is the backup)
+//  - an exported workspace is sealed the same way, with the vault's salt, so the passphrase opens it on another device
+//  - there is no recovery: a forgotten passphrase means the saved copy is gone
 const enc = new TextEncoder(), dec = new TextDecoder();
-export const KDF_ITERATIONS = 600_000;
-export const MIN_PASSPHRASE = 12;
+const KDF_ITERATIONS = 600_000;
+const MIN_PASSPHRASE = 12;
 
 const b64 = (buf) => { let s = ""; for (const b of new Uint8Array(buf)) s += String.fromCharCode(b); return btoa(s); };
 const unb64 = (t) => Uint8Array.from(atob(t), (c) => c.charCodeAt(0));
@@ -39,6 +40,24 @@ export async function createVault(passphrase, iterations = KDF_ITERATIONS) {
   const salt = crypto.getRandomValues(new Uint8Array(16));
   const key = await derive(passphrase, salt, iterations);
   return { key, meta: { v: 1, kdf: "PBKDF2-SHA256", iterations, salt: b64(salt), check: await seal(key, { ok: "beyond90" }, "vault") } };
+}
+
+const SEALED_FORMAT = "beyond90-sealed-workspace";
+
+/** A workspace file sealed with the vault's key; the same passphrase opens it anywhere. */
+export async function sealWorkspace(key, meta, text) {
+  return JSON.stringify({ format: SEALED_FORMAT, v: 1, kdf: meta.kdf, iterations: meta.iterations, salt: meta.salt, check: meta.check, sealed: await seal(key, { text }, "workspace") });
+}
+
+export const isSealedWorkspace = (doc) => !!doc && doc.format === SEALED_FORMAT;
+
+/** The workspace text inside a sealed file, or null if the passphrase is wrong. */
+export async function openWorkspace(doc, passphrase) {
+  const key = await unlockVault({ v: doc.v, iterations: doc.iterations, salt: doc.salt, check: doc.check }, passphrase);
+  if (!key) return null;
+  const { text } = await openSealed(key, doc.sealed, "workspace");
+  if (typeof text !== "string") throw new Error("The sealed workspace is damaged.");
+  return text;
 }
 
 /** The key for this passphrase, or null if it is wrong. */

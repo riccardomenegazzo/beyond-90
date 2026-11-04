@@ -7,7 +7,7 @@ import json
 import sys
 from datetime import date
 from pathlib import Path
-from typing import Optional
+from typing import TYPE_CHECKING, Any, Optional
 
 from . import __version__
 from .attribution import explain, render_attribution
@@ -31,19 +31,23 @@ from .importers import (
 )
 from .ladder import path_to_next_level
 from .loader import DataError, load_customer
-from .planner import build_plan
-from .playbooks import generate_actions
+from .models import CustomerData
+from .planner import Plan, build_plan
+from .playbooks import Action, generate_actions
 from .portfolio import load_portfolio, render_portfolio_json, render_portfolio_markdown
 from .qbr import render_qbr
 from .radar import load_threats, release_radar, render_radar_json, render_radar_markdown, render_radar_text, threat_radar
 from .renewal import compute_renewal
 from .report import pct, render_html, render_json, render_markdown, render_text
-from .scoring import compute_score
+from .scoring import Score, compute_score
 from .sections import md_plan
 from .simulate import RampModel
 from .store import Store
 from .successplan import render_success_plan
 from .universe import render_universe
+
+if TYPE_CHECKING:
+    from .connect import Config
 
 CUSTOMER_TOML = """[customer]
 name = "{name}"
@@ -82,7 +86,7 @@ def _emit(text: str, out: Optional[str]) -> None:
         sys.stdout.write(text if text.endswith("\n") else text + "\n")
 
 
-def _catalogue(args) -> Catalogue:
+def _catalogue(args: argparse.Namespace) -> Catalogue:
     """The catalogue for this run: --catalogue-dir, else --profile, else the profile named in the customer's customer.toml."""
     custom, profile = getattr(args, "catalogue_dir", None), getattr(args, "profile", None)
     if getattr(args, "directory", None):
@@ -92,13 +96,14 @@ def _catalogue(args) -> Catalogue:
     return Catalogue.load(Path(custom)) if custom else Catalogue.load(profile=profile)
 
 
-def _prepare(args):
+def _prepare(args: argparse.Namespace) -> tuple[Catalogue, CustomerData, list[str], Score, list[Action], Optional[list[dict[str, Any]]], Optional[dict[str, Any]]]:
     """Load, score, list actions, and read/write the history store if one was given."""
     cat = _catalogue(args)
     data, warnings = load_customer(args.directory, cat, require_accounts=True)
     score = compute_score(data, cat, getattr(args, "ceiling", None))
     actions = generate_actions(data, score, cat)
-    history = previous = None
+    history: Optional[list[dict[str, Any]]] = None
+    previous: Optional[dict[str, Any]] = None
     if getattr(args, "store", None):
         store = Store(args.store)
         previous = store.previous(score.customer, score.as_of)
@@ -108,14 +113,14 @@ def _prepare(args):
     return cat, data, warnings, score, actions, history, previous
 
 
-def _plan(args, data, cat):
+def _plan(args: argparse.Namespace, data: CustomerData, cat: Catalogue) -> Plan:
     return build_plan(data, cat, hours_per_week=args.hours, horizon_weeks=args.weeks,
                       realization=args.realization, ramp=RampModel(args.ramp_weeks))
 
 
-def _extras(args, cat, data, score, previous) -> tuple[dict, Optional[dict]]:
+def _extras(args: argparse.Namespace, cat: Catalogue, data: CustomerData, score: Score, previous: Optional[dict[str, Any]]) -> tuple[dict[str, Any], Optional[dict[str, Any]]]:
     """Optional analyses added to reports: attribution, zero-critical forecast, roadmap."""
-    extras: dict = {}
+    extras: dict[str, Any] = {}
     old = None
     if getattr(args, "since", None):
         old, _ = load_customer(args.since, cat)
@@ -134,7 +139,7 @@ def _extras(args, cat, data, score, previous) -> tuple[dict, Optional[dict]]:
     return extras, previous
 
 
-def cmd_init(args) -> int:
+def cmd_init(args: argparse.Namespace) -> int:
     base = Path(args.directory)
     if (base / "customer.toml").exists():
         print(f"{base / 'customer.toml'} already exists; refusing to overwrite", file=sys.stderr)
@@ -152,7 +157,7 @@ def cmd_init(args) -> int:
     return 0
 
 
-def cmd_validate(args) -> int:
+def cmd_validate(args: argparse.Namespace) -> int:
     cat = _catalogue(args)
     data, warnings = load_customer(args.directory, cat)
     print(
@@ -164,7 +169,7 @@ def cmd_validate(args) -> int:
     return 0
 
 
-def cmd_score(args) -> int:
+def cmd_score(args: argparse.Namespace) -> int:
     cat, data, warnings, score, actions, history, previous = _prepare(args)
     fmt = args.format
     if fmt == "json":
@@ -183,15 +188,15 @@ def cmd_score(args) -> int:
     return 0
 
 
-def cmd_report(args) -> int:
+def cmd_report(args: argparse.Namespace) -> int:
     cat, data, _, score, actions, history, previous = _prepare(args)
     extras, previous = _extras(args, cat, data, score, previous)
     _emit(render_html(score, actions, history, previous, **extras), args.out)
     return 0
 
 
-def cmd_actions(args) -> int:
-    _, _, _, score, actions, _, _ = _prepare(args)
+def cmd_actions(args: argparse.Namespace) -> int:
+    _, _, _, _score, actions, _, _ = _prepare(args)
     if args.leak:
         actions = [a for a in actions if a.leak.lower() == args.leak.lower()]
     if args.format == "json":
@@ -208,14 +213,14 @@ def cmd_actions(args) -> int:
     return 0
 
 
-def cmd_plan(args) -> int:
+def cmd_plan(args: argparse.Namespace) -> int:
     cat = _catalogue(args)
     data, _ = load_customer(args.directory, cat, require_accounts=True)
     plan = _plan(args, data, cat)
     if args.format == "json":
         _emit(json.dumps(plan.to_dict(), indent=2, ensure_ascii=False), args.out)
     elif args.format == "markdown":
-        _emit("\n".join([f"# Roadmap: {plan.customer}", ""] + md_plan(plan, top=args.top)), args.out)
+        _emit("\n".join([f"# Roadmap: {plan.customer}", "", *md_plan(plan, top=args.top)]), args.out)
     else:
         lines = [f"{plan.customer}: {plan.hours_per_week:g} h/week, {plan.horizon_weeks} weeks, {plan.realization:.0%} realization",
                  f"Yield {pct(plan.start_yield)} -> {pct(plan.end_yield)}",
@@ -235,11 +240,11 @@ def cmd_plan(args) -> int:
     return 0
 
 
-def cmd_explain(args) -> int:
+def cmd_explain(args: argparse.Namespace) -> int:
     cat = _catalogue(args)
     data, _ = load_customer(args.directory, cat, require_accounts=True)
     score = compute_score(data, cat)
-    previous: Optional[dict] = None
+    previous: Optional[dict[str, Any]] = None
     if args.since:
         old, _ = load_customer(args.since, cat)
         previous = compute_score(old, cat).to_dict()
@@ -256,7 +261,7 @@ def cmd_explain(args) -> int:
     return 0
 
 
-def cmd_book(args) -> int:
+def cmd_book(args: argparse.Namespace) -> int:
     cat = _catalogue(args)
     root = Path(args.root)
     dirs = sorted(p for p in root.iterdir() if p.is_dir() and (p / "customer.toml").exists())
@@ -281,7 +286,7 @@ def cmd_book(args) -> int:
     return 1 if skipped and args.strict else 0
 
 
-def cmd_radar(args) -> int:
+def cmd_radar(args: argparse.Namespace) -> int:
     cat = _catalogue(args)
     root = Path(args.root)
     dirs = sorted(p for p in root.iterdir() if p.is_dir() and (p / "customer.toml").exists())
@@ -307,7 +312,7 @@ def cmd_radar(args) -> int:
     return 0
 
 
-def cmd_import(args) -> int:
+def cmd_import(args: argparse.Namespace) -> int:
     base = Path(args.into)
     if not (base / "customer.toml").exists():
         print(f"{base}/customer.toml not found: run `beyond90 init {base}` first", file=sys.stderr)
@@ -347,7 +352,7 @@ def cmd_import(args) -> int:
     return 0
 
 
-def cmd_reconcile(args) -> int:
+def cmd_reconcile(args: argparse.Namespace) -> int:
     accounts = read_accounts(Path(args.directory) / "accounts.csv")
     if not accounts:
         print(f"{args.directory}/accounts.csv is missing or empty", file=sys.stderr)
@@ -357,7 +362,7 @@ def cmd_reconcile(args) -> int:
     return 0
 
 
-def cmd_universe(args) -> int:
+def cmd_universe(args: argparse.Namespace) -> int:
     cat = _catalogue(args)
     data, _ = load_customer(args.directory, cat, require_accounts=True)
     u = compute_score(data, cat).universe
@@ -365,7 +370,7 @@ def cmd_universe(args) -> int:
     return 0
 
 
-def cmd_forecast(args) -> int:
+def cmd_forecast(args: argparse.Namespace) -> int:
     cat = _catalogue(args)
     data, _ = load_customer(args.directory, cat, require_accounts=True)
     f = forecast_zero_critical(data, runs=args.runs, horizon_days=args.horizon, seed=args.seed)
@@ -373,21 +378,21 @@ def cmd_forecast(args) -> int:
     return 0
 
 
-def cmd_qbr(args) -> int:
+def cmd_qbr(args: argparse.Namespace) -> int:
     cat, data, _, score, actions, _, previous = _prepare(args)
     extras, previous = _extras(args, cat, data, score, previous)
     _emit(render_qbr(score, actions, previous, args.quarter or "", **extras), args.out)
     return 0
 
 
-def cmd_successplan(args) -> int:
+def cmd_successplan(args: argparse.Namespace) -> int:
     cat, data, _, score, actions, _, previous = _prepare(args)
     extras, previous = _extras(args, cat, data, score, previous)
     _emit(render_success_plan(score, actions, extras.get("plan"), owner=args.owner or "", review=args.review), args.out)
     return 0
 
 
-def cmd_onboarding(args) -> int:
+def cmd_onboarding(args: argparse.Namespace) -> int:
     from . import onboarding
     cat = _catalogue(args)
     data, _ = load_customer(args.directory, cat, require_accounts=True)
@@ -403,7 +408,7 @@ def cmd_onboarding(args) -> int:
     return 0
 
 
-def cmd_triage(args) -> int:
+def cmd_triage(args: argparse.Namespace) -> int:
     from . import onboarding
     text = sys.stdin.read() if args.text == "-" else args.text
     r = onboarding.triage(text, args.provider or "", args.kind or "")
@@ -424,7 +429,7 @@ def cmd_triage(args) -> int:
     return 0
 
 
-def cmd_preflight(args) -> int:
+def cmd_preflight(args: argparse.Namespace) -> int:
     from . import onboarding
     opts = {"providers": [p.strip().lower() for p in args.providers.split(",") if p.strip()], "org": not args.per_account}
     for k in ("kubernetes", "sensor", "cmk", "guardrails", "private_clusters", "pod_security", "proxy"):
@@ -433,7 +438,7 @@ def cmd_preflight(args) -> int:
     return 0
 
 
-def cmd_receipt(args) -> int:
+def cmd_receipt(args: argparse.Namespace) -> int:
     from . import impact
     cat = _catalogue(args)
     old, _ = load_customer(args.since, cat)
@@ -443,7 +448,7 @@ def cmd_receipt(args) -> int:
     return 0
 
 
-def cmd_teams(args) -> int:
+def cmd_teams(args: argparse.Namespace) -> int:
     from . import onboarding, outlook, stake, teams
     cat = _catalogue(args)
     data, _ = load_customer(args.directory, cat, require_accounts=True)
@@ -459,7 +464,7 @@ def cmd_teams(args) -> int:
     return 0
 
 
-def cmd_feeds(args) -> int:
+def cmd_feeds(args: argparse.Namespace) -> int:
     from . import feeds
     cfg = feeds.default_config()
     if args.sources:
@@ -483,7 +488,7 @@ def cmd_feeds(args) -> int:
     return 0
 
 
-def cmd_exec_qbr(args) -> int:
+def cmd_exec_qbr(args: argparse.Namespace) -> int:
     from datetime import date as _date
 
     from . import execqbr
@@ -496,7 +501,7 @@ def cmd_exec_qbr(args) -> int:
     return 0
 
 
-def cmd_history(args) -> int:
+def cmd_history(args: argparse.Namespace) -> int:
     store = Store(args.store)
     rows = store.history(args.customer)
     if not rows:
@@ -516,7 +521,7 @@ def cmd_history(args) -> int:
     return 0
 
 
-def cmd_portfolio(args) -> int:
+def cmd_portfolio(args: argparse.Namespace) -> int:
     cat = _catalogue(args)
     store = Store(args.store) if args.store else None
     pf = load_portfolio(args.root, cat, store)
@@ -528,7 +533,7 @@ def cmd_portfolio(args) -> int:
     return 1 if pf.errors and args.strict else 0
 
 
-def _config(args):
+def _config(args: argparse.Namespace) -> Config:
     from .connect import ConfigError, load_config
     try:
         return load_config(args.config)
@@ -539,11 +544,11 @@ def _config(args):
         raise SystemExit(1) from None
 
 
-def _as_of(args):
+def _as_of(args: argparse.Namespace) -> Optional[date]:
     return date.fromisoformat(args.as_of) if getattr(args, "as_of", None) else None
 
 
-def cmd_check_config(args) -> int:
+def cmd_check_config(args: argparse.Namespace) -> int:
     import os
 
     from .connect.schedule import needed_env
@@ -561,7 +566,7 @@ def cmd_check_config(args) -> int:
     return 0
 
 
-def _print_sync(rep) -> None:
+def _print_sync(rep: Any) -> None:
     for r in rep.results:
         extra = f" ({r.error})" if r.error else ""
         age = f", {r.age_days} day(s) old" if r.status == "stale" else ""
@@ -571,7 +576,7 @@ def _print_sync(rep) -> None:
         print(f"  dropped {n} {t} row(s) for accounts that are not in the account list")
 
 
-def cmd_sync(args) -> int:
+def cmd_sync(args: argparse.Namespace) -> int:
     from .connect import SyncError, sync
     cfg = _config(args)
     try:
@@ -584,7 +589,7 @@ def cmd_sync(args) -> int:
     return 1 if any(r.status == "failed" for r in rep.results) else 0
 
 
-def cmd_run(args) -> int:
+def cmd_run(args: argparse.Namespace) -> int:
     from .connect import SyncError
     from .connect.pipeline import PipelineError, run
     cfg = _config(args)
@@ -610,7 +615,7 @@ def cmd_run(args) -> int:
     return 0
 
 
-def cmd_schedule(args) -> int:
+def cmd_schedule(args: argparse.Namespace) -> int:
     from .connect import schedule as sch
     cfg = _config(args)
     name = Path(args.config).name
@@ -624,7 +629,7 @@ def cmd_schedule(args) -> int:
     return 0
 
 
-def cmd_fingerprint(args) -> int:
+def cmd_fingerprint(args: argparse.Namespace) -> int:
     from .provenance import hash_directory, input_hash
     files = hash_directory(args.directory)
     if not files:
@@ -637,7 +642,7 @@ def cmd_fingerprint(args) -> int:
     return 0
 
 
-def cmd_profiles(args) -> int:
+def cmd_profiles(args: argparse.Namespace) -> int:
     for name in available_profiles():
         cat = Catalogue.load(profile=name)
         print(f"{name:<10} {cat.description or '(no description)'}")
@@ -646,7 +651,7 @@ def cmd_profiles(args) -> int:
     return 0
 
 
-def cmd_catalogue(args) -> int:
+def cmd_catalogue(args: argparse.Namespace) -> int:
     cat = _catalogue(args)
     ceiling = args.ceiling or cat.version
     lines = [f"Profile {cat.profile}, catalogue version {cat.version}; modules at ceiling {ceiling}:"]
@@ -665,7 +670,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--version", action="version", version=f"beyond90 {__version__}")
     sub = p.add_subparsers(dest="command", required=True)
 
-    def common(sp, store=True, ceiling=True):
+    def common(sp: argparse.ArgumentParser, store: bool = True, ceiling: bool = True) -> None:
         sp.add_argument("directory", help="customer data directory (see docs/data-format.md)")
         sp.add_argument("--profile", help="catalogue profile (see `beyond90 profiles`); default: the one named in customer.toml, else cnapp")
         sp.add_argument("--catalogue-dir", help="directory with custom resource_types.json, modules.json, playbooks.json")
@@ -675,13 +680,13 @@ def build_parser() -> argparse.ArgumentParser:
             sp.add_argument("--store", help="SQLite file for snapshot history; the run is saved unless --no-save")
             sp.add_argument("--no-save", action="store_true", help="read the store but do not write this run to it")
 
-    def planning(sp):
+    def planning(sp: argparse.ArgumentParser) -> None:
         sp.add_argument("--hours", type=float, default=8.0, help="hours per week you can spend on this customer (default 8)")
         sp.add_argument("--weeks", type=int, default=26, help="planning horizon in weeks (default 26)")
         sp.add_argument("--realization", type=float, default=0.9, help="share of each action's units that succeed; the rest is reported as residual (default 0.9)")
         sp.add_argument("--ramp-weeks", type=int, default=2, help="weeks until a newly connected account is fully inventoried (default 2)")
 
-    def analyses(sp):
+    def analyses(sp: argparse.ArgumentParser) -> None:
         planning(sp)
         sp.add_argument("--since", help="an older data directory of the same customer, to explain what changed")
         sp.add_argument("--no-plan", action="store_true", help="leave the roadmap out")
@@ -907,7 +912,7 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("config")
     sp.add_argument("--at", default="05:17", help="time of day in UTC, HH:MM")
     sp.add_argument("--every", choices=["hour", "day", "week"], default="day")
-    sp.add_argument("--install-from", default="beyond90", help='pip requirement for the workflow, e.g. "beyond90 @ git+https://github.com/OWNER/beyond-90@v0.21.0"')
+    sp.add_argument("--install-from", default="beyond90", help='pip requirement for the workflow, e.g. "beyond90 @ git+https://github.com/OWNER/beyond-90@v0.22.0"')
     sp.add_argument("--out")
     sp.set_defaults(func=cmd_schedule)
 
@@ -930,7 +935,7 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: Optional[list[str]] = None) -> int:
     args = build_parser().parse_args(argv)
     try:
-        return args.func(args)
+        return int(args.func(args))
     except DataError as exc:
         print("Invalid input:", file=sys.stderr)
         for line in exc.errors:

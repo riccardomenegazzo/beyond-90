@@ -185,4 +185,4 @@ def render_candor_markdown(items: list[CandorItem], limit: Optional[int] = None)
         L += [f"{i}. **{it.say}**", f"   - Evidence: {it.evidence}", f"   - Why say it: {it.why}"]
     if len(shown) < len(items):
         L += ["", f"({len(items) - len(shown)} more in the full report. In a review, five is plenty.)"]
-    return L + [""]
+    return [*L, ""]

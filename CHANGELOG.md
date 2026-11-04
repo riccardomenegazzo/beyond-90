@@ -2,6 +2,16 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.22.0
+
+Hardening: the data, the code and the supply chain.
+
+- **Data.** With a passphrase, exported workspaces are sealed too (AES-256-GCM with the vault's key derivation); a sealed file opens on another device only with that passphrase and fails if altered. The page says how many snapshots are stored unencrypted until a passphrase is set. The app refuses to run inside another site's frame.
+- **Correctness.** Account sources are validated; `platform` (the platform itself lists the account) is now documented, since the importers write it. Unused code removed: a configuration flag that did nothing, dead helpers, constants duplicated across modules, unused CSS and a sparkline nothing drew. The basic maturity level has its own badge colour.
+- **Code quality.** mypy runs in strict mode on the whole package; Ruff adds the security (`S`), comprehension, simplification and Ruff-specific rules, with each security exception written on its line with its reason; ESLint lints the browser app and forbids `eval` and every HTML sink.
+- **Supply chain.** Every workflow starts with no permissions and each job asks only for what it needs; checkouts keep no credentials; no event data is expanded into a script; Python tools are installed from lock files with hashes (`requirements/`), releases are built without fetching a build backend and published from a separate job; `zizmor` audits the workflows on every push. Tests pin all of this.
+- **Docs.** Research notes about one vendor removed from the repository; screenshots retaken from the current app, with new ones for cloud news and the executive QBR; the security policy and threat model describe the collector, sealed exports, framing and the supply chain.
+
 ## 0.21.0
 
 The customer's history, and the executive QBR built from it.

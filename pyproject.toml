@@ -1,21 +1,21 @@
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "beyond90"
-version = "0.21.0"
+version = "0.22.0"
 description = "Adoption engine for Technical Account Managers: a score that cannot be flattered, and an action for every gap."
 readme = "README.md"
 requires-python = ">=3.11"
-license = { text = "Apache-2.0" }
+license = "Apache-2.0"
+license-files = ["LICENSE"]
 authors = [{ name = "Riccardo Menegazzo" }]
 keywords = ["customer-success", "technical-account-management", "cloud-security", "adoption", "cnapp"]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Environment :: Console",
   "Intended Audience :: Information Technology",
-  "License :: OSI Approved :: Apache Software License",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
@@ -46,8 +46,16 @@ target-version = "py311"
 src = ["src", "tests"]
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "B", "UP", "SIM", "RUF100"]
-ignore = ["E501", "E741", "SIM108", "B905", "UP007", "UP045"]
+select = ["E", "F", "I", "B", "UP", "SIM", "C4", "PIE", "RUF", "S", "T20", "ISC"]
+ignore = ["E501", "E741", "SIM108", "B905", "UP007", "UP045", "RUF012"]
+allowed-confusables = ["×", "–"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101", "S105", "S106", "S107", "S108", "S310", "S311", "S603", "S607", "T201"]
+"examples/**" = ["S105", "S311", "T201"]
+"site/*.py" = ["T201"]
+"scripts/*.py" = ["T201"]
+"src/beyond90/cli.py" = ["T201"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["beyond90"]
@@ -55,6 +63,4 @@ known-local-folder = ["helpers"]
 
 [tool.mypy]
 python_version = "3.11"
-warn_unused_ignores = true
-warn_redundant_casts = true
-check_untyped_defs = true
+strict = true

@@ -29,8 +29,8 @@ def _weeks_for(plan: Optional[Plan], day: int) -> Optional[Any]:
 def render_success_plan(score: Score, actions: list[Action], plan: Optional[Plan] = None, owner: str = "", review: str = "every month") -> str:
     units = score.terms.get("units", "accounts")
     L = [f"# Success plan: {score.customer}", "",
-         f"_Draft prepared {score.as_of}, ceiling {score.ceiling_version}. Owner on our side: {owner or '[name]'}. Review: {review}. "
-         "Everything below comes from the data we share; change anything that does not match your priorities before you sign._", ""]
+         (f"_Draft prepared {score.as_of}, ceiling {score.ceiling_version}. Owner on our side: {owner or '[name]'}. Review: {review}. "
+         "Everything below comes from the data we share; change anything that does not match your priorities before you sign._"), ""]
 
     # Outcomes: the thinnest use cases first, then the weakest stage.
     L += ["## Outcomes we are working toward", ""]

@@ -26,7 +26,7 @@ import tomllib
 from collections.abc import Callable
 from datetime import date
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 from .catalogue import Catalogue, parse_version
 from .models import (
@@ -42,6 +42,7 @@ from .models import (
     EXPOSURES,
     INTERACTION_KINDS,
     SEVERITIES,
+    UNIVERSE_SOURCES,
     Account,
     Activation,
     Commitment,
@@ -89,7 +90,7 @@ class _Ctx:
     def err(self, message: str) -> None:
         self.errors.append(f"{self.filename}:{self.line}: {message}")
 
-    def boolean(self, row: dict, key: str, default: bool = False) -> bool:
+    def boolean(self, row: dict[str, Any], key: str, default: bool = False) -> bool:
         raw = (row.get(key) or "").strip().lower()
         if raw in _TRUE:
             return True
@@ -98,7 +99,7 @@ class _Ctx:
         self.err(f"{key}: expected true/false, got {raw!r}")
         return default
 
-    def date_(self, row: dict, key: str, required: bool = False) -> Optional[date]:
+    def date_(self, row: dict[str, Any], key: str, required: bool = False) -> Optional[date]:
         raw = (row.get(key) or "").strip()
         if not raw:
             if required:
@@ -110,7 +111,7 @@ class _Ctx:
             self.err(f"{key}: expected YYYY-MM-DD, got {raw!r}")
             return None
 
-    def number(self, row: dict, key: str, default: float = 0.0, minimum: Optional[float] = 0.0) -> float:
+    def number(self, row: dict[str, Any], key: str, default: float = 0.0, minimum: Optional[float] = 0.0) -> float:
         raw = (row.get(key) or "").strip()
         if raw == "":
             return default
@@ -127,7 +128,7 @@ class _Ctx:
             return default
         return value
 
-    def choice(self, row: dict, key: str, allowed: tuple[str, ...], required: bool = True) -> str:
+    def choice(self, row: dict[str, Any], key: str, allowed: tuple[str, ...], required: bool = True) -> str:
         raw = (row.get(key) or "").strip().lower()
         if not raw:
             if required:
@@ -138,7 +139,7 @@ class _Ctx:
             return ""
         return raw
 
-    def text(self, row: dict, key: str, required: bool = False) -> str:
+    def text(self, row: dict[str, Any], key: str, required: bool = False) -> str:
         raw = (row.get(key) or "").strip()
         cleaned = clean_text(raw)
         if cleaned != raw:
@@ -186,12 +187,12 @@ def _read_csv(
     path: Path,
     required_columns: tuple[str, ...],
     errors: list[str],
-    parse: Callable[[dict, _Ctx], object],
+    parse: Callable[[dict[str, Any], _Ctx], object],
     notes: Optional[list[str]] = None,
-) -> list:
+) -> list[Any]:
     if not path.exists():
         return []
-    out: list = []
+    out: list[Any] = []
     try:
         text, note = _decode(path)
     except _BadFile as e:
@@ -248,7 +249,7 @@ def _suggest(name: str, known: tuple[str, ...]) -> str:
     return f" (did you mean {near[0]!r}?)" if near else ""
 
 
-def _unknown_keys(raw: dict, known: tuple[str, ...], where: str, warnings: list[str]) -> None:
+def _unknown_keys(raw: dict[str, Any], known: tuple[str, ...], where: str, warnings: list[str]) -> None:
     """A newer file read by an older engine, or a typo: either way the key does nothing, so say so."""
     for key in raw:
         if key not in known:
@@ -269,7 +270,7 @@ def _unknown_columns(path: Path, warnings: list[str]) -> None:
         warnings.append(f"{path.name}: unknown column(s) ignored: {hints}")
 
 
-def _settings(raw: dict, errors: list[str]) -> Settings:
+def _settings(raw: dict[str, Any], errors: list[str]) -> Settings:
     s = Settings()
     for key in ("ceiling_version", "baseline_ceiling"):
         if key in raw:
@@ -341,13 +342,13 @@ def load_customer(
     if not isinstance(schema_version, int) or isinstance(schema_version, bool) or schema_version < 1:
         raise DataError(["customer.toml: customer.schema_version must be a positive integer"])
     if schema_version > SCHEMA_VERSION:
-        raise DataError([f"customer.toml: written for data format {schema_version}, this engine reads format {SCHEMA_VERSION}. "
-                         "Upgrade beyond90, or lower schema_version only if you know the files still follow the older format."])
+        raise DataError([(f"customer.toml: written for data format {schema_version}, this engine reads format {SCHEMA_VERSION}. "
+                         "Upgrade beyond90, or lower schema_version only if you know the files still follow the older format.")])
     _unknown_keys(cust, KNOWN_CUSTOMER_KEYS, "customer.toml [customer]", warnings)
     wanted = cust.get("profile")
     if wanted is not None and catalogue.profile not in (str(wanted), "custom"):
-        raise DataError([f"customer.toml: profile {str(wanted)!r}, but the catalogue in use is {catalogue.profile!r}. "
-                         f"Run with --profile {wanted} (or remove the profile line)."])
+        raise DataError([(f"customer.toml: profile {str(wanted)!r}, but the catalogue in use is {catalogue.profile!r}. "
+                         f"Run with --profile {wanted} (or remove the profile line).")])
     _unknown_keys(meta.get("settings", {}), KNOWN_SETTINGS_KEYS, "customer.toml [settings]", warnings)
     name = clean_text(str(cust.get("name", "")))
     if not name:
@@ -378,12 +379,14 @@ def load_customer(
         arr = 0
     settings = _settings(meta.get("settings", {}), errors)
 
-    def parse_account(row: dict, c: _Ctx):
+    def parse_account(row: dict[str, Any], c: _Ctx) -> Optional[Account]:
         aid = c.text(row, "id", required=True)
         provider = c.text(row, "provider", required=True).lower()
         sources = tuple(s.strip().lower() for s in row.get("sources", "").replace(",", ";").split(";") if s.strip())
         if not sources:
-            c.err("sources: at least one of billing;org;sso;manual;plan is required")
+            c.err(f"sources: at least one of {';'.join(UNIVERSE_SOURCES)} is required")
+        elif unknown := [s for s in sources if s not in UNIVERSE_SOURCES]:
+            c.err(f"sources: {', '.join(unknown)} is not one of {';'.join(UNIVERSE_SOURCES)}")
         status = c.choice(row, "status", ACCOUNT_STATUSES, required=False) or "active"
         if not aid or not provider:
             return None
@@ -410,7 +413,7 @@ def load_customer(
             errors.append(f"accounts.csv: account id {aid!r} appears {n} times; list each account once and put all sources in the sources column")
     account_ids = set(seen)
 
-    def parse_inventory(row: dict, c: _Ctx):
+    def parse_inventory(row: dict[str, Any], c: _Ctx) -> Optional[InventoryRow]:
         aid = c.text(row, "account_id", required=True)
         rtype = c.text(row, "resource_type", required=True).lower()
         if aid and aid not in account_ids:
@@ -427,7 +430,7 @@ def load_customer(
 
     module_ids = {m.id for m in catalogue.modules}
 
-    def parse_activation(row: dict, c: _Ctx):
+    def parse_activation(row: dict[str, Any], c: _Ctx) -> Optional[Activation]:
         aid = c.text(row, "account_id", required=True)
         mid = c.text(row, "module_id", required=True).lower()
         if aid and aid not in account_ids:
@@ -442,7 +445,7 @@ def load_customer(
 
     activations = _read_csv(base / "activations.csv", ("account_id", "module_id", "active"), errors, parse_activation, warnings)
 
-    def parse_finding(row: dict, c: _Ctx):
+    def parse_finding(row: dict[str, Any], c: _Ctx) -> Optional[Finding]:
         fid = c.text(row, "id", required=True)
         aid = c.text(row, "account_id", required=True)
         if aid and aid not in account_ids:
@@ -470,7 +473,7 @@ def load_customer(
 
     findings = _read_csv(base / "findings.csv", ("id", "account_id", "severity", "opened_at"), errors, parse_finding, warnings)
 
-    def parse_team(row: dict, c: _Ctx):
+    def parse_team(row: dict[str, Any], c: _Ctx) -> Optional[Team]:
         tid = c.text(row, "id", required=True)
         if not tid:
             return None
@@ -482,7 +485,7 @@ def load_customer(
 
     teams = _read_csv(base / "teams.csv", ("id", "has_assets", "active_users", "sso", "role_scoped"), errors, parse_team, warnings)
 
-    def parse_entitlement(row: dict, c: _Ctx):
+    def parse_entitlement(row: dict[str, Any], c: _Ctx) -> Optional[Entitlement]:
         unit = c.text(row, "unit", required=True).lower()
         if not unit:
             return None
@@ -494,7 +497,7 @@ def load_customer(
 
     entitlements = _read_csv(base / "entitlements.csv", ("unit", "licensed", "used"), errors, parse_entitlement, warnings)
 
-    def rating(c: _Ctx, row: dict, key: str) -> Optional[float]:
+    def rating(c: _Ctx, row: dict[str, Any], key: str) -> Optional[float]:
         raw = (row.get(key) or "").strip()
         if not raw:
             return None
@@ -504,7 +507,7 @@ def load_customer(
             return None
         return v if v >= 1 else None
 
-    def parse_contact(row: dict, c: _Ctx):
+    def parse_contact(row: dict[str, Any], c: _Ctx) -> Optional[Contact]:
         cid = c.text(row, "id", required=True)
         role = c.choice(row, "role", CONTACT_ROLES)
         if not cid or not role:
@@ -526,7 +529,7 @@ def load_customer(
     contacts = _read_csv(base / "contacts.csv", ("id", "role"), errors, parse_contact, warnings)
     contact_ids = {x.id for x in contacts}
 
-    def parse_commitment(row: dict, c: _Ctx):
+    def parse_commitment(row: dict[str, Any], c: _Ctx) -> Optional[Commitment]:
         cid = c.text(row, "id", required=True)
         due = c.date_(row, "due_on", required=True)
         who = c.text(row, "contact_id")
@@ -542,7 +545,7 @@ def load_customer(
 
     commitments = _read_csv(base / "commitments.csv", ("id", "due_on"), errors, parse_commitment, warnings)
 
-    def parse_interaction(row: dict, c: _Ctx):
+    def parse_interaction(row: dict[str, Any], c: _Ctx) -> Optional[Interaction]:
         when = c.date_(row, "date", required=True)
         kind = c.choice(row, "kind", INTERACTION_KINDS)
         who = c.text(row, "contact_id")
@@ -559,7 +562,7 @@ def load_customer(
     interactions = _read_csv(base / "interactions.csv", ("date", "kind"), errors, parse_interaction, warnings)
     interactions.sort(key=lambda i: (i.date, i.kind, i.summary))
 
-    def parse_connector(row: dict, c: _Ctx):
+    def parse_connector(row: dict[str, Any], c: _Ctx) -> Optional[Connector]:
         aid = c.text(row, "account_id", required=True)
         kind = c.choice(row, "kind", CONNECTOR_KINDS)
         status = c.choice(row, "status", CONNECTOR_STATUSES)

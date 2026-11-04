@@ -45,7 +45,7 @@ def build(out: Path = OUT) -> dict[str, str]:
     for name, argv in JOBS.items():
         target = out / name
         with contextlib.redirect_stderr(io.StringIO()):
-            code = main([*argv, "--out", str(target)] if name != "portfolio.md" else [*argv, "--out", str(target)])
+            code = main([*argv, "--out", str(target)])
         if code != 0:
             raise SystemExit(f"{name}: exit code {code}")
         result[name] = target.read_text(encoding="utf-8")

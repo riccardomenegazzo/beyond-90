@@ -25,13 +25,12 @@ import re
 from dataclasses import dataclass, field, replace
 from datetime import UTC, date, datetime
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
-from .models import Account
+from .models import INDEPENDENT_SOURCES, UNIVERSE_SOURCES, Account
 
 HEADER = ["id", "provider", "sources", "connected", "owner", "last_spend", "status", "in_plan", "created_at"]
-SOURCES = ("billing", "org", "sso", "manual", "plan", "platform")
-INDEPENDENT = ("billing", "org", "sso")
+SOURCES = UNIVERSE_SOURCES
 
 
 class ImportFormatError(ValueError):
@@ -62,7 +61,7 @@ class MergeResult:
 
 # ------------------------------------------------------------------- parsing
 
-def _day(value) -> Optional[date]:
+def _day(value: Any) -> Optional[date]:
     if value in (None, ""):
         return None
     if isinstance(value, (int, float)):
@@ -77,7 +76,7 @@ def _day(value) -> Optional[date]:
             return None
 
 
-def _load_json(text: str, what: str):
+def _load_json(text: str, what: str) -> Any:
     try:
         return json.loads(text)
     except json.JSONDecodeError as exc:
@@ -293,10 +292,10 @@ def merge(existing: list[Account], records: list[Record], *, authoritative_conne
 
 # ------------------------------------------------------------ reconciliation
 
-def reconcile(accounts: list[Account]) -> dict:
+def reconcile(accounts: list[Account]) -> dict[str, Any]:
     """How the independent lists overlap, and which accounts each one is missing."""
     active = [a for a in accounts if a.status == "active"]
-    present = [s for s in INDEPENDENT if any(s in a.sources for a in active)]
+    present = [s for s in INDEPENDENT_SOURCES if any(s in a.sources for a in active)]
     combos: dict[str, int] = {}
     missing: dict[str, list[str]] = {s: [] for s in present}
     for a in active:
@@ -324,7 +323,7 @@ def reconcile(accounts: list[Account]) -> dict:
     }
 
 
-def render_reconcile(r: dict) -> str:
+def render_reconcile(r: dict[str, Any]) -> str:
     L = [f"{r['accounts']} active accounts; independent sources present: {', '.join(r['sources']) or 'none'}", "", "Seen in:"]
     L += [f"  {k:<28} {n}" for k, n in r["overlap"].items()]
     L.append("")

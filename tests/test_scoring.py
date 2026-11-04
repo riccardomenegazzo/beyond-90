@@ -83,13 +83,13 @@ def test_report_at_older_ceiling_never_counts_newer_modules():
 
 
 @pytest.mark.parametrize("kwargs,expected", [
-    (dict(), "unowned"),
-    (dict(owner="x"), "no_decision"),
-    (dict(owner="x", decision="fix"), "ok"),
-    (dict(owner="x", decision="false_positive"), "ok"),
-    (dict(owner="x", decision="accepted_risk"), "accepted_without_expiry"),
-    (dict(owner="x", decision="accepted_risk", expiry=AS_OF - timedelta(days=1)), "expired_acceptance"),
-    (dict(owner="x", decision="accepted_risk", expiry=AS_OF + timedelta(days=30)), "ok"),
+    ({}, "unowned"),
+    ({"owner": "x"}, "no_decision"),
+    ({"owner": "x", "decision": "fix"}, "ok"),
+    ({"owner": "x", "decision": "false_positive"}, "ok"),
+    ({"owner": "x", "decision": "accepted_risk"}, "accepted_without_expiry"),
+    ({"owner": "x", "decision": "accepted_risk", "expiry": AS_OF - timedelta(days=1)}, "expired_acceptance"),
+    ({"owner": "x", "decision": "accepted_risk", "expiry": AS_OF + timedelta(days=30)}, "ok"),
 ])
 def test_classify_finding(kwargs, expected):
     assert classify_finding(finding(**kwargs), AS_OF) == expected

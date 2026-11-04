@@ -18,7 +18,7 @@ def build(**kw):
 
 def test_unconnected_accounts_are_grouped_by_owner_and_effect_is_the_stage_share():
     acts = [Activation(i, m.id, True) for i in ("a", "d") for m in CAT.modules_at("2026.4")]
-    d, sc, actions = build(accounts=[
+    _d, _sc, actions = build(accounts=[
         account("a", connected=True),
         account("b", connected=False, owner="retail", last_spend=100),
         account("c", connected=False, owner="retail", last_spend=50),
@@ -34,7 +34,7 @@ def test_new_unconnected_accounts_trigger_auto_onboarding():
     from datetime import timedelta
 
     from helpers import AS_OF
-    d, _, actions = build(accounts=[account("new", connected=False, created_at=AS_OF - timedelta(days=5)),
+    _d, _, actions = build(accounts=[account("new", connected=False, created_at=AS_OF - timedelta(days=5)),
                                     account("old", connected=False, created_at=AS_OF - timedelta(days=400))])
     assert [a for a in actions if a.playbook == "l1_auto_onboarding"]
 
@@ -77,10 +77,10 @@ def test_new_module_actions_are_typed_as_cross_sell_by_who_you_know():
     from beyond90.models import Contact
     acts = [Activation("a", "posture", True)]
     with_contact = [Contact("c", "C", "champion", team="retail")]
-    d, sc, actions = build(accounts=[account("a", owner="retail")], inventory=full_inventory("a"), activations=acts, contacts=with_contact)
+    _d, _sc, actions = build(accounts=[account("a", owner="retail")], inventory=full_inventory("a"), activations=acts, contacts=with_contact)
     modules = [x for x in actions if x.playbook.startswith("l3_")]
     assert modules and all(x.cross_sell == "expand" for x in modules)        # a new offer to the team we already know
-    d2, sc2, none = build(accounts=[account("a", owner="retail")], inventory=full_inventory("a"), activations=acts)
+    _d2, _sc2, none = build(accounts=[account("a", owner="retail")], inventory=full_inventory("a"), activations=acts)
     assert all(x.cross_sell == "" for x in none)                      # without contacts the type cannot be told
 
 
@@ -90,7 +90,7 @@ def test_relationship_actions_come_from_the_gaps():
     from tests.helpers import AS_OF
 
     from beyond90.models import Commitment, Contact
-    d, sc, actions = build(
+    _d, _sc, actions = build(
         accounts=[account("a")], inventory=full_inventory("a"),
         contacts=[Contact("c", "C", "practitioner", last_contact=AS_OF - timedelta(days=3))],
         commitments=[Commitment("k", "late thing", AS_OF - timedelta(days=9))],

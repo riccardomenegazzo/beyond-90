@@ -55,7 +55,7 @@ One row per cloud account, subscription or project. List each account once.
 |---|---|
 | `id` | Account identifier |
 | `provider` | `aws`, `azure`, `gcp`, `oci`, `kubernetes` (others are accepted and skipped by L2 with a note) |
-| `sources` | Where you learned it exists, separated by `;`: `billing`, `org`, `sso`, `manual`, `plan`. Only `billing`, `org` and `sso` count as independent sources in the hidden-accounts estimate |
+| `sources` | Where you learned it exists, separated by `;`: `billing`, `org`, `sso`, `manual`, `plan`, `platform` (the platform itself lists it). Only `billing`, `org` and `sso` count as independent sources in the hidden-accounts estimate |
 | `connected` | Is it connected to the platform today? |
 | `owner` | Spend or technical owner (used to group actions) |
 | `last_spend` | Last period's spend, for ranking |

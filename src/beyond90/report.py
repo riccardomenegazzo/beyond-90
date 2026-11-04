@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import json
 from html import escape
-from typing import Optional
+from typing import Any, Optional
 
 from . import __version__
 from .attribution import Attribution
@@ -63,13 +63,13 @@ def cumulative(score: Score) -> list[tuple[str, float, float]]:
     return out
 
 
-def _delta(score: Score, previous: Optional[dict]) -> Optional[float]:
+def _delta(score: Score, previous: Optional[dict[str, Any]]) -> Optional[float]:
     return None if not previous else score.yield_ - previous["yield"]
 
 
 # ---------------------------------------------------------------- JSON / text
 
-def render_json(score: Score, actions: list[Action], history: Optional[list[dict]] = None) -> str:
+def render_json(score: Score, actions: list[Action], history: Optional[list[dict[str, Any]]] = None) -> str:
     payload = score.to_dict()
     payload["actions"] = [a.to_dict() for a in actions]
     if history is not None:
@@ -105,9 +105,9 @@ def render_text(score: Score, actions: list[Action], top: int = 8) -> str:
 
 # ------------------------------------------------------------------- Markdown
 
-def render_markdown(score: Score, actions: list[Action], history: Optional[list[dict]] = None, previous: Optional[dict] = None, top: int = 15,
-                    *, attribution: Optional[Attribution] = None, forecast: Optional[dict] = None, plan: Optional[Plan] = None,
-                    candor: Optional[list[CandorItem]] = None, renewal: Optional[dict] = None, ladder: Optional[dict] = None, drift: Optional[dict] = None) -> str:
+def render_markdown(score: Score, actions: list[Action], history: Optional[list[dict[str, Any]]] = None, previous: Optional[dict[str, Any]] = None, top: int = 15,
+                    *, attribution: Optional[Attribution] = None, forecast: Optional[dict[str, Any]] = None, plan: Optional[Plan] = None,
+                    candor: Optional[list[CandorItem]] = None, renewal: Optional[dict[str, Any]] = None, ladder: Optional[dict[str, Any]] = None, drift: Optional[dict[str, Any]] = None) -> str:
     L: list[str] = [f"# {score.customer}: adoption score", ""]
     L.append(f"As of {score.as_of} · ceiling {score.ceiling_version} · baseline {score.baseline['ceiling']}")
     L.append("")
@@ -225,8 +225,8 @@ def _svg_waterfall(score: Score) -> str:
     def y(v: float) -> float:
         return mt + ph * (1 - v)
     parts = [f'<svg viewBox="0 0 {W} {H}" role="img" aria-label="Waterfall of Yield by stage, from 100% to {pct(score.yield_)}">',
-             '<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">'
-             '<line x1="0" y1="0" x2="0" y2="6" stroke="var(--hatch)" stroke-width="1.5"/></pattern></defs>']
+             ('<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">'
+             '<line x1="0" y1="0" x2="0" y2="6" stroke="var(--hatch)" stroke-width="1.5"/></pattern></defs>')]
     for t in (0, .25, .5, .75, 1.0):
         parts.append(f'<line x1="{ml}" x2="{W - mr}" y1="{y(t):.1f}" y2="{y(t):.1f}" stroke="var(--grid)" stroke-width="1"/>')
         parts.append(f'<text class="m" x="{ml - 6}" y="{y(t) + 4:.1f}" text-anchor="end">{int(t * 100)}%</text>')
@@ -270,12 +270,12 @@ def _svg_checkpoints(score: Score) -> str:
     return "".join(parts)
 
 
-def _svg_history(history: list[dict]) -> str:
+def _svg_history(history: list[dict[str, Any]]) -> str:
     W, H, ml, mr, mt, mb = 640, 160, 44, 12, 12, 28
     n = len(history)
     def x(i: int) -> float:
         return ml + (W - ml - mr) * (i / (n - 1))
-    ys = [h["yield"] for h in history] + [h["naive"] for h in history if h["naive"] is not None]
+    ys: list[float] = [h["yield"] for h in history] + [h["naive"] for h in history if h["naive"] is not None]
     lo, hi = max(0.0, min(ys) - 0.05), min(1.0, max(ys) + 0.05)
     if hi - lo < 0.1:
         hi = min(1.0, lo + 0.1)
@@ -318,9 +318,9 @@ def _leak_summary(score: Score, sid: str) -> list[str]:
     return out or ["No leaks found."]
 
 
-def render_html(score: Score, actions: list[Action], history: Optional[list[dict]] = None, previous: Optional[dict] = None, top: int = 15,
-                *, attribution: Optional[Attribution] = None, forecast: Optional[dict] = None, plan: Optional[Plan] = None,
-                candor: Optional[list[CandorItem]] = None, renewal: Optional[dict] = None, ladder: Optional[dict] = None, drift: Optional[dict] = None) -> str:
+def render_html(score: Score, actions: list[Action], history: Optional[list[dict[str, Any]]] = None, previous: Optional[dict[str, Any]] = None, top: int = 15,
+                *, attribution: Optional[Attribution] = None, forecast: Optional[dict[str, Any]] = None, plan: Optional[Plan] = None,
+                candor: Optional[list[CandorItem]] = None, renewal: Optional[dict[str, Any]] = None, ladder: Optional[dict[str, Any]] = None, drift: Optional[dict[str, Any]] = None) -> str:
     e = escape
     h: list[str] = []
     d = _delta(score, previous)

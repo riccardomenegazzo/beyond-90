@@ -11,7 +11,7 @@ import json
 from collections import defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 from .catalogue import Catalogue
 from .loader import DataError, load_customer
@@ -31,7 +31,7 @@ class Entry:
     score: Score
     actions: list[Action]
     previous_yield: Optional[float] = None
-    renewal: Optional[dict] = None
+    renewal: Optional[dict[str, Any]] = None
 
 
 @dataclass
@@ -46,14 +46,14 @@ class Portfolio:
             return None
         return sum(e.arr * e.score.yield_ for e in self.entries) / total
 
-    def patterns(self, minimum: int = 2) -> list[dict]:
+    def patterns(self, minimum: int = 2) -> list[dict[str, Any]]:
         """Actions that recur across customers.
 
         L1 actions are keyed by playbook (their ids carry the account owner);
         everything else by the full action id, so "enable runtime sensor" and
         "enable data security" are different patterns.
         """
-        seen: dict[str, dict] = defaultdict(lambda: {"customers": set(), "leak": "", "title": ""})
+        seen: dict[str, dict[str, Any]] = defaultdict(lambda: {"customers": set(), "leak": "", "title": ""})
         for e in self.entries:
             for a in e.actions:
                 key = a.playbook if a.leak == "L1" else a.id

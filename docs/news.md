@@ -32,6 +32,8 @@ The output is an advisory feed in the format every other command already reads (
 
 ## Where it shows up
 
+![Cloud news across the book](img/app-news.png)
+
 - **The site.** The Pages workflow collects the feed every morning and publishes it next to the app as `feed/advisories.json`. "Use today's cloud news" loads it; once chosen, it updates itself on the next visit. Your customers' data still never leaves the browser.
 - **One customer: News.** Each story with its badges (known exploited, EPSS, new, ransomware), its sources, how many accounts are exposed, covered or cannot be assessed, a note to copy, and a **security briefing** for the customer: the stories that touch them, worst first, with what to do and links to read more, without internal scores.
 - **The book: Cloud news.** Every story against every customer, ranked by known exploitation, then by how many customers have exposed accounts with no mitigation, then severity and ARR. Filter by provider, known exploited, not covered, or new this week; open a customer on their news.

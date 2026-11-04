@@ -14,10 +14,9 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any, Optional
 
-from .models import CustomerData
+from .models import INDEPENDENT_SOURCES, CustomerData
 from .terms import say
 
-INDEPENDENT = ("billing", "org", "sso")
 STALE_DAYS = 21
 
 
@@ -32,7 +31,7 @@ def assess(data: CustomerData, terms: Optional[Mapping[str, str]] = None) -> dic
     checks: list[dict[str, str]] = []
 
     # 1. Where does the denominator come from?
-    present = [x for x in INDEPENDENT if any(x in a.sources for a in active)]
+    present = [x for x in INDEPENDENT_SOURCES if any(x in a.sources for a in active)]
     if not active:
         checks.append(_check("universe", "weak", "No accounts", "accounts.csv has no active rows, so nothing is measured."))
     elif not present:

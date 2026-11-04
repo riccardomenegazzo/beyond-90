@@ -17,7 +17,7 @@ and wins before presenting it. The last section is for the TAM alone.
 from __future__ import annotations
 
 from collections import defaultdict
-from typing import Optional
+from typing import Any, Optional
 
 from .attribution import Attribution
 from .candor import CandorItem, render_candor_markdown
@@ -39,9 +39,9 @@ LEAK_LABEL = {
 }
 
 
-def render_qbr(score: Score, actions: list[Action], previous: Optional[dict] = None, quarter: str = "", *,
-               attribution: Optional[Attribution] = None, forecast: Optional[dict] = None, plan: Optional[Plan] = None,
-               candor: Optional[list[CandorItem]] = None, renewal: Optional[dict] = None, ladder: Optional[dict] = None, drift: Optional[dict] = None) -> str:
+def render_qbr(score: Score, actions: list[Action], previous: Optional[dict[str, Any]] = None, quarter: str = "", *,
+               attribution: Optional[Attribution] = None, forecast: Optional[dict[str, Any]] = None, plan: Optional[Plan] = None,
+               candor: Optional[list[CandorItem]] = None, renewal: Optional[dict[str, Any]] = None, ladder: Optional[dict[str, Any]] = None, drift: Optional[dict[str, Any]] = None) -> str:
     title = f"Quarterly business review: {score.customer}" + (f", {quarter}" if quarter else "")
     yield_actions = [a for a in actions if a.leak != "Relationship"]
     by_leak: dict[str, list[Action]] = defaultdict(list)
@@ -53,8 +53,8 @@ def render_qbr(score: Score, actions: list[Action], previous: Optional[dict] = N
     projected = min(1.0, score.yield_ + top_gain / 100.0)
     o = score.outcomes
 
-    L = [f"# {title}", "", f"_As of {score.as_of}, ceiling {score.ceiling_version}. Draft generated from the score; add the customer's goals and wins before presenting. "
-         "The last section is for you alone: remove it before sharing._", ""]
+    L = [f"# {title}", "", (f"_As of {score.as_of}, ceiling {score.ceiling_version}. Draft generated from the score; add the customer's goals and wins before presenting. "
+         "The last section is for you alone: remove it before sharing._"), ""]
 
     # Engage: a shared agenda, sent in advance, with room for theirs.
     L += ["## Agenda to share in advance", "",
@@ -127,8 +127,8 @@ def render_qbr(score: Score, actions: list[Action], previous: Optional[dict] = N
     L.append(f"| **Yield** | **{pct(score.yield_)}** | |")
     L.append("")
     if score.baseline["ceiling"] != score.ceiling_version:
-        L += [f"Against the baseline ceiling ({score.baseline['ceiling']}) Yield is {pct(score.baseline['yield'])}. "
-              "The gap is new capability released since then: more headroom, not a step back.", ""]
+        L += [(f"Against the baseline ceiling ({score.baseline['ceiling']}) Yield is {pct(score.baseline['yield'])}. "
+              "The gap is new capability released since then: more headroom, not a step back."), ""]
     if o["findings_total"]:
         line = f"Critical findings open: {o['critical_open']}."
         if o["zero_critical"]:
@@ -169,11 +169,11 @@ def render_qbr(score: Score, actions: list[Action], previous: Optional[dict] = N
     if forecast and forecast.get("available"):
         if forecast["state"] == "open":
             z = forecast["p_zero_within"]
-            L += ["## Zero critical", "", f"{forecast['open_critical']} critical finding(s) are open and {forecast['arrivals_per_week']} new ones arrive per week. "
-                  f"Probability of reaching zero within 30 / 60 / 90 days: {z['30']:.0%} / {z['60']:.0%} / {z['90']:.0%} on the current pace.", ""]
+            L += ["## Zero critical", "", (f"{forecast['open_critical']} critical finding(s) are open and {forecast['arrivals_per_week']} new ones arrive per week. "
+                  f"Probability of reaching zero within 30 / 60 / 90 days: {z['30']:.0%} / {z['60']:.0%} / {z['90']:.0%} on the current pace."), ""]
         else:
-            L += ["## Zero critical", "", f"Zero critical today. A new critical appears within 30 days with probability {forecast['p_new_critical_30d']:.0%}; "
-                  f"staying at zero means closing each one within about {forecast['median_days_to_recover']} days.", ""]
+            L += ["## Zero critical", "", (f"Zero critical today. A new critical appears within 30 days with probability {forecast['p_new_critical_30d']:.0%}; "
+                  f"staying at zero means closing each one within about {forecast['median_days_to_recover']} days."), ""]
 
     # Commit: what we ask, and what we promise.
     L += ["## Decisions we need today", ""]
@@ -218,8 +218,8 @@ def render_qbr(score: Score, actions: list[Action], previous: Optional[dict] = N
     typed = [a for a in actions if a.cross_sell]
     if typed:
         L += ["### Expansion, as a trusted advisor", "",
-              "Each of these is an expansion of some kind. They feel different to the customer, so they are approached differently (EXPAND: new capability, people who trust you; "
-              "BROADEN: same service, new people; DIVERSIFY: new capability and new people).", ""]
+              ("Each of these is an expansion of some kind. They feel different to the customer, so they are approached differently (EXPAND: new capability, people who trust you; "
+              "BROADEN: same service, new people; DIVERSIFY: new capability and new people)."), ""]
         seen = set()
         for a in typed[:8]:
             L.append(f"- **{a.cross_sell.upper()}**: {a.title}.")

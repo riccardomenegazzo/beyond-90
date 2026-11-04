@@ -125,7 +125,7 @@ def test_xml_with_entities_is_refused_before_parsing():
 
 
 def test_configuration_errors_name_the_source():
-    with pytest.raises(ValueError, match="source #1.*https"):
+    with pytest.raises(ValueError, match=r"source #1.*https"):
         feeds.check_config({"sources": [{"id": "a", "url": "http://x.example", "kind": "xml"}]})
     with pytest.raises(ValueError, match="kind"):
         feeds.check_config({"sources": [{"id": "a", "url": "https://x.example", "kind": "html"}]})

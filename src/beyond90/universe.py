@@ -24,19 +24,17 @@ number as a prompt to go looking, not as a count.
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import Optional
+from typing import Any, Optional
 
-from .models import CustomerData
+from .models import INDEPENDENT_SOURCES, CustomerData
 from .terms import say
-
-CAPTURE_SOURCES = ("billing", "org", "sso")
 
 
 def _chapman(n1: int, n2: int, m: int) -> float:
     return (n1 + 1) * (n2 + 1) / (m + 1) - 1
 
 
-def estimate_universe(data: CustomerData, terms: Optional[Mapping[str, str]] = None) -> dict:
+def estimate_universe(data: CustomerData, terms: Optional[Mapping[str, str]] = None) -> dict[str, Any]:
     out = _estimate(data)
     if terms:
         for key in ("reason",):
@@ -46,9 +44,9 @@ def estimate_universe(data: CustomerData, terms: Optional[Mapping[str, str]] = N
     return out
 
 
-def _estimate(data: CustomerData) -> dict:
+def _estimate(data: CustomerData) -> dict[str, Any]:
     active = [a for a in data.accounts if a.status == "active"]
-    present = [s for s in CAPTURE_SOURCES if any(s in a.sources for a in active)]
+    present = [s for s in INDEPENDENT_SOURCES if any(s in a.sources for a in active)]
     t = len(present)
     observed = len(active)
     connected = sum(1 for a in active if a.connected)
@@ -100,7 +98,7 @@ def _estimate(data: CustomerData) -> dict:
     }
 
 
-def render_universe(u: dict) -> str:
+def render_universe(u: dict[str, Any]) -> str:
     if not u["estimable"]:
         return f"Universe: not estimable. {u['reason']}\n"
     units = u.get("units", "accounts")

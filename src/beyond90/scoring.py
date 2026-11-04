@@ -15,7 +15,7 @@ from datetime import date, timedelta
 from typing import Any, Optional
 
 from .catalogue import Catalogue, parse_version
-from .models import CustomerData, Finding
+from .models import Account, CustomerData, Finding
 from .provenance import build as build_provenance
 from .quality import assess
 from .relationship import compute_relationship
@@ -41,9 +41,9 @@ class StageResult:
     denominator: float
     value: float
     has_data: bool
-    leaks: list[dict] = field(default_factory=list)
+    leaks: list[dict[str, Any]] = field(default_factory=list[Any])
     notes: list[str] = field(default_factory=list)
-    detail: dict = field(default_factory=dict)       # extra figures a stage can offer (L3: relevant and active pairs per module)
+    detail: dict[str, Any] = field(default_factory=dict[str, Any])       # extra figures a stage can offer (L3: relevant and active pairs per module)
 
 
 @dataclass
@@ -54,36 +54,32 @@ class Score:
     baseline_ceiling: str
     stages: dict[str, StageResult]
     yield_: float
-    baseline: dict
+    baseline: dict[str, Any]
     naive: Optional[float]
-    reach: Optional[dict]
-    entitlements: list[dict]
-    outcomes: dict
-    target: dict
-    universe: dict = field(default_factory=dict)
-    relationship: Optional[dict] = None
+    reach: Optional[dict[str, Any]]
+    entitlements: list[dict[str, Any]]
+    outcomes: dict[str, Any]
+    target: dict[str, Any]
+    universe: dict[str, Any] = field(default_factory=dict[str, Any])
+    relationship: Optional[dict[str, Any]] = None
     warnings: list[str] = field(default_factory=list)
-    provenance: dict = field(default_factory=dict)
-    quality: dict = field(default_factory=dict)
-    terms: dict = field(default_factory=dict)
-    rubric: dict = field(default_factory=dict)
-    views: dict = field(default_factory=dict)
+    provenance: dict[str, Any] = field(default_factory=dict[str, Any])
+    quality: dict[str, Any] = field(default_factory=dict[str, Any])
+    terms: dict[str, Any] = field(default_factory=dict[str, Any])
+    rubric: dict[str, Any] = field(default_factory=dict[str, Any])
+    views: dict[str, Any] = field(default_factory=dict[str, Any])
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         d = asdict(self)
         d["yield"] = d.pop("yield_")
         return d
-
-    @property
-    def gap_to_naive(self) -> Optional[float]:
-        return None if self.naive is None else self.naive - self.yield_
 
 
 def _ratio(num: float, den: float) -> tuple[float, bool]:
     return (1.0, False) if den <= 0 else (num / den, True)
 
 
-def _active_accounts(data: CustomerData):
+def _active_accounts(data: CustomerData) -> list[Account]:
     return [a for a in data.accounts if a.status == "active"]
 
 
@@ -228,7 +224,7 @@ def stage_l4(data: CustomerData) -> StageResult:
     return StageResult("L4", STAGE_NAMES["L4"], ok, len(triaged), value, has, leaks, notes)
 
 
-def compute_reach(data: CustomerData) -> Optional[dict]:
+def compute_reach(data: CustomerData) -> Optional[dict[str, Any]]:
     teams = [t for t in data.teams if t.has_assets]
     if not teams:
         return None
@@ -259,7 +255,7 @@ def compute_naive(data: CustomerData) -> Optional[float]:
     return sum(1 for a in plan if a.connected) / len(plan)
 
 
-def compute_entitlements(data: CustomerData) -> list[dict]:
+def compute_entitlements(data: CustomerData) -> list[dict[str, Any]]:
     target = data.settings.entitlement_target
     out = []
     for e in data.entitlements:
@@ -290,18 +286,17 @@ def percentile(values: list[float], q: float) -> float:
     return float(ordered[int(rank) - 1])
 
 
-def compute_outcomes(data: CustomerData) -> dict:
+def compute_outcomes(data: CustomerData) -> dict[str, Any]:
     s = data.settings
     sla = s.sla_days
     open_f = [f for f in data.findings if f.closed_at is None]
     crit_open = [f for f in open_f if f.severity == "critical" and f.decision != "false_positive"]
 
     lookback = data.as_of - timedelta(days=s.mttr_lookback_days)
-    closed = [f for f in data.findings if f.closed_at is not None and f.closed_at >= lookback]
-    mttr: dict[str, dict] = {}
-    for f in closed:
-        assert f.closed_at is not None
-        days = (f.closed_at - f.opened_at).days
+    closed = [(f, f.closed_at) for f in data.findings if f.closed_at is not None and f.closed_at >= lookback]
+    mttr: dict[str, dict[str, Any]] = {}
+    for f, closed_at in closed:
+        days = (closed_at - f.opened_at).days
         for key in (f.severity, f"{f.severity}/{f.exposure}"):
             mttr.setdefault(key, {"days": []})["days"].append(days)
     mttr = {
@@ -311,19 +306,18 @@ def compute_outcomes(data: CustomerData) -> dict:
     }
 
     crit_closed = sorted(
-        (f for f in data.findings if f.severity == "critical" and f.closed_at is not None),
-        key=lambda f: (f.closed_at, f.id),
+        ((f, f.closed_at) for f in data.findings if f.severity == "critical" and f.closed_at is not None),
+        key=lambda fc: (fc[1], fc[0].id),
         reverse=True,
     )
     streak = 0
-    for f in crit_closed:
-        assert f.closed_at is not None
-        if (f.closed_at - f.opened_at).days <= sla["critical"]:
+    for f, closed_at in crit_closed:
+        if (closed_at - f.opened_at).days <= sla["critical"]:
             streak += 1
         else:
             break
 
-    overdue = {sev: 0 for sev in sla}
+    overdue = dict.fromkeys(sla, 0)
     for f in open_f:
         if (data.as_of - f.opened_at).days > sla[f.severity]:
             overdue[f.severity] += 1
@@ -360,7 +354,7 @@ def compute_outcomes(data: CustomerData) -> dict:
     }
 
 
-def next_target(y: float) -> dict:
+def next_target(y: float) -> dict[str, Any]:
     nxt = next((c for c in CHECKPOINTS if c > y + 1e-12), None)
     if y < CHECKPOINTS[-1]:
         return {"value": min(1.0, max(CHECKPOINTS[0], y + 0.05)), "mode": "raise", "next_checkpoint": nxt}

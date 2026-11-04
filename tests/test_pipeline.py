@@ -170,7 +170,7 @@ class S:
 
 
 def alert(**kw):
-    base = dict(score=S(), metrics={"critical_unowned": 0}, previous=None, sync_problems=[], drift=None, renewal=None)
+    base = {"score": S(), "metrics": {"critical_unowned": 0}, "previous": None, "sync_problems": [], "drift": None, "renewal": None}
     base.update(kw)
     return {a["key"]: a for a in compute_alerts(**base)}
 

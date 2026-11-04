@@ -2,7 +2,7 @@
 
 ## 1. Position: independent, and unmistakably not a vendor's product
 
-Beyond 90 is an independent open source project, not affiliated with or endorsed by any vendor, and it must not look like any vendor's product: no logo, mark, brand colour, mascot or wordmark of a security company, and no vendor name in the interface. Research on how vendors present themselves is kept apart in [research/brand-observations.md](research/brand-observations.md); what was taken from it is principles, not assets.
+Beyond 90 is an independent open source project, not affiliated with or endorsed by any vendor, and it must not look like any vendor's product: no logo, mark, brand colour, mascot or wordmark of a security company, and no vendor name in the interface.
 
 ## 2. Principles taken from the analysis
 

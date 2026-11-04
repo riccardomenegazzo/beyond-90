@@ -25,7 +25,6 @@ from typing import Any, Optional
 
 from .models import CustomerData
 
-LEVELS = ("basic", "bronze", "silver", "gold")        # basic = below bronze
 OPS: dict[str, Callable[[float, float], bool]] = {">=": operator.ge, ">": operator.gt, "<=": operator.le, "<": operator.lt, "==": operator.eq}
 METRICS = (
     "independent_sources", "l1", "l2", "l3", "l4", "yield", "unseen_share", "critical_open", "critical_unowned", "critical_overdue",
@@ -33,7 +32,7 @@ METRICS = (
 )
 
 
-def validate(rubric: dict) -> None:
+def validate(rubric: dict[str, Any]) -> None:
     levels = rubric.get("levels")
     if levels != ["bronze", "silver", "gold"]:
         raise ValueError("rubric: levels must be exactly bronze, silver, gold (names are fixed so results compare)")
@@ -87,7 +86,7 @@ def metrics(score: Any, data: CustomerData) -> dict[str, Optional[float]]:
     return out
 
 
-def evaluate(rubric: dict, m: dict[str, Optional[float]]) -> dict[str, Any]:
+def evaluate(rubric: dict[str, Any], m: dict[str, Optional[float]]) -> dict[str, Any]:
     levels = rubric["levels"]
     checks = []
     for c in rubric["checks"]:
@@ -114,5 +113,5 @@ def evaluate(rubric: dict, m: dict[str, Optional[float]]) -> dict[str, Any]:
             "levels": per_level, "checks": checks}
 
 
-def compute_rubric(score: Any, data: CustomerData, rubric: dict) -> dict[str, Any]:
+def compute_rubric(score: Any, data: CustomerData, rubric: dict[str, Any]) -> dict[str, Any]:
     return evaluate(rubric, metrics(score, data))

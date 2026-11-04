@@ -190,7 +190,7 @@ def parse_xml(body: bytes) -> list[dict[str, Any]]:
     if b"<!doctype" in head or b"<!entity" in body.lower():
         raise FeedError("XML with a DOCTYPE or an entity declaration is refused")
     try:
-        root = ET.fromstring(body)
+        root = ET.fromstring(body)  # noqa: S314 - DOCTYPE and entity declarations are refused above
     except ET.ParseError as e:
         raise FeedError(f"not valid XML ({e})") from None
     items = [el for el in root.iter() if _local(el.tag) in ("item", "entry")]
@@ -270,7 +270,9 @@ class Classifier:
         self.severity = {k: _compile(v) for k, v in t["severity"].items()}
 
     def classify(self, text: str) -> dict[str, Any]:
-        found = lambda table: sorted(k for k, rx in table.items() if rx.search(text))  # noqa: E731
+        def found(table: dict[str, re.Pattern[str]]) -> list[str]:
+            return sorted(k for k, rx in table.items() if rx.search(text))
+
         kinds = found(self.kinds)
         sev, why = "medium", "no stronger signal in the text"
         for level in ("critical", "high", "low"):
@@ -394,7 +396,9 @@ def collect(cfg: Optional[dict[str, Any]] = None, *, cat: Catalogue, today: Opti
             threats.append(entry)
         else:
             general.append(entry)
-    rank = lambda e: (not e["kev"], SEV_ORDER[e["severity"]], -date.fromisoformat(e["published"]).toordinal(), -(e["epss"] or 0), e["id"])  # noqa: E731
+    def rank(e: dict[str, Any]) -> tuple[bool, int, int, float, str]:
+        return (not e["kev"], SEV_ORDER[e["severity"]], -date.fromisoformat(e["published"]).toordinal(), -(e["epss"] or 0), e["id"])
+
     threats.sort(key=rank)
     general.sort(key=rank)
     return {"schema": "beyond90-feed/1", "generated": datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z"),

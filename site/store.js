@@ -2,12 +2,18 @@
 // Every write goes through mergeSnapshots, so storing the same snapshot twice, or two devices' copies
 // of it, cannot create a duplicate or lose a field.
 import { mergeSnapshots } from "./workspace-core.js";
-import { seal, openSealed } from "./vault.js";
+import { seal, openSealed, sealWorkspace } from "./vault.js";
 
 const DB = "beyond90", STORE = "snapshots", META = "meta";
 let key = null;                                      // the passphrase key, in memory only
 export const setKey = (k) => { key = k; };
 export const unlocked = () => key !== null;
+
+/** The workspace text sealed with the vault's key, or null when there is no vault or it is locked. The key never leaves this module. */
+export async function sealExport(text) {
+  const meta = await getVault();
+  return meta && key ? sealWorkspace(key, meta, text) : null;
+}
 
 function open() {
   return new Promise((resolve, reject) => {
@@ -30,7 +36,7 @@ function done(tx) {
 }
 
 /** Storage failures a person can act on, instead of a DOMException name. */
-export function friendly(e) {
+function friendly(e) {
   const name = (e && e.name) || "";
   if (name === "QuotaExceededError" || /quota/i.test((e && e.message) || "")) return new Error("The browser's storage is full. Delete old snapshots below, or export the workspace and clear it.");
   return e instanceof Error ? e : new Error("Storage failed.");

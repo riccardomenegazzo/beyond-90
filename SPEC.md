@@ -1,4 +1,4 @@
-# Beyond 90: specification v0.21
+# Beyond 90: specification v0.22
 
 An adoption engine for Technical Account Managers. It measures how much of a customer's cloud estate is really covered and operated through a security platform, and turns every gap into an action. The bar keeps moving: when a customer grows or the product ships something, the denominators grow with it.
 
@@ -200,7 +200,7 @@ Each single-customer analysis is saved as a snapshot (input files only, content-
 
 ## 16. Positioning against the platform's own views
 
-Security platforms commonly ship their own adoption or maturity views and an ownership model. Beyond 90 does not replace them: it measures what a platform cannot see about itself (the true universe of units to cover, across a whole portfolio) and reads ownership and decisions rather than rebuilding routing. The research behind this, including a case study of one vendor, is in `docs/research/`.
+Security platforms commonly ship their own adoption or maturity views and an ownership model. Beyond 90 does not replace them: it measures what a platform cannot see about itself (the true universe of units to cover, across a whole portfolio) and reads ownership and decisions rather than rebuilding routing. The research behind this is in `docs/research/`.
 
 ## 17. Not yet
 
@@ -229,8 +229,9 @@ Security platforms commonly ship their own adoption or maturity views and an own
 17. 0.18: the outlook if nothing is done, and coverage weighted by what is at stake.
 18. 0.19: the value receipt, team digests and the recap after the call.
 19. 0.20: the daily cloud security news, merged, ranked and matched to every customer.
-20. 0.21 (this): the customer's history kept automatically, and an executive QBR built from it on demand.
-21. 1.0: connector interface and a first verified connector against a real tenant; criticality weighting; readiness checklist import; per-finding ownership sources.
+20. 0.21: the customer's history kept automatically, and an executive QBR built from it on demand.
+21. 0.22 (this): sealed exports, strict typing and security lint, a least-privilege, hash-locked supply chain.
+22. 1.0: connector interface and a first verified connector against a real tenant; criticality weighting; readiness checklist import; per-finding ownership sources.
 
 ## References
 

@@ -51,7 +51,7 @@ class _SameRules(urllib.request.HTTPRedirectHandler):
     def __init__(self, allow_hosts: list[str]) -> None:
         self.allow_hosts = allow_hosts
 
-    def redirect_request(self, req, fp, code, msg, headers, newurl):
+    def redirect_request(self, req: urllib.request.Request, fp: Any, code: int, msg: str, headers: Any, newurl: str) -> Optional[urllib.request.Request]:
         check_url(newurl, self.allow_hosts)
         return super().redirect_request(req, fp, code, msg, headers, newurl)
 
@@ -78,7 +78,7 @@ def _parse(body: bytes, fmt: str, records: str, delimiter: str = ",") -> list[An
 
 
 def _read(resp: Any, cap: int) -> bytes:
-    body = resp.read(cap + 1)
+    body: bytes = resp.read(cap + 1)
     if len(body) > cap:
         raise FetchError(f"the response is larger than max_bytes ({cap})")
     return body
@@ -118,7 +118,7 @@ def _http(s: Source, cfg: Config, env: Mapping[str, str], sleep: Callable[[float
         if len(out) * 1 > 5_000_000:
             raise FetchError("more than 5,000,000 records")
         kind = p.get("type")
-        if not kind or not recs and kind != "link_header":
+        if not kind or (not recs and kind != "link_header"):
             break
         if kind == "link_header":
             if not link:
@@ -154,7 +154,7 @@ def _request(opener: urllib.request.OpenerDirector, url: str, headers: dict[str,
              sleep: Callable[[float], None]) -> tuple[bytes, str]:
     last = ""
     for attempt in range(cfg.retries + 1):
-        req = urllib.request.Request(url, headers=headers, method="GET")
+        req = urllib.request.Request(url, headers=headers, method="GET")  # noqa: S310 - check_url allows https only
         try:
             with opener.open(req, timeout=timeout) as resp:
                 link = resp.headers.get("Link", "")
@@ -186,7 +186,7 @@ def _request(opener: urllib.request.OpenerDirector, url: str, headers: dict[str,
 def _command(s: Source, cfg: Config, env: Mapping[str, str]) -> list[Any]:
     passed = {k: env[k] for k in ["PATH", "HOME", *s.env] if k in env}
     try:
-        r = subprocess.run(s.argv, capture_output=True, timeout=s.timeout_seconds, env=passed, stdin=subprocess.DEVNULL, check=False)
+        r = subprocess.run(s.argv, capture_output=True, timeout=s.timeout_seconds, env=passed, stdin=subprocess.DEVNULL, check=False)  # noqa: S603 - an argv list from the operator's config, no shell
     except FileNotFoundError:
         raise FetchError(f"command not found: {s.argv[0]} (is it installed on the machine that runs this?)") from None
     except subprocess.TimeoutExpired:

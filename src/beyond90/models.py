@@ -11,7 +11,8 @@ SEVERITIES = ("critical", "high", "medium", "low")
 EXPOSURES = ("internet", "internal")
 DECISIONS = ("fix", "accepted_risk", "exception", "false_positive")
 ACCOUNT_STATUSES = ("active", "decommissioned")
-UNIVERSE_SOURCES = ("billing", "org", "sso", "manual", "plan")
+UNIVERSE_SOURCES = ("billing", "org", "sso", "manual", "plan", "platform")
+INDEPENDENT_SOURCES = ("billing", "org", "sso")        # each one finds accounts the others miss
 
 
 @dataclass(frozen=True)

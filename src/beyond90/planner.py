@@ -18,10 +18,11 @@ playbook catalogue, the ramp model, the realization rate and the assumptions in
 
 from __future__ import annotations
 
+import itertools
 import math
 import re
 from dataclasses import asdict, dataclass, field
-from typing import Optional
+from typing import Any, Optional
 
 from .catalogue import Catalogue
 from .models import CustomerData
@@ -75,7 +76,7 @@ class Plan:
     weeks: list[WeekState]
     jobs: list[Job]
     milestones: dict[str, Optional[int]]
-    dips: list[dict]
+    dips: list[dict[str, Any]]
     residual: dict[str, int]
     notes: list[str]
     unit: str = "account"
@@ -88,7 +89,7 @@ class Plan:
     def end_yield(self) -> float:
         return self.weeks[-1].yield_
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         d = asdict(self)
         for w in d["weeks"]:
             w["yield"] = w.pop("yield_")
@@ -103,11 +104,11 @@ class Pick:
     remaining_hours: float
 
 
-def _key(op: dict, ident: str) -> tuple[str, str, str]:
+def _key(op: dict[str, Any], ident: str) -> tuple[str, str, str]:
     return (op["op"], op.get("resource_type") or op.get("module") or "", ident)
 
 
-def _realize(ops: list[dict], rate: float) -> tuple[list[dict], set[tuple[str, str, str]]]:
+def _realize(ops: list[dict[str, Any]], rate: float) -> tuple[list[dict[str, Any]], set[tuple[str, str, str]]]:
     """Not every unit of an action succeeds (a blocked account, a finding that needs a vendor fix).
 
     Apply the first ``round(n x rate)`` ids of each op, at least one. The rest is
@@ -128,7 +129,7 @@ def _realize(ops: list[dict], rate: float) -> tuple[list[dict], set[tuple[str, s
     return out, blocked
 
 
-def _restrict(action: Action, pending: set[str], blocked: set, cat: Catalogue) -> Optional[Action]:
+def _restrict(action: Action, pending: set[str], blocked: set[Any], cat: Catalogue) -> Optional[Action]:
     """Drop accounts still ramping and units assumed blocked; None if nothing is left to do."""
     ops = []
     for op in action.ops:
@@ -199,7 +200,7 @@ class CustomerPlanner:
         self.jobs: list[Job] = []
         self.current: Optional[tuple[Action, float, int, float]] = None   # action, remaining hours, started week, gain
         self.versions = {"L1": 0, "L2": 0, "L3": 0, "L4": 0}              # bumped whenever a stage's inputs change
-        self._cache: dict[tuple, Optional[dict[str, float]]] = {}
+        self._cache: dict[tuple[Any, ...], Optional[dict[str, float]]] = {}
         self._pick: Optional[Pick] = None
         self._pick_valid = False
         self._events: list[str] = []
@@ -212,7 +213,7 @@ class CustomerPlanner:
         st = quick_stages(self.state, self.cat)
         return WeekState(week, st["L1"] * st["L2"] * st["L3"] * st["L4"], st, round(hours, 2), done, events)
 
-    def _changed(self, ops: list[dict]) -> None:
+    def _changed(self, ops: list[dict[str, Any]]) -> None:
         for s in affected_stages(ops):
             self.versions[s] += 1
         self._pick_valid = False
@@ -233,9 +234,9 @@ class CustomerPlanner:
             aff = affected_stages(a2.ops)
             ids_sig = hash(tuple(tuple(op.get("accounts") or op.get("findings") or ()) for op in a2.ops))
             key = (a2.id, ids_sig, tuple(self.versions[x] for x in sorted(aff)), pending_sig if aff & {"L2", "L3"} else 0)
-            ratios = self._cache.get(key)
+            ratios = self._cache.get(key)                       # only real ratios are cached
             gain: float
-            if key not in self._cache:
+            if ratios is None:
                 after, _ = apply_ops(base, a2.ops, cat, steady=True)
                 new_stages = quick_stages(after, cat, only=aff, reuse=base_stages)
                 if any(base_stages[x] <= 0 for x in aff):
@@ -246,7 +247,6 @@ class CustomerPlanner:
                     self._cache[key] = ratios
                     gain = y0 * (math.prod(ratios.values()) - 1.0)
             else:
-                assert ratios is not None
                 gain = y0 * (math.prod(ratios.values()) - 1.0)
             if gain <= EPS:
                 continue
@@ -321,10 +321,6 @@ class CustomerPlanner:
         self.weeks.append(w)
         return w
 
-    @property
-    def idle(self) -> bool:
-        return self.current is None and not self.deferred and self.peek() is None
-
     def finalize(self, hours_per_week: float, horizon_weeks: int) -> Plan:
         notes: list[str] = []
         if self.current is not None:
@@ -336,7 +332,7 @@ class CustomerPlanner:
             f"{int(c * 100)}%": next((w.week for w in weeks if w.yield_ >= c - 1e-12), None) for c in CHECKPOINTS
         }
         dips = []
-        for prev, cur in zip(weeks, weeks[1:]):
+        for prev, cur in itertools.pairwise(weeks):
             if cur.yield_ < prev.yield_ - 1e-9:
                 dips.append({"week": cur.week, "drop_points": round((prev.yield_ - cur.yield_) * 100, 2),
                              "cause": cur.events[-1] if cur.events else "A change made earlier took effect."})

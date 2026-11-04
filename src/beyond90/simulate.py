@@ -23,7 +23,7 @@ from __future__ import annotations
 from collections.abc import Iterable
 from dataclasses import dataclass, replace
 from datetime import timedelta
-from typing import Optional
+from typing import Any, Optional
 
 from .catalogue import Catalogue
 from .models import Activation, CustomerData, InventoryRow
@@ -41,7 +41,7 @@ DEFAULT_RAMP = RampModel()
 @dataclass(frozen=True)
 class Deferred:
     week: int
-    ops: tuple[dict, ...]
+    ops: tuple[dict[str, Any], ...]
 
 
 _AFFECTS = {
@@ -55,7 +55,7 @@ _AFFECTS = {
 }
 
 
-def affected_stages(ops: Iterable[dict]) -> set[str]:
+def affected_stages(ops: Iterable[dict[str, Any]]) -> set[str]:
     """Which stages an action can change (the others keep their value)."""
     out: set[str] = set()
     for op in ops:
@@ -123,7 +123,7 @@ def _settle(data: CustomerData, accounts: Iterable[str], cat: Catalogue) -> None
 
 def apply_ops(
     data: CustomerData,
-    ops: Iterable[dict],
+    ops: Iterable[dict[str, Any]],
     cat: Catalogue,
     *,
     week: int = 0,

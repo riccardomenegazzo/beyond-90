@@ -211,8 +211,13 @@ def _chart(series: list[dict[str, Any]]) -> str:
     W, H, ml, mr, mt, mb = 640, 220, 44, 16, 14, 30
     t = [date.fromisoformat(p["as_of"]).toordinal() for p in series]
     t0, t1 = t[0], max(t[-1], t[0] + 1)
-    x = lambda v: ml + (v - t0) / (t1 - t0) * (W - ml - mr)  # noqa: E731
-    y = lambda v: mt + (1 - v) * (H - mt - mb)  # noqa: E731
+
+    def x(v: int) -> float:
+        return ml + (v - t0) / (t1 - t0) * (W - ml - mr)
+
+    def y(v: float) -> float:
+        return mt + (1 - v) * (H - mt - mb)
+
     g = []
     for v in (0, 0.25, 0.5, 0.75, 1):
         g.append(f'<line x1="{ml}" x2="{W - mr}" y1="{y(v):.1f}" y2="{y(v):.1f}" stroke="#e5e7eb"/><text x="{ml - 6}" y="{y(v) + 4:.1f}" text-anchor="end">{v:.0%}</text>')

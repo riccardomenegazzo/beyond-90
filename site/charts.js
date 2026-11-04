@@ -123,13 +123,6 @@ export function funnel(stages) {
   return svg;
 }
 
-/** A tiny trend line for tiles. */
-export function spark(values, w = 90, hgt = 26) {
-  if (values.length < 2) return h("span");
-  const lo = Math.min(...values), hi = Math.max(...values), X = (i) => 2 + (i / (values.length - 1)) * (w - 4), Y = (v) => 2 + (1 - (v - lo) / (hi - lo || 1)) * (hgt - 4);
-  return s("svg", { viewBox: `0 0 ${w} ${hgt}`, width: w, height: hgt, class: "spark", "aria-hidden": "true" }, s("path", { d: values.map((v, i) => `${i ? "L" : "M"}${X(i).toFixed(1)} ${Y(v).toFixed(1)}`).join(" "), fill: "none", stroke: "var(--accent)", "stroke-width": 2 }));
-}
-
 /** Stacked share bar: parts = [{label, value, color}]. */
 export function shareBar(parts) {
   const total = parts.reduce((a, p) => a + p.value, 0) || 1;

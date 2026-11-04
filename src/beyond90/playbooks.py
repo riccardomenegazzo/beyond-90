@@ -15,7 +15,7 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
 from datetime import timedelta
-from typing import Optional
+from typing import Any, Optional
 
 from .catalogue import Catalogue
 from .models import CustomerData
@@ -44,13 +44,13 @@ class Action:
     steps: list[str] = field(default_factory=list)
     success: str = ""
     effort_hours: float = 0.0
-    ops: list[dict] = field(default_factory=list)
+    ops: list[dict[str, Any]] = field(default_factory=list[Any])
     cross_sell: str = ""      # expand, broaden or diversify; empty when it is not an expansion
     trust_note: str = ""
     question: str = ""        # an open question worth asking the customer about this gap
     we_commit: str = ""       # what the TAM promises to bring, with a date
 
-    def to_dict(self, with_ops: bool = True) -> dict:
+    def to_dict(self, with_ops: bool = True) -> dict[str, Any]:
         d = asdict(self)
         if not with_ops:
             d.pop("ops")
@@ -87,7 +87,7 @@ def generate_actions(data: CustomerData, score: Score, cat: Optional[Catalogue] 
     owner_of = {a.id: a.owner for a in data.accounts}
 
     def add(pid: str, key: str, detail: str, owner: str, units: float, effect: float,
-            title: Optional[str] = None, ops: Optional[list[dict]] = None, people: Optional[list[str]] = None) -> None:
+            title: Optional[str] = None, ops: Optional[list[dict[str, Any]]] = None, people: Optional[list[str]] = None) -> None:
         p = pb[pid]
         kind = classify(p.offer, people or [], contact_teams, bool(data.contacts))
         actions.append(
@@ -114,7 +114,7 @@ def generate_actions(data: CustomerData, score: Score, cat: Optional[Catalogue] 
 
     # L1: group unconnected accounts by owner.
     l1 = score.stages["L1"]
-    by_owner: dict[str, list[dict]] = {}
+    by_owner: dict[str, list[dict[str, Any]]] = {}
     for leak in l1.leaks:
         by_owner.setdefault(leak["owner"] or "unassigned", []).append(leak)
     for owner, items in sorted(by_owner.items()):

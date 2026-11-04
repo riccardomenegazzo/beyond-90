@@ -69,9 +69,9 @@ def md_drift(d: dict[str, Any] | None) -> list[str]:
         return []
     L = [f"## Did the inputs change since {d['since']}?", ""]
     if not d["items"]:
-        return L + ["No sign that the two exports differ in ways that would distort the comparison.", ""]
+        return [*L, "No sign that the two exports differ in ways that would distort the comparison.", ""]
     L += [f"- **{i['status']}**: {i['text']}" for i in d["items"]]
-    return L + ["", "*These look for artefacts of the export, not for progress. Check them before presenting the change.*", ""]
+    return [*L, "", "*These look for artefacts of the export, not for progress. Check them before presenting the change.*", ""]
 
 
 def html_drift(d: dict[str, Any] | None) -> str:

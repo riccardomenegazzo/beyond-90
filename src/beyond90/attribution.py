@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import asdict, dataclass, field
-from typing import Optional
+from typing import Any, Optional
 
 from .catalogue import Catalogue, parse_version
 from .models import CustomerData
@@ -59,7 +59,7 @@ class Attribution:
     factors: list[Factor] = field(default_factory=list)
     notes: list[str] = field(default_factory=list)
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
 
@@ -68,7 +68,7 @@ def _logmean(a: float, b: float) -> float:
     return a if abs(a - b) < 1e-12 else (a - b) / (math.log(a) - math.log(b))
 
 
-def explain(current: Score, previous: dict, data: Optional[CustomerData] = None, cat: Optional[Catalogue] = None) -> Attribution:
+def explain(current: Score, previous: dict[str, Any], data: Optional[CustomerData] = None, cat: Optional[Catalogue] = None) -> Attribution:
     """``previous`` is a stored snapshot payload (``Store.previous``) or ``Score.to_dict()``."""
     old = {k: previous["stages"][k]["value"] for k in ("L1", "L2", "L3", "L4")}
     new = {k: current.stages[k].value for k in ("L1", "L2", "L3", "L4")}

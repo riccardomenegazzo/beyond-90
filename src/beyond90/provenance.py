@@ -18,6 +18,7 @@ from __future__ import annotations
 import hashlib
 from collections.abc import Mapping
 from pathlib import Path
+from typing import Any
 
 from . import __version__
 
@@ -49,7 +50,7 @@ def hash_directory(base: str | Path) -> dict[str, str]:
     return {n: file_hash((base / n).read_bytes()) for n in INPUT_FILES if (base / n).is_file()}
 
 
-def build(files: Mapping[str, str], catalogue_digest: str, ceiling: str, baseline: str, schema_version: int = SCHEMA_VERSION, profile: str = "cnapp") -> dict:
+def build(files: Mapping[str, str], catalogue_digest: str, ceiling: str, baseline: str, schema_version: int = SCHEMA_VERSION, profile: str = "cnapp") -> dict[str, Any]:
     return {
         "engine": __version__,
         "schema_version": schema_version,
@@ -62,7 +63,7 @@ def build(files: Mapping[str, str], catalogue_digest: str, ceiling: str, baselin
     }
 
 
-def describe(p: dict) -> str:
+def describe(p: dict[str, Any]) -> str:
     """One line for the foot of a report."""
     if not p:
         return ""

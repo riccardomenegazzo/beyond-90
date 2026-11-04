@@ -16,9 +16,6 @@ kbd{font:11px ui-monospace,Menlo,Consolas,monospace;border:1px solid var(--borde
 .chips{display:flex;gap:6px;flex-wrap:wrap;flex:1}
 .chip{border:1px solid var(--border);border-radius:999px;padding:1px 10px;font-size:12px;color:var(--ink2);white-space:nowrap}
 .appbar-actions{display:flex;gap:8px}
-.intro{max-width:1240px;margin:0 auto;padding:34px 16px 4px}
-.intro h1{margin:0 0 8px;font-size:clamp(28px,5vw,44px);line-height:1.08;letter-spacing:-.03em;font-weight:700}
-.intro p{margin:0;max-width:68ch;color:var(--ink2);font-size:16px}
 main{max-width:1240px;margin:0 auto;padding:0 16px 8px}
 .panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:22px;margin-top:18px;box-shadow:var(--shadow)}
 .panel h2{margin:0 0 14px;font-size:18px;display:flex;align-items:center;gap:10px;letter-spacing:-.01em}
@@ -83,7 +80,7 @@ small{color:var(--ink2);font-size:12.5px}
 .chart{width:100%;max-width:760px;height:auto;display:block}
 .levelrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:inherit}
 .levelbadge{display:inline-block;padding:3px 14px;border-radius:999px;font-weight:700;font-size:14px;color:#fff;background:#8a5a2b}
-.levelbadge.lv-silver{background:#6b7280}.levelbadge.lv-gold{background:#b8860b}.levelbadge.lv-none{background:var(--muted)}
+.levelbadge.lv-silver{background:#6b7280}.levelbadge.lv-gold{background:#b8860b}.levelbadge.lv-basic{background:var(--muted)}
 .legacy{margin:10px 0 0;font-size:15px}.legacy .gap{color:var(--bad)}
 .mini,.kpiline{display:flex;flex-wrap:wrap;gap:10px 22px;margin:12px 0}
 .stat{display:flex;flex-direction:column;min-width:96px}.stat b{font-size:21px;letter-spacing:-.02em;font-variant-numeric:tabular-nums}.stat span{font-size:12.5px;color:var(--ink2)}.stat.good b{color:var(--pos)}.stat.bad b{color:var(--bad)}.stat.warn b{color:var(--warn)}
@@ -126,7 +123,6 @@ button.link{background:none;border:0;color:var(--accent-text);font:inherit;curso
 .controls h2{margin:0 0 8px}.sliders{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
 .slider span{display:flex;justify-content:space-between}.slider output{font-weight:700;color:var(--ink)}.slider input{accent-color:var(--accent);width:100%}
 .planout{display:grid;gap:14px;margin-top:14px}
-.spark{vertical-align:middle}
 .heatcell{display:inline-block;min-width:56px;text-align:right;padding:1px 8px;border-radius:6px}.arrbar{display:inline-block;height:6px;background:var(--accent);border-radius:3px;margin-left:8px;vertical-align:middle}.levelbadge.small{font-size:12px;padding:0 10px;color:#fff}
 /* history, errors, footer */
 .has-results .hero-land,.has-results .features{display:none}
@@ -247,7 +243,7 @@ h1,h2,h3{letter-spacing:-.02em}
 .chip2{font-weight:500}
 footer{max-width:1240px;border-top:1px solid var(--border);padding-top:16px}
 
-@media print{.appbar,.intro,#data-panel,.tabs,.toolbar,.actions,#history-panel,footer,.btn,.bar{display:none!important}body{background:#fff}.panel{border:0;box-shadow:none;padding:0}.card{break-inside:avoid}}
+@media print{.appbar,#data-panel,.tabs,.toolbar,.actions,#history-panel,footer,.btn,.bar{display:none!important}body{background:#fff}.panel{border:0;box-shadow:none;padding:0}.card{break-inside:avoid}}
 .teamgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px;margin-top:10px}
 .teamgrid .card{margin:0}
 pre.recap{white-space:pre-wrap;word-break:break-word;background:var(--bg2,rgba(127,127,127,.08));border-radius:8px;padding:12px;font-size:.85rem;max-height:340px;overflow:auto;margin:10px 0 0}

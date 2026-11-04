@@ -12,7 +12,7 @@ import sqlite3
 from contextlib import closing
 from datetime import date
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 from .scoring import Score
 
@@ -71,7 +71,7 @@ class Store:
         with closing(self._connect()) as con:
             return [r[0] for r in con.execute("SELECT DISTINCT customer FROM snapshots ORDER BY customer")]
 
-    def history(self, customer: str) -> list[dict]:
+    def history(self, customer: str) -> list[dict[str, Any]]:
         with closing(self._connect()) as con:
             rows = con.execute(
                 "SELECT as_of, ceiling_version, yield, naive, l1, l2, l3, l4, reach, critical_open "
@@ -80,7 +80,7 @@ class Store:
             ).fetchall()
         return [dict(r) for r in rows]
 
-    def previous(self, customer: str, before: date | str) -> Optional[dict]:
+    def previous(self, customer: str, before: date | str) -> Optional[dict[str, Any]]:
         """Latest stored snapshot strictly before ``before``, as the full payload."""
         with closing(self._connect()) as con:
             row = con.execute(
@@ -89,7 +89,7 @@ class Store:
             ).fetchone()
         return json.loads(row["payload"]) if row else None
 
-    def time_to_zero(self, customer: str) -> Optional[dict]:
+    def time_to_zero(self, customer: str) -> Optional[dict[str, Any]]:
         """Days from the first snapshot to the first one with zero open critical findings."""
         hist = [h for h in self.history(customer) if h["critical_open"] is not None]
         if not hist:

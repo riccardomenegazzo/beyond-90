@@ -55,3 +55,16 @@ test("the same passphrase typed in a different Unicode form still works", async 
   const { meta } = await V.createVault("café au lait, s'il vous plaît", FAST);
   assert.ok(await V.unlockVault(meta, "café au lait, s'il vous plaît"));
 });
+
+test("a sealed workspace opens with the vault's passphrase, on any device, and only with it", async () => {
+  const { key, meta } = await V.createVault("correct horse battery staple", FAST);
+  const text = JSON.stringify({ format: "beyond90-workspace", snapshots: [{ customer: "Acme" }] });
+  const file = await V.sealWorkspace(key, meta, text);
+  assert.ok(!file.includes("Acme"));
+  const doc = JSON.parse(file);
+  assert.ok(V.isSealedWorkspace(doc) && !V.isSealedWorkspace({ format: "beyond90-workspace" }));
+  assert.equal(await V.openWorkspace(doc, "correct horse battery staple"), text);
+  assert.equal(await V.openWorkspace(doc, "wrong passphrase here"), null);
+  doc.sealed.ct = doc.sealed.ct.slice(0, -4) + "AAAA";
+  await assert.rejects(V.openWorkspace(doc, "correct horse battery staple"));
+});

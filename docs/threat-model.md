@@ -1,6 +1,6 @@
 # Threat model
 
-What Beyond 90 protects, from whom, and what it does not claim. It covers the browser app and the automation; the scoring engine itself has no network access and no dependencies.
+What Beyond 90 protects, from whom, and what it does not claim. It covers the browser app, the automation, the news collector and the project's own supply chain; the scoring engine itself has no network access and no dependencies.
 
 ## What is sensitive
 
@@ -14,11 +14,14 @@ Customer inventories and findings (which accounts exist, which controls are off,
 | A customer's file injects script (XSS) | Text is always set as text; no `innerHTML`, `eval` or `document.write` anywhere; **Trusted Types** are enforced, so the only string-to-HTML sink is the sandboxed report frame, which has no scripts and no access to the page | e2e with hostile names in every view; a test that fails on any new unsafe sink |
 | A spreadsheet formula in an export | CSV cells starting with `=`, `+`, `-`, `@` are prefixed | Node test |
 | A crafted workspace file | Refused above 1000 snapshots; every snapshot's name must match the hash of its content; wrongly typed fields rejected; `__proto__` ignored | Node tests |
-| Saved data read from the device | Optional passphrase: PBKDF2-SHA-256 (600,000 rounds, random salt), AES-256-GCM per snapshot with a fresh nonce and the id as associated data, key in memory only, locked after 15 idle minutes, wrong guesses slowed | Node tests, e2e (the raw store holds nothing readable) |
+| Saved data read from the device | A passphrase (the page says how many snapshots are stored unencrypted until one is set): PBKDF2-SHA-256 (600,000 rounds, random salt), AES-256-GCM per snapshot with a fresh nonce and the id as associated data, key in memory only, locked after 15 idle minutes, wrong guesses slowed | Node tests, e2e (the raw store holds nothing readable) |
+| A workspace file copied off the device | With a passphrase, the export is sealed the same way (the vault's salt and iterations travel with it), so only that passphrase opens it on another device; a tampered file fails authentication | Node test, e2e (the file holds nothing readable; a wrong passphrase is refused) |
+| Clickjacking: another site frames the page and steers clicks | The app runs only as the top-level page; framed, it stops before reading or offering anything (Pages cannot send `frame-ancestors`) | e2e |
+| Links leak where they came from | `referrer` is `no-referrer`; external links open with `noopener noreferrer` and only for https | e2e, ESLint rules |
 | A tampered or stale build served from cache | The service worker's cache name is the hash of every file in the build | build test |
 | A compromised dependency | Pyodide is the only shipped third-party software, served from the same origin, pinned in `site/npm/package-lock.json` with integrity hashes and installed with `npm ci --ignore-scripts`; the engine has no runtime dependencies; an SBOM is published with each release | `tests/test_security.py` |
 
-Not covered: malware or a hostile extension on the device, a person with the unlocked page open, and an exported workspace file (it is not encrypted and the page says so). A forgotten passphrase cannot be recovered.
+Not covered: malware or a hostile extension on the device, a person with the unlocked page open, data saved before a passphrase was set and an export made without one (both said on the page), and other pages published under the same `github.io` origin, which share its storage: publish only this app there, or serve it from its own domain. A forgotten passphrase cannot be recovered.
 
 ## Automation
 
@@ -47,7 +50,15 @@ Not covered: malware or a hostile extension on the device, a person with the unl
 
 ## Supply chain
 
-GitHub Actions are pinned to commit SHAs and kept current by Dependabot; every workflow declares minimal permissions and none uses `pull_request_target`; CodeQL scans Python and JavaScript on every push and weekly; releases carry a signed build provenance attestation, an SBOM and checksums. The package has no runtime dependencies to compromise.
+| Threat | Control |
+|---|---|
+| A compromised or moved action | Every action is pinned to a commit SHA and kept current by Dependabot; `zizmor` audits the workflows on every push |
+| A workflow token used beyond its job | `permissions: {}` at the top of every workflow, the least each job needs below it; checkouts do not persist credentials; nothing from an event is expanded into a script |
+| A compromised build or test tool | Python tools installed from lock files with hashes (`pip --require-hashes`), npm from its lock file with `--ignore-scripts` |
+| Unsafe code merged | Ruff with the security rules, strict mypy, ESLint forbidding `eval` and HTML sinks, CodeQL (`security-extended`) on Python and JavaScript |
+| A tampered release | Built in a job without write access, then published with signed build provenance, an SBOM and checksums |
+
+The package has no runtime dependencies to compromise.
 
 ## Reporting
 

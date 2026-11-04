@@ -8,6 +8,9 @@ import * as V from "./views.js";
 import { h as el_, s as svg_, saveBlob, copyText, csvCell, icon } from "./ui.js";
 import { gauge, STAGE } from "./charts.js";
 
+// Another site could frame this page and steer clicks on it; the app only runs as the top-level page.
+if (window.top !== window.self) throw new Error("Beyond 90 runs only as a top-level page, never inside another site's frame.");
+
 const $ = (id) => document.getElementById(id);
 // The page enforces Trusted Types for scripts (see the CSP): the only string-to-HTML sink left is the sandboxed report frame,
 // which has no scripts and no access to this page. Its content is produced by the engine from the customer's files, escaped there.
@@ -35,7 +38,6 @@ async function boot() {
   }
   registerOffline();
   await refreshHistory();
-  await refreshVault();
 }
 
 function refreshRun() {
@@ -495,6 +497,7 @@ async function refreshHistory() {
     tbody.append(tr);
   }
   computeYields();
+  await refreshVault();
 }
 
 // Derived data is computed on demand and kept only in memory, keyed by the snapshot and the engine that read it.
@@ -543,13 +546,24 @@ function drawTrend() {
 async function exportWorkspace() {
   if (await store.getVault() && !store.unlocked() && !(await unlockVaultUi())) return;
   const text = W.serializeWorkspace(state.saved, { engine: state.engine ? state.engine.version : "" });
-  save(new Blob([text], { type: "application/json" }), "beyond90-workspace.json");
-  wsSay(`Exported ${state.saved.length} snapshot(s). The file is not encrypted and contains customer data: keep it private.`);
+  const sealed = await store.sealExport(text);
+  save(new Blob([sealed || text], { type: "application/json" }), sealed ? "beyond90-workspace.sealed.json" : "beyond90-workspace.json");
+  wsSay(sealed ? `Exported ${state.saved.length} snapshot(s), sealed with your passphrase.`
+    : `Exported ${state.saved.length} snapshot(s). The file is not encrypted and contains customer data: protect saved data with a passphrase and exports are sealed too.`);
 }
 
 async function importWorkspace(file) {
   try {
-    const { snapshots } = W.parseWorkspace(await file.text());
+    let text = await file.text();
+    let doc = null;
+    try { doc = JSON.parse(text); } catch { /* parseWorkspace says what is wrong */ }
+    if (Vault.isSealedWorkspace(doc)) {
+      const p = await askPassphrase({ title: "Open a sealed workspace", confirm: false, help: "Enter the passphrase that protected it." });
+      if (p == null) return;
+      text = await Vault.openWorkspace(doc, p);
+      if (text == null) { wsSay("That is not the passphrase of this workspace file."); return; }
+    }
+    const { snapshots } = W.parseWorkspace(text);
     const { ok, rejected } = await W.acceptSnapshots(snapshots);
     const added = await store.put(ok);
     await refreshHistory();
@@ -565,7 +579,6 @@ async function forgetAll() {
   store.setKey(null);
   state.yields.clear();
   await refreshHistory();
-  await refreshVault();
   wsSay("Everything saved in this browser was deleted.");
 }
 
@@ -628,6 +641,9 @@ async function refreshVault() {
   $("vault-unlock").hidden = !on || open;
   $("vault-lock").hidden = !open;
   $("vault-off").hidden = !open;
+  const plainCount = on ? 0 : state.saved.length;
+  $("vault-warn").hidden = !plainCount;
+  $("vault-warn").textContent = plainCount ? `${plainCount} snapshot${plainCount === 1 ? "" : "s"} of customer data stored unencrypted on this device.` : "";
   clearTimeout(idleTimer);
   if (open) idleTimer = setTimeout(() => lockVault("Locked after 15 minutes without use."), IDLE_LOCK_MS);
   return { meta, open };
@@ -636,14 +652,13 @@ async function lockVault(why = "Locked.") {
   store.setKey(null);
   state.saved = []; state.yields.clear();
   await refreshHistory();
-  await refreshVault();
   wsSay(why);
 }
 function askPassphrase({ title, help, confirm }) {
   const d = $("vault-dialog");
   $("vault-title").textContent = title; $("vault-help").textContent = help;
   $("vault-pass").value = $("vault-pass2").value = ""; $("vault-msg").textContent = "";
-  $("vault-again-label").hidden = !confirm; 
+  $("vault-again-label").hidden = !confirm;
   d.showModal(); $("vault-pass").focus();
   return new Promise((resolve) => {
     const form = $("vault-form"), cancel = $("vault-cancel");
@@ -663,7 +678,7 @@ function askPassphrase({ title, help, confirm }) {
   });
 }
 async function enableVault() {
-  const p = await askPassphrase({ title: "Protect saved data", confirm: true, help: "Saved snapshots are sealed with a key made from this passphrase. The key stays in this tab's memory and is dropped after 15 idle minutes. There is no recovery: forget it and the saved copy is gone, so export a workspace first if you need a backup (an export is not sealed)." });
+  const p = await askPassphrase({ title: "Protect saved data", confirm: true, help: "Saved snapshots and exported workspaces are sealed with a key made from this passphrase. The key stays in this tab's memory and is dropped after 15 idle minutes. There is no recovery: forget it and the saved copy is gone, so keep an exported workspace as a backup." });
   if (p == null) return;
   wsSay("Sealing…");
   try {
@@ -672,7 +687,7 @@ async function enableVault() {
     await store.convertAll({ toSealed: true, meta });
     wsSay("Saved data is now protected.");
   } catch (e) { store.setKey(null); wsSay("Could not protect saved data: " + e.message); }
-  await refreshHistory(); await refreshVault();
+  await refreshHistory();
 }
 async function unlockVaultUi() {
   const meta = await store.getVault();
@@ -681,7 +696,7 @@ async function unlockVaultUi() {
     const p = await askPassphrase({ title: "Unlock saved data", confirm: false, help: tries ? "That was not the passphrase. Try again." : "Enter the passphrase you chose." });
     if (p == null) return false;
     const key = await Vault.unlockVault(meta, p);
-    if (key) { store.setKey(key); await refreshHistory(); await refreshVault(); wsSay("Unlocked."); return true; }
+    if (key) { store.setKey(key); await refreshHistory(); wsSay("Unlocked."); return true; }
     await new Promise((r) => setTimeout(r, 400 * 2 ** tries));          // slows guessing from inside the page; the key derivation already costs the rest
   }
   wsSay("Too many wrong passphrases. Reload the page to try again.");
@@ -691,7 +706,7 @@ async function disableVault() {
   if (!confirm("Remove the passphrase? Saved snapshots will be stored unprotected again.")) return;
   try { await store.convertAll({ toSealed: false }); store.setKey(null); wsSay("Protection removed."); }
   catch (e) { wsSay("Could not remove protection: " + e.message); }
-  await refreshHistory(); await refreshVault();
+  await refreshHistory();
 }
 $("vault-on").addEventListener("click", enableVault);
 $("vault-unlock").addEventListener("click", unlockVaultUi);

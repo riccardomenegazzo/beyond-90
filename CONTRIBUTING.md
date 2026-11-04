@@ -14,13 +14,15 @@ Thanks for helping. The project is small on purpose: the scoring engine has no r
 
 ```
 python -m venv .venv && . .venv/bin/activate
-pip install -e ".[dev]"
+pip install --require-hashes -r requirements/dev.txt && pip install --no-deps -e .
 python -m pytest -q
-ruff check src tests examples site && mypy src
+ruff check src tests examples site scripts && mypy src          # mypy runs in strict mode
 beyond90 score examples/portfolio/northwind --format text
 ```
 
-The browser app (`site/`) has no build step beyond `site/build_site.py`. Its data model is tested with `node --test site/test/*.test.mjs`, and the whole app with `python site/e2e.py _site` (see [docs/app.md](docs/app.md)). Outputs under `docs/example/` are generated: run `python examples/generate_outputs.py` after changing a report, and commit the result (a test fails when they are stale).
+The tools are pinned with hashes in `requirements/` (`dev.txt`, `e2e.txt` for the browser test, `audit.txt` for the workflow audit) and in `site/npm/package-lock.json`. Ruff includes the security rules (`S`); an exception is written next to the line, with the reason.
+
+The browser app (`site/`) has no build step beyond `site/build_site.py`. Lint it with `site/npm/node_modules/.bin/eslint --config site/npm/eslint.config.mjs site` (no `eval`, no HTML sinks), test its data model and vault with `node --test site/test/*.test.mjs`, and the whole app with `python site/e2e.py _site` (see [docs/app.md](docs/app.md)). Workflows are audited with `zizmor .github/workflows`. Outputs under `docs/example/` are generated: run `python examples/generate_outputs.py` after changing a report, and commit the result (a test fails when they are stale).
 
 ## Pull requests
 

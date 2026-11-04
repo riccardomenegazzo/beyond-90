@@ -9,18 +9,18 @@
 //
 // The fingerprint algorithm is the same as src/beyond90/provenance.py; test/ checks both give one answer.
 
-export const INPUT_FILES = [
+const INPUT_FILES = [
   "customer.toml", "accounts.csv", "inventory.csv", "activations.csv", "findings.csv",
   "teams.csv", "entitlements.csv", "contacts.csv", "commitments.csv", "interactions.csv", "connectors.csv",
 ];
-export const PERSONAL_FILES = ["contacts.csv", "commitments.csv", "interactions.csv"];
+const PERSONAL_FILES = ["contacts.csv", "commitments.csv", "interactions.csv"];
 export const WORKSPACE_FORMAT = "beyond90-workspace";
-export const WORKSPACE_VERSION = 1;
+const WORKSPACE_VERSION = 1;
 export const MAX_SNAPSHOTS = 1000;        // a workspace is a person's working set, not a database; a file past this is refused, not half read
 
 const enc = new TextEncoder();
 
-export function normalizeText(text) {
+function normalizeText(text) {
   if (text.charCodeAt(0) === 0xfeff) text = text.slice(1);
   return text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
 }
@@ -35,7 +35,7 @@ export function baseName(name) {
 }
 
 /** Keep only the files that are inputs, by base name. Anything else must not change an identity. */
-export function inputsOnly(files) {
+function inputsOnly(files) {
   const out = {};
   for (const [name, text] of Object.entries(files)) {
     const base = baseName(name);
@@ -68,7 +68,7 @@ export async function makeSnapshot(files, { customer, asOf, includePersonal = fa
 }
 
 /** A snapshot is trusted only if its name matches its content; checked wherever data enters from outside. */
-export async function verifySnapshot(s) {
+async function verifySnapshot(s) {
   try {
     if (!s || typeof s !== "object" || typeof s.id !== "string" || !s.files || typeof s.files !== "object" || Array.isArray(s.files)) return false;
     if (!Object.values(s.files).every((t) => typeof t === "string")) return false;
@@ -111,7 +111,7 @@ export function parseWorkspace(text) {
   if (doc.version > WORKSPACE_VERSION) throw new Error(`This workspace was written by a newer version of Beyond 90 (format ${doc.version}); this page reads format ${WORKSPACE_VERSION}. Open the newer page to read it.`);
   if (!Array.isArray(doc.snapshots)) throw new Error("The workspace file has no snapshots list.");
   if (doc.snapshots.length > MAX_SNAPSHOTS) throw new Error(`The workspace file holds ${doc.snapshots.length} snapshots; this page reads at most ${MAX_SNAPSHOTS}. Split it by customer.`);
-  const { format, version, exported_with, snapshots, ...unknown } = doc;   // eslint-disable-line no-unused-vars
+  const { format, version, exported_with, snapshots, ...unknown } = doc;    
   return { snapshots, unknown };
 }
 

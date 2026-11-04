@@ -120,7 +120,7 @@ def map_records(records: Iterable[Any], mapping: dict[str, Any]) -> tuple[list[d
     """Map every record. Returns the rows and, per column, how many came out empty (to catch a path that reads nothing)."""
     for col, spec in mapping.items():
         validate_spec(col, spec)
-    rows, empty = [], {c: 0 for c in mapping}
+    rows, empty = [], dict.fromkeys(mapping, 0)
     for rec in records:
         row = {}
         for col, spec in mapping.items():

@@ -110,7 +110,7 @@ def test_comparing_with_an_older_snapshot_adds_the_explanation():
 
 def test_the_report_footer_says_which_inputs_it_came_from():
     r = analyze_files(demo_files())
-    assert r["input_hash"][:12] in r["report_html"] and r["input_hash"][:12] in r["qbr_markdown"] or r["input_hash"][:12] in r["report_markdown"]
+    assert (r["input_hash"][:12] in r["report_html"] and r["input_hash"][:12] in r["qbr_markdown"]) or r["input_hash"][:12] in r["report_markdown"]
 
 
 PORTFOLIO = ROOT / "examples" / "portfolio"

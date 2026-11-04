@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Any, Optional
 
 from ..loader import KNOWN_COLUMNS
+from ..models import UNIVERSE_SOURCES
 from .mapping import MapError, validate_spec
 
 TARGETS = ("accounts", "inventory", "activations", "findings", "teams", "entitlements", "contacts", "commitments", "interactions", "connectors")
@@ -30,9 +31,8 @@ REQUIRED = {
     "connectors": ("account_id", "kind", "status"),
 }
 KEYS_OF = {"inventory": ("account_id", "resource_type"), "activations": ("account_id", "module_id"), "entitlements": ("unit",), "connectors": ("account_id", "kind", "name")}
-SOURCE_TAGS = ("billing", "org", "sso", "manual", "plan")
 SOURCE_KEYS = {"name", "type", "target", "tag", "preset", "argv", "url", "path", "format", "records", "map", "auth", "headers", "pagination",
-               "connected_if_listed", "env", "timeout_seconds", "delimiter", "optional"}
+               "connected_if_listed", "env", "timeout_seconds", "delimiter"}
 OUTPUTS = ("report", "qbr", "successplan", "summary", "roadmap", "json", "prep", "status", "receipt", "briefing")
 TOP_KEYS = {"customer", "settings", "state", "security", "source", "notify", "export", "outputs", "advisories"}
 
@@ -85,7 +85,6 @@ class Source:
     env: list[str] = field(default_factory=list)
     timeout_seconds: float = 30.0
     delimiter: str = ","
-    optional: bool = False
 
 
 @dataclass
@@ -162,14 +161,13 @@ def _source(raw: dict[str, Any], i: int, security: dict[str, Any], errors: list[
     if missing:
         errors.append(f"{where}: map must supply {', '.join(missing)} for {target}.csv")
     tag = raw.get("tag", "")
-    if target == "accounts" and tag not in SOURCE_TAGS:
-        errors.append(f"{where}: tag is required for accounts: one of {', '.join(SOURCE_TAGS)}")
+    if target == "accounts" and tag not in UNIVERSE_SOURCES:
+        errors.append(f"{where}: tag is required for accounts: one of {', '.join(UNIVERSE_SOURCES)}")
     s = Source(
         name=name, type=typ, target=target, tag=tag, argv=list(raw.get("argv", [])), url=raw.get("url", ""), path=raw.get("path", ""),
         format=raw.get("format", "json"), records=raw.get("records", ""), mapping=mapping, auth=dict(raw.get("auth", {})),
         headers=dict(raw.get("headers", {})), pagination=dict(raw.get("pagination", {})), connected_if_listed=bool(raw.get("connected_if_listed", False)),
         env=list(raw.get("env", [])), timeout_seconds=float(raw.get("timeout_seconds", security["timeout_seconds"])), delimiter=raw.get("delimiter", ","),
-        optional=bool(raw.get("optional", False)),
     )
     if s.format not in ("json", "csv"):
         errors.append(f"{where}: format must be json or csv")

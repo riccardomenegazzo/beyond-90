@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import urllib.error
 import urllib.request
+from typing import Any, Optional
 from urllib.parse import urlparse
 
 from .. import __version__
@@ -14,7 +15,7 @@ class _Redirects(urllib.request.HTTPRedirectHandler):
     def __init__(self, hosts: list[str]) -> None:
         self.hosts = hosts
 
-    def redirect_request(self, req, fp, code, msg, headers, newurl):
+    def redirect_request(self, req: urllib.request.Request, fp: Any, code: int, msg: str, headers: Any, newurl: str) -> Optional[urllib.request.Request]:
         u = urlparse(newurl)
         if u.scheme != "https" or u.hostname not in self.hosts:
             raise FeedError(f"redirect to {u.scheme}://{u.hostname} refused (https to a configured host only)")
@@ -27,7 +28,7 @@ def http_get(url: str, hosts: list[str]) -> bytes:
     if u.scheme != "https" or u.hostname not in hosts:
         raise FeedError(f"{u.scheme}://{u.hostname}: https to a configured host only")
     opener = urllib.request.build_opener(_Redirects(hosts))
-    req = urllib.request.Request(url, headers={"User-Agent": f"beyond90-feeds/{__version__}", "Accept": "application/json, application/xml, text/xml, */*;q=0.5"})
+    req = urllib.request.Request(url, headers={"User-Agent": f"beyond90-feeds/{__version__}", "Accept": "application/json, application/xml, text/xml, */*;q=0.5"})  # noqa: S310 - https to a configured host, checked above
     try:
         with opener.open(req, timeout=TIMEOUT) as resp:
             body: bytes = resp.read(MAX_BYTES + 1)

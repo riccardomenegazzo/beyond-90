@@ -24,26 +24,26 @@ def test_already_at_zero_reports_the_risk_of_breaking_it():
 
 
 def test_open_criticals_with_a_known_pace_reach_zero_soon():
-    f = forecast_zero_critical(data(findings=HISTORY + [crit("o", 1)]), runs=500)
+    f = forecast_zero_critical(data(findings=[*HISTORY, crit("o", 1)]), runs=500)
     assert f["state"] == "open" and f["p50_days"] is not None and f["p50_days"] <= 30
     z = f["p_zero_within"]
     assert z["30"] <= z["60"] <= z["90"]
 
 
 def test_findings_older_than_any_closure_are_counted_and_slow_the_forecast():
-    fresh = forecast_zero_critical(data(findings=HISTORY + [crit("o", 1)]), runs=500)
-    stuck = forecast_zero_critical(data(findings=HISTORY + [crit("o", 200)]), runs=500)
+    fresh = forecast_zero_critical(data(findings=[*HISTORY, crit("o", 1)]), runs=500)
+    stuck = forecast_zero_critical(data(findings=[*HISTORY, crit("o", 200)]), runs=500)
     assert stuck["stuck_beyond_history"] == 1 and fresh["stuck_beyond_history"] == 0
     assert (stuck["p50_days"] or 10**6) > (fresh["p50_days"] or 0)
     assert "likely to stay open" in render_forecast(stuck)
 
 
 def test_deterministic_for_a_seed_and_different_across_seeds():
-    d = data(findings=HISTORY + [crit("o", 30), crit("p", 5)])
+    d = data(findings=[*HISTORY, crit("o", 30), crit("p", 5)])
     assert forecast_zero_critical(d, runs=400, seed=1) == forecast_zero_critical(d, runs=400, seed=1)
     assert forecast_zero_critical(d, runs=400, seed=1) != forecast_zero_critical(d, runs=400, seed=2)
 
 
 def test_false_positives_do_not_count_as_open_criticals():
-    d = data(findings=HISTORY + [crit("fp", 60, owner="o", decision="false_positive")])
+    d = data(findings=[*HISTORY, crit("fp", 60, owner="o", decision="false_positive")])
     assert forecast_zero_critical(d)["state"] == "zero"

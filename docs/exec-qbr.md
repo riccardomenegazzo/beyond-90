@@ -10,6 +10,8 @@ Every analysis of a customer is added to that customer's history in the browser 
 
 In **Executive QBR**, pick a quarter (or custom dates) and build. The period is compared with the last snapshot saved before it began; if there is none, with the first one inside it. The page says which snapshots it will use before you build.
 
+![Executive QBR](img/app-execqbr.png)
+
 The review has six parts, one printed page each:
 
 1. **Cover and the minute that matters.** Effective coverage, coverage weighted by spend and exposure, critical findings open, accounts connected, each with its change; three or four sentences that say the quarter.

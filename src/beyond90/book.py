@@ -17,7 +17,7 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
 from html import escape as e
-from typing import Optional
+from typing import Any, Optional
 
 from .catalogue import Catalogue
 from .models import CustomerData
@@ -39,7 +39,7 @@ class BookCustomer:
     hours: float = 0.0
     hours_share: float = 0.0
     jobs: int = 0
-    dips: list[dict] = field(default_factory=list)
+    dips: list[dict[str, Any]] = field(default_factory=list[Any])
     residual: dict[str, int] = field(default_factory=dict)
 
 
@@ -80,7 +80,7 @@ class BookPlan:
     def weighted_end(self) -> float:
         return self.weeks[-1].weighted_yield
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
 
@@ -171,7 +171,7 @@ def build_book_plan(
     base: dict[str, float] = {}
     if baselines and len(customers) > 1:
         n_cust = len(customers)
-        splits = {"equal_split": {n: 1.0 / n_cust for n in names}, "arr_proportional": _weights(customers, "arr")}
+        splits = {"equal_split": dict.fromkeys(names, 1.0 / n_cust), "arr_proportional": _weights(customers, "arr")}
         for label, share in splits.items():
             alone = {n: build_plan(d, cat, hours_per_week=max(hours_per_week * share[n], 0.25), horizon_weeks=horizon_weeks,
                                    realization=realization, ramp=ramp) for n, d in customers}
@@ -221,8 +221,8 @@ def render_book_text(b: BookPlan, top: int = 12) -> str:
 
 
 def render_book_markdown(b: BookPlan, top: int = 15) -> str:
-    L = ["# Book plan", "", f"{b.hours_per_week:g} hours a week for {b.horizon_weeks} weeks across {_customers(len(b.customers))} "
-         f"({b.weighting}-weighted, {b.realization:.0%} of each action assumed to succeed).", "",
+    L = ["# Book plan", "", (f"{b.hours_per_week:g} hours a week for {b.horizon_weeks} weeks across {_customers(len(b.customers))} "
+         f"({b.weighting}-weighted, {b.realization:.0%} of each action assumed to succeed)."), "",
          f"**Weighted Yield {_pct(b.weighted_start)} to {_pct(b.weighted_end)}.**", ""]
     if b.baselines:
         L += ["| Allocation rule | Weighted Yield at the horizon |", "|---|---|", f"| Exact gain per hour (this plan) | **{_pct(b.weighted_end)}** |"]

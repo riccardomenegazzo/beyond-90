@@ -23,36 +23,36 @@ OWNERS = ["platform", "retail-it", "data", "payments", "bu-retail", "ml-research
 
 # Probability that a relevant module is active, per customer profile.
 PROFILES = {
-    "northwind": dict(
-        tier="enterprise", arr=480000, seed=42,
-        providers={"aws": 66, "azure": 37, "gcp": 22}, detect={"billing": 0.80, "org": 0.70, "sso": 0.50}, plan=100, plan_unconnected=8, extra_unconnected=4, recent_unconnected=3,
-        registry_missing=0.30, other_inventory_miss=0.004,
-        module_p={"posture": 1.0, "vulnerability_scanning": 0.99, "identity_analysis": 0.98, "data_security": 0.97, "container_security": 0.95,
+    "northwind": {
+        "tier": "enterprise", "arr": 480000, "seed": 42,
+        "providers": {"aws": 66, "azure": 37, "gcp": 22}, "detect": {"billing": 0.80, "org": 0.70, "sso": 0.50}, "plan": 100, "plan_unconnected": 8, "extra_unconnected": 4, "recent_unconnected": 3,
+        "registry_missing": 0.30, "other_inventory_miss": 0.004,
+        "module_p": {"posture": 1.0, "vulnerability_scanning": 0.99, "identity_analysis": 0.98, "data_security": 0.97, "container_security": 0.95,
                   "runtime_sensor": 0.90, "cloud_detection": 0.99, "code_scanning": 0.95, "ai_posture": 0.80, "attack_surface": 0.75, "workflow_automation": 0.70},
-        findings=260, p_unowned=0.06, p_nodecision=0.02, p_acc_noexp=0.015, p_acc_exp=0.01, critical_open=11,
-        teams=(14, 9, 11, 10, 7),
-        entitlements={"workloads": (2000, 1650), "sensors": (1000, 540), "code_seats": (300, 180), "defend_gb": (3000, 2100)},
-    ),
-    "contoso-bank": dict(
-        tier="strategic", arr=1250000, seed=7,
-        providers={"aws": 124, "azure": 82, "gcp": 16}, detect={"billing": 0.92, "org": 0.88, "sso": 0.75}, plan=210, plan_unconnected=3, extra_unconnected=2, recent_unconnected=1,
-        registry_missing=0.05, other_inventory_miss=0.0,
-        module_p={"posture": 1.0, "vulnerability_scanning": 1.0, "identity_analysis": 1.0, "data_security": 0.99, "container_security": 0.99,
+        "findings": 260, "p_unowned": 0.06, "p_nodecision": 0.02, "p_acc_noexp": 0.015, "p_acc_exp": 0.01, "critical_open": 11,
+        "teams": (14, 9, 11, 10, 7),
+        "entitlements": {"workloads": (2000, 1650), "sensors": (1000, 540), "code_seats": (300, 180), "defend_gb": (3000, 2100)},
+    },
+    "contoso-bank": {
+        "tier": "strategic", "arr": 1250000, "seed": 7,
+        "providers": {"aws": 124, "azure": 82, "gcp": 16}, "detect": {"billing": 0.92, "org": 0.88, "sso": 0.75}, "plan": 210, "plan_unconnected": 3, "extra_unconnected": 2, "recent_unconnected": 1,
+        "registry_missing": 0.05, "other_inventory_miss": 0.0,
+        "module_p": {"posture": 1.0, "vulnerability_scanning": 1.0, "identity_analysis": 1.0, "data_security": 0.99, "container_security": 0.99,
                   "runtime_sensor": 0.97, "cloud_detection": 1.0, "code_scanning": 0.98, "ai_posture": 0.95, "attack_surface": 0.90, "workflow_automation": 0.85},
-        findings=420, p_unowned=0.015, p_nodecision=0.01, p_acc_noexp=0.005, p_acc_exp=0.005, critical_open=0,
-        teams=(30, 28, 30, 27, 26),
-        entitlements={"workloads": (6000, 5400), "sensors": (3000, 2700), "code_seats": (900, 810), "defend_gb": (9000, 7900)},
-    ),
-    "fabrikam-labs": dict(
-        tier="growth", arr=96000, seed=21,
-        providers={"aws": 20, "gcp": 11}, detect={"billing": 0.70, "org": 0.55, "sso": 0.35}, plan=20, plan_unconnected=2, extra_unconnected=3, recent_unconnected=2,
-        registry_missing=0.45, other_inventory_miss=0.01,
-        module_p={"posture": 1.0, "vulnerability_scanning": 0.9, "identity_analysis": 0.8, "data_security": 0.7, "container_security": 0.85,
+        "findings": 420, "p_unowned": 0.015, "p_nodecision": 0.01, "p_acc_noexp": 0.005, "p_acc_exp": 0.005, "critical_open": 0,
+        "teams": (30, 28, 30, 27, 26),
+        "entitlements": {"workloads": (6000, 5400), "sensors": (3000, 2700), "code_seats": (900, 810), "defend_gb": (9000, 7900)},
+    },
+    "fabrikam-labs": {
+        "tier": "growth", "arr": 96000, "seed": 21,
+        "providers": {"aws": 20, "gcp": 11}, "detect": {"billing": 0.70, "org": 0.55, "sso": 0.35}, "plan": 20, "plan_unconnected": 2, "extra_unconnected": 3, "recent_unconnected": 2,
+        "registry_missing": 0.45, "other_inventory_miss": 0.01,
+        "module_p": {"posture": 1.0, "vulnerability_scanning": 0.9, "identity_analysis": 0.8, "data_security": 0.7, "container_security": 0.85,
                   "runtime_sensor": 0.5, "cloud_detection": 0.9, "code_scanning": 0.6, "ai_posture": 0.4, "attack_surface": 0.3, "workflow_automation": 0.2},
-        findings=70, p_unowned=0.18, p_nodecision=0.05, p_acc_noexp=0.04, p_acc_exp=0.02, critical_open=4,
-        teams=(6, 3, 3, 2, 1),
-        entitlements={"workloads": (300, 190), "sensors": (100, 35), "code_seats": (50, 18), "defend_gb": (150, 60)},
-    ),
+        "findings": 70, "p_unowned": 0.18, "p_nodecision": 0.05, "p_acc_noexp": 0.04, "p_acc_exp": 0.02, "critical_open": 4,
+        "teams": (6, 3, 3, 2, 1),
+        "entitlements": {"workloads": (300, 190), "sensors": (100, 35), "code_seats": (50, 18), "defend_gb": (150, 60)},
+    },
 }
 
 SLA = {"critical": 7, "high": 30, "medium": 90, "low": 180}
@@ -323,7 +323,7 @@ def build(name: str, p: dict) -> None:
         fid += 1
         opened = AS_OF - timedelta(days=age)
         closed = opened + timedelta(days=closed_after) if closed_after is not None else None
-        base = dict(owner="", decision="", reason="", expiry="", prev="", changed="")
+        base = {"owner": "", "decision": "", "reason": "", "expiry": "", "prev": "", "changed": ""}
         base.update(kw)
         rows.append([f"F-{fid:05d}", rng.choice(connected_ids), severity, exposure, opened.isoformat(),
                      closed.isoformat() if closed else "", base["owner"], base["decision"], base["reason"], base["expiry"], base["prev"], base["changed"]])
@@ -350,7 +350,7 @@ def build(name: str, p: dict) -> None:
                     expiry=(AS_OF - timedelta(days=rng.randint(5, 60))).isoformat())
         else:
             dec = rng.choices(["fix", "accepted_risk", "exception", "false_positive"], [0.62, 0.14, 0.12, 0.12])[0]
-            kw = dict(owner=owner, decision=dec)
+            kw = {"owner": owner, "decision": dec}
             if dec == "accepted_risk":
                 kw.update(reason="business exception", expiry=(AS_OF + timedelta(days=rng.randint(30, 180))).isoformat())
             finding(severity, exposure, age, **kw)

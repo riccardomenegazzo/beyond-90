@@ -120,7 +120,7 @@ def analyze(
         "report_markdown": render_markdown(score, actions, None, previous, **extras),
         "qbr_markdown": render_qbr(score, actions, previous, quarter, **extras),
         "success_plan_markdown": render_success_plan(score, actions, plan),
-        "roadmap_markdown": "\n".join([f"# Roadmap: {plan.customer}", ""] + md_plan(plan, top=12)),
+        "roadmap_markdown": "\n".join([f"# Roadmap: {plan.customer}", "", *md_plan(plan, top=12)]),
         "score_json": render_json(score, actions, None),
         "summary": {k: summary[k] for k in summary if k in ("customer", "as_of", "yield", "stages")},
     }
@@ -372,7 +372,8 @@ def exec_qbr_files(snapshots: list[Mapping[str, str]], start: str = "", end: str
     if len(snapshots) > 200:
         return {"ok": False, "errors": ["At most 200 snapshots per review."], "version": __version__}
     with tempfile.TemporaryDirectory() as tmp:
-        datas, cat = [], None
+        datas: list[Any] = []
+        cat: Optional[Catalogue] = None
         try:
             for i, files in enumerate(snapshots):
                 root = Path(tmp) / f"s{i}"
@@ -383,7 +384,8 @@ def exec_qbr_files(snapshots: list[Mapping[str, str]], start: str = "", end: str
                     return {"ok": False, "errors": ["The snapshots use different catalogues."], "version": __version__}
                 cat = c
                 datas.append(load_customer(root, c, require_accounts=True)[0])
-            assert cat is not None
+            if cat is None:
+                return {"ok": False, "errors": ["No snapshot could be read."], "version": __version__}
             threats = parse_threats(advisories, cat, "the advisories", []) if advisories else []
             q = execqbr.build(datas, cat, start=_date.fromisoformat(start) if start else None, end=_date.fromisoformat(end) if end else None, threats=threats)
         except DataError as e:

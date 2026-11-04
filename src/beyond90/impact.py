@@ -80,7 +80,7 @@ def receipt(old: CustomerData, new: CustomerData, cat: Catalogue) -> dict[str, A
 
     remaining = []
     if s_new.stages["L1"].leaks:
-        un = [x for x in s_new.stages["L1"].leaks]
+        un = list(s_new.stages["L1"].leaks)
         remaining.append(f"{len(un)} account(s) are still not connected, holding {w_new['unconnected_spend_share']:.0%} of spend.")
     crit_open = sum(1 for f in new.findings if f.closed_at is None and f.severity == "critical")
     if crit_open:

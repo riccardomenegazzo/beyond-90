@@ -49,7 +49,7 @@ def forecast_zero_critical(data: CustomerData, *, runs: int = 2000, horizon_days
            "closed_samples": len(durations), "runs": runs, "seed": seed, "horizon_days": horizon_days}
     if not durations:
         return {**out, "available": False, "reason": "No closed critical findings to learn close times from."}
-    rng = random.Random(seed)
+    rng = random.Random(seed)  # noqa: S311 - a seeded simulation must be reproducible, not unpredictable
 
     if not open_:
         out.update(state="zero", p_new_critical_30d=round(1 - math.exp(-rate * 30), 3),
@@ -101,7 +101,7 @@ def forecast_zero_critical(data: CustomerData, *, runs: int = 2000, horizon_days
     return out
 
 
-def render_forecast(f: dict) -> str:
+def render_forecast(f: dict[str, Any]) -> str:
     if not f["available"]:
         return f"Zero-critical forecast: not available. {f['reason']}\n"
     if f["state"] == "zero":

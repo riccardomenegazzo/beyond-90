@@ -29,7 +29,7 @@ def test_a_healthy_account_has_nothing_to_confess():
 
 def test_legacy_figure_overstating_is_named_with_both_numbers():
     d = healthy()
-    d.accounts = [account("x", connected=False, in_plan=False)] + [a for a in d.accounts]
+    d.accounts = [account("x", connected=False, in_plan=False), *list(d.accounts)]
     d.accounts[0] = account("x", connected=False, in_plan=False)
     items = candor_items(compute_score(d, CAT), d, CAT)
     # the legacy metric counts only plan accounts (all connected = 100%) while the real figure is lower

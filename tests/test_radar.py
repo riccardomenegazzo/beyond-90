@@ -109,7 +109,7 @@ def test_renderers_and_the_example_feed():
         customers.append((dd.name, dd))
     threats = load_threats(FEED, CAT)
     rep = threat_radar(customers, threats, CAT, as_of=AS_OF)
-    assert [r.threat.severity for r in rep][0] == "critical"
+    assert next(r.threat.severity for r in rep) == "critical"
     rel = release_radar(customers, CAT, since_baseline=True)
     md, txt, js = render_radar_markdown(rel, rep), render_radar_text(rel, rep), json.loads(render_radar_json(rel, rep))
     assert "## Threats" in md and "Unknown means" in md and "MOCK-2026-001" in txt

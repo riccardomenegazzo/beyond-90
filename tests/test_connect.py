@@ -157,7 +157,7 @@ def test_transient_failures_are_retried_and_a_persistent_one_is_not_hidden(api, 
 def test_a_redirect_to_a_host_that_is_not_allowed_is_refused(api, tmp_path):
     api.routes["/tenants"] = lambda q, h: (302, {}, {"Location": "http://evil.example/steal"})
     cfg = cfg_for(tmp_path, config_text(api.base))
-    with pytest.raises(FetchError, match="not in allow_hosts|only https"):
+    with pytest.raises(FetchError, match=r"not in allow_hosts|only https"):
         fetch_source(cfg.sources[0], cfg, env=ENV)
 
 

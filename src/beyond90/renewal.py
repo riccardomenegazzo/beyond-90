@@ -25,7 +25,7 @@ def _signal(id: str, label: str, status: str, detail: str) -> dict[str, str]:
     return {"id": id, "label": label, "status": status, "detail": detail}
 
 
-def compute_renewal(data: CustomerData, score: Any, previous: Optional[dict] = None) -> Optional[dict[str, Any]]:
+def compute_renewal(data: CustomerData, score: Any, previous: Optional[dict[str, Any]] = None) -> Optional[dict[str, Any]]:
     if data.renewal_date is None:
         return None
     days = (data.renewal_date - data.as_of).days

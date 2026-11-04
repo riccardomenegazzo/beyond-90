@@ -163,6 +163,12 @@ def main(site: str) -> int:
             check(needle in shown or tab == "json", f"tab {tab}")
         page.click("[data-tab=report]")
 
+        framed = browser.new_page()
+        framed.set_content(f'<iframe src="{base}" width="900" height="600" title="framed"></iframe>')
+        framed.wait_for_timeout(8000)                      # far longer than the engine needs to start at the top level
+        check(framed.frame_locator("iframe").locator("#demo[disabled]").count() == 1, "inside another page's frame the app refuses to run")
+        framed.close()
+
         # privacy self-check: neither the page nor the worker can reach another origin
         page.click("#selfcheck")
         page.wait_for_selector("#selfcheck-out:has-text('engine')", timeout=30_000)
@@ -237,6 +243,7 @@ def main(site: str) -> int:
         d.value.save_as(exported)
         doc = json.loads(exported.read_text())
         check(doc["format"] == "beyond90-workspace" and len(doc["snapshots"]) == 2, "export is a versioned workspace file")
+        check("unencrypted" in page.inner_text("#vault-warn"), "unprotected customer data is called out")
         page.once("dialog", lambda dlg: dlg.accept())
         page.click("#forget")
         page.wait_for_selector("#history-empty:not([hidden])")
@@ -357,6 +364,7 @@ def main(site: str) -> int:
         page.fill("#vault-pass2", "correct horse battery staple")
         page.click("#vault-go")
         page.wait_for_selector("#vault-state:has-text('unlocked')", timeout=60_000)
+        check(page.locator("#vault-warn").is_hidden(), "the warning goes once the data is sealed")
         raw = page.evaluate("""() => new Promise((res) => { const r = indexedDB.open('beyond90'); r.onsuccess = () => {
             const q = r.result.transaction('snapshots').objectStore('snapshots').getAll(); q.onsuccess = () => res(JSON.stringify(q.result)); }; })""")
         check("Northwind" not in raw and "accounts.csv" not in raw and "sealed" in raw, "sealed snapshots hold nothing readable")
@@ -373,6 +381,25 @@ def main(site: str) -> int:
         page.click("#vault-go")
         page.wait_for_selector("#vault-state:has-text('unlocked')", timeout=60_000)
         check(page.locator("#hist-table tbody tr").count() >= 1, "the right passphrase brings the snapshots back")
+        with page.expect_download() as d:
+            page.click("#export")
+        sealed_file = Path(tmp) / "sealed.json"
+        d.value.save_as(sealed_file)
+        sealed_text = sealed_file.read_text()
+        check(json.loads(sealed_text)["format"] == "beyond90-sealed-workspace" and "Northwind" not in sealed_text and "accounts.csv" not in sealed_text,
+              "with a passphrase, an exported workspace is sealed too")
+        rows_before = page.locator("#hist-table tbody tr").count()
+        page.set_input_files("#import", str(sealed_file))
+        page.wait_for_selector("#vault-title:has-text('sealed workspace')")
+        page.fill("#vault-pass", "not the passphrase")
+        page.click("#vault-go")
+        page.wait_for_selector("#ws-status:has-text('not the passphrase')", timeout=30_000)
+        page.set_input_files("#import", str(sealed_file))
+        page.wait_for_selector("#vault-title:has-text('sealed workspace')")
+        page.fill("#vault-pass", "correct horse battery staple")
+        page.click("#vault-go")
+        page.wait_for_selector("#ws-status:has-text('already here')", timeout=60_000)
+        check(page.locator("#hist-table tbody tr").count() == rows_before, "a sealed workspace opens only with its passphrase")
         page.click("#vault-lock")
         page.wait_for_selector("#vault-unlock:not([hidden])")
         check(page.locator("#hist-table tbody tr").count() == 0, "locking hides them again")

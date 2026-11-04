@@ -116,7 +116,7 @@ def _notify(cfg: Config, message: str, alerts: list[dict[str, str]], payload: di
     try:
         check_url(url, cfg.allow_hosts)
         body = json.dumps({"text": message} if n.get("format", "slack") == "slack" else payload).encode("utf-8")
-        req = urllib.request.Request(url, data=body, headers={"Content-Type": "application/json"}, method="POST")
+        req = urllib.request.Request(url, data=body, headers={"Content-Type": "application/json"}, method="POST")  # noqa: S310 - check_url allows https only
         with (opener or urllib.request.build_opener()).open(req, timeout=cfg.timeout_seconds) as resp:
             resp.read(1024)
         return "sent"
@@ -196,8 +196,8 @@ def run(cfg: Config, as_of: Optional[date] = None, *, now: Optional[datetime] = 
         try:
             return _run(cfg, as_of, now, env, sleep, opener, notify)
         except OSError as e:
-            raise PipelineError([f"could not read or write the state directory {cfg.state_dir}: {e.strerror or type(e).__name__}"
-                                 f"{' (' + e.filename + ')' if e.filename else ''}. Check permissions and free disk space."]) from e
+            raise PipelineError([(f"could not read or write the state directory {cfg.state_dir}: {e.strerror or type(e).__name__}"
+                                 f"{' (' + e.filename + ')' if e.filename else ''}. Check permissions and free disk space.")]) from e
 
 
 def _run(cfg: Config, as_of: date, now: datetime, env: Mapping[str, str], sleep: Callable[[float], None],

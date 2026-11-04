@@ -136,7 +136,7 @@ beyond90 explain acme --store history.db   # what changed since the last stored 
 - [SPEC.md](SPEC.md): formulas and rules; the contract for the code
 - [docs/data-format.md](docs/data-format.md): input files
 - [docs/profiles.md](docs/profiles.md): one engine for any security product (cloud, endpoint, and how to map others)
-- [docs/research/](docs/research/): the research behind the design, including a case study of one vendor's TAM motion
+- [docs/research/](docs/research/): the research behind the design
 - [docs/architecture.md](docs/architecture.md): how the data is treated (system of record, snapshots, compatibility, sync)
 - [docs/exec-qbr.md](docs/exec-qbr.md): the customer's history kept automatically, and an executive QBR built from it for any quarter
 - [docs/news.md](docs/news.md): the daily cloud security news, merged, ranked and matched to each customer, with a briefing to send

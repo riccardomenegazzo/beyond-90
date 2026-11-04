@@ -251,7 +251,7 @@ def waves(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Group the blocked accounts by cause. A cause fixed once at the organization level unblocks every account it holds back."""
     groups: dict[tuple[str, str], list[dict[str, Any]]] = {}
     for r in rows:
-        if r["issue"] and r["stage"] != "complete" or r["issue"] in ("regions_partial", "stale") or (r["issue"] and r["issue"].startswith("aws_kms")):
+        if (r["issue"] and r["stage"] != "complete") or r["issue"] in ("regions_partial", "stale") or (r["issue"] and r["issue"].startswith("aws_kms")):
             key = (r["issue"], r["provider"] if r["issue"] == "not_deployed" else "")
             groups.setdefault(key, []).append(r)
     out = []
@@ -279,7 +279,7 @@ def _stats(values: list[int]) -> dict[str, Any]:
     v = sorted(x for x in values if x is not None and x >= 0)
     if not v:
         return {"n": 0, "median": None, "p90": None}
-    return {"n": len(v), "median": median(v), "p90": v[min(len(v) - 1, int(round(0.9 * (len(v) - 1))))]}
+    return {"n": len(v), "median": median(v), "p90": v[min(len(v) - 1, round(0.9 * (len(v) - 1)))]}
 
 
 def diagnose(data: CustomerData) -> dict[str, Any]:
@@ -345,9 +345,6 @@ def render_markdown(d: dict[str, Any], customer: str, units: str = "accounts") -
 
 
 # ----------------------------------------------------------------------------- pre-flight
-
-PREFLIGHT_KEYS = ("providers", "org", "kubernetes", "sensor", "cmk", "guardrails", "private_clusters", "pod_security", "proxy")
-
 
 def preflight(opts: dict[str, Any]) -> dict[str, Any]:
     """A checklist for the kickoff call, before any connector exists. Asks only what changes the plan."""
@@ -443,7 +440,7 @@ def delta(old: dict[str, Any], new: dict[str, Any], old_as_of: date, new_as_of: 
         forecast = {"state": "done"}
     elif per_week > 0:
         weeks = remaining / per_week
-        forecast = {"state": "on_track", "weeks": round(weeks, 1), "date": date.fromordinal(new_as_of.toordinal() + int(round(weeks * 7))).isoformat()}
+        forecast = {"state": "on_track", "weeks": round(weeks, 1), "date": date.fromordinal(new_as_of.toordinal() + round(weeks * 7)).isoformat()}
     else:
         forecast = {"state": "stalled"}
     return {"since": old_as_of.isoformat(), "days": days, "forward": forward, "back": back, "arrived": arrived, "finished": finished,

@@ -122,7 +122,7 @@ def test_decommissioned_units_are_not_a_surprise():
 
 def test_new_units_are_noted_with_the_profiles_word():
     old_accs = [account(f"a{i}") for i in range(5)]
-    new, old = two(old_accs, old_accs + [account("n1"), account("n2")])
+    new, old = two(old_accs, [*old_accs, account("n1"), account("n2")])
     text = input_drift(new, old, {"unit": "site", "units": "sites"})["items"][0]["text"]
     assert "2 site(s) are new" in text and "sites" in text
 
@@ -140,7 +140,7 @@ def test_open_findings_that_vanish_are_flagged_and_reopened_ones_noted():
     old_f = [finding(f"f{i}", opened_days_ago=40) for i in range(10)]
     new, old = two(accs, accs, old={"findings": old_f}, new={"findings": old_f[:6]})
     assert ids(input_drift(new, old))["vanished_findings"] == "warn"
-    moved = [finding("f0", opened_days_ago=10)] + old_f[1:]
+    moved = [finding("f0", opened_days_ago=10), *old_f[1:]]
     new2, old2 = two(accs, accs, old={"findings": old_f}, new={"findings": moved})
     assert ids(input_drift(new2, old2))["reopened"] == "note"
 

@@ -20,7 +20,7 @@ from beyond90.scoring import compute_score
 from test_properties import estate
 
 CAT = Catalogue.load()
-TOKENS = ["", " ", "NaN", "nan", "inf", "-inf", "-1", "0", "1e999", "-0", "９９", "٣", "2026-13-45", "0000-00-00", "9999-12-31", "1900-01-01", "true;false", "yes", "TRUE", "None",
+TOKENS = ["", " ", "NaN", "nan", "inf", "-inf", "-1", "0", "1e999", "-0", "\uff19\uff19", "\u0663", "2026-13-45", "0000-00-00", "9999-12-31", "1900-01-01", "true;false", "yes", "TRUE", "None",
           "null", "x" * 5000, "\x00", "a\x00b", "<script>alert(1)</script>", "=cmd|' /C calc'!A0", "‮", "a,b", 'a"b', "a\nb", "a\r\nb", "ß", "😀", "-", ";", "|", "0x10", "1_000", "1,5"]
 FILES = ["accounts.csv", "inventory.csv", "activations.csv", "findings.csv", "teams.csv", "interactions.csv", "connectors.csv", "customer.toml"]
 
@@ -107,4 +107,4 @@ def test_no_mutation_of_the_inputs_can_crash_the_engine(tmp_path, seed):
     plan = build_plan(data, CAT, hours_per_week=8, horizon_weeks=4)
     assert math.isfinite(plan.end_yield)
     for text in (render_markdown(score, actions, plan=plan), render_html(score, actions, plan=plan), render_qbr(score, actions, None, "", plan=plan)):
-        assert isinstance(text, str) and "nan" not in text.lower().replace("finance", "").replace("banana", "") or True
+        assert (isinstance(text, str) and "nan" not in text.lower().replace("finance", "").replace("banana", "")) or True
