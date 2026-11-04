@@ -221,3 +221,16 @@ def test_the_exploited_catalogue_keeps_cloud_workload_software_and_says_what_it_
     st = next(s for s in feed["sources"] if s["id"] == "kev")
     assert st["dropped"]["not_cloud"] == 1 and st["dropped"]["old"] == 1 and st["newest"] == "2026-10-31"
     assert next(s for s in feed["sources"] if s["id"] == "k8s")["dropped"]["old"] == 1
+
+
+def test_the_cap_applies_after_the_cloud_filter(monkeypatch):
+    """A general source with many newer non-cloud items must not crowd out its older cloud ones."""
+    items = "".join(f"<item><title>Desktop component issue {i} (mock)</title><pubDate>Sat, 31 Oct 2026 0{i % 10}:00:00 GMT</pubDate></item>" for i in range(30))
+    items += "<item><title>Azure Kubernetes Service node escape (mock)</title><pubDate>Mon, 05 Oct 2026 10:00:00 GMT</pubDate></item>"
+    body = f"<rss><channel>{items}</channel></rss>".encode()
+    monkeypatch.setattr(feeds, "PER_SOURCE", 5)
+    cfg = {"sources": [{"id": "g", "name": "General", "url": "https://g.example/rss", "kind": "xml"}], "epss": ""}
+    f = feeds.collect(cfg, cat=CAT, today=TODAY, fetch=lambda url, hosts: body)
+    assert [e["title"] for e in f["threats"]] == ["Azure Kubernetes Service node escape (mock)"]
+    st = f["sources"][0]
+    assert st["kept"] == 1 and st["dropped"]["not_cloud"] == 30 and st["dropped"]["over_cap"] == 0

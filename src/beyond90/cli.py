@@ -839,7 +839,7 @@ def build_parser() -> argparse.ArgumentParser:
     sp = sub.add_parser("feeds", help="read public cloud security sources into an advisory feed matched by every other command")
     sp.add_argument("--sources", help="a JSON file of sources (default: the public sources in data/feeds.json)")
     sp.add_argument("--previous", help="the last feed, to keep the date each story was first seen")
-    sp.add_argument("--days", type=int, help="how far back to keep items (default 30)")
+    sp.add_argument("--days", type=int, help="how far back to keep items (default 60)")
     sp.add_argument("--format", choices=["json", "markdown"], default="json")
     sp.add_argument("--out")
     sp.set_defaults(func=cmd_feeds)

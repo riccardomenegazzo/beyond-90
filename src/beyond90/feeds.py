@@ -40,7 +40,7 @@ from .catalogue import Catalogue
 MAX_BYTES = 16 * 1024 * 1024
 TIMEOUT = 25.0
 PER_SOURCE = 300
-PARSE_CAP = 5000
+PARSE_CAP = 20000
 TOTAL = 400
 CVE = re.compile(r"\bCVE-\d{4}-\d{4,7}\b", re.I)
 KINDS = ("jsonfeed", "xml", "kev")
@@ -310,7 +310,7 @@ def collect(cfg: Optional[dict[str, Any]] = None, *, cat: Catalogue, today: Opti
     cfg = cfg or default_config()
     sources = check_config(cfg)
     today = today or datetime.now(UTC).date()
-    window = int(cfg.get("window_days", 30))
+    window = int(cfg.get("window_days", 60))
     since = today - timedelta(days=max(1, min(window, 365)))
     hosts = sorted({urlparse(s["url"]).hostname or "" for s in sources} | {urlparse(str(cfg.get("epss", ""))).hostname or ""} - {""})
     get = fetch or http_get
@@ -337,12 +337,12 @@ def collect(cfg: Optional[dict[str, Any]] = None, *, cat: Catalogue, today: Opti
                 st["dropped"]["old"] += 1
                 continue
             dated.append((pub, it))
-        dated.sort(key=lambda x: x[0], reverse=True)               # feeds differ in order; keep the newest
-        st["dropped"]["over_cap"] = max(0, len(dated) - PER_SOURCE)
-        for pub, it in dated[:PER_SOURCE]:
+        kept: list[dict[str, Any]] = []
+        for pub, it in dated:
             title = plain(it.get("title"), 240)
             text = plain(it.get("text"))
             if not title:
+                st["dropped"]["undated"] += 1
                 continue
             blob = f"{title} {text} {it.get('product', '')}"
             c = clf.classify(blob)
@@ -355,10 +355,13 @@ def collect(cfg: Optional[dict[str, Any]] = None, *, cat: Catalogue, today: Opti
                 st["dropped"]["not_cloud"] += 1
                 continue                                            # a general source: only what names something cloud
             cves = sorted({x.upper() for x in CVE.findall(f"{it.get('guid', '')} {title} {text}")})[:20]
-            raw.append({"title": title, "url": safe_link(it.get("url")), "published": pub, "summary": plain(it.get("text"), 320),
-                        "cves": cves, "providers": providers, "match": match, "types": types, "kinds": c["kinds"], "severity": c["severity"], "severity_why": c["severity_why"],
-                        "kev": bool(it.get("kev")), "kev_due": it.get("kev_due", ""), "ransomware": bool(it.get("ransomware")), "source": s["name"], "source_id": s["id"]})
-            st["kept"] += 1
+            kept.append({"title": title, "url": safe_link(it.get("url")), "published": pub, "summary": plain(it.get("text"), 320),
+                         "cves": cves, "providers": providers, "match": match, "types": types, "kinds": c["kinds"], "severity": c["severity"], "severity_why": c["severity_why"],
+                         "kev": bool(it.get("kev")), "kev_due": it.get("kev_due", ""), "ransomware": bool(it.get("ransomware")), "source": s["name"], "source_id": s["id"]})
+        kept.sort(key=lambda r: r["published"], reverse=True)       # feeds differ in order; the cap keeps the newest cloud items
+        st["dropped"]["over_cap"] = max(0, len(kept) - PER_SOURCE)
+        raw.extend(kept[:PER_SOURCE])
+        st["kept"] = min(len(kept), PER_SOURCE)
         report.append(st)
 
     stories = _merge(raw)
