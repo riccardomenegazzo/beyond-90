@@ -31,6 +31,7 @@ const ops = {
   workbook: (a) => call("w.workbook_json(_a, _b)", String(a.name || "workbook.xlsx"), String(a.data || "")),
   mapsuggest: (a) => call("w.mapping_suggest_json(_a, _b)", String(a.text || ""), JSON.stringify({ target: a.target || "", hint: a.hint || "" })),
   mapconvert: (a) => call("w.mapping_convert_json(_a)", JSON.stringify({ text: a.text || "", target: a.target || "", mapping: a.mapping || {}, defaults: a.defaults || {} })),
+  calibrate: (a) => call("w.calibrate_json(_a)", JSON.stringify(a.outcomes || [])),
   fingerprint: (a) => call("w.fingerprint_json(_a)", JSON.stringify(a.files)),
   execqbr: (a) => call("w.exec_qbr_json(_a)", JSON.stringify({ snapshots: a.snapshots || [], from: a.from || "", to: a.to || "", advisories: a.advisories || null })),
   probe: async () => {

@@ -34,7 +34,7 @@ def build(out: Path, pyodide: Path, feed: Optional[Path] = None, font: Path = FO
     if out.exists():
         shutil.rmtree(out)
     out.mkdir(parents=True)
-    for name in ("index.html", "app.js", "style.css", "engine.js", "store.js", "workspace-core.js", "worker.js", "ui.js", "charts.js", "views.js", "vault.js", "recap.js", "guide.js", "graph.js", "qr.js", "starter.js"):
+    for name in ("index.html", "app.js", "style.css", "engine.js", "store.js", "workspace-core.js", "worker.js", "ui.js", "charts.js", "views.js", "vault.js", "recap.js", "guide.js", "graph.js", "qr.js", "starter.js", "outcomes.js", "callmode.js"):
         shutil.copy(ROOT / "site" / name, out / name)
     # The engine: the package and its data, nothing else, in a fixed order so builds are reproducible.
     with zipfile.ZipFile(out / "beyond90.zip", "w", zipfile.ZIP_DEFLATED) as z:

@@ -15,6 +15,7 @@ good news, and the band follows the weakest part, so a good average never hides 
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from typing import Any, Optional
 
 from .models import CustomerData
@@ -66,6 +67,17 @@ def _trajectory(look: Optional[dict[str, Any]]) -> tuple[Optional[float], str]:
                                        else f"If nothing is done, coverage loses {lost:.1f} points in the next 90 days.")
 
 
+def resolve_weights(custom: Optional[Mapping[str, Any]]) -> tuple[dict[str, float], str]:
+    """The weights to use and where they came from. Anything that is not a complete set of positive numbers is ignored."""
+    if not isinstance(custom, Mapping) or set(custom) != set(WEIGHTS):
+        return dict(WEIGHTS), "default"
+    vals = {k: custom[k] for k in WEIGHTS}
+    if not all(isinstance(v, (int, float)) and not isinstance(v, bool) and v > 0 and v == v and v < 1e6 for v in vals.values()):
+        return dict(WEIGHTS), "default"
+    total = float(sum(vals.values()))
+    return {k: float(v) / total for k, v in vals.items()}, "calibrated"
+
+
 def _band(score: float, weakest: float) -> str:
     by_score = "healthy" if score >= HEALTHY else "watch" if score >= WATCH else "at risk"
     by_weak = "at risk" if weakest < WEAK_RISK else "watch" if weakest < WEAK_WATCH else "healthy"
@@ -73,7 +85,9 @@ def _band(score: float, weakest: float) -> str:
     return order[max(order.index(by_score), order.index(by_weak))]
 
 
-def compute(score: Any, data: CustomerData, renewal: Optional[dict[str, Any]], look: Optional[dict[str, Any]], weighted: Optional[dict[str, Any]]) -> dict[str, Any]:
+def compute(score: Any, data: CustomerData, renewal: Optional[dict[str, Any]], look: Optional[dict[str, Any]], weighted: Optional[dict[str, Any]],
+            weights: Optional[Mapping[str, Any]] = None) -> dict[str, Any]:
+    w, source = resolve_weights(weights)
     parts = {
         "adoption": _adoption(score, weighted),
         "outcomes": _outcomes(data),
@@ -81,14 +95,14 @@ def compute(score: Any, data: CustomerData, renewal: Optional[dict[str, Any]], l
         "trajectory": _trajectory(look),
     }
     measured = {k: v for k, (v, _) in parts.items() if v is not None}
-    total = sum(WEIGHTS[k] for k in measured)
+    total = sum(w[k] for k in measured)
     components = [{
-        "id": k, "label": LABELS[k], "weight": WEIGHTS[k], "value": round(measured[k]) if k in measured else None,
-        "share": round(WEIGHTS[k] / total, 3) if k in measured and total else 0.0, "reason": parts[k][1],
+        "id": k, "label": LABELS[k], "weight": round(w[k], 3), "value": round(measured[k]) if k in measured else None,
+        "share": round(w[k] / total, 3) if k in measured and total else 0.0, "reason": parts[k][1],
     } for k in WEIGHTS]
     if not measured:
-        return {"score": None, "band": "not measured", "measured": 0, "of": len(WEIGHTS), "components": components, "weakest": None, "note": NOTE}
-    value = sum(measured[k] * WEIGHTS[k] for k in measured) / total
+        return {"score": None, "band": "not measured", "measured": 0, "of": len(WEIGHTS), "components": components, "weakest": None, "note": NOTE, "weights": source}
+    value = sum(measured[k] * w[k] for k in measured) / total
     weakest = min(measured, key=lambda k: measured[k])
     return {"score": round(value), "band": _band(value, measured[weakest]), "measured": len(measured), "of": len(WEIGHTS),
-            "components": components, "weakest": weakest, "note": NOTE}
+            "components": components, "weakest": weakest, "note": NOTE, "weights": source}

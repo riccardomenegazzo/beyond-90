@@ -49,6 +49,7 @@ def analyze(
     quarter: str = "",
     since: str | None = None,
     advisories: Any = None,
+    health_weights: Any = None,
 ) -> dict[str, Any]:
     """Score one customer directory and return every output as text.
 
@@ -87,7 +88,7 @@ def analyze(
     onb = onboarding.diagnose(data)
     look = outlook.outlook(data, cat)
     weighted = stake.weighted(data, score, cat)
-    healthy = health.compute(score, data, extras.get("renewal"), look, weighted)
+    healthy = health.compute(score, data, extras.get("renewal"), look, weighted, health_weights)
     value = impact.maybe(old, data, cat)
     graph = correlate.build(data, cat, onb, exposures)
     if old is not None:
@@ -357,6 +358,14 @@ def workbook_json(name: str, data_b64: str) -> str:
     except (ValueError, KeyError) as e:              # WorkbookError, bad base64, a part missing
         out = {"ok": False, "files": {}, "notes": [f"{name}: {e}"]}
     return json.dumps(out, ensure_ascii=False)
+
+
+def calibrate_json(outcomes_json: str) -> str:
+    """The outcomes a person recorded, compared with the health readings that came before them."""
+    from . import calibrate
+
+    raw = json.loads(outcomes_json)
+    return json.dumps(calibrate.report(raw if isinstance(raw, list) else []), ensure_ascii=False)
 
 
 def mapping_suggest_json(text: str, options_json: str = "{}") -> str:

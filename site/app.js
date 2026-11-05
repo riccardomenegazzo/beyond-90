@@ -4,6 +4,7 @@ import { qrSvg } from "./qr.js";
 import { PROVIDERS, problems as starterProblems, starterFiles } from "./starter.js";
 import { Engine } from "./engine.js";
 import * as W from "./workspace-core.js";
+import * as O from "./outcomes.js";
 import * as store from "./store.js";
 import * as Vault from "./vault.js";
 import * as V from "./views.js";
@@ -18,7 +19,7 @@ const $ = (id) => document.getElementById(id);
 // which has no scripts and no access to this page. Its content is produced by the engine from the customer's files, escaped there.
 const swPolicy = window.trustedTypes ? window.trustedTypes.createPolicy("b90-sw", { createScriptURL: (u) => { if (u !== "./sw.js") throw new TypeError("only the page's own service worker may be registered"); return u; } }) : null;
 const reportPolicy = window.trustedTypes ? window.trustedTypes.createPolicy("b90-report", { createHTML: (t) => t }) : null;
-const state = { advisories: null, files: {}, groups: {}, mode: "single", result: null, book: null, tab: "overview", saved: [], yields: new Map(), engine: null, running: false };
+const state = { outcomes: [], calibration: null, healthWeights: null, advisories: null, files: {}, groups: {}, mode: "single", result: null, book: null, tab: "overview", saved: [], yields: new Map(), engine: null, running: false };
 const ALLOWED = /\.(csv|toml|xlsx)$/i;
 const MAX_BYTES = 20 * 1024 * 1024;
 const pct = (x) => (x == null ? "n/a" : (x * 100).toFixed(1) + "%");
@@ -203,6 +204,7 @@ function options() {
     realization: Math.min(1, Math.max(0.1, Number($("real").value) || 0.9)),
     quarter: $("quarter").value.trim(),
     ...(state.advisories ? { advisories: state.advisories } : {}),
+    ...(state.healthWeights ? { health_weights: state.healthWeights } : {}),
   };
 }
 
@@ -346,7 +348,7 @@ const VIEWS = {
   overview: { kind: "view", view: "overview" }, connections: { kind: "view", view: "connectionsView" }, accounts: { kind: "view", view: "accountsView" }, findings: { kind: "view", view: "findingsView" },
   onboarding: { kind: "view", view: "onboardingView" }, maturity: { kind: "view", view: "maturityView" }, actions: { kind: "view", view: "actionsView" },
   planview: { kind: "view", view: "planView" }, outlook: { kind: "view", view: "outlookView" }, teams: { kind: "view", view: "teamsView" },
-  prep: { kind: "view", view: "prepView" }, news: { kind: "view", view: "newsView" }, value: { kind: "view", view: "valueView" },
+  prep: { kind: "view", view: "prepView" }, call: { kind: "view", view: "callView" }, news: { kind: "view", view: "newsView" }, value: { kind: "view", view: "valueView" },
   execqbr: { kind: "view", view: "execQbrView" }, renewal: { kind: "view", view: "renewalView" }, changes: { kind: "view", view: "changesView" },
   report: { kind: "html", key: "report_html", file: "beyond90-report.html", type: "text/html" },
   qbr: { kind: "md", key: "qbr_markdown", file: "beyond90-qbr.md", type: "text/markdown" },
@@ -358,6 +360,7 @@ const VIEWS = {
   json: { kind: "json", key: "score_json", file: "beyond90-score.json", type: "application/json" },
   week: { kind: "view", view: "weekView" }, bookmap: { kind: "view", view: "bookView" }, bookonboard: { kind: "view", view: "bookOnboardView" },
   booknews: { kind: "view", view: "bookNewsView" }, bookconnections: { kind: "view", view: "bookConnectionsView" },
+  calibration: { kind: "view", view: "calibrationView" },
   portfolio: { kind: "md", key: "portfolio_markdown", file: "beyond90-portfolio.md", type: "text/markdown" },
   book: { kind: "md", key: "book_markdown", file: "beyond90-book.md", type: "text/markdown" },
   bookreport: { kind: "html", key: "book_html", file: "beyond90-book.html", type: "text/html" },
@@ -418,6 +421,7 @@ function context() {
   const r = state.result;
   if (r && state.parsedFor !== r) { state.parsed = JSON.parse(r.score_json); state.parsedFor = r; }
   return { result: r, dash: r.dashboard, score: state.parsed, engine: state.engine, files: state.files, options: options(), advisories: state.advisories, logTouch, go: (tab, extra) => selectTab(tab, extra),
+    outcomes: state.outcomes, calibration: state.calibration, healthWeights: state.healthWeights, recordOutcome, removeOutcome, applyWeights, resetWeights,
     saved: state.saved, frameHtml: (frame, html) => { frame.srcdoc = reportPolicy ? reportPolicy.createHTML(html) : html; } };
 }
 
@@ -516,7 +520,27 @@ async function saveSnapshot({ quiet = false } = {}) {
   }
 }
 
+/** What happened at each renewal, the comparison with the health readings, and the weights in use. Read again whenever the saved data changes. */
+async function refreshOutcomes() {
+  try { state.outcomes = await store.outcomesAll(); state.healthWeights = await store.getWeights(); } catch { state.outcomes = []; state.healthWeights = null; }
+  state.calibration = null;
+  if (state.engine && state.outcomes.length) {
+    try { await state.engine.ready; state.calibration = JSON.parse(await state.engine.call("calibrate", { outcomes: state.outcomes })); } catch { /* the view then shows the outcomes without the comparison */ }
+  }
+}
+async function recordOutcome(p) {
+  const r = state.result;
+  const o = O.makeOutcome({ customer: r.customer, decidedOn: p.decidedOn, outcome: p.outcome, note: p.note, health: r.dashboard.health, asOf: r.as_of, recordedOn: new Date().toISOString().slice(0, 10) });
+  await store.outcomePut([o]);
+  await refreshOutcomes();
+  say(`Recorded: ${o.customer} ${o.outcome} on ${o.decided_on}.`);
+}
+async function removeOutcome(id) { await store.outcomeRemove(id); await refreshOutcomes(); }
+async function applyWeights(w) { await store.setWeights(w); state.healthWeights = w; say("New health weights applied."); run(); }
+async function resetWeights() { await store.setWeights(null); state.healthWeights = null; say("Health weights are back to the defaults."); run(); }
+
 async function refreshHistory() {
+  await refreshOutcomes();
   try { state.saved = await store.all(); }
   catch (e) { state.saved = []; wsSay("Saving is not available here: " + e.message); }
   const has = state.saved.length > 0;
@@ -590,7 +614,7 @@ function drawTrend() {
 
 async function exportWorkspace() {
   if (await store.getVault() && !store.unlocked() && !(await unlockVaultUi())) return;
-  const text = W.serializeWorkspace(state.saved, { engine: state.engine ? state.engine.version : "" });
+  const text = W.serializeWorkspace(state.saved, { engine: state.engine ? state.engine.version : "", extra: { outcomes: state.outcomes } });
   const sealed = await store.sealExport(text);
   save(new Blob([sealed || text], { type: "application/json" }), sealed ? "beyond90-workspace.sealed.json" : "beyond90-workspace.json");
   wsSay(sealed ? `Exported ${state.saved.length} snapshot(s), sealed with your passphrase.`
@@ -743,7 +767,7 @@ async function sendWork() {
     return;
   }
   if (!store.unlocked() && !(await unlockVaultUi())) return;
-  const sealed = await store.sealExport(W.serializeWorkspace(state.saved, { engine: state.engine ? state.engine.version : "" }));
+  const sealed = await store.sealExport(W.serializeWorkspace(state.saved, { engine: state.engine ? state.engine.version : "", extra: { outcomes: state.outcomes } }));
   const file = new File([sealed], "beyond90-workspace.sealed.json", { type: "application/json" });
   if (navigator.canShare && navigator.canShare({ files: [file] })) {
     try {
@@ -767,11 +791,14 @@ async function importWorkspace(file) {
       text = await Vault.openWorkspace(doc, p);
       if (text == null) { wsSay("That is not the passphrase of this workspace file."); return; }
     }
-    const { snapshots } = W.parseWorkspace(text);
+    const { snapshots, unknown } = W.parseWorkspace(text);
     const { ok, rejected } = await W.acceptSnapshots(snapshots);
     const added = await store.put(ok);
+    const outs = O.acceptOutcomes(unknown.outcomes);
+    const addedOut = outs.ok.length ? await store.outcomePut(outs.ok) : 0;
     await refreshHistory();
-    wsSay(`Imported: ${added} new, ${ok.length - added} already here` + (rejected ? `, ${rejected} rejected because their content did not match their name.` : "."));
+    wsSay(`Imported: ${added} new, ${ok.length - added} already here` + (rejected ? `, ${rejected} rejected because their content did not match their name` : "")
+      + (outs.ok.length || outs.rejected ? `; ${addedOut} renewal outcome(s) added` + (outs.rejected ? `, ${outs.rejected} refused` : "") : "") + ".");
   } catch (e) {
     wsSay(e.message);
   }

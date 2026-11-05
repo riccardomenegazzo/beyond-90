@@ -1,6 +1,8 @@
 // The dashboard views. Each takes a context {result, dash, score, engine, files, options, go} and returns a Node.
 import { h, chip, pct, pts, num, cap, dataTable, chipFilter, searchBox, toCsv, saveBlob, copyText } from "./ui.js";
 import { recap } from "./recap.js";
+import { OUTCOMES } from "./outcomes.js";
+import { newCall, callOutput } from "./callmode.js";
 import { connections } from "./graph.js";
 import { gauge, waterfall, lineChart, contributions, timeline, shareBar, funnel, STAGE, STAGE_NAME } from "./charts.js";
 
@@ -271,7 +273,129 @@ function healthCard(hl) {
     h("p", { class: "note", text: hl.note })), { sub: "Adoption, outcomes, relationship and trajectory in one number you can discuss." });
 }
 
-export function renewalView({ score, dash }) {
+// ------------------------------------------------------------------ on the call
+const calls = new Map();   // one call in progress per customer and data date, kept while the person moves between views
+
+/** One screen to use during the call: the agenda to tick off and annotate, what is agreed and what we owe as it happens, then the recap, the actions and the log line. */
+export function callView({ result, dash, score, logTouch, go }) {
+  const prep = dash.rhythm.prep, key = `${result.customer}|${result.as_of}`;
+  if (!calls.has(key)) calls.set(key, { ...newCall(prep), logged: false });
+  const call = calls.get(key);
+  const contacts = (score.relationship && score.relationship.contacts) || [];
+  const lead = contacts.find((c) => /champion|sponsor|lead|owner/i.test(c.role || "")) || contacts[0];
+  const who = h("select", { "aria-label": "The call was with" }, h("option", { value: "", text: "(everyone)" }), contacts.map((c) => h("option", { value: c.id, text: c.name })));
+  if (lead) who.value = lead.id;
+  const nameOf = () => (contacts.find((c) => c.id === who.value) || { name: "" }).name;
+  const date = h("input", { type: "date", value: result.as_of, max: result.as_of, "aria-label": "Date of the call" });
+  const preview = h("pre", { class: "recap", tabindex: "0", "aria-label": "Recap draft" });
+  const count = h("p", { class: "note", role: "status" });
+  const logBtn = h("button", { class: "btn small", type: "button", text: "Log this call", disabled: call.logged });
+  const say = h("p", { class: "note", role: "status" });
+  const out = () => callOutput({ customer: result.customer, date: date.value, contact: nameOf(), call });
+  const refresh = () => {
+    const o = out();
+    preview.textContent = `Subject: ${o.recap.subject}\n\n${o.recap.body}`;
+    count.textContent = `${o.covered.length} of ${call.items.length} agenda items covered, ${o.agreed.length} thing(s) agreed, ${call.ours.length} we owe.`;
+  };
+  const agenda = h("div", { class: "agenda" }, call.items.map((it) => h("details", { class: "agitem", open: it.covered ? null : true },
+    h("summary", {}, h("label", { class: "inline" }, h("input", { type: "checkbox", checked: it.covered, "aria-label": `${it.title}: covered`, onchange: (e) => { it.covered = e.target.checked; refresh(); } }), h("b", { text: it.title }))),
+    h("ul", {}, it.points.map((p) => h("li", { text: p }))),
+    h("textarea", { rows: 2, maxlength: 600, "aria-label": `Your private notes on ${it.title}`, placeholder: "Your notes. They stay here: they are never in the recap.", oninput: (e) => { it.note = e.target.value; } }, it.note))));
+  const rows = h("div", { class: "agreed" });
+  const drawRows = () => {
+    rows.replaceChildren(...call.agreed.map((a, i) => h("div", { class: "agrow" },
+      h("input", { type: "text", maxlength: 200, value: a.what, "aria-label": `Agreed thing ${i + 1}`, placeholder: "What was agreed", oninput: (e) => { a.what = e.target.value; refresh(); } }),
+      h("input", { type: "text", maxlength: 80, value: a.who, "aria-label": `Who, for thing ${i + 1}`, placeholder: "Who", oninput: (e) => { a.who = e.target.value; refresh(); } }),
+      h("input", { type: "date", value: a.when, "aria-label": `By when, for thing ${i + 1}`, onchange: (e) => { a.when = e.target.value; refresh(); } }),
+      h("button", { class: "icon-btn", type: "button", "aria-label": `Remove agreed thing ${i + 1}`, text: "×", onclick: () => { call.agreed.splice(i, 1); drawRows(); refresh(); } }))));
+  };
+  const owed = h("textarea", { rows: 3, maxlength: 1200, "aria-label": "What we owe, one per line", oninput: (e) => { call.ours = e.target.value.split("\n"); refresh(); } }, call.ours.join("\n"));
+  logBtn.addEventListener("click", () => {
+    const t = out().touch;
+    const msg = logTouch({ date: date.value, kind: "call", contact_id: who.value, summary: t.summary || "Call", next_step: t.next_step, next_due: t.next_due });
+    if (msg === "Added.") { call.logged = true; logBtn.disabled = true; say.textContent = "Logged in interactions.csv in this tab."; } else say.textContent = msg;
+  });
+  drawRows(); refresh();
+  return h("div", {},
+    h("div", { class: "col2" },
+      card("The agenda", h("div", {}, agenda, count), { sub: "Tick what you cover and write notes as you go. Notes are private to you." }),
+      h("div", {},
+        card("What was agreed", h("div", {}, rows, h("div", { class: "row left" }, h("button", { class: "btn small", type: "button", text: "Add something agreed", onclick: () => { call.agreed.push({ what: "", who: "", when: "" }); drawRows(); refresh(); rows.lastElementChild.querySelector("input").focus(); } }))),
+          { sub: "One line per commitment, with who and by when." }),
+        card("What we owe", h("div", {}, owed), { sub: "Taken from the preparation, one per line: edit freely." }))),
+    card("After the call", h("div", {},
+      h("div", { class: "formgrid" }, h("label", {}, "With", who), h("label", {}, "Date", date)),
+      preview,
+      h("div", { class: "row left" },
+        h("button", { class: "btn small primary", type: "button", text: "Copy the recap", onclick: (e) => copyText(preview.textContent).then((ok) => { e.target.textContent = ok ? "Copied" : "Copy not available here"; }) }),
+        h("button", { class: "btn small", type: "button", text: "Download the actions (CSV)", onclick: () => saveBlob(out().csv, `beyond90-call-actions-${date.value}.csv`, "text/csv") }),
+        logBtn,
+        h("button", { class: "btn small quiet", type: "button", text: "Start a new call", onclick: () => { calls.delete(key); go("call"); } })),
+      say),
+    { sub: "The recap names only what you marked as covered and what you agreed, in the customer's words. Nothing is sent: you copy it. Logging adds a line to interactions.csv and re-runs." }));
+}
+
+/** Record what happened at renewal, next to the reading on screen. Nothing leaves the browser. */
+function outcomeCard({ result, dash, recordOutcome, go }) {
+  const hl = dash.health;
+  const f = { outcome: h("select", { "aria-label": "What happened" }, OUTCOMES.map((o) => h("option", { value: o, text: cap(o) }))),
+    date: h("input", { type: "date", value: result.as_of, "aria-label": "Date the customer decided" }),
+    note: h("input", { type: "text", maxlength: 300, placeholder: "Optional: why, in a few words", "aria-label": "Note" }) };
+  const out = h("p", { class: "note", role: "status" });
+  return card("Record what happened", h("div", {},
+    h("div", { class: "formgrid" }, h("label", {}, "What happened", f.outcome), h("label", {}, "Decided on", f.date), h("label", { class: "wide2" }, "Note", f.note)),
+    h("div", { class: "row left" }, h("button", { class: "btn small primary", type: "button", disabled: !hl || hl.score == null, text: "Record with this reading",
+      onclick: async () => {
+        try { await recordOutcome({ outcome: f.outcome.value, decidedOn: f.date.value, note: f.note.value }); go("calibration"); }
+        catch (e) { out.textContent = e.message; }
+      } })), out),
+  { sub: `Keeps this reading (data as of ${result.as_of}, health ${hl && hl.score != null ? hl.score : "n/a"}) with the outcome, so it can be compared later. Load the data as it was before the decision: the reading should come from before the outcome.` });
+}
+
+const OUTCOME_KIND = { renewed: "good", expanded: "good", reduced: "bad", churned: "bad" };
+
+/** What the recorded outcomes say about the health reading, and the weights to apply if the person agrees. */
+export function calibrationView({ outcomes, calibration: cal, healthWeights, applyWeights, resetWeights, removeOutcome, go }) {
+  const list = outcomes || [];
+  if (!list.length) {
+    return h("div", {}, card("Nothing recorded yet", h("div", {},
+      h("p", { text: "The health reading starts as a judgement. Recording what happens at each renewal is how it earns trust, or loses it." }),
+      h("p", { class: "note", text: "Open a customer, go to Renewal and trust, and record whether it renewed, expanded, reduced or churned, with the reading taken before the decision. With at least three that stayed and three that left, this page shows which parts told them apart." }),
+      h("div", { class: "row left" }, h("button", { class: "btn small", type: "button", text: "Go to Renewal and trust", onclick: () => go("renewal") }))),
+    { sub: "Recorded on this device, sealed with your passphrase when you use one, and included in exported workspaces." }));
+  }
+  const table = dataTable({ label: "Recorded outcomes", rows: list, pageSize: 20, columns: [
+    { key: "customer", label: "Customer", render: (o) => h("b", { text: o.customer }) },
+    { key: "outcome", label: "What happened", render: (o) => chip(o.outcome, OUTCOME_KIND[o.outcome]) },
+    { key: "decided_on", label: "Decided on" },
+    { key: "score", label: "Health then", num: true, sort: (o) => o.reading.score, render: (o) => (o.reading.score == null ? "n/a" : String(o.reading.score)) },
+    { key: "note", label: "Note" },
+    { key: "x", label: "", render: (o) => h("button", { class: "btn small danger", type: "button", text: "Remove", "aria-label": `Remove the outcome of ${o.customer}, ${o.decided_on}`, onclick: async () => { await removeOutcome(o.id); go("calibration"); } }) },
+  ] });
+  const parts = cal ? card("What the outcomes say", h("div", {},
+    h("div", { class: "kpiline" }, stat(String(cal.stayed), "stayed"), stat(String(cal.left), "left"), stat(cal.concordance == null ? "n/a" : pct(cal.concordance, 0), "pairs the score ordered right")),
+    cal.findings.length ? h("ul", {}, cal.findings.map((t) => h("li", { text: t }))) : h("p", { class: "note", text: cal.why }),
+    dataTable({ label: "Parts compared", rows: cal.parts, pageSize: 10, columns: [
+      { key: "label", label: "Part", render: (p) => h("b", { text: p.label }) },
+      { key: "stayed", label: "Stayed", num: true, render: (p) => (p.stayed == null ? "n/a" : String(p.stayed)) },
+      { key: "left", label: "Left", num: true, render: (p) => (p.left == null ? "n/a" : String(p.left)) },
+      { key: "gap", label: "Gap", num: true, render: (p) => (p.gap == null ? "too few" : (p.gap > 0 ? "+" : "") + p.gap) },
+      { key: "n_stayed", label: "Measured (stayed / left)", num: true, render: (p) => `${p.n_stayed} / ${p.n_left}` },
+    ] }).el,
+    h("p", { class: "note", text: cal.caveat })), { sub: "A part is only compared once at least three customers on each side were measured on it." }) : null;
+  const sw = cal && cal.suggested_weights;
+  const row = (w) => Object.entries(w).map(([k, v]) => `${cap(k)} ${Math.round(v * 100)}%`).join(" · ");
+  const weights = card("Weights", h("div", {},
+    h("p", { text: healthWeights ? `In use now (yours): ${row(healthWeights)}.` : "In use now: the defaults (Adoption 40% · Outcomes 20% · Relationship 25% · Trajectory 15%)." }),
+    sw ? h("div", {}, h("p", { text: `Suggested: ${row(sw)}.` }), h("p", { class: "note", text: cal.why })) : h("p", { class: "note", text: cal ? cal.why : "" }),
+    h("div", { class: "row left" },
+      sw ? h("button", { class: "btn small primary", type: "button", text: "Apply the suggested weights", onclick: () => applyWeights(sw) }) : null,
+      healthWeights ? h("button", { class: "btn small", type: "button", text: "Back to the defaults", onclick: () => resetWeights() }) : null)),
+  { sub: "Applying changes how every customer's health is read on this device. It is your decision, and it can be undone." });
+  return h("div", {}, h("div", { class: "col2" }, parts, weights), card("Recorded outcomes", table.el));
+}
+
+export function renewalView({ score, dash, result, recordOutcome, go }) {
   const r = dash.renewal, rel = score.relationship, u = score.universe, ent = score.entitlements || [];
   const head = r ? h("div", { class: "card callout " + (r.status === "at_risk" ? "bad" : r.status === "watch" ? "warn" : "good") },
     h("h2", { text: `Renewal ${r.date} · in ${r.days} days` }), h("p", { text: `${r.status.replace("_", " ")}${r.arr_at_risk ? `; ${num(r.arr_at_risk)} of annual revenue involved` : ""}.` })) : card("Renewal", h("p", { class: "note", text: "Add renewal_date to customer.toml to see renewal readiness." }));
@@ -283,7 +407,7 @@ export function renewalView({ score, dash }) {
     dataTable({ label: "Contacts", rows: rel.contacts, pageSize: 20, columns: [
       { key: "name", label: "Contact", render: (c) => h("b", { text: c.name }) }, { key: "role", label: "Role" }, { key: "trust", label: "Trust", num: true, render: (c) => c.trust.toFixed(1) },
       { key: "band", label: "Band", render: (c) => chip(c.band, c.band === "strong" ? "good" : c.band === "fragile" ? "bad" : "warn") }, { key: "limiting", label: "Weakest", render: (c) => c.limiting.replace("_", " ") }, { key: "days_since_contact", label: "Days since contact", num: true }] }).el)) : null;
-  return h("div", {}, healthCard(dash.health), head, h("div", { class: "col2" }, sig, h("div", {}, licences, universe)), contacts);
+  return h("div", {}, healthCard(dash.health), outcomeCard({ result, dash, recordOutcome, go }), head, h("div", { class: "col2" }, sig, h("div", {}, licences, universe)), contacts);
 }
 
 // ------------------------------------------------------------------ portfolio

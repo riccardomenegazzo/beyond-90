@@ -1,4 +1,4 @@
-# Beyond 90: specification v0.27
+# Beyond 90: specification v0.28
 
 An adoption engine for Technical Account Managers. It measures how much of a customer's cloud estate is really covered and operated through a security platform, and turns every gap into an action. The bar keeps moving: when a customer grows or the product ships something, the denominators grow with it.
 
@@ -220,6 +220,14 @@ For each active account, signals from the other analyses: not connected (5), onb
 
 `health.compute` gives a 0 to 100 indicator: adoption 40% (70% effective coverage, 30% coverage weighted by spend and exposure), outcomes 20% (critical findings open, 15 points each when exposed to the internet up to 60, 5 each otherwise up to 25), relationship 25% (the sponsor, threads, promises and contact signals of the renewal view: ok 1, watch 0.5, risk 0), trajectory 15% (100 minus four times the points coverage loses in 90 days if nothing is done). Parts that cannot be measured are dropped and the other weights renormalised. The band is the worse of the band by score (75 and 55) and the band by the weakest part (below 50 watch, below 30 at risk). It is a hypothesis for a conversation: it is not validated against real renewals.
 
+## 15x. Renewal outcomes, calibration, the call (0.28)
+
+An outcome is `(customer, decided_on, outcome, note, reading)` with `outcome` one of renewed, expanded, reduced or churned, and `reading` the health score and the four part values (0 to 100 or empty) of the analysis on screen when it was recorded. Its identity is `customer|decided_on`; two copies merge by set union, the later recording winning, then a fixed order, so devices agree in any order. The page refuses an outcome whose fields are not exactly what it would have written, and a workspace holding more than 2,000.
+
+`calibrate.report` groups outcomes into stayed (renewed, expanded) and left (reduced, churned). A part is compared only when at least 3 customers on each side were measured on it: it reports the mean on each side, the gap and the counts. The score gets a concordance (the share of stayed/left pairs in which the one that stayed scored higher; 50% is chance), reported only when both sides have 3. Weights are suggested only when some part has a gap: each measured part's share becomes half of what its positive gap earns among the measured parts plus half of its current share, with a floor of 5%, then normalised. A part pointing the wrong way earns nothing. The result always carries its counts and says it is a hint, not proof. `health.compute` accepts a complete set of positive weights and reports whether it used the defaults or the applied ones.
+
+`callOutput` turns a call (agenda items covered or not with private notes, what was agreed, what we owe) into the recap (covered titles and agreed items only), a CSV of agreed and owed actions and the interactions line (first agreed item as next step). Notes appear in none of them.
+
 ## 16. Positioning against the platform's own views
 
 Security platforms commonly ship their own adoption or maturity views and an ownership model. Beyond 90 does not replace them: it measures what a platform cannot see about itself (the true universe of units to cover, across a whole portfolio) and reads ownership and decisions rather than rebuilding routing. The research behind this is in `docs/research/`.
@@ -228,7 +236,7 @@ Security platforms commonly ship their own adoption or maturity views and an own
 
 - Verification against real vendor APIs and CLIs. Collection is configuration-driven and tested against fake services; each real source must be checked with `sync` before it is trusted. No interactive OAuth flow.
 - Weighting by asset criticality.
-- Validation of the health indicator against real renewals: its weights are a judgement.
+- Validation of the health indicator against real renewals: the page can now record outcomes and compare, but nothing has been learnt from real customers yet, and its weights are still a judgement.
 
 ## 18. Roadmap
 
@@ -257,8 +265,9 @@ Security platforms commonly ship their own adoption or maturity views and an own
 23. 0.24: the connections map, where a customer's separate problems meet, and the app as a browser extension.
 24. 0.25: shared patterns across a book, the map over time, the executive review as slides, a verifiable build, fuzzing and Scorecard.
 25. 0.26: installable on any device, phone-first layout, Excel and a form as inputs, sealed transfer between devices, self-hosting.
-26. 0.27 (this): actions as CSV, the CISO one-pager, mapped exports, customer health.
-27. 1.0: connector interface and a first verified connector against a real tenant; criticality weighting; readiness checklist import; per-finding ownership sources.
+26. 0.27: actions as CSV, the CISO one-pager, mapped exports, customer health.
+27. 0.28 (this): renewal outcomes and calibration of the health reading, the call screen.
+28. 1.0: connector interface and a first verified connector against a real tenant; criticality weighting; readiness checklist import; per-finding ownership sources.
 
 ## References
 

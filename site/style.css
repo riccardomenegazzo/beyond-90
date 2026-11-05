@@ -396,3 +396,9 @@ pre.recap{white-space:pre-wrap;word-break:break-word;background:var(--sunk);bord
 .g-kind{font-size:13px;color:var(--accent-text);font-weight:700}
 .g-signals,.g-links{margin:0;padding-left:18px;display:grid;gap:4px;font-size:14px}
 @media (max-width:1200px){.g-wrap{grid-template-columns:1fr}.g-main{position:static}}
+
+/* on the call */
+.agitem summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px;padding:4px 0}.agitem summary::-webkit-details-marker{display:none}
+label.inline{display:flex;align-items:center;gap:9px;cursor:pointer}.agitem textarea,.agreed input[type=text]{width:100%}.agitem textarea{margin-top:8px}
+.agreed{display:grid;gap:8px}.agrow{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,1.4fr) minmax(0,1.3fr) auto;gap:8px;align-items:center}
+@media(max-width:560px){.agrow{grid-template-columns:1fr 1fr}.agrow input[type=text]:first-child{grid-column:1 / -1}}

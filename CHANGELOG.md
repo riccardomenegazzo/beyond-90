@@ -2,6 +2,14 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.28.0
+
+The health reading learns from what really happened, and the call has its own screen.
+
+- **What renewals taught.** Record what happened at each renewal (renewed, expanded, reduced, churned) next to the health reading taken before it. Once there are at least three customers that stayed and three that left, the page compares each part of the reading between the two groups, says how often the score ordered a pair right, and suggests new weights that blend what the data hints at with the current ones, never the data alone. Every figure comes with its count, and below the minimum it says it cannot conclude. Applying the suggestion is a choice you make and can undo.
+- **Kept like the rest of your work.** Outcomes are stored on the device, sealed with your passphrase when you use one, and travel in exported and sent workspaces. Values from outside are checked field by field, and a file with more than 2,000 outcomes is cut and reported.
+- **On the call.** One screen for the call itself: the prepared agenda to tick off, private notes per item, what is agreed and what we owe as it happens. Then the recap (only what was covered and agreed, never the notes), the agreed actions as a CSV, and the log line for interactions.csv are ready. A call in progress survives a visit to another view.
+
 ## 0.27.0
 
 Closer to the work a TAM does every week.

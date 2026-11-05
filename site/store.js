@@ -2,9 +2,10 @@
 // Every write goes through mergeSnapshots, so storing the same snapshot twice, or two devices' copies
 // of it, cannot create a duplicate or lose a field.
 import { mergeSnapshots } from "./workspace-core.js";
+import { mergeOutcomes, validOutcome } from "./outcomes.js";
 import { seal, openSealed, sealWorkspace } from "./vault.js";
 
-const DB = "beyond90", STORE = "snapshots", META = "meta";
+const DB = "beyond90", STORE = "snapshots", META = "meta", OUTCOMES = "outcomes";
 let key = null;                                      // the passphrase key, in memory only
 export const setKey = (k) => { key = k; };
 export const unlocked = () => key !== null;
@@ -17,10 +18,11 @@ export async function sealExport(text) {
 
 function open() {
   return new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB, 2);
+    const req = indexedDB.open(DB, 3);
     req.onupgradeneeded = () => {
       if (!req.result.objectStoreNames.contains(STORE)) req.result.createObjectStore(STORE, { keyPath: "id" });
       if (!req.result.objectStoreNames.contains(META)) req.result.createObjectStore(META, { keyPath: "k" });
+      if (!req.result.objectStoreNames.contains(OUTCOMES)) req.result.createObjectStore(OUTCOMES, { keyPath: "id" });
     };
     req.onsuccess = () => resolve(req.result);
     req.onerror = () => reject(req.error || new Error("Storage is not available in this browser mode."));
@@ -42,9 +44,9 @@ function friendly(e) {
   return e instanceof Error ? e : new Error("Storage failed.");
 }
 
-async function rawAll() {
+async function rawAll(name = STORE) {
   const db = await open();
-  const req = db.transaction(STORE).objectStore(STORE).getAll();
+  const req = db.transaction(name).objectStore(name).getAll();
   return new Promise((resolve, reject) => {
     req.onsuccess = () => { db.close(); resolve(req.result); };
     req.onerror = () => { db.close(); reject(req.error); };
@@ -88,9 +90,16 @@ export async function convertAll({ toSealed, meta }) {
     if (!s) throw new Error("Some snapshots could not be opened with this passphrase; nothing was changed.");
     next.push(toSealed ? { id: s.id, sealed: await seal(key, s, s.id) } : s);
   }
+  const outs = [];
+  for (const rec of await rawAll(OUTCOMES)) {
+    const o = await plain(rec);
+    if (!o) throw new Error("Some recorded outcomes could not be opened with this passphrase; nothing was changed.");
+    outs.push(toSealed ? { id: o.id, sealed: await seal(key, o, o.id) } : o);
+  }
   const db = await open();
-  const tx = db.transaction([STORE, META], "readwrite");
+  const tx = db.transaction([STORE, META, OUTCOMES], "readwrite");
   for (const r of next) tx.objectStore(STORE).put(r);
+  for (const r of outs) tx.objectStore(OUTCOMES).put(r);
   if (toSealed) tx.objectStore(META).put({ k: "vault", meta }); else tx.objectStore(META).delete("vault");
   await done(tx);
   db.close();
@@ -130,9 +139,65 @@ export async function remove(id) {
 
 export async function clear() {
   const db = await open();
-  const tx = db.transaction([STORE, META], "readwrite");
+  const tx = db.transaction([STORE, META, OUTCOMES], "readwrite");
   tx.objectStore(STORE).clear();
   tx.objectStore(META).clear();
+  tx.objectStore(OUTCOMES).clear();
+  await done(tx);
+  db.close();
+}
+
+// ---- what happened at renewal, and the weights the person chose to apply. Outcomes are customer facts and are sealed like snapshots.
+
+/** The recorded outcomes that can be read now (sealed ones need the key). */
+export async function outcomesAll() {
+  const out = [];
+  for (const rec of await rawAll(OUTCOMES)) { const o = await plain(rec); if (o && validOutcome(o)) out.push(o); }
+  return mergeOutcomes(out, []);
+}
+
+/** Add outcomes (idempotent: the same customer and date is one outcome). Returns how many were new. */
+export async function outcomePut(list) {
+  if ((await getVault()) && !key) throw new Error("Saved data is protected with a passphrase. Unlock it first.");
+  const recs = new Map((await rawAll(OUTCOMES)).map((r) => [r.id, r]));
+  const before = new Set(recs.keys());
+  const merged = [];
+  for (const o of list) {
+    const old = recs.has(o.id) ? await plain(recs.get(o.id)) : null;
+    merged.push(old ? mergeOutcomes([old], [o])[0] : o);
+  }
+  const wrapped = await Promise.all(merged.map(async (o) => (key ? { id: o.id, sealed: await seal(key, o, o.id) } : o)));
+  const db = await open();
+  try {
+    const tx = db.transaction(OUTCOMES, "readwrite");
+    for (const w of wrapped) tx.objectStore(OUTCOMES).put(w);
+    await done(tx);
+  } catch (e) {
+    throw friendly(e);
+  } finally {
+    db.close();
+  }
+  return list.filter((o) => !before.has(o.id)).length;
+}
+
+export async function outcomeRemove(id) {
+  const db = await open();
+  const tx = db.transaction(OUTCOMES, "readwrite");
+  tx.objectStore(OUTCOMES).delete(id);
+  await done(tx);
+  db.close();
+}
+
+/** The health weights the person applied, or null for the defaults. Plain numbers: nothing about a customer. */
+export async function getWeights() {
+  const db = await open();
+  const req = db.transaction(META).objectStore(META).get("weights");
+  return new Promise((resolve) => { req.onsuccess = () => { db.close(); resolve(req.result ? req.result.weights : null); }; req.onerror = () => { db.close(); resolve(null); }; });
+}
+export async function setWeights(weights) {
+  const db = await open();
+  const tx = db.transaction(META, "readwrite");
+  if (weights) tx.objectStore(META).put({ k: "weights", weights }); else tx.objectStore(META).delete("weights");
   await done(tx);
   db.close();
 }
