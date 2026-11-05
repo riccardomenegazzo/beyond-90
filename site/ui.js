@@ -97,7 +97,7 @@ export function dataTable({ columns, rows, pageSize = 50, empty = "Nothing match
         t.addEventListener("click", () => { open.has(id) ? open.delete(id) : open.add(id); draw(); });
         tr.append(h("td", { class: "x" }, t));
       }
-      for (const c of columns) tr.append(h("td", { class: c.num ? "n" : "" }, c.render ? c.render(r) : r[c.key]));
+      for (const c of columns) tr.append(h("td", { class: c.num ? "n" : "", "data-label": c.label }, c.render ? c.render(r) : r[c.key]));
       body.append(tr);
       if (expand && open.has(id)) body.append(h("tr", { class: "detail" }, h("td", { colspan: columns.length + 1 }, expand(r))));
     }

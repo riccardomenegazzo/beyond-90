@@ -192,11 +192,17 @@ export function connections(graph, { go, open = null }) {
   svg.addEventListener("pointerdown", (ev) => {
     const g = ev.target.closest && ev.target.closest(".g-node");
     const d = g && draws.find((x) => x.g === g);
+    if (ev.pointerType === "touch") {                 // a finger scrolls and pinches the page natively; a tap still selects
+      drag = d ? { node: d.n, g, touch: true, x: ev.clientX, y: ev.clientY, moved: false } : null;
+      return;
+    }
     drag = d ? { node: d.n, g, moved: false } : { pan: true, x: ev.clientX, y: ev.clientY, vx: view.x, vy: view.y, moved: false };
     svg.setPointerCapture(ev.pointerId);
   });
+  svg.addEventListener("pointercancel", () => { drag = null; });
   svg.addEventListener("pointermove", (ev) => {
     if (!drag) return;
+    if (drag.touch) { if (Math.hypot(ev.clientX - drag.x, ev.clientY - drag.y) > 8) drag.moved = true; return; }
     if (drag.pan) {
       const r = svg.getBoundingClientRect(), scale = W / r.width;
       view.x = drag.vx + (ev.clientX - drag.x) * scale; view.y = drag.vy + (ev.clientY - drag.y) * scale;

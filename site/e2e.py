@@ -553,6 +553,27 @@ def main(site: str) -> int:
         browser.close()
         browser = p.chromium.launch()
 
+        # a phone: places at the bottom, nothing wider than the screen, tables as cards
+        mctx = browser.new_context(**p.devices["Pixel 7"])
+        mp = mctx.new_page()
+        mp.goto(base)
+        mp.wait_for_selector("#demo:not([disabled])", timeout=180_000)
+        mp.click("#demo")
+        mp.click("#run")
+        mp.wait_for_selector("#results:not([hidden])", timeout=180_000)
+        bar = mp.evaluate("[...document.querySelectorAll('.place-btn')].map(b => [getComputedStyle(b).position, Math.round(b.getBoundingClientRect().bottom) === innerHeight])")
+        check(all(x == ["fixed", True] for x in bar), f"on a phone the places sit in a bar at the bottom: {bar}")
+        wide = {}
+        for tab in ("overview", "connections", "accounts", "findings", "actions", "prep", "execqbr"):
+            mp.locator(f"[data-tab={tab}]").click()
+            mp.wait_for_timeout(300)
+            wide[tab] = mp.evaluate("document.documentElement.scrollWidth - innerWidth")
+        check(not any(wide.values()), f"no view is wider than a phone: {wide}")
+        mp.locator("[data-tab=accounts]").click()
+        check(mp.evaluate("getComputedStyle(document.querySelector('#view .dt tbody td:not(.x)'), '::before').content").strip('"') == "Account",
+              "on a phone each table row reads as a card with its labels")
+        mctx.close()
+
         # accessibility: axe-core, when its path is given (the Pages workflow installs it); both colour schemes
         axe = os.environ.get("AXE_CORE")
         if axe:
