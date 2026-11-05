@@ -502,6 +502,15 @@ def main(site: str) -> int:
         page.wait_for_selector("#results:not([hidden])")
         check("Yield" in page.inner_text("#kpis"), "after cancelling, the engine restarts and works")
 
+        # an Excel workbook stands in for the files
+        page.click(".rail [data-place=start]")
+        page.set_input_files("#files", str(Path(__file__).resolve().parent.parent / "tests" / "fixtures" / "xlsx" / "northwind.xlsx"))
+        page.wait_for_selector("#status:has-text('northwind.xlsx: read')", timeout=60_000)
+        check(page.locator("#loaded li").count() >= 6, "an Excel workbook is read into the customer's files")
+        page.click("#run")
+        page.wait_for_selector("#run:not([disabled])", state="attached", timeout=120_000)
+        check("Yield" in page.inner_text("#kpis"), "and analysed like them")
+
         # offline: after a reload the service worker serves everything
         page.evaluate("navigator.serviceWorker.ready.then(() => 1)")
         boot()

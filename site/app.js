@@ -17,7 +17,7 @@ const $ = (id) => document.getElementById(id);
 const swPolicy = window.trustedTypes ? window.trustedTypes.createPolicy("b90-sw", { createScriptURL: (u) => { if (u !== "./sw.js") throw new TypeError("only the page's own service worker may be registered"); return u; } }) : null;
 const reportPolicy = window.trustedTypes ? window.trustedTypes.createPolicy("b90-report", { createHTML: (t) => t }) : null;
 const state = { advisories: null, files: {}, groups: {}, mode: "single", result: null, book: null, tab: "overview", saved: [], yields: new Map(), engine: null, running: false };
-const ALLOWED = /\.(csv|toml)$/i;
+const ALLOWED = /\.(csv|toml|xlsx)$/i;
 const MAX_BYTES = 20 * 1024 * 1024;
 const pct = (x) => (x == null ? "n/a" : (x * 100).toFixed(1) + "%");
 
@@ -88,13 +88,21 @@ const lastSegment = (dir) => dir.split("/").pop() || dir;
 async function addFiles(entries) {
   const kept = entries.filter(({ file }) => ALLOWED.test(file.name));
   const skipped = entries.length - kept.length;
-  if (!kept.length) { if (skipped) say(skipped + " file(s) skipped: only .csv and .toml are read."); return; }
+  if (!kept.length) { if (skipped) say(skipped + " file(s) skipped: only .csv, .toml and .xlsx are read."); return; }
+  const notes = [];
   const byDir = new Map();
   for (const { file, path } of kept) {
     if (file.size > MAX_BYTES) { say(file.name + " is larger than 20 MB and was skipped."); continue; }
     const dir = dirOf(path);
     if (!byDir.has(dir)) byDir.set(dir, {});
-    byDir.get(dir)[W.baseName(file.name)] = await file.text();
+    if (/\.xlsx$/i.test(file.name)) {                 // a workbook: the engine turns its sheets into the customer's files
+      await state.engine.ready;
+      const r = JSON.parse(await state.engine.call("workbook", { name: file.name, data: toBase64(new Uint8Array(await file.arrayBuffer())) }));
+      Object.assign(byDir.get(dir), r.files);
+      notes.push(...r.notes);
+    } else {
+      byDir.get(dir)[W.baseName(file.name)] = await file.text();
+    }
   }
   const customers = [...byDir.entries()].filter(([, f]) => "customer.toml" in f);
   state.files = {}; state.groups = {};                 // a new selection replaces the old one, it never mixes customers
@@ -105,8 +113,15 @@ async function addFiles(entries) {
     state.mode = "single";
     state.files = customers.length === 1 ? customers[0][1] : Object.assign({}, ...byDir.values());
   }
-  if (skipped) say(skipped + " file(s) skipped: only .csv and .toml are read.");
+  if (skipped) notes.push(skipped + " file(s) skipped: only .csv, .toml and .xlsx are read.");
+  if (notes.length) say(notes.join(" "));
   renderLoaded();
+}
+
+function toBase64(bytes) {
+  let s = "";
+  for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  return btoa(s);
 }
 
 function uniqueKey(key, taken) {

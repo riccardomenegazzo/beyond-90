@@ -343,6 +343,17 @@ def analyze_book_json(groups_json: str, options_json: str = "{}") -> str:
     return json.dumps(analyze_book(json.loads(groups_json), **json.loads(options_json)), ensure_ascii=False)
 
 
+def workbook_json(name: str, data_b64: str) -> str:
+    """An .xlsx dropped on the page: the customer's files it holds, and what was used or ignored."""
+    from . import xlsx
+
+    try:
+        out = {"ok": True, **xlsx.to_files(name, base64.b64decode(data_b64, validate=True))}
+    except (ValueError, KeyError) as e:              # WorkbookError, bad base64, a part missing
+        out = {"ok": False, "files": {}, "notes": [f"{name}: {e}"]}
+    return json.dumps(out, ensure_ascii=False)
+
+
 def analyze_json(files_json: str, options_json: str = "{}") -> str:
     """JSON in, JSON out: the one function the page calls for a full analysis."""
     opts = json.loads(options_json)

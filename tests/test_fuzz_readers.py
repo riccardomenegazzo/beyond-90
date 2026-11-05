@@ -113,3 +113,21 @@ def test_advisories_answer_with_a_value_error_or_threats():
             continue
         for t in threats:
             assert not t.url or t.url.startswith(("https://", "http://"))
+
+
+def test_workbooks_answer_with_a_workbook_error_or_files():
+    from beyond90 import xlsx
+
+    good = (ROOT / "tests" / "fixtures" / "xlsx" / "northwind.xlsx").read_bytes()
+    rnd = random.Random(11)
+    for _ in range(ROUNDS):
+        b = bytearray(good)
+        for _ in range(rnd.randrange(1, 20)):
+            b[rnd.randrange(len(b))] = rnd.randrange(256)
+        if rnd.random() < 0.2:
+            b = b[: rnd.randrange(len(b))]
+        try:
+            out = xlsx.to_files("book.xlsx", bytes(b))
+        except xlsx.WorkbookError:
+            continue
+        assert isinstance(out["files"], dict) and all(isinstance(v, str) for v in out["files"].values())
