@@ -351,6 +351,8 @@ const VIEWS = {
   report: { kind: "html", key: "report_html", file: "beyond90-report.html", type: "text/html" },
   qbr: { kind: "md", key: "qbr_markdown", file: "beyond90-qbr.md", type: "text/markdown" },
   plan: { kind: "md", key: "success_plan_markdown", file: "beyond90-success-plan.md", type: "text/markdown" },
+  onepager: { kind: "html", key: "onepager_html", file: "beyond90-one-page.html", type: "text/html" },
+  actionscsv: { kind: "csv", key: "actions_csv", file: "beyond90-actions.csv", type: "text/csv" },
   roadmap: { kind: "md", key: "roadmap_markdown", file: "beyond90-roadmap.md", type: "text/markdown" },
   summary: { kind: "md", key: "report_markdown", file: "beyond90-summary.md", type: "text/markdown" },
   json: { kind: "json", key: "score_json", file: "beyond90-score.json", type: "application/json" },
@@ -405,9 +407,9 @@ function selectTab(name, extra) {
   const text = payload()[t.key];
   $("report").hidden = t.kind !== "html";
   $("doc").hidden = t.kind !== "md";
-  $("raw").hidden = t.kind !== "json";
+  $("raw").hidden = t.kind !== "json" && t.kind !== "csv";
   if (t.kind === "html") $("report").srcdoc = reportPolicy ? reportPolicy.createHTML(text) : text;
-  else if (t.kind === "json") $("raw").textContent = text;
+  else if (t.kind === "json" || t.kind === "csv") $("raw").textContent = text;
   else $("doc").replaceChildren(...markdown(text));
 }
 
@@ -640,6 +642,90 @@ $("starter-form").addEventListener("submit", (e) => {
   renderLoaded();
   say("Made customer.toml and accounts.csv from the form.");
   run();
+});
+
+// ---------- map an export: say which column is which, check the result, then add the file
+const mapper = { text: "", name: "", s: null, ok: false };
+const MAP_LABELS = {
+  id: { "accounts.csv": "Account id", "findings.csv": "Finding id" }, provider: "Provider", connected: "Connected to the platform", owner: "Owner", last_spend: "Monthly spend",
+  status: "Status", created_at: "Created on", account_id: "Account", severity: "Severity", exposure: "Exposed to the internet", opened_at: "Opened on", closed_at: "Closed on", decision: "Decision",
+};
+const mapLabel = (field, target) => (typeof MAP_LABELS[field] === "object" ? MAP_LABELS[field][target] : MAP_LABELS[field]) || field;
+const hasCustomer = () => "customer.toml" in state.files;
+
+function mapInvalidate() {
+  mapper.ok = false;
+  $("map-use").disabled = true;
+  $("map-preview-wrap").hidden = true;
+  $("map-notes").replaceChildren();
+}
+function mapRead() {
+  const m = {};
+  for (const sel of $("map-rows").querySelectorAll("select")) m[sel.dataset.field] = sel.value || null;
+  return m;
+}
+function mapRender() {
+  const s = mapper.s, target = $("map-target").value;
+  $("map-rows").replaceChildren(...(s.fields || []).map((f) => el_("tr", {},
+    el_("th", { scope: "row", text: mapLabel(f, target) + ((s.required || []).includes(f) ? " (required)" : "") }),
+    el_("td", {}, el_("select", { dataset: { field: f }, "aria-label": mapLabel(f, target), onchange: mapInvalidate },
+      el_("option", { value: "", text: "none" }), s.headers.map((h) => el_("option", { value: h, text: h, selected: (s.mapping || {})[f] === h })))))));
+  $("map-provider-label").hidden = target !== "accounts.csv";
+  $("map-name-label").hidden = $("map-asof-label").hidden = hasCustomer();
+  $("map-count").textContent = `${s.rows} row(s) and ${s.headers.length} column(s) found.` + (s.target ? "" : " The file does not clearly look like accounts or findings; choose what to build.");
+  $("map-check").hidden = false;
+  mapInvalidate();
+}
+async function mapSuggest(target) {
+  await state.engine.ready;
+  const r = JSON.parse(await state.engine.call("mapsuggest", { text: mapper.text, target, hint: mapper.name }));
+  if (!r.ok) { $("map-body").hidden = true; $("map-check").hidden = true; $("map-notes").replaceChildren(el_("li", { text: r.error })); return; }
+  mapper.s = r;
+  if (!target && r.target) $("map-target").value = r.target;
+  if (!r.fields) return mapSuggest($("map-target").value);   // unclear file: map it as the chosen file
+  $("map-body").hidden = false;
+  mapRender();
+}
+$("open-mapper").addEventListener("click", () => {
+  $("map-file").value = ""; $("map-body").hidden = true; $("map-check").hidden = true; mapInvalidate();
+  if (!$("map-asof").value) $("map-asof").value = new Date().toISOString().slice(0, 10);
+  $("mapper").showModal();
+});
+$("map-cancel").addEventListener("click", () => $("mapper").close());
+$("map-file").addEventListener("change", async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (file.size > MAX_BYTES) { $("map-notes").replaceChildren(el_("li", { text: "The file is larger than 20 MB." })); return; }
+  mapper.text = await file.text(); mapper.name = file.name;
+  await mapSuggest("");
+});
+$("map-target").addEventListener("change", () => mapSuggest($("map-target").value));
+$("map-provider").addEventListener("change", mapInvalidate);
+$("map-check").addEventListener("click", async () => {
+  mapInvalidate();
+  const r = JSON.parse(await state.engine.call("mapconvert", { text: mapper.text, target: $("map-target").value, mapping: mapRead(), defaults: { provider: $("map-provider").value } }));
+  if (!r.ok) { $("map-notes").replaceChildren(el_("li", { text: r.error })); return; }
+  mapper.result = r;
+  const cols = r.preview.length ? Object.keys(r.preview[0]) : [];
+  $("map-head").replaceChildren(el_("tr", {}, cols.map((c) => el_("th", { scope: "col", text: c }))));
+  $("map-preview").replaceChildren(...r.preview.map((row) => el_("tr", {}, cols.map((c) => el_("td", { text: row[c] })))));
+  $("map-preview-wrap").hidden = !r.preview.length;
+  $("map-notes").replaceChildren(el_("li", { text: `${r.rows} row(s) ready${r.skipped ? `, ${r.skipped} left out` : ""}.` }), ...r.notes.map((t) => el_("li", { text: t })));
+  mapper.ok = r.rows > 0;
+  $("map-use").disabled = !mapper.ok;
+});
+$("mapper-form").addEventListener("submit", (e) => {
+  if (!mapper.ok) { e.preventDefault(); return; }
+  const r = mapper.result, files = { ...state.files, [r.file]: r.csv };
+  if (!hasCustomer()) {
+    const name = $("map-name").value.trim();
+    if (!name || !$("map-asof").value) { e.preventDefault(); $("map-notes").replaceChildren(el_("li", { text: "Give the customer a name and the date of the data." })); return; }
+    files["customer.toml"] = starterFiles({ customer: { name, tier: "enterprise", arr: "", as_of: $("map-asof").value, renewal_date: "" }, accounts: [] })["customer.toml"];
+  }
+  state.mode = "single"; state.groups = {}; state.files = files;
+  renderLoaded();
+  say(`Added ${r.file} from your export (${r.rows} row(s)).` + ("accounts.csv" in files ? "" : " Add the accounts file too: findings refer to accounts."));
+  if ("accounts.csv" in files) run();
 });
 
 // ---------- another device: a code to open the app there, and the work sent as one sealed file

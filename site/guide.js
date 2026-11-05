@@ -30,6 +30,8 @@ export const CUSTOMER_NAV = [
     { id: "qbr", label: "QBR draft", icon: "doc", tip: "A review draft in Markdown, structured to end with decisions." },
     { id: "plan", label: "Success plan", icon: "doc", tip: "Outcomes, milestones and owners the customer can sign." },
     { id: "roadmap", label: "Roadmap", icon: "doc", tip: "The plan week by week, with the dip before the gain." },
+    { id: "onepager", label: "CISO one-pager", icon: "doc", tip: "A single printable page for the customer's CISO: coverage, exposure, next steps, decisions." },
+    { id: "actionscsv", label: "Actions (CSV)", icon: "doc", tip: "Every open action, one per row, ready to import into a ticket tracker." },
     { id: "summary", label: "Summary", icon: "doc", tip: "A short written summary for a message or a ticket." },
     { id: "json", label: "Data (JSON)", icon: "doc", tip: "Every number behind the views, for your own tools." },
   ] },

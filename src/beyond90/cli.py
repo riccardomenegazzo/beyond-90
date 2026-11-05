@@ -15,6 +15,7 @@ from .book import build_book_plan, render_book_html, render_book_json, render_bo
 from .candor import candor_items
 from .catalogue import Catalogue, available_profiles
 from .drift import input_drift
+from .exportcsv import actions_csv
 from .forecast import forecast_zero_critical, render_forecast
 from .importers import (
     ImportFormatError,
@@ -202,6 +203,9 @@ def cmd_actions(args: argparse.Namespace) -> int:
     if args.format == "json":
         _emit(json.dumps([a.to_dict() for a in actions], indent=2, ensure_ascii=False), args.out)
         return 0
+    if args.format == "csv":
+        _emit(actions_csv(actions, _score.customer), args.out)
+        return 0
     lines = []
     for a in actions:
         lines.append(f"[{a.leak}] {a.effect_points:.1f} pts  {a.effort_hours:g} h  {a.title}")
@@ -382,6 +386,15 @@ def cmd_qbr(args: argparse.Namespace) -> int:
     cat, data, _, score, actions, _, previous = _prepare(args)
     extras, previous = _extras(args, cat, data, score, previous)
     _emit(render_qbr(score, actions, previous, args.quarter or "", **extras), args.out)
+    return 0
+
+
+def cmd_onepager(args: argparse.Namespace) -> int:
+    from . import execqbr
+    from .onepager import render_onepager
+
+    cat, data, _, _, _, _, _ = _prepare(args)
+    _emit(render_onepager(execqbr.build([data], cat)), args.out)
     return 0
 
 
@@ -815,7 +828,7 @@ def build_parser() -> argparse.ArgumentParser:
     common(sp)
     sp.add_argument("--leak", help="only this leak: L1, L2, L3, L4, Reach, Entitlement")
     sp.add_argument("--steps", action="store_true", help="include playbook steps")
-    sp.add_argument("--format", choices=["text", "json"], default="text")
+    sp.add_argument("--format", choices=["text", "json", "csv"], default="text", help="csv is ready to import into a ticket tracker")
     sp.add_argument("--out")
     sp.set_defaults(func=cmd_actions)
 
@@ -825,6 +838,11 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--quarter", help="label for the title, e.g. Q4 2026")
     sp.add_argument("--out", help="write to this file instead of stdout")
     sp.set_defaults(func=cmd_qbr)
+
+    sp = sub.add_parser("onepager", help="a one-page summary for the customer's CISO (HTML; print to PDF for a single A4 page)")
+    common(sp)
+    sp.add_argument("--out", help="write to this file instead of stdout")
+    sp.set_defaults(func=cmd_onepager)
 
     sp = sub.add_parser("successplan", help="draft a success plan the customer can sign: outcomes, measures, milestones, owners, risks")
     common(sp)
@@ -937,7 +955,7 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("config")
     sp.add_argument("--at", default="05:17", help="time of day in UTC, HH:MM")
     sp.add_argument("--every", choices=["hour", "day", "week"], default="day")
-    sp.add_argument("--install-from", default="beyond90", help='pip requirement for the workflow, e.g. "beyond90 @ git+https://github.com/OWNER/beyond-90@v0.26.0"')
+    sp.add_argument("--install-from", default="beyond90", help='pip requirement for the workflow, e.g. "beyond90 @ git+https://github.com/OWNER/beyond-90@v0.27.0"')
     sp.add_argument("--out")
     sp.set_defaults(func=cmd_schedule)
 

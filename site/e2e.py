@@ -26,7 +26,7 @@ from playwright.sync_api import sync_playwright
 
 # Controls live in places (Start, Saved, Help); the test opens the place before using one, as a person would.
 PLACE_OF = {
-    **dict.fromkeys(("open-starter", "demo", "demo-book", "demo-endpoint", "latest-adv", "demo-adv", "clear-adv", "adv-status", "run", "cancel",
+    **dict.fromkeys(("open-starter", "open-mapper", "map-file", "map-body", "map-check", "map-use", "map-cancel", "map-notes", "demo", "demo-book", "demo-endpoint", "latest-adv", "demo-adv", "clear-adv", "adv-status", "run", "cancel",
                      "weeks", "hours", "real", "quarter", "bookhours", "weighting", "loaded", "status"), "start"),
     **dict.fromkeys(("demo-prev", "export", "forget", "vault-on", "vault-unlock", "vault-lock", "vault-off", "vault-state",
                      "vault-warn", "ws-status", "history-body", "device-qr", "send-work", "history-empty", "hist-table", "trend", "autosave", "personal"), "saved"),
@@ -203,6 +203,28 @@ def main(site: str) -> int:
         check(page.locator("#view .rung").count() == 3 and page.locator("#view .checks li").count() >= 20, "maturity shows the ladder and every check")
         page.click("[data-tab=renewal]")
         check("Renewal" in page.inner_text("#view") and "Relationship" in page.inner_text("#view"), "renewal and relationship render")
+        check("Customer health" in page.inner_text("#view") and page.locator("#view .rates li").count() >= 4 and "hypothesis" in page.inner_text("#view"),
+              "renewal shows the customer health with its parts and says it is a hypothesis")
+        page.click("[data-tab=onepager]")
+        one = page.frame_locator("#report")
+        check("effective coverage" in one.locator("body").inner_text() and "Yield" not in one.locator("body").inner_text(), "the CISO one-pager renders in the customer's words")
+        page.click("[data-tab=actionscsv]")
+        check(page.inner_text("#raw").startswith("Summary,Description,Assignee,Due date,Priority") and page.inner_text("#raw").count("\n") >= 5, "the actions are offered as a CSV for a ticket tracker")
+        with page.expect_download() as dl:
+            page.click("#download")
+        check(dl.value.suggested_filename == "beyond90-actions.csv", "the actions CSV downloads with its own name")
+        page.click("#open-mapper")
+        page.wait_for_selector("#mapper[open]")
+        page.set_input_files("#map-file", files=[{"name": "export.csv", "mimeType": "text/csv", "buffer": b"Subscription ID;Cloud;Onboarded;Team\n111122223333;Amazon;Yes;Payments\n444455556666;Amazon;No;Data\n"}])
+        page.wait_for_selector("#map-body:not([hidden])")
+        check(page.locator("#map-rows select").first.input_value() == "Subscription ID", "the mapper guesses which column is the account")
+        page.click("#map-check")
+        page.wait_for_selector("#map-preview tr")
+        check(page.locator("#map-preview tr").count() == 2 and "2 row(s) ready" in page.inner_text("#map-notes") and page.locator("#map-use:not([disabled])").count() == 1,
+              "the mapper previews the result and offers to use it")
+        page.select_option("#map-rows select >> nth=1", "")
+        check(page.locator("#map-use[disabled]").count() == 1, "changing the mapping asks for a new check")
+        page.click("#map-cancel")
         page.keyboard.press("Control+k")
         page.wait_for_selector("#palette[open]")
         page.fill("#palette-q", "findings")
@@ -417,7 +439,7 @@ def main(site: str) -> int:
         page.locator("#view tbody tr").first.get_by_role("button", name="Open").click()
         page.wait_for_selector("#run:not([disabled])", state="attached", timeout=180_000)
         page.wait_for_selector("#book-table[hidden]", state="attached")
-        check("Yield" in page.inner_text("#kpis") and page.locator("#tabs button").count() == 22, "opening a customer from the book shows its own report")
+        check("Yield" in page.inner_text("#kpis") and page.locator("#tabs button").count() == 24, "opening a customer from the book shows its own report")
         examples = Path(__file__).resolve().parent.parent / "examples" / "portfolio"
         page.set_input_files("#folder", str(examples))
         page.wait_for_selector("#status:has-text('customers found')")

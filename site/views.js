@@ -260,6 +260,17 @@ function rateBars(items) {
 }
 
 // ------------------------------------------------------------------ renewal and relationship
+function healthCard(hl) {
+  if (!hl) return null;
+  const kind = hl.band === "healthy" ? "good" : hl.band === "watch" ? "warn" : "bad";
+  const weak = hl.weakest ? hl.components.find((c) => c.id === hl.weakest) : null;
+  return card("Customer health", h("div", {},
+    h("div", { class: "kpiline" }, stat(hl.score == null ? "n/a" : String(hl.score), "out of 100", kind), stat(cap(hl.band), "band", kind), stat(`${hl.measured} of ${hl.of}`, "parts measured")),
+    rateBars(hl.components.map((c) => ({ label: `${c.label} · weight ${Math.round(c.weight * 100)}%`, rate: c.value == null ? null : c.value / 100, note: c.reason }))),
+    weak ? h("p", { class: "note", text: `The weakest part is ${weak.label.toLowerCase()}, and the band follows it.` }) : null,
+    h("p", { class: "note", text: hl.note })), { sub: "Adoption, outcomes, relationship and trajectory in one number you can discuss." });
+}
+
 export function renewalView({ score, dash }) {
   const r = dash.renewal, rel = score.relationship, u = score.universe, ent = score.entitlements || [];
   const head = r ? h("div", { class: "card callout " + (r.status === "at_risk" ? "bad" : r.status === "watch" ? "warn" : "good") },
@@ -272,7 +283,7 @@ export function renewalView({ score, dash }) {
     dataTable({ label: "Contacts", rows: rel.contacts, pageSize: 20, columns: [
       { key: "name", label: "Contact", render: (c) => h("b", { text: c.name }) }, { key: "role", label: "Role" }, { key: "trust", label: "Trust", num: true, render: (c) => c.trust.toFixed(1) },
       { key: "band", label: "Band", render: (c) => chip(c.band, c.band === "strong" ? "good" : c.band === "fragile" ? "bad" : "warn") }, { key: "limiting", label: "Weakest", render: (c) => c.limiting.replace("_", " ") }, { key: "days_since_contact", label: "Days since contact", num: true }] }).el)) : null;
-  return h("div", {}, head, h("div", { class: "col2" }, sig, h("div", {}, licences, universe)), contacts);
+  return h("div", {}, healthCard(dash.health), head, h("div", { class: "col2" }, sig, h("div", {}, licences, universe)), contacts);
 }
 
 // ------------------------------------------------------------------ portfolio

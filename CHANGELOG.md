@@ -2,6 +2,15 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.27.0
+
+Closer to the work a TAM does every week.
+
+- **Actions as a CSV.** Every open action, one per row, with the columns a ticket tracker recognises on import (summary, description, assignee, due date, priority, labels). Every cell is written so that a spreadsheet cannot read it as a formula. `beyond90 actions --format csv`, and a view in the page.
+- **A one-page summary for the CISO.** Coverage in the four parts a customer recognises, what is exposed, what happens if nothing changes, the next three actions and the decisions needed, on a single printable A4 page. No stage names, no maturity labels. `beyond90 onepager`, and a view in the page.
+- **Map an export.** Drop a CSV whose columns are named your way: the page guesses which column is which, you confirm, and it writes `accounts.csv` or `findings.csv` with values normalised (severities, providers, yes/no, dates). Rows it cannot read are skipped and counted, an ambiguous date order is reported, and an account list with no connection column says so instead of assuming.
+- **Customer health.** Adoption, outcomes, relationship and trajectory in one 0 to 100 indicator, with the weights and the reason for every part shown. A part that cannot be measured is left out and said so, and the band follows the weakest part. Offered as a hypothesis to discuss: it has not been validated against real renewals.
+
 ## 0.26.0
 
 Anyone, on any device.

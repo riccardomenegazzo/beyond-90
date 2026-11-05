@@ -1,4 +1,4 @@
-# Beyond 90: specification v0.26
+# Beyond 90: specification v0.27
 
 An adoption engine for Technical Account Managers. It measures how much of a customer's cloud estate is really covered and operated through a security platform, and turns every gap into an action. The bar keeps moving: when a customer grows or the product ships something, the denominators grow with it.
 
@@ -210,6 +210,16 @@ For each active account, signals from the other analyses: not connected (5), onb
 
 `render_pptx(review)` writes six slides with the standard library (`slides.py`): cover and summary, the four parts then and now, delivered, exposure, the two futures, decisions; no stage names, maturity labels or Yield.
 
+## 15w. Actions as CSV, a one-page summary, mapped exports, health (0.27)
+
+`actions_csv` writes one row per open action in plan order: Summary, Description (detail, steps, the question to ask, what we commit to), Assignee, Due date, Priority (the first three High, the next five Medium, the rest Low), Labels (single words), Customer, expected effect, effort, done-when and the action id. A text cell that starts with `=`, `+`, `-`, `@`, a tab or a carriage return gets a leading apostrophe.
+
+`render_onepager` takes the executive review of the current data and draws one A4 page: effective coverage and its four parts, what is exposed (critical findings, those exposed to the internet, unconnected spend share, accounts connected), the outlook in plain words, the first three priorities and the first three decisions. It carries a policy that allows no script and no outside request.
+
+`mapping` reads delimited text (comma, semicolon or tab, with or without a byte-order mark; at most 200,000 rows), guesses a column for each field of `accounts.csv` or `findings.csv` from a list of common names, and converts with the confirmed mapping. Severities, providers, booleans, exposure and decisions are normalised from common spellings; dates are read as ISO, or day/month/year unless the column proves month/day; a value that cannot be read skips its row and is counted. An unmapped connection column makes every account not connected and says so.
+
+`health.compute` gives a 0 to 100 indicator: adoption 40% (70% effective coverage, 30% coverage weighted by spend and exposure), outcomes 20% (critical findings open, 15 points each when exposed to the internet up to 60, 5 each otherwise up to 25), relationship 25% (the sponsor, threads, promises and contact signals of the renewal view: ok 1, watch 0.5, risk 0), trajectory 15% (100 minus four times the points coverage loses in 90 days if nothing is done). Parts that cannot be measured are dropped and the other weights renormalised. The band is the worse of the band by score (75 and 55) and the band by the weakest part (below 50 watch, below 30 at risk). It is a hypothesis for a conversation: it is not validated against real renewals.
+
 ## 16. Positioning against the platform's own views
 
 Security platforms commonly ship their own adoption or maturity views and an ownership model. Beyond 90 does not replace them: it measures what a platform cannot see about itself (the true universe of units to cover, across a whole portfolio) and reads ownership and decisions rather than rebuilding routing. The research behind this is in `docs/research/`.
@@ -218,7 +228,7 @@ Security platforms commonly ship their own adoption or maturity views and an own
 
 - Verification against real vendor APIs and CLIs. Collection is configuration-driven and tested against fake services; each real source must be checked with `sync` before it is trusted. No interactive OAuth flow.
 - Weighting by asset criticality.
-- Health scoring. Adoption is one input to a customer health view, not health.
+- Validation of the health indicator against real renewals: its weights are a judgement.
 
 ## 18. Roadmap
 
@@ -246,8 +256,9 @@ Security platforms commonly ship their own adoption or maturity views and an own
 22. 0.23: an interface organised by places and questions, with tooltips, plain-language help and a tour.
 23. 0.24: the connections map, where a customer's separate problems meet, and the app as a browser extension.
 24. 0.25: shared patterns across a book, the map over time, the executive review as slides, a verifiable build, fuzzing and Scorecard.
-25. 0.26 (this): installable on any device, phone-first layout, Excel and a form as inputs, sealed transfer between devices, self-hosting.
-26. 1.0: connector interface and a first verified connector against a real tenant; criticality weighting; readiness checklist import; per-finding ownership sources.
+25. 0.26: installable on any device, phone-first layout, Excel and a form as inputs, sealed transfer between devices, self-hosting.
+26. 0.27 (this): actions as CSV, the CISO one-pager, mapped exports, customer health.
+27. 1.0: connector interface and a first verified connector against a real tenant; criticality weighting; readiness checklist import; per-finding ownership sources.
 
 ## References
 

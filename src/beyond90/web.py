@@ -15,15 +15,17 @@ from datetime import date
 from pathlib import Path
 from typing import Any, Optional
 
-from . import __version__, correlate, dashboard, impact, onboarding, outlook, rhythm, stake, teams
+from . import __version__, correlate, dashboard, execqbr, health, impact, onboarding, outlook, rhythm, stake, teams
 from .attribution import explain
 from .book import build_book_plan, render_book_html, render_book_markdown
 from .candor import candor_items
 from .catalogue import Catalogue
 from .drift import input_drift
+from .exportcsv import actions_csv
 from .forecast import forecast_zero_critical
 from .ladder import path_to_next_level
 from .loader import DataError, load_customer
+from .onepager import render_onepager
 from .planner import build_plan
 from .playbooks import generate_actions
 from .portfolio import load_portfolio, render_portfolio_markdown
@@ -85,6 +87,7 @@ def analyze(
     onb = onboarding.diagnose(data)
     look = outlook.outlook(data, cat)
     weighted = stake.weighted(data, score, cat)
+    healthy = health.compute(score, data, extras.get("renewal"), look, weighted)
     value = impact.maybe(old, data, cat)
     graph = correlate.build(data, cat, onb, exposures)
     if old is not None:
@@ -118,13 +121,15 @@ def analyze(
         "receipt_markdown": impact.render(value) if value else "",
         "briefing_markdown": rhythm.customer_briefing(score.customer, str(score.as_of), exposures, cat.terms["units"]),
         "receipt_html": impact.render(value, html=True) if value else "",
-        "dashboard": dashboard.build(data, score, cat, plan, {**extras, "rhythm": rh, "onboarding": onb, "outlook": look, "stake": weighted, "impact": value,
+        "dashboard": dashboard.build(data, score, cat, plan, {**extras, "rhythm": rh, "onboarding": onb, "outlook": look, "stake": weighted, "impact": value, "health": healthy,
                                                               "teams": teams.digests(data, onb, look, weighted, cat.terms["units"]),
                                                               "graph": graph}, actions),
         "report_html": render_html(score, actions, None, previous, **extras),
         "report_markdown": render_markdown(score, actions, None, previous, **extras),
         "qbr_markdown": render_qbr(score, actions, previous, quarter, **extras),
         "success_plan_markdown": render_success_plan(score, actions, plan),
+        "actions_csv": actions_csv(actions, score.customer),
+        "onepager_html": render_onepager(execqbr.build([data], cat, threats=threats)),
         "roadmap_markdown": "\n".join([f"# Roadmap: {plan.customer}", "", *md_plan(plan, top=12)]),
         "score_json": render_json(score, actions, None),
         "summary": {k: summary[k] for k in summary if k in ("customer", "as_of", "yield", "stages")},
@@ -354,6 +359,32 @@ def workbook_json(name: str, data_b64: str) -> str:
     return json.dumps(out, ensure_ascii=False)
 
 
+def mapping_suggest_json(text: str, options_json: str = "{}") -> str:
+    """An export dropped in the mapping dialog: its columns, the file it looks like and a guessed mapping."""
+    from . import mapping
+
+    opts = json.loads(options_json)
+    try:
+        out: dict[str, Any] = {"ok": True, **mapping.suggest(text, str(opts.get("target") or ""), str(opts.get("hint") or ""))}
+    except mapping.MappingError as e:
+        out = {"ok": False, "error": str(e)}
+    return json.dumps(out, ensure_ascii=False)
+
+
+def mapping_convert_json(args_json: str) -> str:
+    """The confirmed mapping applied: the canonical file, how many rows it holds and what was left out."""
+    from . import mapping
+
+    a = json.loads(args_json)
+    try:
+        c = mapping.convert(str(a.get("text") or ""), str(a.get("target") or ""), a.get("mapping") or {}, a.get("defaults") or {})
+        out: dict[str, Any] = {"ok": True, "file": c.file, "csv": c.csv, "rows": c.rows, "skipped": c.skipped, "notes": c.notes,
+                               "preview": mapping.read_table(c.csv)[1][: mapping.SAMPLE_ROWS]}
+    except mapping.MappingError as e:
+        out = {"ok": False, "error": str(e)}
+    return json.dumps(out, ensure_ascii=False)
+
+
 def analyze_json(files_json: str, options_json: str = "{}") -> str:
     """JSON in, JSON out: the one function the page calls for a full analysis."""
     opts = json.loads(options_json)
@@ -386,7 +417,6 @@ def exec_qbr_files(snapshots: list[Mapping[str, str]], start: str = "", end: str
     """The executive review of one customer from its saved snapshots (each a mapping of file name to text)."""
     from datetime import date as _date
 
-    from . import execqbr
     if not snapshots:
         return {"ok": False, "errors": ["No saved snapshot for this customer yet: run and save an analysis first."], "version": __version__}
     if len(snapshots) > 200:

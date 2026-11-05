@@ -62,6 +62,7 @@
             <div class="row">
               <label class="btn" data-tip="Pick one customer's folder, or a folder that holds one folder per customer.">Choose a folder<input id="folder" type="file" webkitdirectory hidden></label>
               <label class="btn quiet" data-tip="Pick the files one by one: customer.toml, accounts.csv and the others.">Choose files<input id="files" type="file" multiple accept=".csv,.toml,.xlsx" hidden></label>
+              <button class="btn quiet" id="open-mapper" type="button" data-tip="An export whose columns are named differently? Say which column is which.">Map an export</button>
               <button class="btn quiet" id="open-starter" type="button" data-tip="No exports yet? Describe the customer and its accounts in a short form.">Start from a form</button>
             </div>
             <p class="fine">Needs <code>customer.toml</code> and <code>accounts.csv</code>, or one Excel workbook with a sheet for each (<code>customer</code>, <code>accounts</code>, <code>findings</code>…); the rest makes the picture sharper. <a href="https://github.com/riccardomenegazzo/beyond-90/blob/main/docs/data-format.md">What goes in each file</a></p>
@@ -292,6 +293,31 @@
       <button class="btn primary" id="st-go" type="submit">Analyse</button>
       <button class="btn" id="st-download" type="button" data-tip="Download customer.toml and accounts.csv, to keep them or complete them in a spreadsheet.">Download the files</button>
       <button class="btn quiet" id="st-cancel" type="button">Cancel</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="mapper" class="dialog starter" aria-labelledby="mapper-title">
+  <form method="dialog" id="mapper-form" novalidate>
+    <h2 id="mapper-title">Map an export</h2>
+    <p class="fine">Pick a CSV export, say which column is which, and check the result. The file is read on this device and goes nowhere.</p>
+    <label>Export file (.csv)<input id="map-file" type="file" accept=".csv"></label>
+    <div id="map-body" hidden>
+      <div class="starter-grid">
+        <label>Build<select id="map-target"><option value="accounts.csv">accounts.csv: the cloud accounts</option><option value="findings.csv">findings.csv: the findings</option></select></label>
+        <label id="map-provider-label">Provider when the file has no provider column<select id="map-provider"><option value="">not set</option><option>aws</option><option>azure</option><option>gcp</option></select></label>
+        <label id="map-name-label">Customer name<input id="map-name" type="text" autocomplete="off"></label>
+        <label id="map-asof-label">Data as of<input id="map-asof" type="date"></label>
+      </div>
+      <div class="tablewrap"><table class="starter-rows" aria-label="Column mapping"><thead><tr><th scope="col">Field</th><th scope="col">Column in your file</th></tr></thead><tbody id="map-rows"></tbody></table></div>
+      <p class="fine" id="map-count"></p>
+      <ul class="st-problems" id="map-notes" role="alert"></ul>
+      <div class="tablewrap" id="map-preview-wrap" hidden><table class="starter-rows" aria-label="Preview of the result"><thead id="map-head"></thead><tbody id="map-preview"></tbody></table></div>
+    </div>
+    <div class="row left">
+      <button class="btn" id="map-check" type="button" hidden>Check the result</button>
+      <button class="btn primary" id="map-use" type="submit" disabled>Use it</button>
+      <button class="btn quiet" id="map-cancel" type="button">Cancel</button>
     </div>
   </form>
 </dialog>
