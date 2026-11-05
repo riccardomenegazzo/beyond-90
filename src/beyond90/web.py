@@ -85,8 +85,11 @@ def analyze(
     look = outlook.outlook(data, cat)
     weighted = stake.weighted(data, score, cat)
     value = impact.maybe(old, data, cat)
+    graph = correlate.build(data, cat, onb, exposures)
     if old is not None:
-        onb["delta"] = onboarding.delta(onboarding.diagnose(old), onb, old.as_of, data.as_of)
+        old_onb = onboarding.diagnose(old)
+        onb["delta"] = onboarding.delta(old_onb, onb, old.as_of, data.as_of)
+        graph["change"] = correlate.compare(correlate.build(old, cat, old_onb, rhythm.customer_exposures(old, threats, cat)), graph, old.as_of.isoformat())
     status = onboarding.customer_status(onb, score.customer, str(score.as_of), cat.terms["units"], onb.get("delta"), coming=[e for e in look["events"] if e["who"] == "customer"])
     prep = rhythm.build_prep(data, score, actions, {**extras, "onboarding": onb, "outlook": look, "stake": weighted}, exposures, expansion)
     rh = {"touch": prep["touch"], "prep": prep, "prep_markdown": rhythm.render_prep_markdown(prep), "exposures": exposures, "expansion": expansion}
@@ -116,7 +119,7 @@ def analyze(
         "receipt_html": impact.render(value, html=True) if value else "",
         "dashboard": dashboard.build(data, score, cat, plan, {**extras, "rhythm": rh, "onboarding": onb, "outlook": look, "stake": weighted, "impact": value,
                                                               "teams": teams.digests(data, onb, look, weighted, cat.terms["units"]),
-                                                              "graph": correlate.build(data, cat, onb, exposures)}, actions),
+                                                              "graph": graph}, actions),
         "report_html": render_html(score, actions, None, previous, **extras),
         "report_markdown": render_markdown(score, actions, None, previous, **extras),
         "qbr_markdown": render_qbr(score, actions, previous, quarter, **extras),
@@ -256,6 +259,7 @@ def analyze_book(
                                ramp=RampModel(ramp_weeks), baselines=baselines)
         by_name = {e.name: e for e in pf.entries}
         week_rows, preps, onb_summary = [], {}, {}
+        graph_rows: list[dict[str, Any]] = []
         for n, d in customers:
             ent = by_name[n]
             expo = rhythm.customer_exposures(d, threats, cat)
@@ -270,11 +274,14 @@ def analyze_book(
             onb_summary[keys[n]]["first_drop"] = look["first_drop"]
             prep = rhythm.build_prep(d, ent.score, ent.actions, {"renewal": ren, "onboarding": onb, "outlook": look, "stake": stake.weighted(d, ent.score, cat)}, expo, exp)
             preps[keys[n]] = {"markdown": rhythm.render_prep_markdown(prep), "prep": prep, "exposures": expo, "expansion": exp}
+            graph_rows.append({"key": keys[n], "name": n, "yield": ent.score.yield_, "exposures": expo, "causes": onb["causes"]})
             week_rows.append({"key": keys[n], "name": n, "data": d, "score": ent.score, "renewal": ren, "exposures": expo, "expansion": exp, "onboarding": onb, "outlook": look})
         week = rhythm.week_plan(week_rows, week_hours)
         as_of = max(d.as_of for _, d in customers).isoformat()
         news = book_news(customers, threats, cat, keys, as_of)
+        graph = correlate.book(graph_rows, cat)
         return {
+            "graph": graph,
             "ok": True,
             "version": __version__,
             "errors": errors,

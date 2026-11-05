@@ -337,7 +337,7 @@ const VIEWS = {
   summary: { kind: "md", key: "report_markdown", file: "beyond90-summary.md", type: "text/markdown" },
   json: { kind: "json", key: "score_json", file: "beyond90-score.json", type: "application/json" },
   week: { kind: "view", view: "weekView" }, bookmap: { kind: "view", view: "bookView" }, bookonboard: { kind: "view", view: "bookOnboardView" },
-  booknews: { kind: "view", view: "bookNewsView" },
+  booknews: { kind: "view", view: "bookNewsView" }, bookconnections: { kind: "view", view: "bookConnectionsView" },
   portfolio: { kind: "md", key: "portfolio_markdown", file: "beyond90-portfolio.md", type: "text/markdown" },
   book: { kind: "md", key: "book_markdown", file: "beyond90-book.md", type: "text/markdown" },
   bookreport: { kind: "html", key: "book_html", file: "beyond90-book.html", type: "text/html" },

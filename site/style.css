@@ -351,6 +351,8 @@ pre.recap{white-space:pre-wrap;word-break:break-word;background:var(--sunk);bord
 .g-team .g-label{stroke:none;font-size:12.5px}
 .g-focus .g-node:not(.on),.g-focus .g-edge:not(.on){opacity:.12}
 .g-node.off,.g-edge.off{display:none}
+.g-change{padding:14px 16px;margin-bottom:16px;border:1px solid var(--line);border-left:4px solid var(--pos);border-radius:var(--r);background:var(--surface);display:grid;gap:6px}.g-change p{margin:0}.g-change summary{cursor:pointer;font-weight:600;font-size:14px}.g-change h4{margin:10px 0 2px;font-size:13.5px}
+.g-new>:first-child{filter:drop-shadow(0 0 5px var(--pos))}
 .g-panel{margin-top:16px;padding:16px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);display:grid;align-content:start;gap:8px}
 .g-panel h3{font-size:17px}.g-panel h4{font-size:14px;margin:8px 0 0}
 .g-kind{font-size:13px;color:var(--accent-text);font-weight:700}

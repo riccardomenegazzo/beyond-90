@@ -797,3 +797,8 @@ export function execQbrView({ score, result, engine, files, saved, advisories, f
 export function connectionsView({ dash, go }) {
   return connections(dash.graph, { go });
 }
+
+/** The same across the book: what several customers share, so one piece of work serves them all. */
+export function bookConnectionsView({ book, openCustomer }) {
+  return book.graph ? connections(book.graph, { go: () => {}, open: openCustomer }) : h("p", { class: "note first", text: "Run the book again to see what its customers share." });
+}

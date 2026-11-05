@@ -83,3 +83,60 @@ def test_two_faces_of_one_gap_count_once():
 
 def test_the_same_customer_always_gives_the_same_picture(demo):
     assert json.dumps(graph(), sort_keys=True) == json.dumps(demo, sort_keys=True)
+
+
+@pytest.fixture(scope="module")
+def book_graph():
+    from beyond90.web import analyze_book
+
+    groups = {p.name: {q.name: q.read_text(encoding="utf-8") for q in p.iterdir() if q.suffix in (".csv", ".toml")}
+              for p in sorted(DEMO.parent.iterdir()) if p.is_dir()}
+    out = analyze_book(groups, advisories=THREATS)
+    assert out["ok"]
+    return out["graph"]
+
+
+def test_across_a_book_customers_are_linked_to_what_they_share(book_graph):
+    kinds = {n["id"]: n["type"] for n in book_graph["nodes"]}
+    assert book_graph["stats"]["scope"] == "book"
+    assert {"customer", "story", "cause"} <= set(kinds.values())
+    assert "account" not in kinds.values()
+    for e in book_graph["edges"]:
+        assert e["source"] in kinds and e["target"] in kinds
+
+
+def test_book_insights_name_patterns_shared_by_at_least_two_customers(book_graph):
+    ins = book_graph["insights"]
+    assert ins and ins[0]["kind"] == "shared_cause"
+    for i in ins:
+        customers = [n for n in i["nodes"] if n.startswith("cust:")]
+        assert len(customers) >= (1 if i["kind"] == "convergence" else 2), i
+        words = f"{i['title']} {i['text']} {i['action']}".lower()
+        assert not [j for j in JARGON if j in words], i
+
+
+def test_a_single_customer_book_has_no_shared_patterns():
+    from beyond90.catalogue import Catalogue
+
+    g = correlate.book([{"key": "a", "name": "A", "yield": 0.8, "exposures": [], "causes": [{"issue": "x", "title": "X", "count": 3}]}],
+                       Catalogue.for_directory(str(DEMO)))
+    assert [n["type"] for n in g["nodes"]].count("customer") == 1
+    assert all(i["kind"] not in {"shared_cause", "campaign", "leverage"} for i in g["insights"])
+
+
+def test_the_map_says_what_changed_since_an_earlier_snapshot():
+    out = analyze(str(DEMO), since=str(ROOT / "examples" / "history" / "northwind-2026-09"), advisories=THREATS)
+    c = out["dashboard"]["graph"]["change"]
+    assert c["since"] == "2026-09-30" and c["say"].startswith("Since 2026-09-30")
+    assert c["before"] > c["now"] and c["cleared"]
+    rows = c["better"] + c["revealed"] + c["worse"]
+    assert len({r["account"] for r in rows}) == len(rows), "each account is counted once"
+    assert all(r["gone"] and not r["added"] for r in c["better"]) and all(r["added"] for r in c["worse"])
+    drawn = {n["id"] for n in out["dashboard"]["graph"]["nodes"]}
+    assert set(c["new_nodes"]) <= drawn
+
+
+def test_comparing_a_snapshot_with_itself_changes_nothing():
+    g = graph()
+    c = correlate.compare(g, g, "2026-10-31")
+    assert c["say"] == "Nothing changed on the map since 2026-10-31." and not c["new_nodes"]

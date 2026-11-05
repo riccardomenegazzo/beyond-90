@@ -194,7 +194,42 @@ def build(data: CustomerData, cat: Catalogue, onboarding: dict[str, Any], exposu
         n.pop("mitigated_by", None)
     return {"nodes": list(nodes.values()), "edges": edges, "insights": insights,
             "stats": {"accounts_with_signals": len(scored), "accounts_shown": len(picked), "converging": sum(1 for r in scored if _converges(r)),
-                      "stories": len(stories), "kinds": KIND_LABEL}}
+                      "stories": len(stories), "kinds": KIND_LABEL},
+            "problems": {r["id"]: sorted({s["kind"] for s in r["signals"]}) for r in scored}}
+
+
+def compare(before: dict[str, Any], now: dict[str, Any], since: str) -> dict[str, Any]:
+    """What changed on the map since an earlier snapshot: accounts cleared or newly in trouble, problems fixed or added, patterns gone or new."""
+    b, n = before["problems"], now["problems"]
+    cleared, appeared = sorted(set(b) - set(n)), sorted(set(n) - set(b))
+    better, revealed, worse = [], [], []
+    for a in sorted(set(b) & set(n)):
+        gone, added = [k for k in b[a] if k not in n[a]], [k for k in n[a] if k not in b[a]]
+        row = {"account": a, "gone": [KIND_LABEL[k] for k in gone], "added": [KIND_LABEL[k] for k in added]}
+        if gone and not added:
+            better.append(row)
+        elif added and {DIMENSION[k] for k in gone} & {"visibility"}:
+            revealed.append(row)              # connected at last: what it shows now was always there, it is progress
+        elif added:
+            worse.append(row)
+    old_ins, new_ins = {i["id"]: i["title"] for i in before["insights"]}, {i["id"]: i["title"] for i in now["insights"]}
+    drawn = {x["id"] for x in now["nodes"]}
+    fresh = [x for x in ("acct:" + a for a in appeared) if x in drawn] + [x["id"] for x in now["nodes"] if x["type"] in ("story", "cause") and x["id"] not in {y["id"] for y in before["nodes"]}]
+    parts = []
+    if cleared:
+        parts.append(f"{len(cleared)} account(s) no longer carry any problem")
+    if better:
+        parts.append(f"{len(better)} improved")
+    if revealed:
+        parts.append(f"{len(revealed)} are now visible and show what to fix")
+    if appeared:
+        parts.append(f"{len(appeared)} have problems they did not have")
+    if worse:
+        parts.append(f"{len(worse)} got worse")
+    say = ("Since " + since + ": " + "; ".join(parts) + ".") if parts else f"Nothing changed on the map since {since}."
+    return {"since": since, "before": len(b), "now": len(n), "cleared": cleared, "appeared": appeared, "better": better, "revealed": revealed, "worse": worse,
+            "insights_gone": [old_ins[k] for k in old_ins if k not in new_ins], "insights_new": [new_ins[k] for k in new_ins if k not in old_ins],
+            "new_nodes": fresh, "say": say}
 
 
 def _converges(r: dict[str, Any]) -> bool:
@@ -288,3 +323,147 @@ def _insights(picked: list[dict[str, Any]], nodes: dict[str, dict[str, Any]], ed
     for i in out:
         i["score"] = round(i["score"], 1)
     return out[:6]
+
+
+# ------------------------------------------------------------------ across a book
+
+MAX_BOOK_STORIES = 8
+MAX_BOOK_CAUSES = 8
+
+
+def book(customers: list[dict[str, Any]], cat: Catalogue) -> dict[str, Any]:
+    """The same idea one level up: which stories, onboarding blockers and missing capabilities several customers share.
+
+    `customers` holds, per customer, its `key`, `name`, `yield`, `exposures` (as matched for the week plan) and its
+    onboarding `causes` ([{issue, title, count, owner}]). A pattern at two customers or more is one piece of work done once:
+    a guide, a campaign, an enablement session, and feedback for the product team.
+    """
+    modules = {m.id: m for m in cat.modules}
+    nodes: dict[str, dict[str, Any]] = {}
+    edges: list[dict[str, Any]] = []
+    stories: dict[str, dict[str, Any]] = {}
+    causes: dict[str, dict[str, Any]] = {}
+    caps: dict[str, dict[str, Any]] = {}
+    for c in customers:
+        for e in c["exposures"]:
+            out, unknown = len(e.get("uncovered_ids", [])), len(e.get("unknown_ids", []))
+            if not out and not unknown:
+                continue
+            s = stories.setdefault(e["id"], {"title": e["title"], "severity": e["severity"], "kev": bool(e.get("kev")), "mitigated_by": e.get("mitigated_by", []), "at": {}})
+            s["at"][c["key"]] = (out, unknown)
+            for m in e.get("mitigated_by", []) if out else []:
+                caps.setdefault(m, {"at": defaultdict(set)})["at"][c["key"]].update(e.get("uncovered_ids", []))
+        for k in c["causes"]:
+            causes.setdefault(k["issue"], {"title": k["title"], "owner": k.get("owner", ""), "at": {}})["at"][c["key"]] = k["count"]
+    names = {c["key"]: c["name"] for c in customers}
+
+    def rank_story(item: tuple[str, dict[str, Any]]) -> tuple[Any, ...]:
+        sid, s = item
+        return (-sum(1 for o, _ in s["at"].values() if o), not s["kev"], SEV_RANK[s["severity"]], -len(s["at"]), sid)
+
+    top_stories = dict(sorted(stories.items(), key=rank_story)[:MAX_BOOK_STORIES])
+    top_causes = dict(sorted(causes.items(), key=lambda kv: (-len(kv[1]["at"]), -sum(kv[1]["at"].values()), kv[0]))[:MAX_BOOK_CAUSES])
+    story_mods = {m for s in top_stories.values() for m in s["mitigated_by"]}
+    top_caps = dict(sorted(((m, v) for m, v in caps.items() if m in story_mods), key=lambda kv: (-len(kv[1]["at"]), -sum(len(x) for x in kv[1]["at"].values()), kv[0]))[:MAX_MODULES])
+
+    load: dict[str, float] = defaultdict(float)
+    for s in top_stories.values():
+        for key, (out, _) in s["at"].items():
+            load[key] += (5.0 if s["kev"] else STORY_WEIGHT[s["severity"]]) * (1 if out else 0.5)
+    for k in top_causes.values():
+        for key, n in k["at"].items():
+            load[key] += 1.0 + min(n, 10) * 0.3
+    for c in customers:
+        signals = [f"{s['at'][c['key']][0]} account(s) not covered for {sid}" for sid, s in top_stories.items() if s["at"].get(c["key"], (0, 0))[0]]
+        signals += [f"{s['at'][c['key']][1]} account(s) nobody can check for {sid}" for sid, s in top_stories.items() if s["at"].get(c["key"], (0, 0))[1] and not s["at"][c["key"]][0]]
+        signals += [f"{k['at'][c['key']]} account(s) stuck: {k['title'].rstrip('.')}" for k in top_causes.values() if c["key"] in k["at"]]
+        if not signals:
+            continue
+        nodes["cust:" + c["key"]] = {"id": "cust:" + c["key"], "type": "customer", "label": c["name"], "key": c["key"], "detail": f"Yield {c['yield'] * 100:.1f}%",
+                                      "weight": round(load[c["key"]], 2), "signals": signals[:8], "convergence": 0, "connected": True}
+    for sid, s in top_stories.items():
+        at = {k: v for k, v in s["at"].items() if "cust:" + k in nodes}
+        if not at:
+            continue
+        nodes["story:" + sid] = {"id": "story:" + sid, "type": "story", "label": sid, "detail": s["title"], "severity": s["severity"], "kev": s["kev"],
+                                 "weight": float(len(at))}
+        for key, (out, unknown) in sorted(at.items()):
+            if out:
+                edges.append({"source": "story:" + sid, "target": "cust:" + key, "kind": "exposes", "label": f"{out} account(s) not covered at"})
+            else:
+                edges.append({"source": "story:" + sid, "target": "cust:" + key, "kind": "blind", "label": f"{unknown} account(s) cannot be checked at"})
+    for issue, k in top_causes.items():
+        nodes["cause:" + issue] = {"id": "cause:" + issue, "type": "cause", "label": k["title"], "detail": f"{sum(k['at'].values())} account(s) at {len(k['at'])} customer(s)",
+                                   "weight": float(sum(k["at"].values()))}
+        for key, n in sorted(k["at"].items()):
+            if "cust:" + key in nodes:
+                edges.append({"source": "cause:" + issue, "target": "cust:" + key, "kind": "blocks", "label": f"blocks {n} account(s) at"})
+    for m, v in top_caps.items():
+        label = modules[m].name if m in modules else m.replace("_", " ")
+        nodes["mod:" + m] = {"id": "mod:" + m, "type": "capability", "label": label, "detail": f"would cover exposed accounts at {len(v['at'])} customer(s)",
+                             "weight": float(sum(len(x) for x in v["at"].values()))}
+        for key, accs in sorted(v["at"].items()):
+            if "cust:" + key in nodes:
+                edges.append({"source": "cust:" + key, "target": "mod:" + m, "kind": "missing", "label": f"{len(accs)} account(s) without it at"})
+        for sid, s in top_stories.items():
+            if m in s["mitigated_by"] and "story:" + sid in nodes:
+                edges.append({"source": "mod:" + m, "target": "story:" + sid, "kind": "mitigates", "label": "would cover"})
+    for n in nodes.values():
+        if n["type"] == "customer":
+            n["convergence"] = len({e["source"].split(":")[0] for e in edges if e["target"] == n["id"]} | {"mod" for e in edges if e["source"] == n["id"]})
+
+    insights: list[dict[str, Any]] = []
+    for issue, k in top_causes.items():
+        if len(k["at"]) >= 2:
+            who = [names[x] for x in sorted(k["at"])]
+            insights.append({"id": "shared:" + issue, "kind": "shared_cause", "score": 20 + 5 * len(who) + sum(k["at"].values()),
+                             "title": f"One fix, {len(who)} customers: {k['title'].rstrip('.')}",
+                             "text": f"{sum(k['at'].values())} accounts at {_join(who)} are stuck for the same reason. Solve it once and reuse it everywhere; a blocker this common is also feedback for the product.",
+                             "action": "Write one fix guide, send it to each customer, and raise the pattern with the product team.",
+                             "owner": "You, with the product team", "nodes": ["cause:" + issue, *("cust:" + x for x in sorted(k["at"]))]})
+    for sid, s in top_stories.items():
+        hit = sorted(x for x, (o, _) in s["at"].items() if o)
+        if len(hit) >= 2:
+            insights.append({"id": "campaign:" + sid, "kind": "campaign", "score": 30 + 6 * len(hit) + (10 if s["kev"] else 0),
+                             "title": f"{sid} leaves {len(hit)} customers exposed",
+                             "text": f"{s['title']} reaches accounts without protection at {_join([names[x] for x in hit])}. One briefing, adapted per customer, covers them all.",
+                             "action": "Send the customer briefing from News to each of them this week.",
+                             "owner": "You", "nodes": ["story:" + sid, *("cust:" + x for x in hit)]})
+        blind = sorted(x for x, (o, u) in s["at"].items() if u and not o)
+        if len(blind) >= 2:
+            insights.append({"id": "blindbook:" + sid, "kind": "blind_spot", "score": 15 + 4 * len(blind),
+                             "title": f"Nobody can tell whether {sid} touches {len(blind)} customers",
+                             "text": f"At {_join([names[x] for x in blind])} the accounts it could reach are not connected, so the answer is unknown, not no.",
+                             "action": "Use the story to prioritise connecting those accounts.",
+                             "owner": "Each customer's cloud team", "nodes": ["story:" + sid, *("cust:" + x for x in blind)]})
+    for m, v in top_caps.items():
+        if len(v["at"]) >= 2 and "mod:" + m in nodes:
+            who = sorted(v["at"])
+            insights.append({"id": "enable:" + m, "kind": "leverage", "score": 18 + 4 * len(who) + sum(len(x) for x in v["at"].values()) / 4,
+                             "title": f"One enablement session closes exposures at {len(who)} customers",
+                             "text": f"{nodes['mod:' + m]['label']} would cover the exposed accounts at {_join([names[x] for x in who])}.",
+                             "action": f"Run one session on {nodes['mod:' + m]['label']} for all of them together.",
+                             "owner": "You, with each customer's security team", "nodes": ["mod:" + m, *("cust:" + x for x in who)]})
+    cust = sorted((n for n in nodes.values() if n["type"] == "customer"), key=lambda n: (-n["weight"], n["label"]))
+    if len(cust) >= 2 and cust[0]["weight"] > cust[1]["weight"] * 1.3:
+        top = cust[0]
+        insights.append({"id": "first:" + top["key"], "kind": "convergence", "score": 12 + top["weight"],
+                         "title": f"Start with {top['label']}",
+                         "text": f"More of the book's shared problems meet there than anywhere else: {'; '.join(top['signals'][:3])}.",
+                         "action": "Open the customer and prepare the call.",
+                         "owner": "You", "nodes": [top["id"], *(e["source"] for e in edges if e["target"] == top["id"])]})
+    insights.sort(key=lambda i: (-i["score"], i["id"]))
+    deg: dict[str, int] = defaultdict(int)
+    for e in edges:
+        deg[e["source"]] += 1
+        deg[e["target"]] += 1
+    for n in nodes.values():
+        n["degree"] = deg[n["id"]]
+    shown = sum(1 for n in nodes.values() if n["type"] == "customer")
+    return {"nodes": list(nodes.values()), "edges": edges, "insights": insights[:6],
+            "stats": {"accounts_with_signals": shown, "accounts_shown": shown, "converging": 0, "stories": len(top_stories), "scope": "book",
+                      "customers": len(customers)}}
+
+
+def _join(items: list[str]) -> str:
+    return items[0] if len(items) == 1 else ", ".join(items[:-1]) + " and " + items[-1]
