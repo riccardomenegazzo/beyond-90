@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import shutil
 import sys
 import zipfile
@@ -72,14 +73,37 @@ def build(out: Path, pyodide: Path, feed: Optional[Path] = None, font: Path = FO
     shutil.copy(ROOT / "THIRD_PARTY.md", out / "THIRD_PARTY.md")
     shutil.copy(ROOT / "LICENSE", out / "LICENSE.txt")
     write_service_worker(out)
+    write_manifest(out)
     (out / ".nojekyll").write_text("")
+
+
+MANIFEST = ("SHA256SUMS", "build.json")
+
+
+def write_manifest(out: Path) -> None:
+    """Publish what this build is made of: the SHA-256 of every file, in the format `sha256sum -c` reads, and its digest.
+
+    The page checks the files it is running against this list (Help, "This build"), and the Pages workflow signs the
+    list with a provenance attestation, so anyone can prove the site was built by this repository's workflow.
+    """
+    files = sorted(p.relative_to(out).as_posix() for p in out.rglob("*") if p.is_file() and p.name not in MANIFEST and p.name != ".nojekyll")
+    sums = "".join(f"{hashlib.sha256((out / n).read_bytes()).hexdigest()}  {n}\n" for n in files)
+    (out / "SHA256SUMS").write_text(sums, encoding="utf-8")
+    sys.path.insert(0, str(ROOT / "src"))
+    from beyond90 import __version__
+
+    commit = os.environ.get("GITHUB_SHA", "")
+    repo = os.environ.get("GITHUB_REPOSITORY", "riccardomenegazzo/beyond-90")
+    doc = {"schema": "beyond90-build/1", "version": __version__, "repository": repo, "commit": commit, "files": len(files),
+           "digest": hashlib.sha256(sums.encode()).hexdigest()}
+    (out / "build.json").write_text(json.dumps(doc, indent=1) + "\n", encoding="utf-8")
 
 
 def write_service_worker(out: Path) -> None:
     """Precache every file under a name derived from their content, so a new build is a new cache."""
-    files = sorted(p.relative_to(out).as_posix() for p in out.rglob("*") if p.is_file())
+    files = sorted(p.relative_to(out).as_posix() for p in out.rglob("*") if p.is_file() and p.name not in MANIFEST) + list(MANIFEST)
     digest = hashlib.sha256()
-    for name in files:
+    for name in files[: -len(MANIFEST)]:
         digest.update(name.encode() + b"\0" + (out / name).read_bytes() + b"\0")
     template = (ROOT / "site" / "sw.js").read_text(encoding="utf-8")
     assets = ["./"] + [f"./{n}" for n in files]

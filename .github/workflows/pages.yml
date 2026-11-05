@@ -52,12 +52,35 @@ jobs:
           mkdir -p _site/extension
           cp dist/extension/beyond90-chrome-*.zip _site/extension/beyond90-chrome.zip
           cp dist/extension/beyond90-firefox-*.zip _site/extension/beyond90-firefox.zip
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: provenance-subjects
+          path: |
+            _site/SHA256SUMS
+            _site/extension/*.zip
       - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
       - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
         with:
           path: _site
-  deploy:
+  attest:
+    # signs the manifest of every site file and the extension packages: anyone can prove this workflow built them
     needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: provenance-subjects
+          path: subjects
+      - uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2
+        with:
+          subject-path: |
+            subjects/SHA256SUMS
+            subjects/extension/*.zip
+  deploy:
+    needs: [build, attest]
     runs-on: ubuntu-latest
     permissions:
       pages: write

@@ -903,7 +903,34 @@ function renderRecent() {
 }
 
 // ---------- help: answers, terms and the tour
+// ---------- this build: what it is made of, and a check that the files running are the ones published
+async function renderBuild() {
+  let b = null;
+  try { b = await (await fetch("./build.json")).json(); } catch { /* a local build without a manifest */ }
+  const row = (k, v) => [el_("dt", { text: k }), el_("dd", {}, v)];
+  if (!b) { $("build-info").replaceChildren(...row("Manifest", "not found in this copy")); $("verify-build").disabled = true; return; }
+  const commit = /^[0-9a-f]{40}$/.test(b.commit) ? el_("a", { href: `https://github.com/riccardomenegazzo/beyond-90/commit/${b.commit}`, rel: "noopener noreferrer", target: "_blank", text: b.commit.slice(0, 12) }) : "local build";
+  $("build-info").replaceChildren(...row("Version", b.version), ...row("Source commit", commit), ...row("Files", String(b.files)), ...row("Manifest digest", el_("code", { text: b.digest.slice(0, 32) + "…" })));
+}
+async function verifyBuild() {
+  const out = $("verify-out");
+  $("verify-build").disabled = true;
+  out.textContent = "Checking…";
+  try {
+    const lines = (await (await fetch("./SHA256SUMS")).text()).trim().split("\n").map((l) => l.match(/^([0-9a-f]{64}) {2}(.+)$/)).filter(Boolean);
+    const bad = [];
+    for (const [, want, name] of lines) {
+      const got = Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", await (await fetch("./" + name)).arrayBuffer())), (x) => x.toString(16).padStart(2, "0")).join("");
+      if (got !== want) bad.push(name);
+    }
+    out.textContent = bad.length ? `${bad.length} of ${lines.length} files do not match the manifest: ${bad.slice(0, 5).join(", ")}. Reload the page; if it persists, do not use this copy.` : `All ${lines.length} files match the manifest.`;
+  } catch (e) { out.textContent = "The check could not run: " + e.message; }
+  $("verify-build").disabled = false;
+}
+$("verify-build").addEventListener("click", verifyBuild);
+
 function renderHelp() {
+  renderBuild();
   $("faq").replaceChildren(...FAQ.map((g, gi) => el_("section", { class: "block faqgroup", "aria-labelledby": `faq-${gi}` }, el_("h2", { id: `faq-${gi}`, text: g.group }),
     g.items.map((it) => el_("details", { class: "qa", dataset: { q: it.q } }, el_("summary", { text: it.q }), el_("p", { text: it.a }),
       it.link ? el_("p", {}, el_("button", { type: "button", class: "link", text: it.link.text, onclick: () => { showPlace(it.link.place); if (it.link.anchor) $(it.link.anchor).scrollIntoView(); } })) : null)))));

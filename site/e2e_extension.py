@@ -53,6 +53,9 @@ def main(folder: str) -> None:
         page.wait_for_selector("#selfcheck-out:has-text('the engine')", timeout=60_000)
         out = page.inner_text("#selfcheck-out")
         check("page cannot reach other sites" in out and "engine cannot reach other sites" in out, "the built-in privacy self-check passes in the extension")
+        page.click("#verify-build")
+        page.wait_for_selector("#verify-out:has-text('match')", timeout=120_000)
+        check(page.inner_text("#verify-out").startswith("All "), "every file of the package matches its manifest")
         problems = [m for m in problems if "example.com" not in m and "Content Security Policy" not in m]
         check(not problems, f"no console errors or warnings: {problems}")
         ctx.close()

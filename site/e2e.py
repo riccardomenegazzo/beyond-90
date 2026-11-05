@@ -30,7 +30,7 @@ PLACE_OF = {
                      "weeks", "hours", "real", "quarter", "bookhours", "weighting", "loaded", "status"), "start"),
     **dict.fromkeys(("demo-prev", "export", "forget", "vault-on", "vault-unlock", "vault-lock", "vault-off", "vault-state",
                      "vault-warn", "ws-status", "history-body", "history-empty", "hist-table", "trend", "autosave", "personal"), "saved"),
-    **dict.fromkeys(("selfcheck", "selfcheck-out", "faq-q", "tour-start"), "help"),
+    **dict.fromkeys(("selfcheck", "selfcheck-out", "faq-q", "tour-start", "verify-build", "verify-out", "build-info"), "help"),
 }
 
 
@@ -231,6 +231,10 @@ def main(site: str) -> int:
         page.wait_for_selector("#selfcheck-out:has-text('engine')", timeout=30_000)
         out = page.inner_text("#selfcheck-out")
         check("page cannot reach other sites" in out and "engine cannot reach other sites" in out, "nothing can leave the page or the worker: " + out)
+        page.click("#verify-build")
+        page.wait_for_selector("#verify-out:has-text('match')", timeout=120_000)
+        check(re.match(r"All \d+ files match the manifest", page.inner_text("#verify-out")) is not None and "Version" in page.inner_text("#build-info"),
+              "every file the page runs matches the published manifest")
 
         # history: empty, add the previous quarter, save, compare
         check(page.is_visible("#history-body") and page.locator("#hist-table tbody tr").count() >= 1, "every analysis is already in the customer's history")

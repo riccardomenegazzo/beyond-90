@@ -164,3 +164,25 @@ def test_the_single_report_carries_the_input_confidence():
     files = demo_files()
     files["inventory.csv"] = "account_id,resource_type,count,inventoried\n"
     assert analyze_files(files)["confidence"] == "low"
+
+
+def test_the_site_publishes_a_manifest_of_every_file(tmp_path):
+    import hashlib
+
+    sys.path.insert(0, str(ROOT / "site"))
+    import build_site
+
+    out = tmp_path / "s"
+    out.mkdir()
+    (out / "a.js").write_text("a")
+    (out / "sub").mkdir()
+    (out / "sub" / "b.bin").write_bytes(b"\0\1")
+    build_site.write_service_worker(out)
+    build_site.write_manifest(out)
+    sums = (out / "SHA256SUMS").read_text()
+    lines = dict(reversed(line.split("  ", 1)) for line in sums.splitlines())
+    assert set(lines) == {"a.js", "sub/b.bin", "sw.js"}
+    assert all(hashlib.sha256((out / n).read_bytes()).hexdigest() == h for n, h in lines.items())
+    doc = json.loads((out / "build.json").read_text())
+    assert doc["digest"] == hashlib.sha256(sums.encode()).hexdigest() and doc["files"] == 3
+    assert '"./SHA256SUMS"' in (out / "sw.js").read_text() and '"./build.json"' in (out / "sw.js").read_text()

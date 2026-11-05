@@ -26,6 +26,9 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 from beyond90 import __version__  # noqa: E402
 
+sys.path.insert(0, str(ROOT / "site"))
+from build_site import write_manifest  # noqa: E402
+
 NAME = "Beyond 90"
 DESCRIPTION = "Customer health for cloud security teams: where each customer stands and what to do next. Your data never leaves the browser."
 SIZES = (16, 32, 48, 128)
@@ -115,6 +118,7 @@ def build(site: Path, out: Path) -> list[Path]:
         (root / "manifest.json").write_text(json.dumps(manifest(browser), indent=2) + "\n", encoding="utf-8")
         page = (root / "index.html").read_text(encoding="utf-8")
         (root / "index.html").write_text(re.sub(r"worker-src 'self' blob:", "worker-src 'self'", page), encoding="utf-8")
+        write_manifest(root)                          # the package's own files, so its "Check every file" holds too
         archive = out / f"beyond90-{browser}-{__version__}.zip"
         with zipfile.ZipFile(archive, "w", zipfile.ZIP_DEFLATED) as z:
             for p in sorted(root.rglob("*")):

@@ -202,6 +202,14 @@
         <p class="row left"><button class="btn" id="selfcheck" type="button">Check that nothing leaves this page</button></p>
         <p class="fine" id="selfcheck-out" role="status"></p>
       </section>
+      <section class="block" id="build" aria-labelledby="build-h">
+        <h2 id="build-h">This build, verifiable</h2>
+        <p>Every file of this app is listed with its fingerprint (SHA-256) in a manifest that GitHub signs when it builds the site. The check below fingerprints every file your browser is running and compares it with that list.</p>
+        <dl class="buildinfo" id="build-info"></dl>
+        <p class="row left"><button class="btn" id="verify-build" type="button" data-tip="Fingerprint every file this page runs and compare it with the signed manifest.">Check every file</button></p>
+        <p class="fine" id="verify-out" role="status"></p>
+        <p class="fine">To check it on your own: download <a href="SHA256SUMS" download>SHA256SUMS</a>, then <code>gh attestation verify SHA256SUMS --repo riccardomenegazzo/beyond-90</code> proves GitHub built it from the public repository, and <code>sha256sum -c SHA256SUMS</code> in a copy of the site proves the files match.</p>
+      </section>
       <section class="block" id="get-extension" aria-labelledby="ext-h">
         <h2 id="ext-h">Use it from the browser toolbar</h2>
         <p>The same app, packaged as a browser extension: one click opens it in its own tab, it works without a connection, asks for no permissions and cannot see the pages you visit.</p>
