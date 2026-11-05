@@ -19,12 +19,14 @@ from typing import Optional
 
 ROOT = Path(__file__).resolve().parent.parent
 PYODIDE_FILES = ("pyodide.mjs", "pyodide.asm.mjs", "pyodide.asm.wasm", "python_stdlib.zip", "pyodide-lock.json", "package.json")
+FONT = ROOT / "site" / "npm" / "node_modules" / "@fontsource-variable" / "atkinson-hyperlegible-next"
+FONT_FILES = {f"files/atkinson-hyperlegible-next-{s}-wght-normal.woff2": f"atkinson-{s}.woff2" for s in ("latin", "latin-ext")} | {"LICENSE": "OFL.txt"}
 DEMO = ROOT / "examples" / "portfolio" / "northwind"
 DEMO_ENDPOINT = ROOT / "examples" / "profiles" / "endpoint" / "acme-endpoint"
 DEMO_PREVIOUS = ROOT / "examples" / "history" / "northwind-2026-09"
 
 
-def build(out: Path, pyodide: Path, feed: Optional[Path] = None) -> None:
+def build(out: Path, pyodide: Path, feed: Optional[Path] = None, font: Path = FONT) -> None:
     if out.exists():
         shutil.rmtree(out)
     out.mkdir(parents=True)
@@ -54,11 +56,11 @@ def build(out: Path, pyodide: Path, feed: Optional[Path] = None) -> None:
     ep = {p.name: p.read_text(encoding="utf-8") for p in sorted(DEMO_ENDPOINT.iterdir()) if p.suffix in (".csv", ".toml")}
     (out / "demo-endpoint.json").write_text(json.dumps(ep, ensure_ascii=False), encoding="utf-8")
     shutil.copy(ROOT / "examples" / "threats.json", out / "demo-advisories.json")
-    font = ROOT / "site" / "npm" / "node_modules" / "@fontsource-variable" / "atkinson-hyperlegible-next"
     (out / "fonts").mkdir()
-    for subset in ("latin", "latin-ext"):
-        shutil.copy(font / "files" / f"atkinson-hyperlegible-next-{subset}-wght-normal.woff2", out / "fonts" / f"atkinson-{subset}.woff2")
-    shutil.copy(font / "LICENSE", out / "fonts" / "OFL.txt")
+    for src, name in FONT_FILES.items():
+        if not (font / src).exists():
+            sys.exit(f"missing {font / src}: run npm ci in site/npm first")
+        shutil.copy(font / src, out / "fonts" / name)
     # Always a feed file, so the page never asks for one that is missing; an empty one when none was collected.
     doc = {"schema": "beyond90-feed/1", "as_of": "", "window_days": 0, "sources": [], "threats": [], "general": [], "note": "No feed was collected for this build."}
     if feed is not None and feed.is_file():

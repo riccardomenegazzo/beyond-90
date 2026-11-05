@@ -61,18 +61,21 @@ def test_site_build_is_reproducible_and_has_no_third_party_urls(tmp_path):
     fake.mkdir()
     for n in build_site.PYODIDE_FILES:
         (fake / n).write_bytes(b"x")
+    font = tmp_path / "font"
+    for n in build_site.FONT_FILES:
+        (font / n).parent.mkdir(parents=True, exist_ok=True)
+        (font / n).write_bytes(b"x")
     a, b = tmp_path / "a", tmp_path / "b"
-    build_site.build(a, fake)
-    build_site.build(b, fake)
+    build_site.build(a, fake, font=font)
+    build_site.build(b, fake, font=font)
     assert (a / "beyond90.zip").read_bytes() == (b / "beyond90.zip").read_bytes()
     assert {"index.html", "app.js", "style.css", "demo.json", "beyond90.zip", ".nojekyll"} <= {p.name for p in a.iterdir()}
     import re
     assert (a / "sw.js").read_text() == (b / "sw.js").read_text() and "beyond90-" in (a / "sw.js").read_text()
-    allowed = ("github.com/riccardomenegazzo", "example.com/beyond90-probe")        # links, and the self-check that proves nothing can leave
-    for name in ("index.html", "app.js", "engine.js", "store.js", "workspace-core.js", "worker.js", "sw.js"):
+    allowed = ("github.com/riccardomenegazzo", "example.com/beyond90-probe", "www.w3.org/2000/svg")   # links, the self-check that proves nothing can leave, the SVG namespace
+    for name in ("index.html", "app.js", "engine.js", "store.js", "workspace-core.js", "worker.js", "sw.js", "guide.js", "views.js", "ui.js"):
         urls = re.findall(r"https?://[^\s\"')`]+", (a / name).read_text())
         assert all(any(ok in u for ok in allowed) for u in urls), (name, urls)
-
 
 
 HISTORY = ROOT / "examples" / "history" / "northwind-2026-09"
