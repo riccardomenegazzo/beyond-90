@@ -1,5 +1,6 @@
 // Beyond 90 in the browser. The Python engine runs in a worker (WebAssembly, Pyodide) from this same origin.
 // Files are read with the File API and handed to the worker as text. User data is never sent anywhere.
+import { qrSvg } from "./qr.js";
 import { Engine } from "./engine.js";
 import * as W from "./workspace-core.js";
 import * as store from "./store.js";
@@ -366,6 +367,7 @@ function showPlace(name) {
   state.place = name;
   for (const b of document.querySelectorAll(".rail [data-place]")) b.toggleAttribute("aria-current", b.dataset.place === name);
   if (name !== "work") for (const b of document.querySelectorAll("#tabs button")) b.removeAttribute("aria-current");
+  if (name === "saved") renderDeviceQr();
   window.scrollTo({ top: 0 });
 }
 
@@ -591,6 +593,34 @@ async function exportWorkspace() {
   wsSay(sealed ? `Exported ${state.saved.length} snapshot(s), sealed with your passphrase.`
     : `Exported ${state.saved.length} snapshot(s). The file is not encrypted and contains customer data: protect saved data with a passphrase and exports are sealed too.`);
 }
+
+// ---------- another device: a code to open the app there, and the work sent as one sealed file
+function renderDeviceQr() {
+  const box = $("device-qr");
+  if (box.childElementCount || !/^https?:$/.test(location.protocol)) { $("devices").hidden = !/^https?:$/.test(location.protocol); return; }
+  const url = location.origin + location.pathname.replace(/index\.html$/, "");
+  box.append(qrSvg(url, "QR code that opens Beyond 90 at " + url), el_("p", { class: "fine", text: url }));
+}
+async function sendWork() {
+  if (!state.saved.length) return wsSay("Nothing saved yet: analyse a customer first, and it is kept here.");
+  if (!(await store.getVault())) {
+    wsSay("Protect your saved data with a passphrase first: your work then travels encrypted, and only that passphrase opens it.");
+    $("vault-on").focus();
+    return;
+  }
+  if (!store.unlocked() && !(await unlockVaultUi())) return;
+  const sealed = await store.sealExport(W.serializeWorkspace(state.saved, { engine: state.engine ? state.engine.version : "" }));
+  const file = new File([sealed], "beyond90-workspace.sealed.json", { type: "application/json" });
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try {
+      await navigator.share({ files: [file], title: "Beyond 90 workspace" });
+      return wsSay(`Sent ${state.saved.length} snapshot(s), encrypted. Import the file on the other device with your passphrase.`);
+    } catch (e) { if (e.name === "AbortError") return; }
+  }
+  save(file, file.name);
+  wsSay(`Saved ${state.saved.length} snapshot(s) as one encrypted file. Move it to the other device and import it there with your passphrase.`);
+}
+$("send-work").addEventListener("click", sendWork);
 
 async function importWorkspace(file) {
   try {

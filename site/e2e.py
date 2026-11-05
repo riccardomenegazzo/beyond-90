@@ -29,7 +29,7 @@ PLACE_OF = {
     **dict.fromkeys(("demo", "demo-book", "demo-endpoint", "latest-adv", "demo-adv", "clear-adv", "adv-status", "run", "cancel",
                      "weeks", "hours", "real", "quarter", "bookhours", "weighting", "loaded", "status"), "start"),
     **dict.fromkeys(("demo-prev", "export", "forget", "vault-on", "vault-unlock", "vault-lock", "vault-off", "vault-state",
-                     "vault-warn", "ws-status", "history-body", "history-empty", "hist-table", "trend", "autosave", "personal"), "saved"),
+                     "vault-warn", "ws-status", "history-body", "device-qr", "send-work", "history-empty", "hist-table", "trend", "autosave", "personal"), "saved"),
     **dict.fromkeys(("selfcheck", "selfcheck-out", "faq-q", "tour-start", "verify-build", "verify-out", "build-info"), "help"),
 }
 
@@ -238,6 +238,11 @@ def main(site: str) -> int:
 
         # history: empty, add the previous quarter, save, compare
         check(page.is_visible("#history-body") and page.locator("#hist-table tbody tr").count() >= 1, "every analysis is already in the customer's history")
+        check(page.locator("#device-qr svg.qr path").count() == 1 and "github.io" not in page.inner_text("#device-qr") and "127.0.0.1" in page.inner_text("#device-qr"),
+              "Saved shows a code that opens this app on another device")
+        page.click("#send-work")
+        page.wait_for_selector("#ws-status:not(:empty)")
+        check("passphrase first" in page.inner_text("#ws-status"), "work is sent to another device only encrypted: a passphrase is asked for first: " + page.inner_text("#ws-status"))
         page.click("[data-tab=overview]")
         page.click("#demo-prev")
         page.wait_for_selector("#demo-prev", state="hidden")
@@ -461,6 +466,10 @@ def main(site: str) -> int:
         sealed_text = sealed_file.read_text()
         check(json.loads(sealed_text)["format"] == "beyond90-sealed-workspace" and "Northwind" not in sealed_text and "accounts.csv" not in sealed_text,
               "with a passphrase, an exported workspace is sealed too")
+        with page.expect_download() as d:                      # headless Chromium has no share sheet: the file is saved instead
+            page.click("#send-work")
+        sent = Path(d.value.path()).read_text()
+        check(json.loads(sent)["format"] == "beyond90-sealed-workspace" and "Northwind" not in sent, "work sent to another device travels sealed")
         rows_before = page.locator("#hist-table tbody tr").count()
         page.set_input_files("#import", str(sealed_file))
         page.wait_for_selector("#vault-title:has-text('sealed workspace')")
