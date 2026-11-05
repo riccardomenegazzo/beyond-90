@@ -28,6 +28,8 @@ def built(tmp_path):
     (site / "index.html").write_text((ROOT / "site" / "index.html").read_text(encoding="utf-8"), encoding="utf-8")
     for name in ("app.js", "sw.js", ".nojekyll"):
         (site / name).write_text("//", encoding="utf-8")
+    (site / "icons").mkdir()                                  # the site's own app icons share the folder
+    (site / "icons" / "app-192.png").write_bytes(b"png")
     (site / "pyodide").mkdir()
     (site / "pyodide" / "pyodide.mjs").write_text("//", encoding="utf-8")
     out = tmp_path / "ext"

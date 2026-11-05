@@ -1,0 +1,9 @@
+.git
+.github
+_site
+dist
+**/node_modules
+**/__pycache__
+*.pyc
+docs
+tests

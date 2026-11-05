@@ -507,6 +507,18 @@ def cmd_exec_qbr(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_app(args: argparse.Namespace) -> int:
+    from . import serve
+
+    source = Path(args.site)
+    try:
+        serve.run(source, args.host, args.port, tuple(args.name), lambda m: print(m, file=sys.stderr))
+    except (ValueError, OSError) as e:
+        print(f"beyond90 app: {e}", file=sys.stderr)
+        return 2
+    return 0
+
+
 def cmd_history(args: argparse.Namespace) -> int:
     store = Store(args.store)
     rows = store.history(args.customer)
@@ -867,6 +879,13 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--format", choices=["json", "markdown"], default="json")
     sp.add_argument("--out")
     sp.set_defaults(func=cmd_feeds)
+
+    sp = sub.add_parser("app", help="serve the browser app from this machine or your own network (a built site folder or beyond90-site.zip)")
+    sp.add_argument("--site", default="beyond90-site.zip", help="the built site: a folder, or the beyond90-site.zip published with each build")
+    sp.add_argument("--host", default="127.0.0.1", help="address to listen on (default: this machine only)")
+    sp.add_argument("--port", type=int, default=8090)
+    sp.add_argument("--name", action="append", default=[], help="a host name the app is reached by, e.g. beyond90.example.internal (repeatable)")
+    sp.set_defaults(func=cmd_app)
 
     sp = sub.add_parser("exec-qbr", help="an executive review (for a CISO) of one customer over a period, from its saved snapshots")
     sp.add_argument("snapshots", nargs="+", help="data directories of the same customer, one per snapshot, in any order")
