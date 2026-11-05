@@ -1,5 +1,7 @@
 # Beyond 90
 
+[![CI](https://github.com/riccardomenegazzo/beyond-90/actions/workflows/ci.yml/badge.svg)](https://github.com/riccardomenegazzo/beyond-90/actions/workflows/ci.yml) [![CodeQL](https://github.com/riccardomenegazzo/beyond-90/actions/workflows/codeql.yml/badge.svg)](https://github.com/riccardomenegazzo/beyond-90/actions/workflows/codeql.yml) [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/riccardomenegazzo/beyond-90/badge)](https://scorecard.dev/viewer/?uri=github.com/riccardomenegazzo/beyond-90)
+
 **An adoption score that cannot be flattered, a roadmap that tells you the dip before it happens, and an honest answer to "did the customer improve, or did the bar move?"**
 
 Most adoption reporting stops at "90% of accounts connected" (or sites, tenants, organizations: whatever your product connects). That number leaves out units nobody planned for, asset types the product never inventoried, controls that are switched off and findings nobody owns. Beyond 90 measures the whole pipeline against independent denominators, turns every gap into an action, and then goes further than a dashboard can.

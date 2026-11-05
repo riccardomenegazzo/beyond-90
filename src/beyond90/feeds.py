@@ -186,12 +186,12 @@ def _text(el: Optional[ET.Element]) -> str:
 
 def parse_xml(body: bytes) -> list[dict[str, Any]]:
     """RSS 2.0 or Atom. A document that declares a DOCTYPE or an entity is refused before it is parsed."""
-    head = body[:4096].lower()
-    if b"<!doctype" in head or b"<!entity" in body.lower():
+    low = body.lower()
+    if b"<!doctype" in low or b"<!entity" in low:
         raise FeedError("XML with a DOCTYPE or an entity declaration is refused")
     try:
         root = ET.fromstring(body)  # noqa: S314 - DOCTYPE and entity declarations are refused above
-    except ET.ParseError as e:
+    except (ET.ParseError, LookupError, ValueError) as e:       # LookupError: a declared encoding Python does not know
         raise FeedError(f"not valid XML ({e})") from None
     items = [el for el in root.iter() if _local(el.tag) in ("item", "entry")]
     out = []
@@ -209,7 +209,7 @@ def parse_xml(body: bytes) -> list[dict[str, Any]]:
                     break
         when = _text(_child(it, "pubdate", "published", "updated", "date", "issued"))
         body_text = _text(_child(it, "description", "summary", "encoded", "content"))
-        out.append({"title": _text(_child(it, "title")), "url": link or _text(_child(it, "guid", "id")), "published": when, "text": body_text,
+        out.append({"title": _text(_child(it, "title")), "url": safe_link(link or _text(_child(it, "guid", "id"))), "published": when, "text": body_text,
                     "guid": _text(_child(it, "guid", "id"))})
     return out
 
@@ -226,7 +226,7 @@ def parse_jsonfeed(body: bytes) -> list[dict[str, Any]]:
     for it in items[:PARSE_CAP]:
         if not isinstance(it, dict):
             continue
-        out.append({"title": it.get("title") or it.get("id") or "", "url": it.get("url") or it.get("external_url") or "",
+        out.append({"title": it.get("title") or it.get("id") or "", "url": safe_link(it.get("url") or it.get("external_url") or ""),
                     "published": it.get("date_published") or it.get("date_modified") or "", "text": it.get("content_text") or it.get("summary") or it.get("content_html") or "",
                     "guid": str(it.get("id") or "")})
     return out
