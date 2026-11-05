@@ -71,7 +71,7 @@ def build(site: Path, out: Path) -> list[Path]:
         root = out / browser
         shutil.copytree(site, root, ignore=lambda d, names: [n for n in names if n in LEFT_OUT and Path(d) == site])
         shutil.copy(ROOT / "site" / "extension" / "background.js", root / "background.js")
-        (root / "icons").mkdir()
+        (root / "icons").mkdir(exist_ok=True)       # the site already has its app icons there
         for s, data in icons.items():
             (root / "icons" / f"icon-{s}.png").write_bytes(data)
         (root / "manifest.json").write_text(json.dumps(manifest(browser), indent=2) + "\n", encoding="utf-8")
