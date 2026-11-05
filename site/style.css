@@ -72,6 +72,7 @@ label{display:flex;flex-direction:column;gap:5px;font-size:13.5px;color:var(--in
 input[type=number],input[type=text],input[type=search],input[type=date],input[type=password],select,textarea{font:inherit;font-size:15px;padding:8px 11px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);min-height:38px}
 textarea{width:100%;resize:vertical}
 input:focus-visible,select:focus-visible,textarea:focus-visible{border-color:var(--accent);outline-offset:0}
+.update-bar{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--accent-text)}.update-bar[hidden]{display:none}
 .chip{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:1px 10px;font-size:12.5px;color:var(--ink2);white-space:nowrap}
 .chip2{display:inline-block;border-radius:999px;padding:0 9px;font-size:12.5px;line-height:21px;border:1px solid var(--line);color:var(--ink2);white-space:nowrap;font-weight:600}
 .chip2.good{color:var(--pos);border-color:color-mix(in srgb,var(--pos) 45%,transparent);background:color-mix(in srgb,var(--pos) 9%,transparent)}

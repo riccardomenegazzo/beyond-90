@@ -1,11 +1,15 @@
-// Offline support. The whole app is cached under one version name when it is installed, and a new version
-// waits until every tab using the old one is closed, so a page from one build never asks for a worker or an
-// engine from another.
+// Offline support. The whole app is cached under one version name when it is installed. A new version waits
+// until the page asks for it ("Update now"), then every open tab reloads at once, so a page from one build never
+// asks for a worker or an engine from another.
 const CACHE = "__CACHE__";
 const ASSETS = __ASSETS__;
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)));
+});
+
+self.addEventListener("message", (event) => {
+  if (event.data === "activate-now") self.skipWaiting();
 });
 
 self.addEventListener("activate", (event) => {

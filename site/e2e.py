@@ -500,6 +500,21 @@ def main(site: str) -> int:
         check("Yield" in page.inner_text("#kpis"), "the whole app works with no network")
         ctx.set_offline(False)
 
+        # a new build is offered, not forced, and one click moves the page to it
+        sw = Path(site) / "sw.js"
+        original = sw.read_text(encoding="utf-8")
+        try:
+            sw.write_text(re.sub(r'const CACHE = "(beyond90-[0-9a-f]+)"', r'const CACHE = "\1-next"', original), encoding="utf-8")
+            page.reload()
+            page.wait_for_selector("#update-bar:not([hidden])", timeout=60_000)
+            check(page.is_visible("#offline"), "the current version keeps working while the new one waits")
+            with page.expect_navigation():
+                page.click("#update-now")
+            page.wait_for_function("caches.keys().then(k => k.some(n => n.endsWith('-next')) && !k.some(n => /^beyond90-[0-9a-f]+$/.test(n)))", timeout=60_000)
+            check(page.locator("#update-bar").is_hidden(), "after Update now the page runs the new version and the old cache is gone")
+        finally:
+            sw.write_text(original, encoding="utf-8")
+
         browser.close()
         browser = p.chromium.launch()
 

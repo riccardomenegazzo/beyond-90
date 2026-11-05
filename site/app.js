@@ -46,6 +46,23 @@ function refreshRun() {
   $("demo-book").disabled = $("demo-endpoint").disabled = !(state.engine && state.engine.version);
 }
 
+// A new build is installed in the background and offered, never forced: "Update now" switches every tab to it at once.
+function offerUpdate(reg) {
+  const offer = (w) => {
+    if (!w || !navigator.serviceWorker.controller) return;           // the first install is not an update
+    $("update-bar").hidden = false;
+    $("update-now").onclick = () => { $("update-now").disabled = true; w.postMessage("activate-now"); };
+  };
+  offer(reg.waiting);
+  reg.addEventListener("updatefound", () => {
+    const w = reg.installing;
+    w?.addEventListener("statechange", () => { if (w.state === "installed") offer(w); });
+  });
+  let reloading = false;
+  navigator.serviceWorker.addEventListener("controllerchange", () => { if (!reloading) { reloading = true; location.reload(); } });
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") reg.update().catch(() => {}); });
+}
+
 async function registerOffline() {
   if (/^(chrome|moz)-extension:$/.test(location.protocol)) {       // the extension carries every file: offline by nature
     $("offline").hidden = false;
@@ -54,7 +71,8 @@ async function registerOffline() {
   }
   if (!("serviceWorker" in navigator) || !(location.protocol === "https:" || ["localhost", "127.0.0.1"].includes(location.hostname))) return;
   try {
-    await navigator.serviceWorker.register(swPolicy ? swPolicy.createScriptURL("./sw.js") : "./sw.js");
+    const reg = await navigator.serviceWorker.register(swPolicy ? swPolicy.createScriptURL("./sw.js") : "./sw.js", { updateViaCache: "none" });
+    offerUpdate(reg);
     await navigator.serviceWorker.ready;
     const keys = await caches.keys();
     $("offline").hidden = !keys.some((k) => k.startsWith("beyond90-"));

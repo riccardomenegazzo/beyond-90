@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.24.1
+
+- **Updates reach you.** The app used to keep serving the cached version until every tab of it was closed, so a reload showed the old interface. A new version is now downloaded in the background and offered at the top of the page; **Update now** switches every open tab to it at once, and the old copy is deleted. The browser checks for a new version each time the tab comes back into view. Tested end to end.
+
 ## 0.24.0
 
 Where the problems meet, and the app in the browser toolbar.
