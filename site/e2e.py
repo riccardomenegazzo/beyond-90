@@ -26,7 +26,7 @@ from playwright.sync_api import sync_playwright
 
 # Controls live in places (Start, Saved, Help); the test opens the place before using one, as a person would.
 PLACE_OF = {
-    **dict.fromkeys(("demo", "demo-book", "demo-endpoint", "latest-adv", "demo-adv", "clear-adv", "adv-status", "run", "cancel",
+    **dict.fromkeys(("open-starter", "demo", "demo-book", "demo-endpoint", "latest-adv", "demo-adv", "clear-adv", "adv-status", "run", "cancel",
                      "weeks", "hours", "real", "quarter", "bookhours", "weighting", "loaded", "status"), "start"),
     **dict.fromkeys(("demo-prev", "export", "forget", "vault-on", "vault-unlock", "vault-lock", "vault-off", "vault-state",
                      "vault-warn", "ws-status", "history-body", "device-qr", "send-work", "history-empty", "hist-table", "trend", "autosave", "personal"), "saved"),
@@ -510,6 +510,23 @@ def main(site: str) -> int:
         run_and_wait()
         page.wait_for_selector("#results:not([hidden])")
         check("Yield" in page.inner_text("#kpis"), "after cancelling, the engine restarts and works")
+
+        # no files at all: a short form makes them
+        page.click(".rail [data-place=start]")
+        page.click("#open-starter")
+        page.click("#st-go")
+        check("Give the customer a name." in page.inner_text("#st-problems") and "Add at least one" in page.inner_text("#st-problems"), "the form says what is missing, in words")
+        page.fill("#st-name", "Contoso <b>test</b>")
+        rows = page.locator("#st-rows tr")
+        rows.nth(0).locator("input[aria-label=Account]").fill("prod")
+        rows.nth(0).locator("input[aria-label=Connected]").check()
+        rows.nth(0).locator("input[aria-label='Monthly spend']").fill("1200")
+        rows.nth(1).locator("input[aria-label=Account]").fill("dev")
+        rows.nth(1).locator("select").select_option("azure")
+        page.click("#st-go")
+        page.wait_for_selector("#results:not([hidden])", timeout=120_000)
+        page.wait_for_selector("#run:not([disabled])", state="attached", timeout=120_000)
+        check("Contoso <b>test</b>" in page.inner_text("#reshead") and "50.0%" in page.inner_text("#kpis"), "a customer described in the form is analysed, its name kept as text")
 
         # an Excel workbook stands in for the files
         page.click(".rail [data-place=start]")

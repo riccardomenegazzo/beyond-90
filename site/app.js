@@ -1,6 +1,7 @@
 // Beyond 90 in the browser. The Python engine runs in a worker (WebAssembly, Pyodide) from this same origin.
 // Files are read with the File API and handed to the worker as text. User data is never sent anywhere.
 import { qrSvg } from "./qr.js";
+import { PROVIDERS, problems as starterProblems, starterFiles } from "./starter.js";
 import { Engine } from "./engine.js";
 import * as W from "./workspace-core.js";
 import * as store from "./store.js";
@@ -593,6 +594,53 @@ async function exportWorkspace() {
   wsSay(sealed ? `Exported ${state.saved.length} snapshot(s), sealed with your passphrase.`
     : `Exported ${state.saved.length} snapshot(s). The file is not encrypted and contains customer data: protect saved data with a passphrase and exports are sealed too.`);
 }
+
+// ---------- start from a form: the two files every analysis needs, made from what the user knows
+function starterRow(a = { id: "", provider: "aws", connected: false, owner: "", spend: "" }) {
+  const tr = el_("tr", {},
+    el_("td", {}, el_("input", { type: "text", "aria-label": "Account", value: a.id, placeholder: "e.g. prod-payments" })),
+    el_("td", {}, el_("select", { "aria-label": "Provider" }, PROVIDERS.map((p) => el_("option", { value: p, text: p, selected: p === a.provider })))),
+    el_("td", {}, el_("input", { type: "checkbox", "aria-label": "Connected", checked: a.connected })),
+    el_("td", {}, el_("input", { type: "text", "aria-label": "Owner", value: a.owner, placeholder: "team" })),
+    el_("td", {}, el_("input", { type: "number", min: "0", step: "1", inputmode: "numeric", "aria-label": "Monthly spend", value: a.spend, placeholder: "spend / month" })),
+    el_("td", {}, el_("button", { type: "button", class: "icon-btn", "aria-label": "Remove this account", text: "×", onclick: () => tr.remove() })));
+  $("st-rows").append(tr);
+}
+function starterForm() {
+  return {
+    customer: { name: $("st-name").value, tier: $("st-tier").value, arr: $("st-arr").value, as_of: $("st-asof").value, renewal_date: $("st-renewal").value },
+    accounts: [...$("st-rows").children].map((tr) => {
+      const [id, provider, connected, owner, spend] = tr.querySelectorAll("input, select");
+      return { id: id.value, provider: provider.value, connected: connected.checked, owner: owner.value, spend: spend.value };
+    }),
+  };
+}
+function starterCheck() {
+  const p = starterProblems(starterForm());
+  $("st-problems").replaceChildren(...p.map((t) => el_("li", { text: t })));
+  return p.length ? null : starterFiles(starterForm());
+}
+$("open-starter").addEventListener("click", () => {
+  if (!$("st-asof").value) $("st-asof").value = new Date().toISOString().slice(0, 10);
+  if (!$("st-rows").children.length) for (let i = 0; i < 3; i++) starterRow();
+  $("st-problems").replaceChildren();
+  $("starter").showModal();
+  $("st-name").focus();
+});
+$("st-add").addEventListener("click", () => { starterRow(); $("st-rows").lastElementChild.querySelector("input").focus(); });
+$("st-cancel").addEventListener("click", () => $("starter").close());
+$("st-download").addEventListener("click", () => {
+  const f = starterCheck();
+  if (f) for (const [name, text] of Object.entries(f)) saveBlob(text, name, name.endsWith(".csv") ? "text/csv" : "application/toml");
+});
+$("starter-form").addEventListener("submit", (e) => {
+  const f = starterCheck();
+  if (!f) { e.preventDefault(); return; }
+  state.mode = "single"; state.groups = {}; state.files = f;
+  renderLoaded();
+  say("Made customer.toml and accounts.csv from the form.");
+  run();
+});
 
 // ---------- another device: a code to open the app there, and the work sent as one sealed file
 function renderDeviceQr() {

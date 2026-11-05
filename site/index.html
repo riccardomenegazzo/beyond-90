@@ -62,6 +62,7 @@
             <div class="row">
               <label class="btn" data-tip="Pick one customer's folder, or a folder that holds one folder per customer.">Choose a folder<input id="folder" type="file" webkitdirectory hidden></label>
               <label class="btn quiet" data-tip="Pick the files one by one: customer.toml, accounts.csv and the others.">Choose files<input id="files" type="file" multiple accept=".csv,.toml,.xlsx" hidden></label>
+              <button class="btn quiet" id="open-starter" type="button" data-tip="No exports yet? Describe the customer and its accounts in a short form.">Start from a form</button>
             </div>
             <p class="fine">Needs <code>customer.toml</code> and <code>accounts.csv</code>, or one Excel workbook with a sheet for each (<code>customer</code>, <code>accounts</code>, <code>findings</code>…); the rest makes the picture sharper. <a href="https://github.com/riccardomenegazzo/beyond-90/blob/main/docs/data-format.md">What goes in each file</a></p>
           </div>
@@ -269,6 +270,29 @@
     <label id="vault-again-label">Again<input id="vault-pass2" type="password" autocomplete="off"></label>
     <p class="fine" id="vault-msg" role="alert"></p>
     <div class="row left"><button class="btn primary" id="vault-go" type="submit">Continue</button><button class="btn quiet" id="vault-cancel" type="button">Cancel</button></div>
+  </form>
+</dialog>
+
+<dialog id="starter" class="dialog starter" aria-labelledby="starter-title">
+  <form method="dialog" id="starter-form" novalidate>
+    <h2 id="starter-title">Start from a form</h2>
+    <p class="fine">No exports yet? Fill in what you know; the analysis tells you what to collect next. Nothing leaves this page.</p>
+    <div class="starter-grid">
+      <label>Customer name<input id="st-name" type="text" autocomplete="off" required></label>
+      <label>Tier<select id="st-tier"><option>strategic</option><option selected>enterprise</option><option>standard</option></select></label>
+      <label>Annual revenue (optional)<input id="st-arr" type="number" min="0" step="1" inputmode="numeric"></label>
+      <label>Data as of<input id="st-asof" type="date" required></label>
+      <label>Renewal date (optional)<input id="st-renewal" type="date"></label>
+    </div>
+    <h3>Cloud accounts and clusters</h3>
+    <div class="tablewrap"><table class="starter-rows" aria-label="Accounts"><thead><tr><th scope="col">Account</th><th scope="col">Provider</th><th scope="col">Connected</th><th scope="col">Owner</th><th scope="col">Monthly spend</th><th scope="col"><span class="sr-only">Remove</span></th></tr></thead><tbody id="st-rows"></tbody></table></div>
+    <p class="row left"><button class="btn small" id="st-add" type="button">Add an account</button></p>
+    <ul class="st-problems" id="st-problems" role="alert"></ul>
+    <div class="row left">
+      <button class="btn primary" id="st-go" type="submit">Analyse</button>
+      <button class="btn" id="st-download" type="button" data-tip="Download customer.toml and accounts.csv, to keep them or complete them in a spreadsheet.">Download the files</button>
+      <button class="btn quiet" id="st-cancel" type="button">Cancel</button>
+    </div>
   </form>
 </dialog>
 
