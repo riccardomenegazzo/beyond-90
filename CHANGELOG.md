@@ -2,6 +2,17 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.26.0
+
+Anyone, on any device.
+
+- **Installs as an app** on phones, tablets and computers: a web app manifest and icons drawn from source; Help offers the browser's install prompt and explains iPhone, Android and Firefox. Chromium's installability check passes in e2e.
+- **Made for the phone too.** The places move to a bar at the bottom, the customer's views scroll in a strip under the header, tables read as cards, the map scrolls and pinches with a finger and a tap still selects. e2e checks a phone: no view wider than the screen.
+- **Excel in.** Drop a workbook instead of CSV files: by file name, or one sheet per file, with a two-column `customer` sheet; dates become dates and text stays text. A reader written with the standard library, size and cell caps, hostile workbooks refused, fuzzed.
+- **Start from a form.** No exports needed: describe the customer and its accounts, and the two files are made in the page, to analyse or download.
+- **Another device.** Saved shows a QR code that opens the app on a phone (an encoder written here, checked with an independent decoder), and sends everything saved as one file sealed with the passphrase through the system share sheet; without a passphrase nothing is sent.
+- **Run it anywhere.** `beyond90 app` serves the site from a folder or the new signed `beyond90-site.zip`: read-only, policy as a header, anti-framing, DNS-rebinding protection, loopback by default. A Dockerfile runs it as an unprivileged user; CI builds and probes the image. See `docs/self-hosting.md`.
+
 ## 0.25.0
 
 The patterns behind a book, the quarter as slides, and a build anyone can verify.

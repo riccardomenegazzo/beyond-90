@@ -43,6 +43,10 @@ With an earlier snapshot to compare with, the map also says **what changed**: ac
 
 **Keys.** Ctrl or Cmd + K searches everything; outside a text field, 1 to 9 switch between the first views; Esc closes a dialog, a tooltip or the tour. The theme follows your system and can be switched; printing gives a clean page.
 
+## On a phone, offline, in your network
+
+It installs as an app on a phone, a tablet or a computer (Help, "Install it on any device"), and on a phone the places sit in a bar at the bottom and tables read as cards. Drop an Excel workbook instead of CSV files, or start from a short form when there are no exports yet. Saved, "On another device", shows a QR code to open the app on a phone and sends your work there as one encrypted file. To run it on your own machine or inside your network, see [self-hosting.md](self-hosting.md).
+
 ## As a browser extension
 
 The same app is packaged for Chrome, Edge and other Chromium browsers, and for Firefox: one click on the toolbar opens it in a tab of its own, and it works with no connection at all. It asks for no permissions, has no content scripts (it cannot see the pages you visit), and its policy allows nothing beyond its own files, so not even the news feed is fetched: the extension carries the news collected when it was built. Saved snapshots live in the extension's own storage, separate from the website's. Download it from Help or see [extension.md](extension.md).

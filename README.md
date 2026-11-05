@@ -26,6 +26,8 @@ Most adoption reporting stops at "90% of accounts connected" (or sites, tenants,
 
 **It shows where the problems meet.** The Connections map puts a customer's security stories, missing protections, stuck connectors, accounts, findings and owning teams on one interactive picture, and says in plain words what it shows: the one capability that closes the most exposures, the threats nobody can check, the single change that unblocks a group of accounts. Compared with an earlier snapshot it shows what was cleared and what is new; across a book it shows what several customers share, so one fix, one campaign or one session serves them all.
 
+**On any device, from anywhere.** It installs as an app on a phone, a tablet or a computer and works offline; it reads Excel workbooks as well as CSV, or starts from a short form; your work moves between devices as one encrypted file; and it runs on your own machine or inside your network with `beyond90 app` or the container image ([docs/self-hosting.md](docs/self-hosting.md)).
+
 **Try it without installing anything:** the [browser app](docs/app.md) runs the same engine in your tab. Drop a customer folder, or a folder of customers, and nothing leaves your machine. It is also a [browser extension](docs/extension.md) for Chrome, Edge and Firefox, with no permissions and no network.
 
 ![Beyond 90 report](docs/img/report-light.png)
@@ -154,6 +156,7 @@ beyond90 explain acme --store history.db   # what changed since the last stored 
 - [docs/automation.md](docs/automation.md): collect data from APIs and CLIs by configuration, run on a schedule, alert on change
 - [docs/operations.md](docs/operations.md): what happens when inputs, sources or disks misbehave; retention, locks, size limits
 - [docs/app.md](docs/app.md): the browser app and how to publish it on GitHub Pages
+- [docs/self-hosting.md](docs/self-hosting.md): install it as an app, run it on your machine or in your network, Excel and the form as inputs, moving between devices
 - [docs/extension.md](docs/extension.md): the same app as a browser extension, what it can and cannot do, how to build it
 - [docs/trust.md](docs/trust.md): the relationship layer and what it takes from the book
 - [docs/research/reading-list.md](docs/research/reading-list.md)
