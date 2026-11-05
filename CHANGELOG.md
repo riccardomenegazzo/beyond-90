@@ -2,6 +2,14 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.24.2
+
+Layout that holds at every width, from a phone to a wide screen.
+
+- **Charts are drawn at the size they are shown**, so their labels stay as large as the text around them instead of shrinking with a narrow column; they redraw when the space changes.
+- **Columns follow the space the content actually has**, not the window: with the side rail open on a small laptop or a phone in desktop mode, cards stack instead of squeezing. Nothing overflows its card or the page (checked for every view at 390, 768, 1040 and 1440 pixels).
+- **The overview reads top to bottom**: the score; what needs attention, as a grid of cards; where Yield is lost next to the same by stake; the plan next to the outlook if nothing is done; the biggest opportunities across the full width. The headline numbers sit in one row and wrap evenly.
+
 ## 0.24.1
 
 - **Updates reach you.** The app used to keep serving the cached version until every tab of it was closed, so a reload showed the old interface. A new version is now downloaded in the background and offered at the top of the page; **Update now** switches every open tab to it at once, and the old copy is deleted. The browser checks for a new version each time the tab comes back into view. Tested end to end.

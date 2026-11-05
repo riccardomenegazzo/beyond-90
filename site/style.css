@@ -106,7 +106,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{border-color:var
 .ws-title{font-weight:700;font-size:15.5px;padding:0 12px 4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .navgroup{margin-top:8px}
 .grp{font-size:13px;color:var(--muted);padding:6px 12px 2px;font-weight:600}
-main{padding:30px 40px 56px;outline:none;max-width:1220px;width:100%}
+main{padding:30px 40px 56px;outline:none;max-width:1220px;width:100%;min-width:0;container:main/inline-size}
 .place{animation:enter .22s ease both}
 @keyframes enter{from{opacity:0}to{opacity:1}}
 .foot{border-top:1px solid var(--line);padding:16px 20px 22px calc(var(--rail) + 40px);color:var(--muted);font-size:13px}
@@ -152,8 +152,8 @@ main{padding:30px 40px 56px;outline:none;max-width:1220px;width:100%}
 .who-sub{color:var(--ink2)}
 .work-tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
 .tour-offer{border-style:dashed}
-.kpis{display:flex;flex-wrap:wrap;margin:22px 0 6px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
-.kpi{flex:1 1 150px;padding:12px 18px;border-left:1px solid var(--line)}.kpi:first-child{border-left:0}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:1px;margin:22px 0 6px;border:1px solid var(--line);border-radius:var(--r);background:var(--line);overflow:hidden}
+.kpi{padding:12px 16px;background:var(--surface);min-width:0}
 .kpi b{display:block;font-size:24px;font-weight:700;letter-spacing:-.01em}
 .kpi span{color:var(--ink2);font-size:13.5px}
 .viewhead{display:flex;flex-wrap:wrap;align-items:flex-end;gap:4px 16px;margin:30px 0 16px;padding-bottom:12px;border-bottom:1px solid var(--line)}
@@ -184,7 +184,9 @@ main{padding:30px 40px 56px;outline:none;max-width:1220px;width:100%}
 .gauge-num{font-size:46px;font-weight:700;fill:var(--ink);letter-spacing:-.03em}.gauge-cap{font-size:12.5px;fill:var(--ink2)}
 .gauge-fill{animation:sweep .9s ease-out}@keyframes sweep{from{stroke-dasharray:0 600}to{stroke-dasharray:600 0}}
 .tick{font-size:11px;fill:var(--ink2)}.lbl{font-size:13px;fill:var(--ink);font-weight:700}.lbl.small{font-size:11.5px;font-weight:500}.sub{font-size:11.5px;fill:var(--ink2)}.bar-val{font-size:12.5px;font-weight:700;fill:var(--ink)}
-.chart{width:100%;max-width:780px;height:auto;display:block}
+.chart{width:100%;max-width:780px;height:auto;display:block}.fluid{min-width:0}
+.col2.pair{align-items:stretch}
+.col2>*,.col3>*{min-width:0}
 .chart rect.grow{transform-box:fill-box;transform-origin:left;animation:grow .7s cubic-bezier(.2,.7,.2,1) both}@keyframes grow{from{transform:scaleX(0)}}
 .ring{flex:none}
 .levelrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
@@ -195,12 +197,12 @@ main{padding:30px 40px 56px;outline:none;max-width:1220px;width:100%}
 .stat{display:flex;flex-direction:column;min-width:96px}.stat b{font-size:22px;font-weight:700}.stat span{font-size:13px;color:var(--ink2)}
 .stat.good b{color:var(--pos)}.stat.bad b{color:var(--bad)}.stat.warn b{color:var(--warn)}
 .stagepip{display:inline-block;min-width:30px;text-align:center;border-radius:6px;padding:0 6px;font-size:12px;font-weight:700;color:var(--ink);background:var(--surface);border:2px solid var(--accent);line-height:19px}
-.opps{display:grid;gap:6px}
+.opps{display:grid;grid-template-columns:minmax(0,1fr);gap:6px}
 .opp{display:flex;gap:12px;align-items:center;width:100%;text-align:left;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;padding:10px 12px;font:inherit;cursor:pointer}
 .opp:hover{border-color:var(--accent);background:var(--accent-soft)}
 .opp-t{flex:1;min-width:0}.opp-t b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.opp-t small{display:block}
 .opp-e{font-weight:700;color:var(--pos);white-space:nowrap}
-.flags{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.flags{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px}
 .flags li{border-left:4px solid var(--warn);background:var(--sunk);border-radius:0 10px 10px 0;padding:9px 13px;display:grid;gap:2px}.flags li.bad{border-left-color:var(--bad)}.flags li span{font-size:13.5px;color:var(--ink2)}.flags button.link{justify-self:start}
 .checks{list-style:none;margin:0;padding:0;display:grid;gap:9px}.checks li{display:flex;gap:10px;align-items:flex-start}.checks .chip2{margin-top:2px}
 .signals{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:10px}.signals li{display:flex;gap:10px;align-items:flex-start}
@@ -306,7 +308,7 @@ pre.recap{white-space:pre-wrap;word-break:break-word;background:var(--sunk);bord
 @media (max-width:1100px){.start-grid{grid-template-columns:1fr}.demos{grid-template-columns:1fr}}
 @media (max-width:900px){
   :root{--rail:100%}
-  .top{gap:10px;padding:0 12px}.brand{width:auto}.brand span,.context-sub,.engine{display:none}.context-name{max-width:40vw}
+  .top{gap:10px;padding:0 12px}.brand{width:auto}.brand span,.context-sub,.engine{display:none}.context-name{max-width:40vw}.context>svg{display:none}
   .search-btn{min-width:0;padding:0 12px}.search-btn span,.search-btn kbd{display:none}.search-btn::before{content:"Search"}
   .shell{display:block}
   .rail{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line);flex-direction:row;flex-wrap:wrap}
@@ -317,11 +319,14 @@ pre.recap{white-space:pre-wrap;word-break:break-word;background:var(--sunk);bord
   .place-btn[aria-current]::before,.tabs button[aria-current]::before{display:none}
   main{padding:20px 16px 40px}
   .runbar{margin:24px -16px -40px;padding:12px 16px}
-  .col2,.col3,.ladder,.hero{grid-template-columns:1fr}
-  .kpi{flex-basis:45%;border-left:0;border-top:1px solid var(--line)}
+  .ladder{grid-template-columns:1fr}
   .foot{padding-left:16px}
   .glossary{grid-template-columns:1fr}
 }
+/* the content column decides, not the window: a side rail or a narrow window both leave less room */
+@container main (max-width:820px){.col2{grid-template-columns:1fr}.col3{grid-template-columns:repeat(2,minmax(0,1fr))}.hero{grid-template-columns:minmax(180px,240px) 1fr;gap:20px}}
+@container main (max-width:560px){.hero{grid-template-columns:1fr}}
+@container main (max-width:520px){.col3{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.kpi:last-child:nth-child(odd){grid-column:1/-1}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
 @media print{.top,.rail,.runbar,.work-tools,.toolbar,.actions,.foot,.btn,.tour,.tip{display:none!important}.shell{display:block}body{background:#fff}main{padding:0}.card{break-inside:avoid}}
 .row.wrap{gap:6px 14px}

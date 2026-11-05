@@ -4,6 +4,25 @@ import { s, h, pct } from "./ui.js";
 
 export const STAGE = { L1: "var(--s1)", L2: "var(--s2)", L3: "var(--s3)", L4: "var(--s4)" };
 export const STAGE_NAME = { L1: "Connected", L2: "Inventoried", L3: "Controls on", L4: "Findings decided" };
+const MAX_W = 780;
+
+/**
+ * Draw a chart at the width it is shown, so its text is always the size of the text around it: a chart scaled down
+ * to fit a narrow column would shrink its labels with it. Redrawn when the space changes; stops when removed.
+ */
+function fluid(draw, fallback) {
+  const box = h("div", { class: "fluid" });
+  let drawn = fallback;
+  box.append(draw(fallback));
+  if (typeof ResizeObserver !== "function") return box;
+  const watch = new ResizeObserver(() => {
+    if (!box.isConnected) { watch.disconnect(); return; }
+    const w = Math.min(MAX_W, Math.floor(box.clientWidth));
+    if (w >= 240 && Math.abs(w - drawn) >= 8) { drawn = w; box.replaceChildren(draw(w)); }
+  });
+  watch.observe(box);
+  return box;
+}
 
 /** Ring gauge for a 0..1 value, with checkpoint ticks and an optional marker (the legacy figure). */
 export function gauge({ value, marker = null, ticks = [0.9, 0.95, 0.98], size = 220, label = "Yield" }) {
@@ -30,7 +49,11 @@ export function gauge({ value, marker = null, ticks = [0.9, 0.95, 0.98], size = 
 
 /** Horizontal waterfall: 100% → after L1 → … → Yield. Each bar is the share kept; the hatched part is what that stage cost. */
 export function waterfall(stages) {
-  const order = ["L1", "L2", "L3", "L4"], W = 540, rowH = 46, left = 126, right = 70, H = rowH * 4 + 24;
+  return fluid((W) => drawWaterfall(stages, W), 540);
+}
+
+function drawWaterfall(stages, W) {
+  const order = ["L1", "L2", "L3", "L4"], rowH = 46, left = 126, right = 52, H = rowH * 4 + 24;
   const svg = s("svg", { viewBox: `0 0 ${W} ${H}`, class: "chart", role: "img", "aria-label": "Yield after each stage: " + order.map((k) => `${k} ${pct(stages[k].value)}`).join(", ") });
   const x = (f) => left + f * (W - left - right);
   svg.append(s("defs", {}, s("pattern", { id: "hatch2", width: 6, height: 6, patternUnits: "userSpaceOnUse", patternTransform: "rotate(45)" }, s("line", { x1: 0, y1: 0, x2: 0, y2: 6, stroke: "var(--ink2)", "stroke-width": 1.4 }))));
@@ -53,7 +76,11 @@ export function waterfall(stages) {
 }
 
 /** Yield by week. `series` = [{label, points:[[x,y]], dashed?, color?}]; `marks` = horizontal reference lines [{y, label}]. */
-export function lineChart({ series, marks = [], xLabel = "week", yMin = null, yMax = 1, W = 560, H = 250, milestones = [] }) {
+export function lineChart(opts) {
+  return fluid((W) => drawLine({ ...opts, W }), opts.W || 560);
+}
+
+function drawLine({ series, marks = [], xLabel = "week", yMin = null, yMax = 1, W, H = 250, milestones = [] }) {
   const pad = { l: 44, r: 14, t: 12, b: 30 };
   const xs = series.flatMap((q) => q.points.map((p) => p[0])), ys = series.flatMap((q) => q.points.map((p) => p[1]));
   const x0 = Math.min(...xs), x1 = Math.max(...xs, x0 + 1);
@@ -62,7 +89,7 @@ export function lineChart({ series, marks = [], xLabel = "week", yMin = null, yM
   const svg = s("svg", { viewBox: `0 0 ${W} ${H}`, class: "chart", role: "img", "aria-label": series.map((q) => `${q.label}: from ${pct(q.points[0][1])} to ${pct(q.points.at(-1)[1])}`).join("; ") });
   const step = (hi - lo) > 0.4 ? 0.1 : 0.05;
   for (let v = Math.ceil(lo / step) * step; v <= hi + 1e-9; v += step) svg.append(s("line", { x1: pad.l, x2: W - pad.r, y1: Y(v), y2: Y(v), stroke: "var(--grid)" }), s("text", { x: pad.l - 6, y: Y(v) + 4, "text-anchor": "end", class: "tick" }, Math.round(v * 100) + "%"));
-  const xt = Math.max(1, Math.round((x1 - x0) / 8));
+  const xt = Math.max(1, Math.round((x1 - x0) / Math.max(3, Math.floor((W - pad.l - pad.r) / 56))));
   for (let v = x0; v <= x1; v += xt) svg.append(s("text", { x: X(v), y: H - 10, "text-anchor": "middle", class: "tick" }, String(v)));
   svg.append(s("text", { x: W - pad.r, y: H - 0, "text-anchor": "end", class: "tick" }, xLabel));
   for (const m of marks) if (m.y >= lo && m.y <= hi) svg.append(s("line", { x1: pad.l, x2: W - pad.r, y1: Y(m.y), y2: Y(m.y), stroke: "var(--ink2)", "stroke-dasharray": "4 4" }), s("text", { x: W - pad.r - 2, y: Y(m.y) - 4, "text-anchor": "end", class: "tick" }, m.label));
@@ -77,9 +104,13 @@ export function lineChart({ series, marks = [], xLabel = "week", yMin = null, yM
 
 /** Diverging bars for contributions in points (positive right, negative left). */
 export function contributions(items) {
-  const W = 640, rowH = 34, H = items.length * rowH + 12, mid = 372, left = 8;
+  return fluid((W) => drawContributions(items, W), 640);
+}
+
+function drawContributions(items, W) {
+  const rowH = 34, H = items.length * rowH + 12, mid = Math.round(W * 0.58), left = 8;
   const max = Math.max(1, ...items.map((i) => Math.abs(i.points)));
-  const sc = 190 / max;
+  const sc = Math.max(40, Math.min(mid - 170, W - mid - 48)) / max;
   const svg = s("svg", { viewBox: `0 0 ${W} ${H}`, class: "chart", role: "img", "aria-label": "Contribution of each factor to the change in Yield: " + items.map((i) => `${i.label} ${i.points.toFixed(1)} points`).join("; ") });
   svg.append(s("line", { x1: mid, x2: mid, y1: 0, y2: H, stroke: "var(--ink2)" }));
   items.forEach((it, i) => {
@@ -93,14 +124,18 @@ export function contributions(items) {
 
 /** Jobs on a timeline: one bar from the week work starts to the week it lands. */
 export function timeline(jobs, weeks) {
-  const W = 640, rowH = 26, pad = { l: 250, r: 12, t: 6, b: 24 }, list = jobs.slice(0, 14), H = pad.t + pad.b + list.length * rowH;
+  return fluid((W) => drawTimeline(jobs, weeks, W), 640);
+}
+
+function drawTimeline(jobs, weeks, W) {
+  const rowH = 26, pad = { l: Math.round(Math.min(250, W * 0.42)), r: 12, t: 6, b: 24 }, list = jobs.slice(0, 14), H = pad.t + pad.b + list.length * rowH;
   const X = (w) => pad.l + (w / Math.max(weeks, 1)) * (W - pad.l - pad.r);
   const svg = s("svg", { viewBox: `0 0 ${W} ${H}`, class: "chart", role: "img", "aria-label": "Timeline of the first jobs in the plan" });
   const step = weeks > 30 ? 8 : weeks > 14 ? 4 : 2;
   for (let w = 0; w <= weeks; w += step) svg.append(s("line", { x1: X(w), x2: X(w), y1: pad.t, y2: H - pad.b, stroke: "var(--grid)" }), s("text", { x: X(w), y: H - 8, "text-anchor": "middle", class: "tick" }, String(w)));
   list.forEach((j, i) => {
     const y = pad.t + i * rowH, a = Math.max(0, j.started_week - 1), b = Math.max(a + 0.6, j.done_week);
-    const t = j.title.length > 38 ? j.title.slice(0, 37) + "…" : j.title;
+    const room = Math.floor((pad.l - 12) / 6.6), t = j.title.length > room ? j.title.slice(0, room - 1) + "…" : j.title;
     svg.append(s("text", { x: pad.l - 8, y: y + 16, "text-anchor": "end", class: "lbl small" }, t));
     svg.append(s("rect", { x: X(a), y: y + 4, width: Math.max(4, X(b) - X(a)), height: 16, rx: 4, fill: STAGE[j.leak] || "var(--accent)" }, s("title", {}, `${j.title}\n${j.hours.toFixed(1)} h, weeks ${j.started_week}–${j.done_week}, +${j.steady_gain_points.toFixed(1)} pts`)));
   });
@@ -109,7 +144,11 @@ export function timeline(jobs, weeks) {
 
 /** Onboarding funnel: how many units reached each stage, and how many stopped there. */
 export function funnel(stages) {
-  const W = 560, rowH = 36, left = 150, right = 70, H = stages.length * rowH + 8, total = Math.max(1, stages[0].reached);
+  return fluid((W) => drawFunnel(stages, W), 560);
+}
+
+function drawFunnel(stages, W) {
+  const rowH = 36, left = 150, right = 70, H = stages.length * rowH + 8, total = Math.max(1, stages[0].reached);
   const X = (n) => (n / total) * (W - left - right);
   const svg = s("svg", { viewBox: `0 0 ${W} ${H}`, class: "chart", role: "img", "aria-label": "Onboarding funnel: " + stages.map((st) => `${st.label} ${st.reached}`).join(", ") });
   stages.forEach((st, i) => {

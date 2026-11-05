@@ -38,34 +38,37 @@ export function overview({ result, dash, score, go }) {
   const planChart = lineChart({ series: [{ label: "Planned Yield", points: pw.map((w) => [w.week, w.yield]) }], marks: [{ y: 0.9, label: "90%" }],
     milestones: Object.entries(p.milestones).filter(([, w]) => w != null).map(([k, w]) => ({ x: w, y: pw.find((q) => q.week === w)?.yield ?? 0, label: `${k} in week ${w}` })), H: 210 });
 
+  const { stake, decay } = stakeAndDecay({ dash, go });
+  const plan = card("If you follow the plan", planChart, { sub: `${p.hours_per_week} h a week for ${p.horizon_weeks} weeks at ${Math.round(p.realization * 100)}% realization: ` + (p.milestones["90%"] != null ? `90% in week ${p.milestones["90%"]}.` : "90% is not reached in this horizon."), actions: h("button", { class: "btn small", type: "button", text: "What-if", onclick: () => go("planview") }) });
+  // Read top to bottom: the score; what needs attention now; where it is lost (by count and by stake); the two futures; what to do.
   return h("div", { class: "grid" },
     hero,
-    h("div", { class: "col2" },
+    card("Needs attention", flags.length ? h("ul", { class: "flags" }, flags.map((f) => h("li", { class: f.kind }, h("b", { text: f.title }), h("span", { text: f.text }), f.go ? h("button", { class: "link", type: "button", text: f.cta || "Open", onclick: () => go(f.go) }) : null))) : h("p", { class: "note", text: "Nothing stands out." })),
+    h("div", { class: "col2 pair" },
       card("Where Yield is lost", waterfall(st), { sub: `Yield = ${Object.keys(st).join(" × ")}. Each stage is measured against its own denominator of ${unit}.` }),
-      card("Needs attention", flags.length ? h("ul", { class: "flags" }, flags.map((f) => h("li", { class: f.kind }, h("b", { text: f.title }), h("span", { text: f.text }), f.go ? h("button", { class: "link", type: "button", text: f.cta || "Open", onclick: () => go(f.go) }) : null))) : h("p", { class: "note", text: "Nothing stands out." }))),
-    stakeAndDecay({ dash, go }),
-    h("div", { class: "col2" },
-      card("Biggest opportunities", opp, { sub: "Ranked by points of Yield per hour of work. Effects interact; the plan accounts for that.", actions: h("button", { class: "btn small", type: "button", text: "All actions", onclick: () => go("actions") }) }),
-      card("If you follow the plan", planChart, { sub: `${p.hours_per_week} h a week for ${p.horizon_weeks} weeks at ${Math.round(p.realization * 100)}% realization: ` + (p.milestones["90%"] != null ? `90% in week ${p.milestones["90%"]}.` : "90% is not reached in this horizon."), actions: h("button", { class: "btn small", type: "button", text: "What-if", onclick: () => go("planview") }) })));
+      stake),
+    h("div", { class: "col2 pair" }, plan, decay),
+    card("Biggest opportunities", opp, { sub: "Ranked by points of Yield per hour of work. Effects interact; the plan accounts for that.", actions: h("button", { class: "btn small", type: "button", text: "All actions", onclick: () => go("actions") }) }));
 }
 
 function stakeAndDecay({ dash, go }) {
   const o = dash.outlook, st = dash.stake;
-  if (!o || !st) return null;
+  if (!o || !st) return { stake: null, decay: null };
   const rows = ["L1", "L2", "L3", "L4"].map((k) => h("li", {}, h("span", { class: "rl", text: `${k} ${STAGE_NAME[k]}` }),
     h("span", { class: "rb two" }, h("i", { class: "cnt", style: `width:${st.count[k] * 100}%` }), h("i", { class: "wgt", style: `width:${st.stages[k] * 100}%` })),
     h("span", { class: "rn", text: `${pct(st.count[k], 0)} → ${pct(st.stages[k], 0)}` })));
   const first = o.events.find((e) => (e.points || 0) < 0);
-  return h("div", { class: "col2" },
-    card("Weighted by what is at stake", h("div", {},
+  return {
+    stake: card("Weighted by what is at stake", h("div", {},
       h("div", { class: "kpiline" }, stat(pct(st.yield), "Yield, by count"), stat(pct(st.value), "Yield, by spend and exposure", st.value < st.yield - 0.02 ? "bad" : st.value > st.yield + 0.02 ? "good" : "")),
       st.say.length ? h("p", { class: "bad-text", text: st.say[0] }) : h("p", { class: "note first", text: "Counting and weighting agree: the gaps are where the stake is, not more or less." }),
       h("ul", { class: "rates wide" }, rows), h("p", { class: "legendline note" }, h("i", { class: "sw cnt" }), " by count ", h("i", { class: "sw wgt" }), " by stake")),
       { sub: `Accounts weigh their ${st.weights.accounts}; findings weigh ${st.weights.findings}.` }),
-    card("If nothing is done", h("div", {},
+    decay: card("If nothing is done", h("div", {},
       h("div", { class: "kpiline" }, stat(`${o.loss_points.toFixed(1)} pts`, `in ${o.horizon_days} days`, o.loss_points < -1 ? "bad" : ""), first ? stat(first.date, "first drop", "warn") : null, stat(String(o.events.length), "dated events")),
       lineChart({ series: [{ label: "If nothing is done", points: o.curve.map((c) => [c.day, c.yield]), color: "var(--neg)" }], xLabel: "days", H: 170, yMax: Math.min(1, o.curve[0].yield + 0.05) })),
-      { sub: "Scored on future dates with only what the data already dates: secrets, acceptances, triage windows.", actions: h("button", { class: "btn small", type: "button", text: "Outlook", onclick: () => go("outlook") }) }));
+      { sub: "Scored on future dates with only what the data already dates: secrets, acceptances, triage windows.", actions: h("button", { class: "btn small", type: "button", text: "Outlook", onclick: () => go("outlook") }) }),
+  };
 }
 
 function attention({ result, dash, score }) {
