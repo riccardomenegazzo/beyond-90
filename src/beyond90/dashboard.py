@@ -124,5 +124,6 @@ def build(data: CustomerData, score: Score, cat: Catalogue, plan: Plan, extras: 
         "stake": _plain(extras.get("stake")),
         "impact": _plain(extras.get("impact")),
         "teams": _plain(extras.get("teams")),
+        "graph": _plain(extras.get("graph")),
         "as_of": date.fromisoformat(str(score.as_of)).isoformat(),
     }

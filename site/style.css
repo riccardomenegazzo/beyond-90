@@ -51,7 +51,7 @@ small{color:var(--ink2);font-size:13px}
 .lede{font-size:17.5px;color:var(--ink2);max-width:62ch;margin-top:10px}
 
 /* ---------------------------------------------------------------- controls */
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:38px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:7px 15px;border-radius:9px;font:inherit;font-weight:600;cursor:pointer;transition:border-color .12s,background-color .12s}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:38px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:7px 15px;border-radius:9px;font:inherit;font-weight:600;cursor:pointer;text-decoration:none;transition:border-color .12s,background-color .12s}
 .btn:hover{border-color:var(--accent);background:var(--accent-soft)}
 .btn:active{transform:translateY(1px)}
 .btn.primary{background:var(--accent-btn);border-color:var(--accent-btn);color:#fff}
@@ -324,3 +324,29 @@ pre.recap{white-space:pre-wrap;word-break:break-word;background:var(--sunk);bord
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
 @media print{.top,.rail,.runbar,.work-tools,.toolbar,.actions,.foot,.btn,.tour,.tip{display:none!important}.shell{display:block}body{background:#fff}main{padding:0}.card{break-inside:avoid}}
 .row.wrap{gap:6px 14px}
+
+/* ---------------------------------------------------------------- connections graph */
+.g-wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,320px);gap:20px;align-items:start}
+.g-side h3{font-size:17px;margin-bottom:6px}
+.g-insights{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:8px}
+.g-insight{display:grid;gap:4px;width:100%;text-align:left;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;padding:10px 12px;font:inherit;cursor:pointer}
+.g-insight:hover{border-color:var(--accent)}.g-insight[aria-pressed=true]{border-color:var(--accent);box-shadow:inset 3px 0 0 var(--accent);background:var(--accent-soft)}
+.g-insight .chip2{justify-self:start}.g-insight small{line-height:1.4}
+.g-main{border:1px solid var(--line);border-radius:var(--r);background:var(--surface);overflow:hidden;position:sticky;top:calc(var(--top) + 12px)}
+.g-bar{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;padding:10px 12px;border-bottom:1px solid var(--line)}
+.g-legend{display:flex;flex-wrap:wrap;gap:6px}.g-tog{display:inline-flex;align-items:center;gap:4px}.g-tog[aria-pressed=false]{opacity:.5;background:var(--surface);color:var(--ink2);border-color:var(--line)}
+.g-tog[aria-pressed=true]{background:var(--surface);color:var(--ink);border-color:var(--line)}.g-tog .fine{margin:0}
+.g-zoom{display:flex;gap:6px;align-items:center}.g-zoom .icon-btn{width:30px;height:30px;font-size:17px}
+.g-canvas{background:radial-gradient(circle at 1px 1px,var(--grid) 1px,transparent 0) 0 0/24px 24px;touch-action:none}
+.g-svg{display:block;width:100%;height:auto;cursor:grab;user-select:none}.g-svg:active{cursor:grabbing}
+.g-edge{transition:opacity .15s}.g-node{cursor:pointer;transition:opacity .15s}.g-node:focus{outline:none}
+.g-node:focus-visible>:first-child,.g-node.sel>:first-child{stroke:var(--ink);stroke-width:3.5}
+.g-label{font:600 13px var(--font);fill:var(--ink);paint-order:stroke;stroke:var(--surface);stroke-width:4px;stroke-linejoin:round}
+.g-team .g-label{stroke:none;font-size:12.5px}
+.g-focus .g-node:not(.on),.g-focus .g-edge:not(.on){opacity:.12}
+.g-node.off,.g-edge.off{display:none}
+.g-panel{margin-top:16px;padding:16px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);display:grid;align-content:start;gap:8px}
+.g-panel h3{font-size:17px}.g-panel h4{font-size:14px;margin:8px 0 0}
+.g-kind{font-size:13px;color:var(--accent-text);font-weight:700}
+.g-signals,.g-links{margin:0;padding-left:18px;display:grid;gap:4px;font-size:14px}
+@media (max-width:1200px){.g-wrap{grid-template-columns:1fr}.g-main{position:static}}

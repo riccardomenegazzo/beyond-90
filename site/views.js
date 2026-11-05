@@ -1,6 +1,7 @@
 // The dashboard views. Each takes a context {result, dash, score, engine, files, options, go} and returns a Node.
 import { h, chip, pct, pts, num, cap, dataTable, chipFilter, searchBox, toCsv, saveBlob, copyText } from "./ui.js";
 import { recap } from "./recap.js";
+import { connections } from "./graph.js";
 import { gauge, waterfall, lineChart, contributions, timeline, shareBar, funnel, STAGE, STAGE_NAME } from "./charts.js";
 
 const card = (title, body, { sub = "", cls = "", actions = null } = {}) =>
@@ -786,4 +787,10 @@ export function execQbrView({ score, result, engine, files, saved, advisories, f
       used, h("div", { class: "row left" }, build)),
       { sub: "One page per section when printed: where they stand, what the quarter delivered, working together, exposure today, next quarter and the decisions you need." }),
     out);
+}
+
+// ------------------------------------------------------------------ connections
+/** Where the separate signals meet, as an interactive graph with the insights it supports. */
+export function connectionsView({ dash, go }) {
+  return connections(dash.graph, { go });
 }

@@ -1,8 +1,12 @@
 // A small client for the worker: requests carry ids, an old answer can never be mistaken for a new one,
 // and cancelling is "throw the worker away and start another", which is the only way to stop Python mid-call.
 // Trusted Types: a worker can only be started from a script URL that went through a policy. This one accepts nothing but the
-// blob: URL this file makes from the page's own worker.js, so no other script can be started from here.
-const workerPolicy = window.trustedTypes ? window.trustedTypes.createPolicy("b90-worker", { createScriptURL: (u) => { if (!/^blob:/.test(u)) throw new TypeError("only blob URLs may start the engine"); return u; } }) : null;
+// blob: URL this file makes from the page's own worker.js or, inside the browser extension, the extension's own worker.js.
+const EXTENSION = /^(chrome|moz)-extension:$/.test(location.protocol);
+const OWN_WORKER = new URL("./worker.js", location.href).href;
+const workerPolicy = window.trustedTypes ? window.trustedTypes.createPolicy("b90-worker", {
+  createScriptURL: (u) => { if (!(/^blob:/.test(u) || (EXTENSION && u === OWN_WORKER))) throw new TypeError("only the page's own engine may start"); return u; },
+}) : null;
 
 export class Engine {
   constructor(onStatus = () => {}) {
@@ -14,9 +18,9 @@ export class Engine {
   }
 
   async start() {
-    const base = new URL("./", location.href).href;
-    const src = (await (await fetch("./worker.js")).text()).replaceAll("__BASE__", base);
-    const url = URL.createObjectURL(new Blob([src], { type: "text/javascript" }));
+    // an extension's policy may not allow blob: workers, and does not need them: its pages and workers share one policy
+    const url = EXTENSION ? OWN_WORKER
+      : URL.createObjectURL(new Blob([(await (await fetch("./worker.js")).text()).replaceAll("__BASE__", new URL("./", location.href).href)], { type: "text/javascript" }));
     this.worker = new Worker(workerPolicy ? workerPolicy.createScriptURL(url) : url, { type: "module" });
     this.worker.onmessage = ({ data }) => {
       if (data.type === "status") return this.onStatus(data.text);

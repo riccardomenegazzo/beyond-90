@@ -2,6 +2,13 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.24.0
+
+Where the problems meet, and the app in the browser toolbar.
+
+- **Connections.** A new view that puts a customer's separate problems on one interactive map: the security stories that reach them, the protections that are off, the onboarding blockers, the accounts, their worst findings and the teams that own them. Beside it, in plain words, the few patterns worth a conversation: the capability that would close the most exposures, the stories nobody can check because the accounts are not connected, the team holding most of the risk, the single change that unblocks a group of accounts, and the accounts where several problems converge. Click an insight to light up its part of the map; click or press Enter on anything to see what it touches and jump to its view; drag, zoom, hide kinds. Same data, same picture. Built in `correlate.py`, drawn without a library.
+- **Browser extension** for Chrome, Edge and Firefox (Manifest V3). The same app, opened from the toolbar, fully offline. No permissions, no content scripts, no network beyond its own files; the page's Content Security Policy is the manifest policy. The engine starts from the extension's own worker file, through the same Trusted Types policy, narrowed to that one file. Built reproducibly by `site/build_extension.py`, tested end to end in Chromium on every deploy, offered for download from Help. See `docs/extension.md`.
+
 ## 0.23.0
 
 A new interface: easier to find your way, and it explains itself.

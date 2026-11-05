@@ -14,7 +14,7 @@ from datetime import date
 from pathlib import Path
 from typing import Any, Optional
 
-from . import __version__, dashboard, impact, onboarding, outlook, rhythm, stake, teams
+from . import __version__, correlate, dashboard, impact, onboarding, outlook, rhythm, stake, teams
 from .attribution import explain
 from .book import build_book_plan, render_book_html, render_book_markdown
 from .candor import candor_items
@@ -115,7 +115,8 @@ def analyze(
         "briefing_markdown": rhythm.customer_briefing(score.customer, str(score.as_of), exposures, cat.terms["units"]),
         "receipt_html": impact.render(value, html=True) if value else "",
         "dashboard": dashboard.build(data, score, cat, plan, {**extras, "rhythm": rh, "onboarding": onb, "outlook": look, "stake": weighted, "impact": value,
-                                                              "teams": teams.digests(data, onb, look, weighted, cat.terms["units"])}, actions),
+                                                              "teams": teams.digests(data, onb, look, weighted, cat.terms["units"]),
+                                                              "graph": correlate.build(data, cat, onb, exposures)}, actions),
         "report_html": render_html(score, actions, None, previous, **extras),
         "report_markdown": render_markdown(score, actions, None, previous, **extras),
         "qbr_markdown": render_qbr(score, actions, previous, quarter, **extras),

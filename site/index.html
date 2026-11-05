@@ -11,7 +11,7 @@
 <body>
 <a class="skip" href="#main">Skip to content</a>
 <header class="top">
-  <a class="brand" href="./" aria-label="Beyond 90, start again">
+  <a class="brand" href="./index.html" aria-label="Beyond 90, start again">
     <svg viewBox="0 0 32 32" width="26" height="26" aria-hidden="true"><circle cx="16" cy="16" r="12" fill="none" stroke="var(--line)" stroke-width="4"/><path d="M16 4a12 12 0 1 1-11.4 8.3" fill="none" stroke="var(--accent)" stroke-width="4" stroke-linecap="round"/></svg>
     <span>Beyond 90</span>
   </a>
@@ -200,6 +200,12 @@
         <p>The page and its engine are only allowed to talk to the site they came from. This check tries to reach another site from both, and shows that it is blocked.</p>
         <p class="row left"><button class="btn" id="selfcheck" type="button">Check that nothing leaves this page</button></p>
         <p class="fine" id="selfcheck-out" role="status"></p>
+      </section>
+      <section class="block" id="get-extension" aria-labelledby="ext-h">
+        <h2 id="ext-h">Use it from the browser toolbar</h2>
+        <p>The same app, packaged as a browser extension: one click opens it in its own tab, it works without a connection, asks for no permissions and cannot see the pages you visit.</p>
+        <p class="row left"><a class="btn" href="./extension/beyond90-chrome.zip" download>Download for Chrome and Edge</a> <a class="btn" href="./extension/beyond90-firefox.zip" download>Download for Firefox</a></p>
+        <p class="fine">Chrome or Edge: unzip, open the extensions page, turn on developer mode and choose “Load unpacked”. Firefox: open about:debugging, then “This Firefox” and “Load Temporary Add-on”, and pick the zip.</p>
       </section>
     </section>
 

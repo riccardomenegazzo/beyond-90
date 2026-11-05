@@ -5,6 +5,7 @@
 export const CUSTOMER_NAV = [
   { question: "Where do they stand?", views: [
     { id: "overview", label: "Overview", icon: "overview", tip: "The score, where it is lost, and what needs attention first." },
+    { id: "connections", label: "Connections", icon: "layers", tip: "Where the separate problems meet: security stories, gaps, accounts, findings and owners on one interactive map, with what it means." },
     { id: "accounts", label: "Accounts", icon: "accounts", tip: "Every cloud account and cluster: connected or not, what is visible, what is switched on." },
     { id: "findings", label: "Findings", icon: "findings", tip: "Open findings and whether each one has an owner and a decision." },
     { id: "onboarding", label: "Onboarding", icon: "onboarding", tip: "Connectors that are stuck, why, and the one change that unblocks each group." },
@@ -76,6 +77,10 @@ export const FAQ = [
       a: "Use today's cloud news on Start, then open News (one customer) or Cloud news (your book). Each story says how many accounts are exposed, covered or cannot be assessed, and comes with a briefing you can send as it is." },
     { q: "How do I build a QBR without spending a day on it?",
       a: "Keep analysing the customer as you go: every analysis is added to their history. When the review is due, open Executive QBR, pick the quarter and build it. It is written for a CISO, without internal jargon." },
+    { q: "Can I use it as a browser extension?",
+      a: "Yes, for Chrome, Edge and Firefox. Help has the download. It is the same app opened from the toolbar in a tab of its own: it asks for no permissions, cannot see the pages you visit and cannot reach the internet at all. Its news is the one collected when it was built; the website refreshes it every day." },
+    { q: "What is the Connections map for?",
+      a: "Each view looks at one kind of problem. Connections puts them together: which security stories reach which accounts, which protections are off there, which connectors are stuck, which critical findings sit on them and which team owns them. On the left it says what the picture shows, in plain words: the capability that would close the most exposures, the accounts nobody can check, the team that holds most of the risk. Click an insight and its part of the map lights up." },
     { q: "How do I show the customer what my work was worth?",
       a: "Choose an earlier snapshot in “Compare with” at the top of the customer, then open Value receipt: accounts connected, findings closed, decisions taken, and what still has not moved." },
     { q: "A connector is stuck and the error makes no sense.",

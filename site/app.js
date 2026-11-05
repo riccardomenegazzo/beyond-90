@@ -47,6 +47,11 @@ function refreshRun() {
 }
 
 async function registerOffline() {
+  if (/^(chrome|moz)-extension:$/.test(location.protocol)) {       // the extension carries every file: offline by nature
+    $("offline").hidden = false;
+    $("get-extension").hidden = true;
+    return;
+  }
   if (!("serviceWorker" in navigator) || !(location.protocol === "https:" || ["localhost", "127.0.0.1"].includes(location.hostname))) return;
   try {
     await navigator.serviceWorker.register(swPolicy ? swPolicy.createScriptURL("./sw.js") : "./sw.js");
@@ -302,7 +307,7 @@ function renderCompare() {
 
 // ---------- places and views
 const VIEWS = {
-  overview: { kind: "view", view: "overview" }, accounts: { kind: "view", view: "accountsView" }, findings: { kind: "view", view: "findingsView" },
+  overview: { kind: "view", view: "overview" }, connections: { kind: "view", view: "connectionsView" }, accounts: { kind: "view", view: "accountsView" }, findings: { kind: "view", view: "findingsView" },
   onboarding: { kind: "view", view: "onboardingView" }, maturity: { kind: "view", view: "maturityView" }, actions: { kind: "view", view: "actionsView" },
   planview: { kind: "view", view: "planView" }, outlook: { kind: "view", view: "outlookView" }, teams: { kind: "view", view: "teamsView" },
   prep: { kind: "view", view: "prepView" }, news: { kind: "view", view: "newsView" }, value: { kind: "view", view: "valueView" },

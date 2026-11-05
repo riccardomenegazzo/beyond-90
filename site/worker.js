@@ -1,8 +1,9 @@
-// The engine, off the main thread. This file is loaded as text and started from a blob: URL, because a
-// worker created from a blob inherits the page's Content Security Policy (connect-src 'self'), whereas a
-// worker loaded from a plain URL on a static host has no policy at all. __BASE__ is replaced with the
-// page's own origin and path before the worker starts.
-const BASE = "__BASE__";
+// The engine, off the main thread. On the web this file is loaded as text and started from a blob: URL, because
+// a worker created from a blob inherits the page's Content Security Policy (connect-src 'self'), whereas a worker
+// loaded from a plain URL on a static host has no policy at all; __BASE__ is then replaced with the page's own
+// origin and path. In the browser extension the worker is started from its own file, and the extension's
+// manifest policy, which the browser enforces on every extension page and worker, applies instead.
+const BASE = self.location.protocol === "blob:" ? "__BASE__" : new URL("./", self.location.href).href;
 let py = null;
 const violations = [];
 self.addEventListener("securitypolicyviolation", (e) => violations.push(`${e.violatedDirective}: ${e.blockedURI}`));

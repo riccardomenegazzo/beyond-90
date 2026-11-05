@@ -45,6 +45,13 @@ jobs:
       - run: python site/e2e.py _site
         env:
           AXE_CORE: site/npm/node_modules/axe-core/axe.min.js
+      - run: python site/build_extension.py --site _site --out dist/extension
+      - run: python site/e2e_extension.py dist/extension/chrome
+      - name: Offer the browser extension for download
+        run: |
+          mkdir -p _site/extension
+          cp dist/extension/beyond90-chrome-*.zip _site/extension/beyond90-chrome.zip
+          cp dist/extension/beyond90-firefox-*.zip _site/extension/beyond90-firefox.zip
       - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
       - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
         with:

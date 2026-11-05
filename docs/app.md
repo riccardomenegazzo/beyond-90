@@ -7,7 +7,7 @@
 Four places on the left, always in the same spot:
 
 - **Start.** Drop a customer folder (or a folder of customer folders for your whole book), or open one of the examples, then press **Analyse**. The three steps across the top say where you are. Customers you analysed before are listed under **Pick up where you left off**: one click opens them again.
-- **The open customer, or your book.** Its views are grouped by the question you are asking: *Where do they stand?* (overview, accounts, findings, onboarding, maturity), *What should I do?* (actions, plan and what-if, if nothing is done, teams), *What do I say?* (prep a call, news, value receipt, executive QBR, renewal and trust, changes) and *Documents to share*. Each view opens with one sentence saying what it is for.
+- **The open customer, or your book.** Its views are grouped by the question you are asking: *Where do they stand?* (overview, connections, accounts, findings, onboarding, maturity), *What should I do?* (actions, plan and what-if, if nothing is done, teams), *What do I say?* (prep a call, news, value receipt, executive QBR, renewal and trust, changes) and *Documents to share*. Each view opens with one sentence saying what it is for.
 - **Saved.** The history of every analysis, protection with a passphrase, and moving your work between devices.
 - **Help.** Answers to the questions people ask, written plainly and searchable; what each term means; the keyboard; and the privacy check.
 
@@ -18,6 +18,10 @@ Every control explains itself: hover it, or reach it with the keyboard, and a sh
 ## What you see
 
 - **Overview.** The Yield gauge with the legacy figure marked, where each stage loses points, what needs attention, the best opportunities and the planned curve.
+- **Connections.** One map of where the customer's separate problems meet: the security stories that reach them, the protections that are off, the onboarding blockers that keep accounts out of view, the accounts themselves, their worst findings and the teams that own them, left to right. Beside it, in plain words, what the picture shows: the one capability that would close the most exposures, the stories nobody can check because the accounts are not connected, the team that holds most of the risk, the single change that unblocks a group of accounts, the accounts where several problems converge. Click an insight and its part of the map lights up; click or press Enter on anything to see what it is linked to and jump to its view; drag, zoom and hide kinds from the legend. The layout is the same every time for the same data, so two people looking at one customer see one picture.
+
+![Connections](img/app-connections.png)
+
 - **Actions, Accounts, Findings.** Searchable, filterable, sortable tables. Open a row for the steps, the question to ask the customer or the gaps behind an account. Every table exports to CSV.
 
 ![Accounts](img/app-accounts.png)
@@ -30,6 +34,10 @@ Every control explains itself: hover it, or reach it with the keyboard, and a sh
 - **Documents to share.** The written report, the QBR draft, a success plan the customer can sign, the roadmap, a summary and the JSON, each with Copy and Download.
 
 **Keys.** Ctrl or Cmd + K searches everything; outside a text field, 1 to 9 switch between the first views; Esc closes a dialog, a tooltip or the tour. The theme follows your system and can be switched; printing gives a clean page.
+
+## As a browser extension
+
+The same app is packaged for Chrome, Edge and other Chromium browsers, and for Firefox: one click on the toolbar opens it in a tab of its own, and it works with no connection at all. It asks for no permissions, has no content scripts (it cannot see the pages you visit), and its policy allows nothing beyond its own files, so not even the news feed is fetched: the extension carries the news collected when it was built. Saved snapshots live in the extension's own storage, separate from the website's. Download it from Help or see [extension.md](extension.md).
 
 ## A whole book
 

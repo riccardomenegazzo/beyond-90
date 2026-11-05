@@ -162,6 +162,16 @@ def main(site: str) -> int:
             page.get_by_role("button", name="Download briefing (.md)").click()
         brief = Path(dl.value.path()).read_text()
         check(brief.startswith("# Cloud security briefing") and "Yield" not in brief, "the briefing downloads without internal scores")
+        page.click("[data-tab=connections]")
+        check(page.locator("#view svg.g-svg .g-story").count() >= 1 and page.locator("#view .g-account").count() >= 5, "the connections map draws stories, gaps and accounts together")
+        page.locator("#view .g-insight").first.click()
+        check(page.locator("#view .g-insight[aria-pressed=true]").count() == 1 and page.locator("#view svg.g-focus .g-node.on").count() >= 2, "an insight lights up its own part of the map")
+        page.get_by_role("button", name="Fit", exact=True).click()
+        page.locator("#view .g-account").first.focus()
+        page.keyboard.press("Enter")
+        check(page.locator("#view .g-panel h3").inner_text().startswith(("aws", "azure", "gcp")) and page.locator("#view .g-links li").count() >= 1, "an account opens from the keyboard with what it is linked to")
+        page.locator("#view .g-tog").first.click()
+        check(page.locator("#view .g-node.off").count() >= 1, "a kind of item can be hidden from the legend")
         page.click("[data-tab=onboarding]")
         view = page.inner_text("#view")
         check("counted as connected, but the connector is failing" in view and page.locator("#view .wave").count() >= 5, "onboarding shows the broken connector and the waves")
@@ -389,7 +399,7 @@ def main(site: str) -> int:
         page.locator("#view tbody tr").first.get_by_role("button", name="Open").click()
         page.wait_for_selector("#run:not([disabled])", state="attached", timeout=180_000)
         page.wait_for_selector("#book-table[hidden]", state="attached")
-        check("Yield" in page.inner_text("#kpis") and page.locator("#tabs button").count() == 21, "opening a customer from the book shows its own report")
+        check("Yield" in page.inner_text("#kpis") and page.locator("#tabs button").count() == 22, "opening a customer from the book shows its own report")
         examples = Path(__file__).resolve().parent.parent / "examples" / "portfolio"
         page.set_input_files("#folder", str(examples))
         page.wait_for_selector("#status:has-text('customers found')")
@@ -515,6 +525,8 @@ def main(site: str) -> int:
                 apage.click("#run")
                 apage.wait_for_selector("#results:not([hidden])", timeout=180_000)
                 bad += [f"work: {v}" for v in audit()]
+                apage.click("[data-tab=connections]")
+                bad += [f"connections: {v}" for v in audit()]
                 apage.hover("#open-palette")
                 apage.wait_for_selector("#tip:not([hidden])")
                 bad += [f"tooltip: {v}" for v in audit()]

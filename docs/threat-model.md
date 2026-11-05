@@ -18,10 +18,11 @@ Customer inventories and findings (which accounts exist, which controls are off,
 | A workspace file copied off the device | With a passphrase, the export is sealed the same way (the vault's salt and iterations travel with it), so only that passphrase opens it on another device; a tampered file fails authentication | Node test, e2e (the file holds nothing readable; a wrong passphrase is refused) |
 | Clickjacking: another site frames the page and steers clicks | The app runs only as the top-level page; framed, it stops before reading or offering anything (Pages cannot send `frame-ancestors`) | e2e |
 | Links leak where they came from | `referrer` is `no-referrer`; external links open with `noopener noreferrer` and only for https | e2e, ESLint rules |
+| The browser extension oversteps | Manifest V3 with no permissions, no host access, no content scripts and no web-accessible resources; the manifest policy is the page's policy without `blob:`, enforced on every extension page and worker; the engine starts only from the extension's own `worker.js`; the background script only opens the app in a tab | `tests/test_extension.py`, `site/e2e_extension.py` |
 | A tampered or stale build served from cache | The service worker's cache name is the hash of every file in the build | build test |
 | A compromised dependency | Pyodide is the only shipped third-party software, served from the same origin, pinned in `site/npm/package-lock.json` with integrity hashes and installed with `npm ci --ignore-scripts`; the engine has no runtime dependencies; an SBOM is published with each release | `tests/test_security.py` |
 
-Not covered: malware or a hostile extension on the device, a person with the unlocked page open, data saved before a passphrase was set and an export made without one (both said on the page), and other pages published under the same `github.io` origin, which share its storage: publish only this app there, or serve it from its own domain. A forgotten passphrase cannot be recovered.
+Not covered: malware or a hostile extension on the device, a person with the unlocked page open, data saved before a passphrase was set and an export made without one (both said on the page), and other pages published under the same `github.io` origin, which share its storage: publish only this app there, serve it from its own domain, or use the browser extension, whose origin no website shares. A forgotten passphrase cannot be recovered.
 
 ## Automation
 

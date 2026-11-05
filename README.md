@@ -20,7 +20,9 @@ Most adoption reporting stops at "90% of accounts connected" (or sites, tenants,
 
 **For** Technical Account Managers, customer-success engineers and solutions teams at any security vendor: cloud, endpoint, identity, SIEM or other. One engine, a small catalogue ("profile") per kind of product; two ship today ([docs/profiles.md](docs/profiles.md)).
 
-**Try it without installing anything:** the [browser app](docs/app.md) runs the same engine in your tab. Drop a customer folder, or a folder of customers, and nothing leaves your machine.
+**It shows where the problems meet.** The Connections map puts a customer's security stories, missing protections, stuck connectors, accounts, findings and owning teams on one interactive picture, and says in plain words what it shows: the one capability that closes the most exposures, the threats nobody can check, the single change that unblocks a group of accounts.
+
+**Try it without installing anything:** the [browser app](docs/app.md) runs the same engine in your tab. Drop a customer folder, or a folder of customers, and nothing leaves your machine. It is also a [browser extension](docs/extension.md) for Chrome, Edge and Firefox, with no permissions and no network.
 
 ![Beyond 90 report](docs/img/report-light.png)
 
@@ -148,6 +150,7 @@ beyond90 explain acme --store history.db   # what changed since the last stored 
 - [docs/automation.md](docs/automation.md): collect data from APIs and CLIs by configuration, run on a schedule, alert on change
 - [docs/operations.md](docs/operations.md): what happens when inputs, sources or disks misbehave; retention, locks, size limits
 - [docs/app.md](docs/app.md): the browser app and how to publish it on GitHub Pages
+- [docs/extension.md](docs/extension.md): the same app as a browser extension, what it can and cannot do, how to build it
 - [docs/trust.md](docs/trust.md): the relationship layer and what it takes from the book
 - [docs/research/reading-list.md](docs/research/reading-list.md)
 - [docs/design.md](docs/design.md): visual direction and validated palette

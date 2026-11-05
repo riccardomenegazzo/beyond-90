@@ -1,4 +1,4 @@
-# Beyond 90: specification v0.23
+# Beyond 90: specification v0.24
 
 An adoption engine for Technical Account Managers. It measures how much of a customer's cloud estate is really covered and operated through a security platform, and turns every gap into an action. The bar keeps moving: when a customer grows or the product ships something, the denominators grow with it.
 
@@ -198,6 +198,10 @@ In the book, each story is matched to every customer (the threat radar) and rank
 
 Each single-customer analysis is saved as a snapshot (input files only, content-addressed, personal files excluded unless chosen) unless the user turns it off. `build(snapshots, start, end)` keeps one snapshot per date (the later save wins), defaults to the quarter of the latest snapshot, takes as baseline the last snapshot before `start` (else the first inside), and as final the last inside. It reports a series of points (coverage, weighted coverage, the four parts, critical findings open and internet-exposed, accounts connected) for the baseline and every snapshot inside; the value receipt between baseline and final; interactions and commitments of the final snapshot within the period; exposure, the outlook in plain words, the threats touching the final estate; four priorities ranked by effect per hour; and at most four decisions (unconnected spend of 5% or more, critical findings without an owner, the two largest onboarding waves, slipped commitments). The rendering uses no internal stage names, maturity labels or Yield. See `docs/exec-qbr.md`.
 
+## 15u. Connections (0.24)
+
+For each active account, signals from the other analyses: not connected (5), onboarding blocked (2), exposed to a story without its mitigating capability (the story's severity weight, doubled when exploited), unable to be assessed for a story because the account is not connected, critical findings open to the internet (3 each) and high ones while the account is not healthy (1 each), protections off where they apply (1 each). Each signal belongs to a dimension: visibility, threat, findings or protection. An account *converges* when at least two of visibility, threat and findings meet on it; a protection that is off is detail, not a problem of its own. The graph keeps the 28 accounts ranked by convergence then weight, the 8 top stories, the 6 capabilities that matter, the causes that block the drawn accounts, their 16 worst findings and their teams; blind links are capped at 12 per story. Insights, at most six, ranked: convergence, leverage (a capability closing exposures from two or more stories), concentration (a team holding at least a quarter of the drawn accounts and three or more), blind spot (a story with two or more accounts nobody can assess) and root cause (the top onboarding wave with two or more accounts). Each says what it means, what to do, who should do it and which items to highlight. The page lays the graph out in columns ordered by barycentre sweeps, so the same data always draws the same picture.
+
 ## 16. Positioning against the platform's own views
 
 Security platforms commonly ship their own adoption or maturity views and an ownership model. Beyond 90 does not replace them: it measures what a platform cannot see about itself (the true universe of units to cover, across a whole portfolio) and reads ownership and decisions rather than rebuilding routing. The research behind this is in `docs/research/`.
@@ -231,8 +235,9 @@ Security platforms commonly ship their own adoption or maturity views and an own
 19. 0.20: the daily cloud security news, merged, ranked and matched to every customer.
 20. 0.21: the customer's history kept automatically, and an executive QBR built from it on demand.
 21. 0.22: sealed exports, strict typing and security lint, a least-privilege, hash-locked supply chain.
-22. 0.23 (this): an interface organised by places and questions, with tooltips, plain-language help and a tour.
-23. 1.0: connector interface and a first verified connector against a real tenant; criticality weighting; readiness checklist import; per-finding ownership sources.
+22. 0.23: an interface organised by places and questions, with tooltips, plain-language help and a tour.
+23. 0.24 (this): the connections map, where a customer's separate problems meet, and the app as a browser extension.
+24. 1.0: connector interface and a first verified connector against a real tenant; criticality weighting; readiness checklist import; per-finding ownership sources.
 
 ## References
 
