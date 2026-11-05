@@ -9,7 +9,7 @@ WORKDIR /b
 COPY site/npm/package.json site/npm/package-lock.json site/npm/
 RUN npm ci --ignore-scripts --prefix site/npm
 
-FROM python:3.13-slim AS site
+FROM python:3.15-slim AS site
 WORKDIR /b
 COPY pyproject.toml LICENSE THIRD_PARTY.md ./
 COPY src src
@@ -18,7 +18,7 @@ COPY examples examples
 COPY --from=assets /b/site/npm/node_modules site/npm/node_modules
 RUN python site/build_site.py --out /site --pyodide site/npm/node_modules/pyodide
 
-FROM python:3.13-slim
+FROM python:3.15-slim
 RUN useradd --system --uid 10001 --no-create-home beyond90
 COPY --from=site /site /site
 COPY src/beyond90 /app/beyond90
