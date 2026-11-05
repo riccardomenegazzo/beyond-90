@@ -2,39 +2,44 @@
 
 `site/` is a static web app: the same Python engine, running in the browser through [Pyodide](https://pyodide.org) (WebAssembly). It exists so that anyone can try Beyond 90 on a laptop with nothing installed, and so a team can share one link.
 
-## What it does
+## How it is laid out
 
-Drop a customer folder (or pick the files), or press **Try the demo**, then **Run analysis**. You get the report, the QBR draft, the roadmap, the summary and the JSON, each with Copy and Download. Validation shows every problem at once, by file and line.
+Four places on the left, always in the same spot:
 
-## What you see
+- **Start.** Drop a customer folder (or a folder of customer folders for your whole book), or open one of the examples, then press **Analyse**. The three steps across the top say where you are. Customers you analysed before are listed under **Pick up where you left off**: one click opens them again.
+- **The open customer, or your book.** Its views are grouped by the question you are asking: *Where do they stand?* (overview, accounts, findings, onboarding, maturity), *What should I do?* (actions, plan and what-if, if nothing is done, teams), *What do I say?* (prep a call, news, value receipt, executive QBR, renewal and trust, changes) and *Documents to share*. Each view opens with one sentence saying what it is for.
+- **Saved.** The history of every analysis, protection with a passphrase, and moving your work between devices.
+- **Help.** Answers to the questions people ask, written plainly and searchable; what each term means; the keyboard; and the privacy check.
 
-A strip of tiles (Yield, Reach, open actions, maturity level, confidence, profile), then views you work in:
+Every control explains itself: hover it, or reach it with the keyboard, and a short tooltip says what it does (screen readers hear the same text). The small question marks next to numbers such as Yield open their definition. After the first analysis, **Take the one-minute tour** walks through the screen; it is also in Help. **Search or jump to…** (Ctrl or Cmd + K) finds any view, action, answer or term.
 
 ![Overview](img/app-results.png)
+
+## What you see
 
 - **Overview.** The Yield gauge with the legacy figure marked, where each stage loses points, what needs attention, the best opportunities and the planned curve.
 - **Actions, Accounts, Findings.** Searchable, filterable, sortable tables. Open a row for the steps, the question to ask the customer or the gaps behind an account. Every table exports to CSV.
 
 ![Accounts](img/app-accounts.png)
 
-- **Plan & what-if.** Move the sliders for hours a week, horizon and realization; the engine recomputes and draws the new curve against the original.
+- **Plan and what-if.** Move the sliders for hours a week, horizon and success rate; the engine recomputes and draws the new curve against the original.
 
 ![What-if](img/app-whatif.png)
 
-- **Maturity, Renewal & trust, Changes.** The ladder and every check, renewal signals, licences, the unseen-units estimate, contacts, and what changed since an earlier snapshot.
-- **Documents.** The written report, the QBR draft, a success plan the customer can sign, the roadmap, a summary and the JSON, each with Copy and Download.
+- **Maturity, Renewal and trust, Changes.** The ladder and every check, renewal signals, licences, the unseen-units estimate, contacts, and what changed since an earlier snapshot.
+- **Documents to share.** The written report, the QBR draft, a success plan the customer can sign, the roadmap, a summary and the JSON, each with Copy and Download.
 
-**Keys.** Ctrl or Cmd + K opens the command palette (run, load a demo, go to a view, save, copy a five-line summary for chat, print, switch theme). Outside a text field, 1 to 9 switch views. The theme follows your system and can be switched; printing gives a clean page.
+**Keys.** Ctrl or Cmd + K searches everything; outside a text field, 1 to 9 switch between the first views; Esc closes a dialog, a tooltip or the tour. The theme follows your system and can be switched; printing gives a clean page.
 
 ## A whole book
 
-Choose a folder that contains several customer folders (each with a `customer.toml`), or press **Try the book demo**. The page shows each customer's Yield now and after the plan, the patterns that recur across customers, and where one budget of hours per week does the most good, optimised for ARR-weighted or equal-weighted Yield. A customer with invalid data is reported and the rest carry on. The **Portfolio map** is a heat map of every customer by stage, with ARR, level and where to look first. **Open** jumps to one customer's own dashboard.
+Choose a folder that contains several customer folders (each with a `customer.toml`), or open the example book. The page shows each customer's Yield now and after the plan, the patterns that recur across customers, and where one budget of hours per week does the most good, optimised for revenue-weighted or equal-weighted Yield. A customer with invalid data is reported and the rest carry on. The **Portfolio map** is a heat map of every customer by stage, with ARR, level and where to look first. **Open** jumps to one customer's own dashboard.
 
 ![Portfolio map](img/app-book.png)
 
 ## Saving and comparing
 
-**Save snapshot in this browser** keeps your input files (not results) in IndexedDB. Contacts and commitments are left out unless you tick the box, because they are personal data. Saving the same files twice changes nothing. With an earlier snapshot of the same customer saved, the next run compares with it automatically and the report explains what changed; the menu lets you pick another or none. **Export workspace** writes one JSON file; **Import workspace** merges it, so importing the same file twice, or files from two devices in any order, gives the same result. Imports whose content does not match their name are rejected. The app works offline once loaded. See `docs/architecture.md`.
+Every analysis is added to the customer's history (Saved, "What is kept"); **Save snapshot** does the same on demand. Only input files are kept (not results), in IndexedDB. Contacts and commitments are left out unless you tick the box, because they are personal data. Saving the same files twice changes nothing. With an earlier snapshot of the same customer saved, the next run compares with it automatically and the report explains what changed; the menu lets you pick another or none. **Export workspace** writes one JSON file; **Import workspace** merges it, so importing the same file twice, or files from two devices in any order, gives the same result. Imports whose content does not match their name are rejected. The app works offline once loaded. See `docs/architecture.md`.
 
 ## What it does not do
 

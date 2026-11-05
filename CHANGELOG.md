@@ -2,6 +2,18 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.23.0
+
+A new interface: easier to find your way, and it explains itself.
+
+- **Four places, always in the same spot.** Start, the open customer (or your book), Saved and Help, in a sidebar. The customer's views are grouped by the question you are asking: where do they stand, what should I do, what do I say, and documents to share. Each view opens with one sentence on what it is for. The top bar shows who is open, with their Yield as a ring, and the date of their data.
+- **Start** shows the three steps (choose the data, analyse, act), the examples, today's security news, and the customers you analysed before, one click each. The analyse button names what it will analyse.
+- **Tooltips everywhere.** Every view, button, setting and number says what it does on hover or keyboard focus; screen readers hear the same text. Question marks next to numbers such as Yield open their definition.
+- **Help.** Questions people ask, answered in plain words and searchable; a glossary of every term on screen; the keyboard; the privacy check.
+- **A one-minute tour** after the first analysis, and any time from Help. Search (Ctrl or Cmd + K) also finds answers and terms.
+- **Saved** gathers the history, protection with a passphrase, what is kept and moving between devices; a saved snapshot opens in one click.
+- A typeface chosen for legibility (Atkinson Hyperlegible Next), served with the page; a cooler, quieter palette with one accent; the stylesheet rewritten as one file. Accessibility is audited on every place, the tooltip and the tour, in both themes.
+
 ## 0.22.0
 
 Hardening: the data, the code and the supply chain.

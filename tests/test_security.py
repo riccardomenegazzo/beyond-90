@@ -28,6 +28,7 @@ def test_the_content_security_policy_is_strict():
     assert "'unsafe-inline'" not in p["script-src"] and "'unsafe-eval'" not in p["script-src"]
     assert p["script-src"] == ["'self'", "'wasm-unsafe-eval'"]
     assert p["connect-src"] == ["'self'"], "the page must not be able to send data anywhere else"
+    assert p["font-src"] == ["'self'"], "the typeface is served with the page, never from a font service"
     assert p["base-uri"] == ["'none'"] and p["form-action"] == ["'none'"]
     assert p["require-trusted-types-for"] == ["'script'"]
     assert set(p["trusted-types"]) == {"b90-report", "b90-worker", "b90-sw"}
@@ -101,7 +102,7 @@ def test_the_npm_lock_pins_every_package_with_an_integrity_hash():
         assert all(re.fullmatch(r"\d+\.\d+\.\d+", v) for v in deps.values()), "dependencies are pinned to an exact version"
 
 
-def test_the_sbom_lists_the_bundled_runtime_with_its_hash():
+def test_the_sbom_lists_what_the_site_ships_with_hashes():
     import importlib.util
     spec = importlib.util.spec_from_file_location("sbom", ROOT / "scripts" / "sbom.py")
     mod = importlib.util.module_from_spec(spec)
@@ -109,8 +110,8 @@ def test_the_sbom_lists_the_bundled_runtime_with_its_hash():
     bom = mod.build()
     assert bom["bomFormat"] == "CycloneDX" and bom["metadata"]["component"]["name"] == "beyond90"
     names = {c["name"]: c for c in bom["components"]}
-    assert set(names) == {"pyodide"}, "only what is shipped is listed; test tools are not"
-    assert len(names["pyodide"]["hashes"][0]["content"]) == 128
+    assert set(names) == {"pyodide", "@fontsource-variable/atkinson-hyperlegible-next"}, "only what is shipped is listed; test tools are not"
+    assert all(len(c["hashes"][0]["content"]) == 128 for c in names.values())
 
 
 def test_the_package_has_no_runtime_dependencies():

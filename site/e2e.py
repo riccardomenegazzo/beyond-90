@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import sys
 import tempfile
 import threading
@@ -22,6 +23,52 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 from playwright.sync_api import sync_playwright
+
+# Controls live in places (Start, Saved, Help); the test opens the place before using one, as a person would.
+PLACE_OF = {
+    **dict.fromkeys(("demo", "demo-book", "demo-endpoint", "latest-adv", "demo-adv", "clear-adv", "adv-status", "run", "cancel",
+                     "weeks", "hours", "real", "quarter", "bookhours", "weighting", "loaded", "status"), "start"),
+    **dict.fromkeys(("demo-prev", "export", "forget", "vault-on", "vault-unlock", "vault-lock", "vault-off", "vault-state",
+                     "vault-warn", "ws-status", "history-body", "history-empty", "hist-table", "trend", "autosave", "personal"), "saved"),
+    **dict.fromkeys(("selfcheck", "selfcheck-out", "faq-q", "tour-start"), "help"),
+}
+
+
+class Guided:
+    """The page, with one habit added: before acting on or waiting for a control, open the place that holds it."""
+
+    def __init__(self, page):
+        self._page = page
+
+    def __getattr__(self, name):
+        return getattr(self._page, name)
+
+    def _open_for(self, selector: str) -> None:
+        m = re.match(r"#([\w-]+)", selector)
+        place = PLACE_OF.get(m.group(1)) if m else None
+        if place and self._page.locator(f".rail [data-place={place}][aria-current]").count() == 0:
+            self._page.click(f".rail [data-place={place}]")
+
+    def click(self, selector, **kw):
+        self._open_for(selector)
+        return self._page.click(selector, **kw)
+
+    def fill(self, selector, value, **kw):
+        self._open_for(selector)
+        return self._page.fill(selector, value, **kw)
+
+    def is_visible(self, selector, **kw):
+        self._open_for(selector)
+        return self._page.is_visible(selector, **kw)
+
+    def inner_text(self, selector, **kw):
+        self._open_for(selector)
+        return self._page.inner_text(selector, **kw)
+
+    def wait_for_selector(self, selector, **kw):
+        if "state" not in kw:
+            self._open_for(selector)
+        return self._page.wait_for_selector(selector, **kw)
 
 
 class Quiet(SimpleHTTPRequestHandler):
@@ -43,7 +90,7 @@ def main(site: str) -> int:
     with sync_playwright() as p, tempfile.TemporaryDirectory() as tmp:
         browser = p.chromium.launch()
         ctx = browser.new_context(accept_downloads=True)
-        page = ctx.new_page()
+        page = Guided(ctx.new_page())
         console: list[str] = []
         # The self-check tries to reach another site on purpose, and the browser logs that it blocked it.
         page.on("console", lambda m: console.append(m.text) if m.type in ("error", "warning") and "beyond90-probe" not in m.text else None)
@@ -55,7 +102,7 @@ def main(site: str) -> int:
 
         def run_and_wait() -> None:
             page.click("#run")
-            page.wait_for_selector("#run:not([disabled])", timeout=180_000)    # the click disables it at once; enabled again means finished
+            page.wait_for_selector("#run:not([disabled])", state="attached", timeout=180_000)    # the click disables it at once; enabled again means finished
 
         def run_demo() -> None:
             page.click("#demo")
@@ -96,7 +143,7 @@ def main(site: str) -> int:
         page.fill("#view input[aria-label=Summary]", "Agreed the owner for the critical findings")
         page.fill("#view input[aria-label='Next step']", "Send the owner list")
         page.get_by_role("button", name="Add and re-run").click()
-        page.wait_for_selector("#run:not([disabled])", timeout=120_000)
+        page.wait_for_selector("#run:not([disabled])", state="attached", timeout=120_000)
         page.click("[data-tab=prep]")
         check("Agreed the owner" in page.inner_text("#view"), "a logged touch appears in the next preparation")
         page.click("[data-tab=news]")
@@ -107,7 +154,7 @@ def main(site: str) -> int:
         page.click("#demo-adv")
         page.wait_for_selector("#adv-status:has-text('advisories loaded')")
         page.click("#run")
-        page.wait_for_selector("#run:not([disabled])", timeout=120_000)
+        page.wait_for_selector("#run:not([disabled])", state="attached", timeout=120_000)
         page.click("[data-tab=news]")
         check("MOCK-2026-002" in page.inner_text("#view") and page.get_by_role("button", name="Copy a note for the customer").count() >= 1, "a feed is matched to the customer's inventory")
         check(page.get_by_role("button", name="Copy the briefing for the customer").count() == 1, "the customer gets a ready security briefing")
@@ -150,7 +197,7 @@ def main(site: str) -> int:
         page.wait_for_selector("#palette[open]")
         page.fill("#palette-q", "findings")
         page.keyboard.press("Enter")
-        check(page.get_attribute("[data-tab=findings]", "aria-selected") == "true", "the command palette navigates")
+        check(page.get_attribute("[data-tab=findings]", "aria-current") is not None, "the command palette navigates")
         theme0 = page.evaluate("document.documentElement.dataset.theme || ''")
         page.click("#theme")
         check(page.evaluate("document.documentElement.dataset.theme || ''") != theme0, "the theme switches")
@@ -177,8 +224,10 @@ def main(site: str) -> int:
 
         # history: empty, add the previous quarter, save, compare
         check(page.is_visible("#history-body") and page.locator("#hist-table tbody tr").count() >= 1, "every analysis is already in the customer's history")
+        page.click("[data-tab=overview]")
         page.click("#demo-prev")
         page.wait_for_selector("#demo-prev", state="hidden")
+        page.click("[data-tab=overview]")
         page.click("#save")
         page.wait_for_selector("#saved-note:has-text('already saved')")
         check(page.locator("#hist-table tbody tr").count() == 2, "two snapshots listed")
@@ -220,7 +269,7 @@ def main(site: str) -> int:
         page.fill("#view textarea[aria-label='Agreed next steps']", "Grant admin consent | identity team | 2026-11-11")
         check("Grant admin consent (identity team, by 2026-11-11)" in page.inner_text("#view pre.recap"), "the recap after the call lists what was agreed")
         page.select_option("#compare", "")
-        page.wait_for_selector("#run:not([disabled])")
+        page.wait_for_selector("#run:not([disabled])", state="attached")
         page.click("[data-tab=value]")
         check("Pick a saved snapshot" in page.inner_text("#view"), "without a comparison the receipt explains what it needs")
         page.click("[data-tab=summary]")
@@ -282,7 +331,7 @@ def main(site: str) -> int:
         page.wait_for_selector("#loaded li:has-text('customer.toml')")
         run_and_wait()
         page.wait_for_selector("#results:not([hidden])")
-        check(page.locator("#kpis img, #kpis b b").count() == 0 and "<img" in page.inner_text("#kpis"), "a hostile customer name is shown as text in the tiles")
+        check(page.locator("#reshead img, #context img").count() == 0 and "<img" in page.inner_text("#reshead") and "<img" in page.inner_text("#context"), "a hostile customer name is shown as text in the header")
         page.click("[data-tab=qbr]")
         check(page.locator("#doc img, #doc script").count() == 0 and "Injected" in page.inner_text("#doc"), "and in the rendered Markdown")
         for tab in ("overview", "onboarding", "outlook", "teams", "prep", "execqbr", "actions", "accounts", "findings", "maturity", "renewal"):
@@ -307,7 +356,7 @@ def main(site: str) -> int:
         page.wait_for_selector("#loaded li:has-text('customer.toml')")
         run_and_wait()
         page.wait_for_selector("#results:not([hidden])")
-        check("endpoint" in page.inner_text("#kpis"), "the endpoint demo runs with its own profile")
+        check("Acme Endpoint" in page.inner_text("#context"), "the endpoint demo runs with its own profile")
         page.click("[data-tab=qbr]")
         qbr = page.inner_text("#doc")
         check("site(s)" in qbr and "cloud" not in qbr.lower(), "and reads in its own words (sites, not cloud accounts)")
@@ -317,7 +366,8 @@ def main(site: str) -> int:
         page.wait_for_selector("#loaded li:nth-child(3)")
         run_and_wait()
         page.wait_for_selector("#view tbody tr")
-        check("ARR-weighted" in page.inner_text("#kpis") and page.locator("#view tbody tr").count() == 3, "the book demo shows three customers and the weighted Yield")
+        check("null" not in page.inner_text("#reshead"), "the book header shows nothing it should not")
+        check("Revenue-weighted" in page.inner_text("#kpis") and page.locator("#view tbody tr").count() == 3, "the book demo shows three customers and the weighted Yield")
         check(page.locator("#tabs button").count() == 7 and page.locator("#view tbody tr").count() == 3, "book mode opens on the week, one row per customer")
         check("Mon" in page.inner_text("#view") or "Tue" in page.inner_text("#view"), "the week gives each customer a day")
         page.locator("#view .twisty").first.click()
@@ -337,7 +387,7 @@ def main(site: str) -> int:
         check("hours" in page.frame_locator("#report").locator("body").inner_text().lower(), "the book report renders")
         page.click("[data-tab=bookmap]")
         page.locator("#view tbody tr").first.get_by_role("button", name="Open").click()
-        page.wait_for_selector("#run:not([disabled])", timeout=180_000)
+        page.wait_for_selector("#run:not([disabled])", state="attached", timeout=180_000)
         page.wait_for_selector("#book-table[hidden]", state="attached")
         check("Yield" in page.inner_text("#kpis") and page.locator("#tabs button").count() == 21, "opening a customer from the book shows its own report")
         examples = Path(__file__).resolve().parent.parent / "examples" / "portfolio"
@@ -414,13 +464,14 @@ def main(site: str) -> int:
 
         # cancelling stops the run and the engine comes back
         page.click("#demo")
+        page.click(".rail [data-place=start]")
         page.click(".opts summary")
         page.fill("#weeks", "104")
         page.fill("#hours", "0.5")
         page.click("#run")
         page.wait_for_selector("#cancel:not([hidden])")
         page.click("#cancel")
-        page.wait_for_selector("#run:not([disabled])", timeout=120_000)
+        page.wait_for_selector("#run:not([disabled])", state="attached", timeout=120_000)
         page.fill("#weeks", "26")
         page.fill("#hours", "8")
         page.wait_for_selector("#demo:not([disabled])")
@@ -450,14 +501,29 @@ def main(site: str) -> int:
                 apage = actx.new_page()
                 apage.goto(base)
                 apage.wait_for_selector("#demo:not([disabled])", timeout=180_000)
+                apage.add_script_tag(path=axe)
+                rules = "axe.run(document, {runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'best-practice']}).then(r => r.violations.map(v => v.id + ' x' + v.nodes.length))"
+
+                def audit(page=apage, rules=rules):
+                    page.wait_for_timeout(400)                 # let a place finish fading in: contrast is measured on what is painted
+                    return page.evaluate(rules)
+                bad = [f"start: {v}" for v in audit()]
+                apage.click(".rail [data-place=saved]")
                 apage.click("#demo-prev")
+                apage.click(".rail [data-place=start]")
                 apage.click("#demo")
                 apage.click("#run")
                 apage.wait_for_selector("#results:not([hidden])", timeout=180_000)
-                apage.click("#save")
-                apage.wait_for_selector("#saved-note:has-text('Saved')")
-                apage.add_script_tag(path=axe)
-                bad = apage.evaluate("axe.run(document, {runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'best-practice']}).then(r => r.violations.map(v => v.id + ' x' + v.nodes.length))")
+                bad += [f"work: {v}" for v in audit()]
+                apage.hover("#open-palette")
+                apage.wait_for_selector("#tip:not([hidden])")
+                bad += [f"tooltip: {v}" for v in audit()]
+                for place in ("saved", "help"):
+                    apage.click(f".rail [data-place={place}]")
+                    bad += [f"{place}: {v}" for v in audit()]
+                apage.click("#tour-start")
+                apage.wait_for_selector("#tour:not([hidden])")
+                bad += [f"tour: {v}" for v in audit()]
                 check(not bad, f"no accessibility violations ({scheme}): {bad}")
                 actx.close()
         else:

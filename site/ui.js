@@ -155,6 +155,10 @@ const ICONS = {
   onboarding: '<path d="M9 2v6M15 2v6M6 8h12v3a6 6 0 0 1-12 0z"/><path d="M12 17v5"/>',
   outlook: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
   sun: '<circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6L7 7M17 17l1.4 1.4M5.6 18.4L7 17M17 7l1.4-1.4"/>',
+  start: '<path d="M4 11l8-7 8 7v9a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z"/>',
+  saved: '<path d="M6 3h12v18l-6-4-6 4z"/>',
+  help: '<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.6M12 17h.01"/>',
+  moon: '<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/>',
 };
 export function icon(name, size = 18) {
   const el = document.createElementNS(SVGNS, "svg");
@@ -168,4 +172,64 @@ export function icon(name, size = 18) {
     el.append(node);
   }
   return el;
+}
+
+// ------------------------------------------------------------------ tooltips
+// One tooltip for the whole page. Any element with data-tip gets it on hover (after a short pause) and at once on
+// keyboard focus; Escape hides it. The same text is exposed to assistive technology as the element's description.
+let tipEl = null, tipFor = null, tipTimer = 0;
+
+function placeTip(target) {
+  const r = target.getBoundingClientRect(), t = tipEl.getBoundingClientRect(), gap = 8;
+  const below = r.bottom + gap + t.height <= window.innerHeight;
+  const top = below ? r.bottom + gap : r.top - gap - t.height;
+  const left = Math.min(Math.max(8, r.left + r.width / 2 - t.width / 2), window.innerWidth - t.width - 8);
+  tipEl.style.transform = `translate(${Math.round(left)}px, ${Math.round(Math.max(8, top))}px)`;
+  tipEl.dataset.side = below ? "below" : "above";
+}
+function showTip(target) {
+  clearTimeout(tipTimer);
+  tipFor = target;
+  tipEl.textContent = target.dataset.tip;
+  tipEl.hidden = false;
+  placeTip(target);
+}
+function hideTip() {
+  clearTimeout(tipTimer);
+  tipFor = null;
+  if (tipEl) tipEl.hidden = true;
+}
+
+/** Copies each data-tip into aria-description, so the explanation is read out without hovering. */
+export function describe(root = document) {
+  for (const el of root.querySelectorAll("[data-tip]")) {
+    const target = el.matches("label") ? el.querySelector("input, select, textarea") || el : el;   // a label is not focused; its control is
+    if (target.getAttribute("aria-description") !== el.dataset.tip) target.setAttribute("aria-description", el.dataset.tip);
+  }
+}
+
+export function initTips() {
+  tipEl = h("div", { id: "tip", class: "tip", role: "tooltip", hidden: true });
+  (document.querySelector("main") || document.body).append(tipEl);
+  const near = (e) => (e.target instanceof Element ? e.target.closest("[data-tip]") : null);
+  document.addEventListener("pointerover", (e) => {
+    const t = near(e);
+    if (!t || t === tipFor) return;
+    clearTimeout(tipTimer);
+    tipTimer = setTimeout(() => showTip(t), 350);
+  });
+  document.addEventListener("pointerout", (e) => { const t = near(e); if (t && !t.contains(e.relatedTarget)) hideTip(); });
+  document.addEventListener("focusin", (e) => { const t = near(e); if (t && t.matches(":focus-visible")) showTip(t); else hideTip(); });
+  document.addEventListener("focusout", hideTip);
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") hideTip(); });
+  document.addEventListener("scroll", hideTip, { passive: true, capture: true });
+  new MutationObserver(() => describe()).observe(document.body, { subtree: true, childList: true, attributeFilter: ["data-tip"] });
+  describe();
+}
+
+/** A small question mark that explains a term; it opens the glossary entry when pressed. */
+export function info(text, term, onOpen) {
+  const b = h("button", { type: "button", class: "qi", "data-tip": text, "aria-label": `What is ${term}?`, text: "?" });
+  if (onOpen) b.addEventListener("click", onOpen);
+  return b;
 }

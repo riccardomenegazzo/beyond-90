@@ -5,8 +5,8 @@ import * as W from "./workspace-core.js";
 import * as store from "./store.js";
 import * as Vault from "./vault.js";
 import * as V from "./views.js";
-import { h as el_, s as svg_, saveBlob, copyText, csvCell, icon } from "./ui.js";
-import { gauge, STAGE } from "./charts.js";
+import { h as el_, s as svg_, saveBlob, copyText, csvCell, icon, initTips, info } from "./ui.js";
+import { CUSTOMER_NAV, BOOK_NAV, FAQ, GLOSSARY, TOUR } from "./guide.js";
 
 // Another site could frame this page and steer clicks on it; the app only runs as the top-level page.
 if (window.top !== window.self) throw new Error("Beyond 90 runs only as a top-level page, never inside another site's frame.");
@@ -105,9 +105,11 @@ function renderLoaded() {
     li.textContent = t;
     ul.append(li);
   }
-  if (state.mode === "book") say(`${Object.keys(state.groups).length} customers found. Press Run analysis to see the portfolio and a plan for your hours.`);
+  const what = state.mode === "book" ? `${Object.keys(state.groups).length} customers` : W.peekCustomer(state.files).customer || "these files";
+  $("run").textContent = labels.length ? `Analyse ${what}` : "Analyse";
+  if (state.mode === "book") say(`${Object.keys(state.groups).length} customers found: analyse them together to plan your week across the book.`);
   state.result = null; state.book = null;
-  $("results").hidden = true;
+  setStep(labels.length ? 2 : 1);
   refreshRun();
 }
 
@@ -130,23 +132,23 @@ async function dropped(ev) {
 }
 
 async function loadDemo() {
-  say("Loading the demo…");
+  say("Loading the example…");
   state.mode = "single"; state.groups = {};
   state.files = await (await fetch("./demo.json")).json();
   renderLoaded();
-  say("Demo loaded: a made-up customer, Northwind. Press Run analysis.");
+  say("Example loaded: Northwind, a made-up customer.");
 }
 
 async function loadDemoEndpoint() {
-  say("Loading the demo…");
+  say("Loading the example…");
   state.mode = "single"; state.groups = {};
   state.files = await (await fetch("./demo-endpoint.json")).json();
   renderLoaded();
-  say("Demo loaded: a made-up endpoint-protection customer (profile: endpoint). Press Run analysis.");
+  say("Example loaded: a made-up endpoint-protection customer.");
 }
 
 async function loadDemoBook() {
-  say("Loading the book demo…");
+  say("Loading the example book…");
   state.mode = "book"; state.files = {};
   state.groups = await (await fetch("./demo-book.json")).json();
   renderLoaded();
@@ -165,11 +167,10 @@ function options() {
 
 async function run(compareId) {
   if (state.mode === "book") return runBook();
-  $("errors").hidden = true;
   state.running = true;
   $("cancel").hidden = false;
   refreshRun();
-  say("Analyzing…");
+  say("Analysing…");
   try {
     const opts = options();
     const id = compareId === undefined ? await defaultCompare() : compareId;
@@ -193,11 +194,10 @@ async function run(compareId) {
 }
 
 async function runBook() {
-  $("errors").hidden = true;
   state.running = true;
   $("cancel").hidden = false;
   refreshRun();
-  say("Analyzing every customer and planning your hours…");
+  say("Analysing every customer and planning your hours…");
   try {
     const o = options();
     const res = await state.engine.json("book", { groups: state.groups, options: {
@@ -220,27 +220,15 @@ async function runBook() {
 
 function showBook() {
   const b = state.book;
-  fillHead("Your book", `${b.customers.length} customers · ${b.profile} catalogue · engine ${b.version}`, [el_("span", { class: "chip", text: "ARR-weighted Yield " + pct(b.arr_weighted_yield) }), el_("span", { class: "chip", text: "after the plan " + pct(b.weighted_end) })]);
-  $("kpis").replaceChildren(kpi(pct(b.arr_weighted_yield), "ARR-weighted Yield now"), kpi(pct(b.weighted_end), "After the plan"), kpi(String(b.customers.length), "Customers"), kpi(String(b.patterns), "Patterns shared across customers"));
-  document.querySelector(".bar").hidden = true;
+  fillHead("Your book", `${b.customers.length} customers, ${b.profile} catalogue`, b.arr_weighted_yield);
+  $("kpis").replaceChildren(kpi(pct(b.arr_weighted_yield), "Revenue-weighted Yield", "yield"), kpi(pct(b.weighted_end), "After the plan", null, "Where the book would be if the plan for your hours is followed."),
+    kpi(String(b.customers.length), "Customers", "book"), kpi(String(b.patterns), "Gaps shared across customers", null, "Problems that appear at more than one customer: fix once, reuse everywhere."));
+  $("worktools").hidden = true;
   $("saved-note").textContent = "";
-  const tbody = $("book-table").tBodies[0];
-  tbody.replaceChildren();
-  for (const c of b.customers) {
-    const tr = document.createElement("tr");
-    const cell = (t, cls) => { const td = document.createElement("td"); td.textContent = t; if (cls) td.className = cls; return td; };
-    tr.append(cell(c.name), cell(Math.round(c.arr).toLocaleString("en"), "n"), cell(pct(c.yield), "n"), cell(pct(c.planned_yield), "n"), cell(c.hours.toFixed(0), "n"), cell(c.confidence));
-    const td = document.createElement("td");
-    const open = Object.assign(document.createElement("button"), { className: "btn small", type: "button", textContent: "Open" });
-    open.onclick = () => { state.mode = "single"; state.files = { ...state.groups[c.key] }; state.book = null; renderLoaded(); run(); };
-    td.append(open); tr.append(td); tbody.append(tr);
-  }
-  $("book-table").hidden = true;                 // the portfolio map in the tabs replaces this table
+  $("book-table").hidden = true;
   state.tab = "week";
-  $("results").hidden = false;
-  renderTabs(BOOK_TABS);
+  renderNav(BOOK_NAV, "Your book");
   selectTab(state.tab);
-  $("results").scrollIntoView({ behavior: "smooth" });
 }
 
 /** With no choice made, compare with the most recent earlier snapshot of the same customer, if there is one. */
@@ -259,90 +247,100 @@ async function cancel() {
 }
 
 function showErrors(list) {
-  $("results").hidden = true;
-  $("errors").hidden = false;
   $("errlist").replaceChildren(...list.map((t) => Object.assign(document.createElement("li"), { textContent: t })));
   say("");
-  $("errors").scrollIntoView({ behavior: "smooth" });
+  showPlace("errors");
 }
 
-function kpi(value, label) {
-  return el_("div", { class: "kpi" }, el_("b", { text: value }), el_("span", { text: label }));
+const GLOSS = Object.fromEntries(GLOSSARY.map((g) => [g.id, g]));
+/** A number with its name; a term from the glossary gets a question mark that explains it. */
+function kpi(value, label, term, tip) {
+  const g = term && GLOSS[term];
+  const help = g ? info(g.text, g.term, () => openTerm(term)) : tip ? info(tip, label) : null;
+  return el_("div", { class: "kpi" }, el_("b", { text: value }), el_("span", {}, label, help));
 }
 
-function fillHead(title, sub, chips) {
-  $("reshead").replaceChildren(el_("div", {}, el_("h1", { text: title }), el_("div", { class: "sub", text: sub })), el_("div", { class: "chips2" }, chips));
-  document.body.classList.add("has-results");
+const LONG_DATE = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
+const longDate = (iso) => (iso ? LONG_DATE.format(new Date(iso + "T00:00:00Z")) : "");
+
+/** The ring: the brand's mark, drawn with the open customer's own Yield. */
+function ring(value, size = 34) {
+  const r = 13, c = 2 * Math.PI * r, v = Math.max(0, Math.min(1, value || 0));
+  return svg_("svg", { viewBox: "0 0 32 32", width: size, height: size, class: "ring", role: "img", "aria-label": `Yield ${pct(value)}` },
+    svg_("circle", { cx: 16, cy: 16, r, fill: "none", stroke: "var(--line)", "stroke-width": 4 }),
+    svg_("circle", { cx: 16, cy: 16, r, fill: "none", stroke: "var(--accent)", "stroke-width": 4, "stroke-linecap": "round", "stroke-dasharray": `${(v * c).toFixed(2)} ${c.toFixed(2)}`, transform: "rotate(-90 16 16)" }));
 }
+
+function fillHead(title, sub, value, badge) {
+  $("reshead").replaceChildren(...[ring(value, 56), el_("div", {}, el_("h1", { class: "who-name", text: title }), el_("p", { class: "who-sub", text: sub })), badge].filter(Boolean));
+  $("context").replaceChildren(ring(value), el_("span", { class: "context-name", text: title }), el_("span", { class: "context-sub", text: sub }));
+  setStep(3);
+}
+
+const levelName = (r) => r.level.charAt(0).toUpperCase() + r.level.slice(1) + (r.level_provisional ? " (provisional)" : "");
 
 function showResults() {
   const r = state.result;
-  fillHead(r.customer, `As of ${r.as_of} · ${r.profile} catalogue · engine ${r.version}`, [el_("span", { class: "levelbadge lv-" + r.level, text: r.level.charAt(0).toUpperCase() + r.level.slice(1) + (r.level_provisional ? " (provisional)" : "") }), el_("span", { class: "chip", text: "inputs: " + r.confidence + " confidence" })]);
-  $("kpis").replaceChildren(kpi(pct(r.yield), "Yield"), kpi(pct(r.reach), "Reach"), kpi(String(r.actions), "Open actions"), kpi(r.level.charAt(0).toUpperCase() + r.level.slice(1) + (r.level_provisional ? " (provisional)" : ""), "Maturity level"), kpi(r.confidence, "Confidence in the inputs"), kpi(r.profile, "Catalogue profile"), kpi(r.customer, "Customer as of " + r.as_of));
+  fillHead(r.customer, `Data as of ${longDate(r.as_of)}`, r.yield, el_("span", { class: "levelbadge lv-" + r.level, "data-tip": GLOSS.level.text, text: levelName(r) }));
+  $("kpis").replaceChildren(kpi(pct(r.yield), "Yield", "yield"), kpi(pct(r.reach), "Reach", "reach"), kpi(String(r.actions), "Open actions"),
+    kpi(levelName(r), "Maturity level", "level"), kpi(r.confidence, "Input confidence", "confidence"));
   renderCompare();
-  document.querySelector(".bar").hidden = false;
+  $("worktools").hidden = false;
   $("book-table").hidden = true;
-  if (!SINGLE_TABS.some((t) => t.id === state.tab)) state.tab = "overview";
-  $("results").hidden = false;
-  renderTabs(SINGLE_TABS);
+  if (!VIEWS[state.tab] || !CUSTOMER_NAV.some((g) => g.views.some((v) => v.id === state.tab))) state.tab = "overview";
+  renderNav(CUSTOMER_NAV, r.customer);
   selectTab(state.tab);
-  $("results").scrollIntoView({ behavior: "smooth" });
+  offerTour();
 }
 
 function renderCompare() {
   const sel = $("compare"), r = state.result;
   const options = W.previousOf(state.saved, r.customer, r.as_of, r.input_hash);
-  sel.replaceChildren(new Option("nothing (no comparison)", ""), ...options.map((s) => new Option(`${s.as_of} (${s.id.slice(0, 8)})`, s.id)));
+  sel.replaceChildren(new Option("nothing", ""), ...options.map((s) => new Option(`${longDate(s.as_of)} (${s.id.slice(0, 8)})`, s.id)));
   sel.value = options.some((s) => s.id === state.compareId) ? state.compareId : "";
 }
 
-// ---------- tabs
-const SINGLE_TABS = [
-  { id: "overview", label: "Overview", kind: "view", view: "overview", icon: "overview", group: "Customer" },
-  { id: "prep", label: "Prep a call", kind: "view", view: "prepView", icon: "prep" },
-  { id: "onboarding", label: "Onboarding", kind: "view", view: "onboardingView", icon: "onboarding" },
-  { id: "outlook", label: "If nothing is done", kind: "view", view: "outlookView", icon: "outlook" },
-  { id: "value", label: "Value receipt", kind: "view", view: "valueView", icon: "renewal" },
-  { id: "teams", label: "Teams", kind: "view", view: "teamsView", icon: "accounts" },
-  { id: "actions", label: "Actions", kind: "view", view: "actionsView", icon: "actions" },
-  { id: "accounts", label: "Accounts", kind: "view", view: "accountsView", icon: "accounts" },
-  { id: "findings", label: "Findings", kind: "view", view: "findingsView", icon: "findings" },
-  { id: "news", label: "News", kind: "view", view: "newsView", icon: "news" },
-  { id: "planview", label: "Plan & what-if", kind: "view", view: "planView", icon: "planview", group: "Plan and review" },
-  { id: "maturity", label: "Maturity", kind: "view", view: "maturityView", icon: "maturity" },
-  { id: "renewal", label: "Renewal & trust", kind: "view", view: "renewalView", icon: "renewal" },
-  { id: "changes", label: "Changes", kind: "view", view: "changesView", icon: "changes" },
-  { id: "execqbr", label: "Executive QBR", kind: "view", view: "execQbrView", icon: "doc" },
-  { id: "report", sep: true, icon: "doc", group: "Documents", label: "Report", key: "report_html", file: "beyond90-report.html", type: "text/html", kind: "html" },
-  { id: "qbr", label: "QBR draft", key: "qbr_markdown", file: "beyond90-qbr.md", type: "text/markdown", kind: "md" },
-  { id: "plan", label: "Success plan", key: "success_plan_markdown", file: "beyond90-success-plan.md", type: "text/markdown", kind: "md" },
-  { id: "roadmap", label: "Roadmap", key: "roadmap_markdown", file: "beyond90-roadmap.md", type: "text/markdown", kind: "md" },
-  { id: "summary", label: "Summary", key: "report_markdown", file: "beyond90-summary.md", type: "text/markdown", kind: "md" },
-  { id: "json", label: "JSON", key: "score_json", file: "beyond90-score.json", type: "application/json", kind: "json" },
-];
-const BOOK_TABS = [
-  { id: "week", label: "This week", kind: "view", view: "weekView", icon: "week", group: "Your book" },
-  { id: "bookmap", label: "Portfolio map", kind: "view", view: "bookView", icon: "bookmap" },
-  { id: "bookonboard", label: "Onboarding", kind: "view", view: "bookOnboardView", icon: "onboarding" },
-  { id: "booknews", label: "Cloud news", kind: "view", view: "bookNewsView", icon: "news" },
-  { id: "portfolio", label: "Portfolio", icon: "doc", group: "Documents", key: "portfolio_markdown", file: "beyond90-portfolio.md", type: "text/markdown", kind: "md" },
-  { id: "book", label: "Where your hours go", key: "book_markdown", file: "beyond90-book.md", type: "text/markdown", kind: "md" },
-  { id: "bookreport", label: "Book report", key: "book_html", file: "beyond90-book.html", type: "text/html", kind: "html" },
-];
-let tabDefs = SINGLE_TABS;
+// ---------- places and views
+const VIEWS = {
+  overview: { kind: "view", view: "overview" }, accounts: { kind: "view", view: "accountsView" }, findings: { kind: "view", view: "findingsView" },
+  onboarding: { kind: "view", view: "onboardingView" }, maturity: { kind: "view", view: "maturityView" }, actions: { kind: "view", view: "actionsView" },
+  planview: { kind: "view", view: "planView" }, outlook: { kind: "view", view: "outlookView" }, teams: { kind: "view", view: "teamsView" },
+  prep: { kind: "view", view: "prepView" }, news: { kind: "view", view: "newsView" }, value: { kind: "view", view: "valueView" },
+  execqbr: { kind: "view", view: "execQbrView" }, renewal: { kind: "view", view: "renewalView" }, changes: { kind: "view", view: "changesView" },
+  report: { kind: "html", key: "report_html", file: "beyond90-report.html", type: "text/html" },
+  qbr: { kind: "md", key: "qbr_markdown", file: "beyond90-qbr.md", type: "text/markdown" },
+  plan: { kind: "md", key: "success_plan_markdown", file: "beyond90-success-plan.md", type: "text/markdown" },
+  roadmap: { kind: "md", key: "roadmap_markdown", file: "beyond90-roadmap.md", type: "text/markdown" },
+  summary: { kind: "md", key: "report_markdown", file: "beyond90-summary.md", type: "text/markdown" },
+  json: { kind: "json", key: "score_json", file: "beyond90-score.json", type: "application/json" },
+  week: { kind: "view", view: "weekView" }, bookmap: { kind: "view", view: "bookView" }, bookonboard: { kind: "view", view: "bookOnboardView" },
+  booknews: { kind: "view", view: "bookNewsView" },
+  portfolio: { kind: "md", key: "portfolio_markdown", file: "beyond90-portfolio.md", type: "text/markdown" },
+  book: { kind: "md", key: "book_markdown", file: "beyond90-book.md", type: "text/markdown" },
+  bookreport: { kind: "html", key: "book_html", file: "beyond90-book.html", type: "text/html" },
+};
+let tabDefs = [];
 
-function renderTabs(defs) {
-  tabDefs = defs;
-  $("tabs").replaceChildren(...defs.flatMap((t) => {
-    const b = el_("button", { type: "button" }, icon(t.icon || "doc"), el_("span", { text: t.label }));
-    b.setAttribute("role", "tab");
-    b.dataset.tab = t.id;
-    b.addEventListener("click", () => selectTab(t.id));
-    const out = [];
-    if (t.group) out.push(el_("span", { class: "grp", "aria-hidden": "true", text: t.group }));
-    if (t.sep) out.push(el_("span", { class: "sep", "aria-hidden": "true" }));
-    return [...out, b];
-  }));
+const PLACES = { start: "place-start", work: "results", saved: "history-panel", help: "place-help", errors: "errors" };
+function showPlace(name) {
+  for (const [k, id] of Object.entries(PLACES)) $(id).hidden = k !== name;
+  state.place = name;
+  for (const b of document.querySelectorAll(".rail [data-place]")) b.toggleAttribute("aria-current", b.dataset.place === name);
+  if (name !== "work") for (const b of document.querySelectorAll("#tabs button")) b.removeAttribute("aria-current");
+  window.scrollTo({ top: 0 });
+}
+
+function setStep(n) {
+  [...document.querySelectorAll(".steps li")].forEach((li, i) => { li.className = i + 1 < n ? "is-done" : i + 1 === n ? "is-now" : ""; });
+}
+
+function renderNav(groups, title) {
+  tabDefs = groups.flatMap((g) => g.views.map((v) => ({ ...v, ...VIEWS[v.id], group: g.question })));
+  $("workspace").hidden = false;
+  $("ws-title").textContent = title;
+  $("tabs").replaceChildren(...groups.map((g, i) => el_("div", { class: "navgroup", role: "group", "aria-labelledby": `grp-${i}` },
+    el_("p", { class: "grp", id: `grp-${i}`, text: g.question }),
+    g.views.map((v) => el_("button", { type: "button", dataset: { tab: v.id }, "data-tip": v.tip, onclick: () => selectTab(v.id) }, icon(v.icon), el_("span", { text: v.label }))))));
 }
 
 const current = () => tabDefs.find((t) => t.id === state.tab) || tabDefs[0];
@@ -352,7 +350,10 @@ function selectTab(name, extra) {
   state.tab = name;
   state.focus = extra && extra.open;
   const t = current();
-  for (const b of document.querySelectorAll(".tabs button")) b.setAttribute("aria-selected", String(b.dataset.tab === t.id));
+  showPlace("work");
+  for (const b of document.querySelectorAll("#tabs button")) b.toggleAttribute("aria-current", b.dataset.tab === t.id);
+  $("res-title").textContent = t.label;
+  $("view-tip").textContent = t.tip;
   $("view").hidden = t.kind !== "view";
   $("docactions").hidden = t.kind === "view";
   if (t.kind === "view") {
@@ -461,7 +462,8 @@ async function saveSnapshot({ quiet = false } = {}) {
   try {
     const snap = await W.makeSnapshot(state.files, { customer: r.customer, asOf: r.as_of, includePersonal: $("personal").checked, savedOn: new Date().toISOString().slice(0, 10) });
     const added = await store.put([snap]);
-    $("saved-note").textContent = added ? `${quiet ? "Added to the history" : "Saved"}: ${snap.customer}, ${snap.as_of} (${snap.id.slice(0, 8)})${snap.personal_excluded ? ", without contacts and commitments" : ""}.` : quiet ? $("saved-note").textContent : "This exact snapshot is already saved; nothing changed.";
+    $("saved-note").textContent = added ? (quiet ? `Added to ${snap.customer}'s history.` : `Saved: ${snap.customer}, ${snap.as_of}${snap.personal_excluded ? ", without contacts and logged calls" : ""}.`)
+      : quiet ? $("saved-note").textContent : "This exact snapshot is already saved; nothing changed.";
     if (navigator.storage && navigator.storage.persist) navigator.storage.persist();
     await refreshHistory();
     renderCompare();
@@ -488,15 +490,14 @@ async function refreshHistory() {
     idc.append(el_("code", { text: s.id.slice(0, 8) }), ...(s.personal_excluded ? [" ", el_("span", { class: "chip", text: "no contacts" })] : []));
     tr.append(idc);
     const act = document.createElement("td");
-    const load = Object.assign(document.createElement("button"), { className: "btn small", type: "button", textContent: "Load" });
-    load.onclick = () => { state.files = { ...s.files }; renderLoaded(); say(`Loaded ${s.customer}, ${s.as_of}. Press Run analysis.`); window.scrollTo({ top: 0, behavior: "smooth" }); };
-    const del = Object.assign(document.createElement("button"), { className: "btn small danger", type: "button", textContent: "Delete" });
-    del.onclick = async () => { await store.remove(s.id); await refreshHistory(); };
-    act.append(load, " ", del);
+    act.append(
+      el_("button", { class: "btn small", type: "button", text: "Open", "aria-label": `Open ${s.customer}, ${s.as_of}`, onclick: () => { state.mode = "single"; state.groups = {}; state.files = { ...s.files }; renderLoaded(); run(); } }), " ",
+      el_("button", { class: "btn small danger", type: "button", text: "Delete", "aria-label": `Delete ${s.customer}, ${s.as_of}`, onclick: async () => { await store.remove(s.id); await refreshHistory(); } }));
     tr.append(act);
     tbody.append(tr);
   }
   computeYields();
+  renderRecent();
   await refreshVault();
 }
 
@@ -796,6 +797,8 @@ function downloadInteractions() {
 // ---------- theme
 function applyTheme(t) {
   if (t) document.documentElement.dataset.theme = t; else delete document.documentElement.dataset.theme;
+  const dark = (t || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")) === "dark";
+  $("theme").replaceChildren(icon(dark ? "sun" : "moon", 18));
 }
 try { applyTheme(localStorage.getItem("b90-theme")); } catch { /* storage may be blocked; the theme then follows the system */ }
 $("theme").addEventListener("click", () => {
@@ -808,13 +811,15 @@ $("theme").addEventListener("click", () => {
 // ---------- command palette and keys
 const hasResult = () => !!state.result;
 function commands() {
-  const go = (id, label) => ({ label: "Go to " + label, hint: "view", when: () => hasResult(), run: () => { selectTab(id); $("results").scrollIntoView({ behavior: "smooth" }); } });
+  const go = (id, label) => ({ label: "Go to " + label, hint: "view", run: () => selectTab(id) });
   return [
-    { label: "Run analysis", hint: "action", when: () => !$("run").disabled, run: () => run() },
-    { label: "Load the demo (one customer)", hint: "demo", when: () => !$("demo").disabled, run: loadDemo },
-    { label: "Load the book demo (3 customers)", hint: "demo", when: () => !$("demo-book").disabled, run: loadDemoBook },
-    { label: "Load the endpoint demo", hint: "demo", when: () => !$("demo-endpoint").disabled, run: loadDemoEndpoint },
-    ...SINGLE_TABS.map((t) => go(t.id, t.label)),
+    { label: "Analyse", hint: "action", when: () => !$("run").disabled, run: () => run() },
+    { label: "Open the example customer", hint: "example", when: () => !$("demo").disabled, run: () => loadDemo().then(() => run()) },
+    { label: "Open the example book (3 customers)", hint: "example", when: () => !$("demo-book").disabled, run: () => loadDemoBook().then(() => run()) },
+    ...tabDefs.map((t) => go(t.id, t.label)),
+    { label: "Go to Start", hint: "place", run: () => showPlace("start") },
+    { label: "Go to Saved", hint: "place", run: () => showPlace("saved") },
+    { label: "Take the tour", hint: "help", run: startTour },
     { label: "Save snapshot in this browser", hint: "action", when: hasResult, run: () => saveSnapshot() },
     { label: "Copy a five-line summary for chat", hint: "action", when: hasResult, run: copySummary },
     { label: "Download the current document", hint: "action", when: () => hasResult() && current().kind !== "view", run: download },
@@ -822,7 +827,9 @@ function commands() {
     { label: "Export workspace", hint: "action", run: exportWorkspace },
     { label: "Print this view", hint: "action", run: () => window.print() },
     { label: "Switch colour theme", hint: "action", run: () => $("theme").click() },
-    { label: "Check that nothing leaves this page", hint: "privacy", run: selfCheck },
+    { label: "Check that nothing leaves this page", hint: "privacy", run: () => { showPlace("help"); selfCheck(); } },
+    ...FAQ.flatMap((g) => g.items.map((it) => ({ label: it.q, hint: "answer", run: () => openAnswer(it.q) }))),
+    ...GLOSSARY.map((g) => ({ label: `What is ${g.term}?`, hint: "term", run: () => openTerm(g.id) })),
   ].filter((c) => !c.when || c.when());
 }
 function copySummary() {
@@ -855,24 +862,101 @@ $("open-palette").addEventListener("click", openPalette);
 document.addEventListener("keydown", (e) => {
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") { e.preventDefault(); pal.el.open ? pal.el.close() : openPalette(); return; }
   const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName || "") || pal.el.open;
-  if (!typing && !e.ctrlKey && !e.metaKey && !e.altKey && /^[1-9]$/.test(e.key) && hasResult() && tabDefs === SINGLE_TABS) {
-    const t = SINGLE_TABS[Number(e.key) - 1]; if (t) selectTab(t.id);
+  if (!typing && !e.ctrlKey && !e.metaKey && !e.altKey && /^[1-9]$/.test(e.key) && (hasResult() || state.book)) {
+    const t = tabDefs[Number(e.key) - 1]; if (t) selectTab(t.id);
   }
 });
 
-// ---------- first impression
-for (const e of document.querySelectorAll("[data-i]")) e.prepend(icon(e.dataset.i, e.classList.contains("fi") ? 20 : 16));
-function drawHero() {
-  const stage = (v, n, d) => ({ value: v, numerator: n, denominator: d });
-  const rows = [["L1", "Connected", 0.901, "var(--s1)"], ["L2", "Inventoried", 0.973, "var(--s2)"], ["L3", "Controls on", 0.927, "var(--s3)"], ["L4", "Decided", 0.894, "var(--s4)"]];
-  void stage; void STAGE;
-  $("hero-art").replaceChildren(el_("div", { class: "preview" },
-    el_("div", { class: "pv-head" }, el_("span", { text: "Northwind (mock) · sample data" }), el_("span", { class: "levelbadge small lv-bronze", text: "Bronze" })),
-    el_("div", { class: "pv-grid" }, gauge({ value: 0.726, marker: 0.92, size: 200, ticks: [] }),
-      el_("div", { class: "pv-bars" }, rows.map(([k, name, v, c]) => el_("div", { class: "pv-bar" }, el_("span", { text: `${k} ${name}` }), el_("span", {}, el_("i", { style: `width:${v * 100}%;background:${c}` })), el_("b", { text: (v * 100).toFixed(0) + "%" }))))),
-    el_("div", { class: "pv-opp" }, [["L4", "Give unowned findings an owner", "+4.0"], ["L3", "Adopt workflow automation on 31 accounts", "+2.1"], ["L1", "Connect 3 accounts owned by retail", "+2.0"]].map(([k, t, e]) => el_("div", { class: "pv-o" }, el_("span", { class: "stagepip", style: `border-color:var(--s${k.slice(1)})`, text: k }), el_("b", { text: t }), el_("span", { text: e + " pts" }))))),
-    el_("div", { class: "pv-badge" }, icon("news", 16), el_("span", { text: "2 advisories touch uncovered accounts" })));
+// ---------- recent customers: one click back to where you were
+function renderRecent() {
+  const latest = new Map();
+  for (const snap of state.saved) if (!latest.has(snap.customer) || latest.get(snap.customer).as_of < snap.as_of) latest.set(snap.customer, snap);
+  const list = [...latest.values()].sort((a, b) => b.as_of.localeCompare(a.as_of)).slice(0, 5);
+  $("recent-card").hidden = !list.length;
+  $("recent").replaceChildren(...list.map((snap) => el_("li", {},
+    el_("button", { type: "button", class: "recent-btn", "data-tip": `Open ${snap.customer} with the data saved for ${longDate(snap.as_of)}.`,
+      onclick: () => { state.mode = "single"; state.groups = {}; state.files = { ...snap.files }; renderLoaded(); run(); } },
+    el_("b", { text: snap.customer }), el_("small", { text: `data as of ${longDate(snap.as_of)}` })))));
 }
-drawHero();
-renderTabs(SINGLE_TABS);
+
+// ---------- help: answers, terms and the tour
+function renderHelp() {
+  $("faq").replaceChildren(...FAQ.map((g, gi) => el_("section", { class: "block faqgroup", "aria-labelledby": `faq-${gi}` }, el_("h2", { id: `faq-${gi}`, text: g.group }),
+    g.items.map((it) => el_("details", { class: "qa", dataset: { q: it.q } }, el_("summary", { text: it.q }), el_("p", { text: it.a }),
+      it.link ? el_("p", {}, el_("button", { type: "button", class: "link", text: it.link.text, onclick: () => { showPlace(it.link.place); if (it.link.anchor) $(it.link.anchor).scrollIntoView(); } })) : null)))));
+  $("glossary").replaceChildren(...GLOSSARY.flatMap((g) => [el_("dt", { id: "term-" + g.id, text: g.term }), el_("dd", { text: g.text })]));
+}
+function filterHelp() {
+  const q = $("faq-q").value.trim().toLowerCase();
+  for (const d of document.querySelectorAll("#faq details")) {
+    const hit = !q || d.textContent.toLowerCase().includes(q);
+    d.hidden = !hit;
+    d.open = !!q && hit;
+  }
+  for (const g of document.querySelectorAll("#faq .faqgroup")) g.hidden = ![...g.querySelectorAll("details")].some((d) => !d.hidden);
+}
+function openAnswer(q) {
+  showPlace("help");
+  const d = [...document.querySelectorAll("#faq details")].find((x) => x.dataset.q === q);
+  if (d) { d.open = true; d.scrollIntoView({ block: "center" }); d.querySelector("summary").focus(); }
+}
+function openTerm(id) {
+  showPlace("help");
+  const dt = $("term-" + id);
+  if (dt) { dt.scrollIntoView({ block: "center" }); dt.classList.add("flash"); setTimeout(() => dt.classList.remove("flash"), 1600); }
+}
+
+const tour = { at: 0, steps: [] };
+function placeTour() {
+  const step = tour.steps[tour.at], target = document.querySelector(step.target), card = $("tour");
+  for (const e of document.querySelectorAll(".tour-on")) e.classList.remove("tour-on");
+  target.classList.add("tour-on");
+  target.scrollIntoView({ block: "nearest" });
+  $("tour-step").textContent = `${tour.at + 1} of ${tour.steps.length}`;
+  $("tour-title").textContent = step.title;
+  $("tour-text").textContent = step.text;
+  $("tour-next").textContent = tour.at === tour.steps.length - 1 ? "Done" : "Next";
+  card.hidden = false;
+  const r = target.getBoundingClientRect(), c = card.getBoundingClientRect();
+  const tall = r.height > window.innerHeight / 2 && r.right + 16 + c.width < window.innerWidth;     // beside a tall target, not over it
+  const top = tall ? Math.max(12, r.top + 24) : r.bottom + 12 + c.height < window.innerHeight ? r.bottom + 12 : Math.max(12, r.top - c.height - 12);
+  const left = tall ? r.right + 16 : Math.min(Math.max(12, r.left), window.innerWidth - c.width - 12);
+  card.style.transform = `translate(${Math.round(left)}px, ${Math.round(top)}px)`;
+  $("tour-next").focus();
+}
+function endTour() {
+  $("tour").hidden = true;
+  for (const e of document.querySelectorAll(".tour-on")) e.classList.remove("tour-on");
+  try { localStorage.setItem("b90-toured", "1"); } catch { /* the offer comes back next time */ }
+  const offer = $("tour-offer"); if (offer) offer.remove();
+}
+async function startTour() {
+  if (!state.result && !state.book) { await loadDemo(); await run(); }
+  if (!state.result && !state.book) return;
+  if (state.place !== "work") selectTab(state.tab);
+  tour.steps = TOUR.filter((t) => { const e = document.querySelector(t.target); return e && e.getClientRects().length; });
+  tour.at = 0;
+  if (tour.steps.length) placeTour();
+}
+function offerTour() {
+  let seen = false;
+  try { seen = !!localStorage.getItem("b90-toured"); } catch { seen = true; }
+  if (seen || $("tour-offer")) return;
+  $("worktools").prepend(el_("button", { type: "button", class: "btn tour-offer", id: "tour-offer", text: "New here? Take the one-minute tour", onclick: startTour }));
+}
+
+// ---------- wiring of the shell
+document.addEventListener("click", (e) => {
+  const p = e.target instanceof Element && e.target.closest("[data-place]");
+  if (p) showPlace(p.dataset.place);
+});
+$("faq-q").addEventListener("input", filterHelp);
+$("tour-start").addEventListener("click", startTour);
+$("tour-next").addEventListener("click", () => { if (++tour.at >= tour.steps.length) endTour(); else placeTour(); });
+$("tour-end").addEventListener("click", endTour);
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("tour").hidden) endTour(); });
+
+initTips();
+renderHelp();
+showPlace("start");
 boot();

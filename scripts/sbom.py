@@ -16,6 +16,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 
 
+ROLE = {"pyodide": "Copied into the published site as the in-browser Python runtime",
+        "@fontsource-variable/atkinson-hyperlegible-next": "Copied into the published site as its typeface"}
+
+
 def build() -> dict:
     meta = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))["project"]
     lock = json.loads((ROOT / "site" / "npm" / "package-lock.json").read_text(encoding="utf-8"))
@@ -29,7 +33,7 @@ def build() -> dict:
         if name not in runtime:                      # axe-core is a test tool and is not shipped
             continue
         comp = {"type": "library", "name": name, "version": pkg["version"], "purl": f"pkg:npm/{name}@{pkg['version']}",
-                "scope": "required", "description": "Copied into the published site as the in-browser Python runtime"}
+                "scope": "required", "description": ROLE.get(name, "Copied into the published site")}
         m = re.match(r"sha512-(.+)$", pkg.get("integrity", ""))
         if m:
             import base64

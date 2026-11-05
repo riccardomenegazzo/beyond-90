@@ -3,178 +3,245 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; frame-src 'self'; worker-src 'self' blob:; base-uri 'none'; form-action 'none'; require-trusted-types-for 'script'; trusted-types b90-report b90-worker b90-sw">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self'; img-src 'self' data:; frame-src 'self'; worker-src 'self' blob:; base-uri 'none'; form-action 'none'; require-trusted-types-for 'script'; trusted-types b90-report b90-worker b90-sw">
 <meta name="referrer" content="no-referrer">
-<title>Beyond 90: adoption score in your browser</title>
+<title>Beyond 90: what to do and say next, for every customer</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-<header class="appbar">
-  <div class="appbar-in">
-    <a class="brand" href="./" aria-label="Beyond 90, home">
-      <svg viewBox="0 0 32 32" width="28" height="28" aria-hidden="true"><circle cx="16" cy="16" r="12" fill="none" stroke="var(--grid)" stroke-width="4"/><path d="M16 4a12 12 0 1 1-11.4 8.3" fill="none" stroke="var(--accent)" stroke-width="4" stroke-linecap="round"/><circle cx="16" cy="4" r="2.4" fill="var(--ink)"/></svg>
-      <span>Beyond <b>90</b></span>
-    </a>
-    <div class="chips"><span class="chip" id="version">loading engine…</span><span class="chip hide-s" id="offline" hidden>works offline</span></div>
-    <div class="appbar-actions">
-      <button class="btn small" id="open-palette" type="button" aria-haspopup="dialog" title="Commands (Ctrl or Cmd + K)">Commands <kbd>Ctrl K</kbd></button>
-      <button class="btn small" id="theme" type="button" aria-label="Switch colour theme" title="Colour theme">Theme</button>
-    </div>
+<header class="top">
+  <a class="brand" href="./" aria-label="Beyond 90, start again">
+    <svg viewBox="0 0 32 32" width="26" height="26" aria-hidden="true"><circle cx="16" cy="16" r="12" fill="none" stroke="var(--line)" stroke-width="4"/><path d="M16 4a12 12 0 1 1-11.4 8.3" fill="none" stroke="var(--accent)" stroke-width="4" stroke-linecap="round"/></svg>
+    <span>Beyond 90</span>
+  </a>
+  <div class="context" id="context" aria-live="polite"><span class="context-empty">No customer open</span></div>
+  <div class="top-actions">
+    <button class="search-btn" id="open-palette" type="button" aria-haspopup="dialog" data-tip="Find any view, action or answer. Shortcut: Ctrl K, or Cmd K on a Mac."><span>Search or jump to…</span><kbd>Ctrl K</kbd></button>
+    <span class="engine" id="version" data-tip="The analysis engine runs inside this tab. Nothing is sent anywhere.">Starting the engine…</span>
+    <span class="engine" id="offline" hidden data-tip="Everything this page needs is stored on this device, so it keeps working without a connection.">Works offline</span>
+    <button class="icon-btn" id="theme" type="button" aria-label="Switch between light and dark" data-tip="Switch between light and dark."></button>
   </div>
 </header>
-<section class="hero-land" id="landing" aria-label="About">
-  <div class="hero-copy">
-    <p class="eyebrow">For technical account managers</p>
-    <h1>Adoption you <em>can't flatter.</em></h1>
-    <p class="lead">Beyond 90 measures how much of a security product a customer really uses, finds the gaps behind the number, and plans the hours and the conversations to close them, for every customer in your book, every week.</p>
-    <ul class="proof" aria-label="Why you can trust it">
-      <li data-i="lock">Runs in your browser. Nothing is uploaded.</li>
-      <li data-i="shield">Open source, Apache-2.0, no vendor.</li>
-      <li data-i="bolt">Works offline, installs nothing.</li>
-    </ul>
-  </div>
-  <div class="hero-art" id="hero-art" aria-hidden="true"></div>
-</section>
 
-<section class="features" aria-label="What it does">
-  <article><span class="fi" data-i="overview"></span><h3>A score that can't be gamed</h3><p>Yield multiplies four honest stages against their own denominators, and shows the gap to the flattering number.</p></article>
-  <article><span class="fi" data-i="week"></span><h3>The week, in order</h3><p>Top and mid-tier customers ranked with the reason for each place, a prepared agenda for every call.</p></article>
-  <article><span class="fi" data-i="news"></span><h3>News that touches them</h3><p>Advisories matched to each customer's inventory, with a note you can send in plain words.</p></article>
-  <article><span class="fi" data-i="lock"></span><h3>Private by design</h3><p>Strict policy, Trusted Types, optional passphrase for saved data. Your files never leave the tab.</p></article>
-</section>
+<div class="shell">
+  <nav class="rail" id="rail" aria-label="Main">
+    <button class="place-btn" type="button" data-place="start" data-tip="Choose a customer or your whole book, and start an analysis.">Start</button>
+    <button class="place-btn" type="button" data-place="saved" data-tip="Every analysis you kept, protection with a passphrase, and moving your work between devices.">Saved</button>
+    <button class="place-btn" type="button" data-place="help" data-tip="Questions and answers, what each term means, and a short tour.">Help</button>
+    <div class="workspace" id="workspace" hidden>
+      <p class="ws-title" id="ws-title"></p>
+      <div class="tabs" id="tabs"></div>
+    </div>
+  </nav>
 
-<main id="main">
-  <section class="panel" aria-labelledby="in">
-    <h2 id="in">Your data</h2>
-    <div id="drop" class="drop" role="group" aria-label="Choose or drop the customer data files">
-      <strong>Drop a customer folder here</strong>
-      <span>or choose files (<code>customer.toml</code>, <code>accounts.csv</code>, …)</span>
-      <div class="row">
-        <label class="btn">Choose folder<input id="folder" type="file" webkitdirectory hidden></label>
-        <label class="btn">Choose files<input id="files" type="file" multiple accept=".csv,.toml" hidden></label>
+  <main id="main" tabindex="-1">
+    <section class="place" id="place-start" aria-labelledby="start-title">
+      <div class="start-head">
+        <h1 id="start-title">Know what to do and say next, for every customer.</h1>
+        <p class="lede">Beyond 90 reads what a security customer really uses, shows where their coverage leaks, and turns it into actions, call agendas and reviews. It all happens in this tab; your files go nowhere.</p>
       </div>
-    </div>
-    <div class="demos" role="group" aria-label="Try an example">
-      <p class="demos-t">Or start with an example</p>
-      <button class="demo-card" id="demo" type="button" disabled><span class="fi" data-i="overview"></span><b>One customer</b><small>The full dashboard, call prep and plan for a mock enterprise customer.</small></button>
-      <button class="demo-card" id="demo-book" type="button" disabled><span class="fi" data-i="week"></span><b>A book of three</b><small>This week's order, the portfolio map and where one budget of hours goes.</small></button>
-      <button class="demo-card" id="demo-endpoint" type="button" disabled><span class="fi" data-i="chip"></span><b>Endpoint protection</b><small>The same engine with a different catalogue and its own words.</small></button>
-    </div>
-    <ul id="loaded" class="loaded" aria-live="polite"></ul>
-
-    <div class="advrow">
-      <strong>News and advisories</strong>
-      <span class="note">Cloud security news, matched to what each customer has inventoried. The daily feed is collected from public sources (provider bulletins, the Kubernetes CVE feed, cloud vulnerability databases, the catalogue of exploited vulnerabilities) and published with this page; your data never leaves the browser.</span>
-      <div class="row left">
-        <button class="btn small primary" id="latest-adv" type="button" hidden>Use today's cloud news</button>
-        <label class="btn small">Add a feed<input id="advfile" type="file" accept=".json,application/json" hidden></label>
-        <button class="btn small" id="demo-adv" type="button">Use the demo advisories</button>
-        <button class="btn small" id="clear-adv" type="button" hidden>Remove</button>
-        <span class="note" id="adv-status" role="status"></span>
+      <ol class="steps" aria-label="How it works">
+        <li class="is-now">Choose the data</li>
+        <li>Analyse</li>
+        <li>Act on what you see</li>
+      </ol>
+      <div class="start-grid">
+        <div class="choose">
+          <div id="drop" class="drop" role="group" aria-label="Your own data">
+            <h2>Your customer's files</h2>
+            <p>Drop a customer folder here, or a folder of customer folders to open your whole book.</p>
+            <div class="row">
+              <label class="btn" data-tip="Pick one customer's folder, or a folder that holds one folder per customer.">Choose a folder<input id="folder" type="file" webkitdirectory hidden></label>
+              <label class="btn quiet" data-tip="Pick the files one by one: customer.toml, accounts.csv and the others.">Choose files<input id="files" type="file" multiple accept=".csv,.toml" hidden></label>
+            </div>
+            <p class="fine">Needs <code>customer.toml</code> and <code>accounts.csv</code>; the rest makes the picture sharper. <a href="https://github.com/riccardomenegazzo/beyond-90/blob/main/docs/data-format.md">What goes in each file</a></p>
+          </div>
+          <div class="demos" role="group" aria-labelledby="demos-title">
+            <h2 id="demos-title">Or explore with made-up data</h2>
+            <button class="demo" id="demo" type="button" disabled data-tip="A mock enterprise customer with a cloud estate: every view works on it."><span class="demo-ring" aria-hidden="true"></span><b>One customer</b><small>Northwind, with 121 cloud accounts and an onboarding problem.</small></button>
+            <button class="demo" id="demo-book" type="button" disabled data-tip="Three mock customers opened together: your week in order, the portfolio map and the news across all of them."><span class="demo-ring" aria-hidden="true"></span><b>A book of three</b><small>Plan your week across customers of different sizes.</small></button>
+            <button class="demo" id="demo-endpoint" type="button" disabled data-tip="The same engine with an endpoint-protection catalogue, to show it is not tied to one kind of product."><span class="demo-ring" aria-hidden="true"></span><b>Endpoint protection</b><small>The same method, another kind of product.</small></button>
+          </div>
+        </div>
+        <div class="side">
+          <section class="side-card" aria-labelledby="recent-title" id="recent-card" hidden>
+            <h2 id="recent-title">Pick up where you left off</h2>
+            <ul class="recent" id="recent"></ul>
+          </section>
+          <section class="side-card" aria-labelledby="news-title">
+            <h2 id="news-title">Security news</h2>
+            <p class="fine">Public cloud security news, matched to what each customer runs. Collected every morning from provider bulletins, the Kubernetes CVE feed and the catalogue of exploited vulnerabilities.</p>
+            <div class="row left">
+              <button class="btn" id="latest-adv" type="button" hidden data-tip="Load this morning's cloud security news; every analysis then says which stories touch the customer.">Use today's cloud news</button>
+              <button class="btn quiet" id="demo-adv" type="button" data-tip="Load a few invented advisories that match the example customers.">Use example news</button>
+              <label class="btn quiet" data-tip="Load your own feed: a JSON list of advisories.">Add a feed<input id="advfile" type="file" accept=".json,application/json" hidden></label>
+              <button class="btn quiet" id="clear-adv" type="button" hidden data-tip="Stop matching news to customers.">Remove</button>
+            </div>
+            <p class="fine" id="adv-status" role="status"></p>
+          </section>
+          <details class="side-card opts">
+            <summary data-tip="Your hours and horizon shape the plan; the defaults suit most people.">Fine-tune the plan</summary>
+            <div class="formgrid">
+              <label data-tip="The time you can give this customer each week.">Hours per week<input id="hours" type="number" min="0.5" step="0.5" value="8"></label>
+              <label data-tip="How far ahead the plan looks.">Weeks ahead<input id="weeks" type="number" min="1" max="104" value="26"></label>
+              <label data-tip="The share of each action that works in practice. 0.9 means nine in ten.">Success rate<input id="real" type="number" min="0.1" max="1" step="0.05" value="0.9"></label>
+              <label data-tip="Printed on the review documents, for example Q4 2026.">Quarter label<input id="quarter" type="text" placeholder="Q4 2026"></label>
+              <label data-tip="Your total hours per week across the whole book.">Hours for the book<input id="bookhours" type="number" min="1" step="1" value="30"></label>
+              <label data-tip="Large customers first, or every customer the same.">Optimise for<select id="weighting"><option value="arr">Revenue-weighted Yield</option><option value="equal">Every customer equally</option></select></label>
+            </div>
+          </details>
+        </div>
       </div>
-    </div>
-
-    <details class="opts">
-      <summary>Planning assumptions</summary>
-      <div class="grid2">
-        <label>Hours per week<input id="hours" type="number" min="0.5" step="0.5" value="8"></label>
-        <label>Horizon (weeks)<input id="weeks" type="number" min="1" max="104" value="26"></label>
-        <label>Realization (0 to 1)<input id="real" type="number" min="0.1" max="1" step="0.05" value="0.9"></label>
-        <label>Quarter label<input id="quarter" type="text" placeholder="Q4 2026"></label>
-        <label>Whole-book hours per week<input id="bookhours" type="number" min="1" step="1" value="30"></label>
-        <label>Optimize for<select id="weighting"><option value="arr">ARR-weighted Yield</option><option value="equal">Every customer equally</option></select></label>
+      <div class="runbar" id="runbar">
+        <ul id="loaded" class="loaded" aria-live="polite"></ul>
+        <p class="status" id="status" role="status"></p>
+        <button class="btn primary big" id="run" type="button" disabled data-tip="Score the data, plan the work and prepare every view. Takes a few seconds.">Analyse</button>
+        <button class="btn big quiet" id="cancel" type="button" hidden>Stop</button>
       </div>
-    </details>
-    <div class="row left">
-      <button class="btn primary big" id="run" type="button" disabled>Run analysis</button>
-      <button class="btn big" id="cancel" type="button" hidden>Cancel</button>
-    </div>
-    <p class="note" id="status" role="status"></p>
-    <p class="note">Format: see <a href="https://github.com/riccardomenegazzo/beyond-90/blob/main/docs/data-format.md">data-format.md</a>. Contacts and commitments are personal data; they stay in this tab.</p>
-  </section>
+    </section>
 
-  <section class="panel out" aria-labelledby="res" hidden id="results">
-    <h2 id="res" class="sr">Results</h2>
-    <div id="reshead" class="reshead"></div>
-    <div class="kpis" id="kpis"></div>
-    <div class="bar">
-      <label class="inline">Explain what changed since
-        <select id="compare"><option value="">nothing (no comparison)</option></select>
-      </label>
-      <label class="inline check"><input type="checkbox" id="autosave" checked> Keep every analysis in the customer's history</label>
-      <label class="inline check"><input type="checkbox" id="personal"> Keep contacts and commitments when I save</label>
-      <button class="btn" id="save" type="button">Save snapshot in this browser</button>
-    </div>
-    <p class="note" id="saved-note" role="status"></p>
-    <table class="hist" id="book-table" hidden><thead><tr><th>Customer</th><th class="n">ARR</th><th class="n">Yield now</th><th class="n">After the plan</th><th class="n">Hours</th><th>Inputs</th><th><span class="sr">Actions</span></th></tr></thead><tbody></tbody></table>
-    <div class="resbody">
-    <div class="tabs" role="tablist" id="tabs" aria-label="Views"></div>
-    <div id="view" class="view" role="tabpanel" tabindex="-1" hidden></div>
-    <div class="actions" id="docactions">
-      <button class="btn" id="copy" type="button">Copy</button>
-      <button class="btn" id="download" type="button">Download</button>
-    </div>
-    <iframe id="report" title="Report" sandbox></iframe>
-    <article id="doc" class="doc" hidden></article>
-    <pre id="raw" class="raw" hidden></pre>
-    </div>
-  </section>
+    <section class="place" id="results" hidden aria-labelledby="res-title">
+      <div class="work-head">
+        <div class="who" id="reshead"></div>
+        <div class="work-tools" id="worktools">
+          <label class="inline" data-tip="Pick an earlier snapshot of this customer and every view explains what changed since then.">Compare with
+            <select id="compare"><option value="">nothing</option></select>
+          </label>
+          <button class="btn quiet" id="save" type="button" data-tip="Keep this snapshot in this browser, to compare and build reviews later.">Save snapshot</button>
+        </div>
+      </div>
+      <p class="fine" id="saved-note" role="status"></p>
+      <div class="kpis" id="kpis"></div>
+      <table class="hist" id="book-table" hidden><thead><tr><th>Customer</th><th class="n">ARR</th><th class="n">Yield now</th><th class="n">After the plan</th><th class="n">Hours</th><th>Inputs</th><th><span class="sr">Actions</span></th></tr></thead><tbody></tbody></table>
+      <div class="viewhead">
+        <h2 id="res-title"></h2>
+        <p id="view-tip"></p>
+        <div class="actions" id="docactions">
+          <button class="btn quiet" id="copy" type="button">Copy</button>
+          <button class="btn quiet" id="download" type="button">Download</button>
+        </div>
+      </div>
+      <div id="view" class="view" tabindex="-1" hidden></div>
+      <iframe id="report" title="Report" sandbox></iframe>
+      <article id="doc" class="doc" hidden></article>
+      <pre id="raw" class="raw" hidden></pre>
+    </section>
 
-  <section class="panel" id="history-panel" aria-labelledby="hist">
-    <h2 id="hist">Saved in this browser</h2>
-    <p class="note first">Only your input files are kept, on this device, never results (those are recomputed, so they can never disagree with the data). Contacts and commitments are left out unless you tick the box. Nothing is synced anywhere: to move work between devices, export and import. Importing merges, and importing the same file twice changes nothing.</p>
-    <div id="history-empty" class="empty" hidden>
-      <p>Nothing saved yet. Every analysis you run is added here (you can turn that off in step 1), and an executive review can be built from it at any time.</p>
-    </div>
-    <p class="row left"><button class="btn" id="demo-prev" type="button">Add the demo's September snapshot</button></p>
-    <div id="history-body" hidden>
-      <div id="trend"></div>
-      <table class="hist" id="hist-table"><thead><tr><th>Customer</th><th>As of</th><th class="n">Yield</th><th>Snapshot</th><th><span class="sr">Actions</span></th></tr></thead><tbody></tbody></table>
-    </div>
-    <div class="row left">
-      <button class="btn" id="export" type="button">Export workspace</button>
-      <label class="btn">Import workspace<input id="import" type="file" accept=".json,application/json" hidden></label>
-      <button class="btn danger" id="forget" type="button">Forget everything</button>
-    </div>
-    <div class="vaultbar">
-      <span class="chip" id="vault-state">saved data is not protected</span>
-      <span class="bad-text" id="vault-warn" role="status" hidden></span>
-      <button class="btn small" id="vault-on" type="button">Protect with a passphrase</button>
-      <button class="btn small" id="vault-unlock" type="button" hidden>Unlock</button>
-      <button class="btn small" id="vault-lock" type="button" hidden>Lock now</button>
-      <button class="btn small" id="vault-off" type="button" hidden>Remove protection</button>
-    </div>
-    <p class="note" id="ws-status" role="status"></p>
-  </section>
+    <section class="place" id="history-panel" hidden aria-labelledby="hist">
+      <div class="page-head">
+        <h1 id="hist">Saved</h1>
+        <p class="lede">Your analyses, kept in this browser on this device so you can compare dates and build reviews. Only the input files are kept; results are worked out again each time, so they always match the data.</p>
+      </div>
+      <section class="block vault" aria-labelledby="vault-h">
+        <h2 id="vault-h">Protection</h2>
+        <div class="vaultbar">
+          <span class="chip" id="vault-state">saved data is not protected</span>
+          <span class="bad-text" id="vault-warn" role="status" hidden></span>
+          <button class="btn" id="vault-on" type="button" data-tip="Encrypt everything saved here, and every export, with a passphrase only you know.">Protect with a passphrase</button>
+          <button class="btn" id="vault-unlock" type="button" hidden data-tip="Enter your passphrase to see what is saved.">Unlock</button>
+          <button class="btn quiet" id="vault-lock" type="button" hidden data-tip="Hide everything saved until the passphrase is entered again. It also locks itself after 15 idle minutes.">Lock now</button>
+          <button class="btn quiet" id="vault-off" type="button" hidden data-tip="Store everything unencrypted again.">Remove protection</button>
+        </div>
+      </section>
+      <section class="block" aria-labelledby="keep-h">
+        <h2 id="keep-h">What is kept</h2>
+        <label class="inline check" data-tip="Every analysis you run is added to the customer's history, so reviews can be built from it.">
+          <input type="checkbox" id="autosave" checked> Keep every analysis in the customer's history</label>
+        <label class="inline check" data-tip="Contacts, commitments and logged calls are personal data, so they are left out unless you choose otherwise.">
+          <input type="checkbox" id="personal"> Also keep contacts, commitments and logged calls</label>
+      </section>
+      <section class="block" aria-labelledby="snaps-h">
+        <h2 id="snaps-h">Snapshots</h2>
+        <div id="history-empty" class="empty" hidden>
+          <p>Nothing saved yet. Every analysis you run is added here, and an executive review can be built from it at any time.</p>
+        </div>
+        <p class="row left"><button class="btn quiet" id="demo-prev" type="button" data-tip="Add an earlier snapshot of the example customer, to see comparisons and the value receipt.">Add the example's September snapshot</button></p>
+        <div id="history-body" hidden>
+          <div id="trend"></div>
+          <table class="hist" id="hist-table"><thead><tr><th>Customer</th><th>As of</th><th class="n">Yield</th><th>Snapshot</th><th><span class="sr">Actions</span></th></tr></thead><tbody></tbody></table>
+        </div>
+      </section>
+      <section class="block" aria-labelledby="move-h">
+        <h2 id="move-h">Move or clear</h2>
+        <div class="row left">
+          <button class="btn" id="export" type="button" data-tip="Download everything saved as one file, to keep a backup or open it on another device. Encrypted if you set a passphrase.">Export workspace</button>
+          <label class="btn" data-tip="Add the snapshots from an exported file. Importing the same file twice changes nothing.">Import workspace<input id="import" type="file" accept=".json,application/json" hidden></label>
+          <button class="btn danger" id="forget" type="button" data-tip="Delete everything saved in this browser. Exported files are not touched.">Forget everything</button>
+        </div>
+        <p class="fine" id="ws-status" role="status"></p>
+      </section>
+    </section>
 
-  <section class="panel errors" id="errors" hidden aria-live="assertive">
-    <h2>Fix these first</h2>
-    <ul id="errlist"></ul>
-  </section>
-</main>
+    <section class="place" id="place-help" hidden aria-labelledby="help-title">
+      <div class="page-head">
+        <h1 id="help-title">Help</h1>
+        <p class="lede">Short answers to what people ask, what each term means, and a one-minute tour.</p>
+        <div class="row left">
+          <input id="faq-q" type="search" placeholder="Search the answers" aria-label="Search the answers" autocomplete="off">
+          <button class="btn" id="tour-start" type="button" data-tip="A one-minute walk through the screen. Opens the example customer if nothing is open.">Take the tour</button>
+        </div>
+      </div>
+      <div id="faq"></div>
+      <section class="block" aria-labelledby="terms-h">
+        <h2 id="terms-h">What the terms mean</h2>
+        <dl class="glossary" id="glossary"></dl>
+      </section>
+      <section class="block" aria-labelledby="keys-h">
+        <h2 id="keys-h">Keyboard</h2>
+        <dl class="keys">
+          <dt><kbd>Ctrl</kbd> <kbd>K</kbd></dt><dd>Search views, actions and answers</dd>
+          <dt><kbd>1</kbd> to <kbd>9</kbd></dt><dd>Switch between the first views of a customer</dd>
+          <dt><kbd>Esc</kbd></dt><dd>Close a dialog or a tooltip</dd>
+        </dl>
+      </section>
+      <section class="block" id="privacy" aria-labelledby="privacy-h">
+        <h2 id="privacy-h">Privacy, checked</h2>
+        <p>The page and its engine are only allowed to talk to the site they came from. This check tries to reach another site from both, and shows that it is blocked.</p>
+        <p class="row left"><button class="btn" id="selfcheck" type="button">Check that nothing leaves this page</button></p>
+        <p class="fine" id="selfcheck-out" role="status"></p>
+      </section>
+    </section>
 
-<dialog id="vault-dialog" class="palette" aria-labelledby="vault-title">
+    <section class="place errors" id="errors" hidden aria-live="assertive" aria-labelledby="err-h">
+      <h2 id="err-h">The files need a fix first</h2>
+      <p>Nothing was analysed. Each line says which file and row, and what is wrong.</p>
+      <ul id="errlist"></ul>
+      <p class="row left"><button class="btn" type="button" data-place="start">Back to Start</button></p>
+    </section>
+  </main>
+</div>
+
+<footer class="foot">
+  <p>Independent open source project, Apache-2.0, not affiliated with any vendor. <a href="https://github.com/riccardomenegazzo/beyond-90">Source</a>, <a href="LICENSE.txt">licence</a>, <a href="THIRD_PARTY.md">bundled software</a>. Plans and forecasts are models; their limits are in the <a href="https://github.com/riccardomenegazzo/beyond-90/blob/main/README.md#honest-limits">README</a>.</p>
+</footer>
+
+<dialog id="vault-dialog" class="dialog" aria-labelledby="vault-title">
   <form method="dialog" id="vault-form">
-    <h3 id="vault-title">Protect saved data</h3>
-    <p class="note first" id="vault-help"></p>
+    <h2 id="vault-title">Protect saved data</h2>
+    <p class="fine" id="vault-help"></p>
     <label>Passphrase<input id="vault-pass" type="password" autocomplete="off"></label>
     <label id="vault-again-label">Again<input id="vault-pass2" type="password" autocomplete="off"></label>
-    <p class="note" id="vault-msg" role="alert"></p>
-    <div class="row left"><button class="btn primary" id="vault-go" type="submit">Continue</button><button class="btn" id="vault-cancel" type="button">Cancel</button></div>
+    <p class="fine" id="vault-msg" role="alert"></p>
+    <div class="row left"><button class="btn primary" id="vault-go" type="submit">Continue</button><button class="btn quiet" id="vault-cancel" type="button">Cancel</button></div>
   </form>
 </dialog>
 
-<dialog id="palette" class="palette" aria-label="Commands">
-  <input id="palette-q" type="text" placeholder="Type a command or a view…" aria-label="Search commands" autocomplete="off">
-  <ul id="palette-list" role="listbox"></ul>
-  <p class="note">↑ ↓ to move, Enter to run, Esc to close. Outside a text field, 1 to 9 switch views.</p>
+<dialog id="palette" class="dialog palette" aria-label="Search">
+  <input id="palette-q" type="text" placeholder="Search views, actions and answers" aria-label="Search views, actions and answers" autocomplete="off">
+  <ul id="palette-list" role="listbox" aria-label="Results"></ul>
+  <p class="fine">↑ ↓ to move, Enter to open, Esc to close.</p>
 </dialog>
 
-<footer>
-  <p><button class="link" id="selfcheck" type="button">Check that nothing leaves this page</button> <span id="selfcheck-out" role="status"></span></p>
-  <p>Independent open source project (<a href="LICENSE.txt">Apache-2.0</a>; <a href="THIRD_PARTY.md">bundled software</a>), not affiliated with or endorsed by any vendor. <a href="https://github.com/riccardomenegazzo/beyond-90">Source</a>. Models (plan, forecast, universe estimate) are models; read the limits in the <a href="https://github.com/riccardomenegazzo/beyond-90/blob/main/README.md#honest-limits">README</a>.</p>
-</footer>
+<div class="tour" id="tour" role="dialog" aria-modal="false" aria-labelledby="tour-title" hidden>
+  <p class="tour-step" id="tour-step"></p>
+  <h2 id="tour-title"></h2>
+  <p id="tour-text"></p>
+  <div class="row left">
+    <button class="btn primary" id="tour-next" type="button">Next</button>
+    <button class="btn quiet" id="tour-end" type="button">End the tour</button>
+  </div>
+</div>
 <script src="app.js" type="module"></script>
 </body>
 </html>

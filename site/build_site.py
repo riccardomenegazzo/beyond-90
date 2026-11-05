@@ -28,7 +28,7 @@ def build(out: Path, pyodide: Path, feed: Optional[Path] = None) -> None:
     if out.exists():
         shutil.rmtree(out)
     out.mkdir(parents=True)
-    for name in ("index.html", "app.js", "style.css", "engine.js", "store.js", "workspace-core.js", "worker.js", "ui.js", "charts.js", "views.js", "vault.js", "recap.js"):
+    for name in ("index.html", "app.js", "style.css", "engine.js", "store.js", "workspace-core.js", "worker.js", "ui.js", "charts.js", "views.js", "vault.js", "recap.js", "guide.js"):
         shutil.copy(ROOT / "site" / name, out / name)
     # The engine: the package and its data, nothing else, in a fixed order so builds are reproducible.
     with zipfile.ZipFile(out / "beyond90.zip", "w", zipfile.ZIP_DEFLATED) as z:
@@ -54,6 +54,11 @@ def build(out: Path, pyodide: Path, feed: Optional[Path] = None) -> None:
     ep = {p.name: p.read_text(encoding="utf-8") for p in sorted(DEMO_ENDPOINT.iterdir()) if p.suffix in (".csv", ".toml")}
     (out / "demo-endpoint.json").write_text(json.dumps(ep, ensure_ascii=False), encoding="utf-8")
     shutil.copy(ROOT / "examples" / "threats.json", out / "demo-advisories.json")
+    font = ROOT / "site" / "npm" / "node_modules" / "@fontsource-variable" / "atkinson-hyperlegible-next"
+    (out / "fonts").mkdir()
+    for subset in ("latin", "latin-ext"):
+        shutil.copy(font / "files" / f"atkinson-hyperlegible-next-{subset}-wght-normal.woff2", out / "fonts" / f"atkinson-{subset}.woff2")
+    shutil.copy(font / "LICENSE", out / "fonts" / "OFL.txt")
     # Always a feed file, so the page never asks for one that is missing; an empty one when none was collected.
     doc = {"schema": "beyond90-feed/1", "as_of": "", "window_days": 0, "sources": [], "threats": [], "general": [], "note": "No feed was collected for this build."}
     if feed is not None and feed.is_file():

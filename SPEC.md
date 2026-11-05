@@ -1,4 +1,4 @@
-# Beyond 90: specification v0.22
+# Beyond 90: specification v0.23
 
 An adoption engine for Technical Account Managers. It measures how much of a customer's cloud estate is really covered and operated through a security platform, and turns every gap into an action. The bar keeps moving: when a customer grows or the product ships something, the denominators grow with it.
 
@@ -230,8 +230,9 @@ Security platforms commonly ship their own adoption or maturity views and an own
 18. 0.19: the value receipt, team digests and the recap after the call.
 19. 0.20: the daily cloud security news, merged, ranked and matched to every customer.
 20. 0.21: the customer's history kept automatically, and an executive QBR built from it on demand.
-21. 0.22 (this): sealed exports, strict typing and security lint, a least-privilege, hash-locked supply chain.
-22. 1.0: connector interface and a first verified connector against a real tenant; criticality weighting; readiness checklist import; per-finding ownership sources.
+21. 0.22: sealed exports, strict typing and security lint, a least-privilege, hash-locked supply chain.
+22. 0.23 (this): an interface organised by places and questions, with tooltips, plain-language help and a tour.
+23. 1.0: connector interface and a first verified connector against a real tenant; criticality weighting; readiness checklist import; per-finding ownership sources.
 
 ## References
 

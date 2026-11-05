@@ -54,15 +54,15 @@ Most adoption reporting stops at "90% of accounts connected" (or sites, tenants,
 
 **11. It is not tied to one product.** Profiles describe what a product should see and what it offers; the stages, formulas and checks are the same. Cloud security and endpoint protection ship, and the guide shows how to map identity, SIEM, email, vulnerability and application security.
 
-**12. It runs in a browser tab, local-first.** [docs/app.md](docs/app.md): the same engine compiled to WebAssembly, served from GitHub Pages, nothing uploaded. Drop a folder or try the demo. Save snapshots of your inputs in the browser, compare with the previous quarter, export and merge between devices, work offline. Every number carries the hash of the inputs it came from. Drop a whole folder of customers to plan one budget of hours across the book.
+**12. It runs in a browser tab, local-first.** [docs/app.md](docs/app.md): the same engine compiled to WebAssembly, served from GitHub Pages, nothing uploaded. Start, your customer, Saved and Help sit in the same four places; the customer's views are grouped by the question you are asking (where do they stand, what should I do, what do I say), every control explains itself in a tooltip, and Help answers the common questions in plain words. Drop a folder or try an example. Save snapshots of your inputs in the browser, compare with the previous quarter, export and merge between devices, work offline. Every number carries the hash of the inputs it came from. Drop a whole folder of customers to plan one budget of hours across the book.
 
 ![The browser app: overview with the Yield gauge, losses by stage, what needs attention and the plan](docs/img/app-results.png)
 
-![The landing page of the browser app](docs/img/app-landing.png)
+![Start: choose a customer, your whole book or an example](docs/img/app-landing.png)
 
 Plus: ranked actions from a playbook catalogue, a moving bar (the score against today's ceiling and a frozen baseline), Reach, licensed-versus-used, an anti-gaming check for severity downgrades before SLA deadlines, history in SQLite, an ARR-weighted portfolio view that finds patterns worth one-to-many work, and a QBR draft written with the Pyramid Principle.
 
-It runs locally, has no runtime dependencies (Python 3.11+ standard library), makes no network calls and sends no telemetry.
+It runs locally, has no runtime dependencies (Python 3.11+ standard library) and sends no telemetry; only the connectors you configure and the news collector reach the network.
 
 ## Quick start
 
