@@ -25,6 +25,15 @@ Listing in the Chrome Web Store and on addons.mozilla.org needs a developer acco
 
 On the website the engine's worker starts from a `blob:` URL so that it inherits the page's policy. An extension's policy may not allow `blob:` workers and does not need them: the browser applies the manifest policy to the worker started from the extension's own `worker.js`. The Trusted Types policy that starts the engine accepts exactly that file and nothing else.
 
+## Publishing in the stores
+
+Both packages are ready for the stores; listing them needs the owner's developer accounts.
+
+- **Chrome Web Store.** Upload `beyond90-chrome-<version>.zip`. Single purpose: "Opens Beyond 90, a customer-health workspace for cloud security teams, in a tab; all analysis runs locally." Permissions: none to justify. Remote code: none (WebAssembly is bundled). Data use: the extension collects and transmits no user data.
+- **addons.mozilla.org.** Upload `beyond90-firefox-<version>.zip`; the manifest declares that no data is collected. Mozilla may ask for the source: it is this repository, and `site/build_extension.py` rebuilds the package byte for byte.
+
+Each package is listed in the signed `SHA256SUMS` provenance of its Pages build, so the store copy can be matched to the source.
+
 ## Build and test
 
 ```bash

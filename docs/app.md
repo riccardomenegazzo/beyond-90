@@ -22,6 +22,12 @@ Every control explains itself: hover it, or reach it with the keyboard, and a sh
 
 ![Connections](img/app-connections.png)
 
+With an earlier snapshot to compare with, the map also says **what changed**: accounts that no longer carry any problem, accounts that improved, accounts that became visible (connected at last, and now showing what to fix, which is progress), accounts with new problems or worse ones, and the patterns that appeared or were resolved. "Show what is new on the map" lights those items up.
+
+- **Shared patterns** (in a book). The same idea across customers: the security stories, onboarding blockers and missing capabilities several customers share. Each shared pattern is one piece of work done once: a fix guide for everyone stuck on the same blocker (and feedback for the product team), one campaign for a story that leaves several customers exposed, one enablement session for the capability that would cover them, and the customer to start with. Click a customer to open its own map.
+
+![Shared patterns](img/app-shared.png)
+
 - **Actions, Accounts, Findings.** Searchable, filterable, sortable tables. Open a row for the steps, the question to ask the customer or the gaps behind an account. Every table exports to CSV.
 
 ![Accounts](img/app-accounts.png)
@@ -31,6 +37,8 @@ Every control explains itself: hover it, or reach it with the keyboard, and a sh
 ![What-if](img/app-whatif.png)
 
 - **Maturity, Renewal and trust, Changes.** The ladder and every check, renewal signals, licences, the unseen-units estimate, contacts, and what changed since an earlier snapshot.
+- **Executive QBR.** The review for a CISO, built from the customer's history, downloadable as PowerPoint slides, a page that prints to PDF, or Markdown. See [exec-qbr.md](exec-qbr.md).
+- **Help, This build.** The version, the source commit and a check that fingerprints every file the page is running against the signed manifest.
 - **Documents to share.** The written report, the QBR draft, a success plan the customer can sign, the roadmap, a summary and the JSON, each with Copy and Download.
 
 **Keys.** Ctrl or Cmd + K searches everything; outside a text field, 1 to 9 switch between the first views; Esc closes a dialog, a tooltip or the tour. The theme follows your system and can be switched; printing gives a clean page.

@@ -2,6 +2,17 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.25.0
+
+The patterns behind a book, the quarter as slides, and a build anyone can verify.
+
+- **Shared patterns across the book.** A new book view that links every customer to the security stories, onboarding blockers and missing capabilities it shares with others, and names the work that serves several at once: one fix guide (and product feedback) for a blocker three customers hit, one campaign for a story that leaves two customers exposed, one enablement session for the capability that would cover them, and the customer to start with. A click opens that customer's own map.
+- **The map over time.** Compared with an earlier snapshot, Connections says which accounts were cleared, improved, became visible or got worse, which patterns appeared or were resolved, and highlights what is new on the map.
+- **The executive review as PowerPoint.** Six slides written by the engine in the browser with the standard library: the summary, coverage then and now, what the quarter delivered, exposure, the two futures and the decisions to ask for. Also `exec-qbr --format pptx`.
+- **A verifiable build.** Every build publishes `SHA256SUMS` and `build.json`; a separate least-privilege job signs them, and the extension packages, with build provenance. Help → "This build" shows the version and source commit and fingerprints every running file against the manifest; the extension carries its own.
+- **Fuzzing.** New seeded fuzzing of every reader of outside data (news parsers, advisories, the browser analysis), alongside the existing loader fuzzing. It found and fixed three crashes: advisory entries that are not objects, list fields holding non-text values, and XML declaring an unknown encoding. DOCTYPE is now refused anywhere in a document, and parsers make links safe themselves.
+- **OpenSSF Scorecard** on every push and weekly, with a public badge; SECURITY.md lists the repository settings that protect the account that publishes the code.
+
 ## 0.24.2
 
 Layout that holds at every width, from a phone to a wide screen.

@@ -22,7 +22,9 @@ Most adoption reporting stops at "90% of accounts connected" (or sites, tenants,
 
 **For** Technical Account Managers, customer-success engineers and solutions teams at any security vendor: cloud, endpoint, identity, SIEM or other. One engine, a small catalogue ("profile") per kind of product; two ship today ([docs/profiles.md](docs/profiles.md)).
 
-**It shows where the problems meet.** The Connections map puts a customer's security stories, missing protections, stuck connectors, accounts, findings and owning teams on one interactive picture, and says in plain words what it shows: the one capability that closes the most exposures, the threats nobody can check, the single change that unblocks a group of accounts.
+**It turns the quarter into the slides for the CISO.** The executive review downloads as a PowerPoint deck written by the engine in your browser: the one-minute summary, coverage then and now, what the quarter delivered, exposure, the two futures and the decisions to ask for.
+
+**It shows where the problems meet.** The Connections map puts a customer's security stories, missing protections, stuck connectors, accounts, findings and owning teams on one interactive picture, and says in plain words what it shows: the one capability that closes the most exposures, the threats nobody can check, the single change that unblocks a group of accounts. Compared with an earlier snapshot it shows what was cleared and what is new; across a book it shows what several customers share, so one fix, one campaign or one session serves them all.
 
 **Try it without installing anything:** the [browser app](docs/app.md) runs the same engine in your tab. Drop a customer folder, or a folder of customers, and nothing leaves your machine. It is also a [browser extension](docs/extension.md) for Chrome, Edge and Firefox, with no permissions and no network.
 

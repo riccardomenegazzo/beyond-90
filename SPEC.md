@@ -1,4 +1,4 @@
-# Beyond 90: specification v0.24
+# Beyond 90: specification v0.25
 
 An adoption engine for Technical Account Managers. It measures how much of a customer's cloud estate is really covered and operated through a security platform, and turns every gap into an action. The bar keeps moving: when a customer grows or the product ships something, the denominators grow with it.
 
@@ -202,6 +202,14 @@ Each single-customer analysis is saved as a snapshot (input files only, content-
 
 For each active account, signals from the other analyses: not connected (5), onboarding blocked (2), exposed to a story without its mitigating capability (the story's severity weight, doubled when exploited), unable to be assessed for a story because the account is not connected, critical findings open to the internet (3 each) and high ones while the account is not healthy (1 each), protections off where they apply (1 each). Each signal belongs to a dimension: visibility, threat, findings or protection. An account *converges* when at least two of visibility, threat and findings meet on it; a protection that is off is detail, not a problem of its own. The graph keeps the 28 accounts ranked by convergence then weight, the 8 top stories, the 6 capabilities that matter, the causes that block the drawn accounts, their 16 worst findings and their teams; blind links are capped at 12 per story. Insights, at most six, ranked: convergence, leverage (a capability closing exposures from two or more stories), concentration (a team holding at least a quarter of the drawn accounts and three or more), blind spot (a story with two or more accounts nobody can assess) and root cause (the top onboarding wave with two or more accounts). Each says what it means, what to do, who should do it and which items to highlight. The page lays the graph out in columns ordered by barycentre sweeps, so the same data always draws the same picture.
 
+## 15v. Shared patterns, the map over time, slides (0.25)
+
+`book(customers)` takes, per customer, its matched exposures and onboarding causes. Stories are kept when they leave accounts uncovered or unknown at a customer (top 8, by customers exposed, exploited, severity), causes by customers then accounts (top 8), capabilities that mitigate a kept story and are missing on its uncovered accounts (top 6). A customer node is drawn when at least one of those touches it. Insights: a cause at two customers or more (one fix guide, product feedback); a story leaving two or more customers exposed (one campaign); a story nobody can assess at two or more; a capability covering exposures at two or more (one enablement session); and the customer carrying 30% more of the shared load than the next (start here).
+
+`compare(before, now, since)` works on every account's problem kinds, not only the drawn ones: cleared (no problem left), improved (problems gone, none added), visible (a visibility problem gone and others now shown: progress), worse (problems added otherwise), new (no problem before); insights that appeared or were resolved; drawn nodes that are new.
+
+`render_pptx(review)` writes six slides with the standard library (`slides.py`): cover and summary, the four parts then and now, delivered, exposure, the two futures, decisions; no stage names, maturity labels or Yield.
+
 ## 16. Positioning against the platform's own views
 
 Security platforms commonly ship their own adoption or maturity views and an ownership model. Beyond 90 does not replace them: it measures what a platform cannot see about itself (the true universe of units to cover, across a whole portfolio) and reads ownership and decisions rather than rebuilding routing. The research behind this is in `docs/research/`.
@@ -236,8 +244,9 @@ Security platforms commonly ship their own adoption or maturity views and an own
 20. 0.21: the customer's history kept automatically, and an executive QBR built from it on demand.
 21. 0.22: sealed exports, strict typing and security lint, a least-privilege, hash-locked supply chain.
 22. 0.23: an interface organised by places and questions, with tooltips, plain-language help and a tour.
-23. 0.24 (this): the connections map, where a customer's separate problems meet, and the app as a browser extension.
-24. 1.0: connector interface and a first verified connector against a real tenant; criticality weighting; readiness checklist import; per-finding ownership sources.
+23. 0.24: the connections map, where a customer's separate problems meet, and the app as a browser extension.
+24. 0.25 (this): shared patterns across a book, the map over time, the executive review as slides, a verifiable build, fuzzing and Scorecard.
+25. 1.0: connector interface and a first verified connector against a real tenant; criticality weighting; readiness checklist import; per-finding ownership sources.
 
 ## References
 

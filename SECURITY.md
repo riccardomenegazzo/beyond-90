@@ -6,4 +6,16 @@ The browser app does the same inside your tab: files are read in memory, the pag
 
 The inputs it reads (billing exports, account lists, findings) can be sensitive. Treat the data directory and the database like the source systems they came from: do not commit them, and do not attach them to public issues.
 
+Every build of the site can be checked: Help → "This build" fingerprints every file the page runs against the published `SHA256SUMS`, and `gh attestation verify SHA256SUMS --repo riccardomenegazzo/beyond-90` proves the list was produced by this repository's Pages workflow.
+
+## Repository settings
+
+The code cannot protect the account that publishes it. These settings close what remains, and are kept on:
+
+- The maintainer account uses a passkey or a hardware key for two-factor sign-in.
+- `main` is protected: no force pushes or deletion, linear history, and CI, CodeQL and the workflow audit must pass.
+- Secret scanning and push protection are on, so a credential cannot be pushed by mistake.
+- Dependabot alerts and security updates are on; private vulnerability reporting is on.
+- Commits and tags are signed.
+
 To report a vulnerability, open a private security advisory on the GitHub repository (Security tab) rather than a public issue. Include the version, the command you ran and a minimal mock input.

@@ -20,6 +20,8 @@ Customer inventories and findings (which accounts exist, which controls are off,
 | Links leak where they came from | `referrer` is `no-referrer`; external links open with `noopener noreferrer` and only for https | e2e, ESLint rules |
 | The browser extension oversteps | Manifest V3 with no permissions, no host access, no content scripts and no web-accessible resources; the manifest policy is the page's policy without `blob:`, enforced on every extension page and worker; the engine starts only from the extension's own `worker.js`; the background script only opens the app in a tab | `tests/test_extension.py`, `site/e2e_extension.py` |
 | A tampered or stale build served from cache | The service worker's cache name is the hash of every file in the build | build test |
+| A modified copy of the site (a mirror, a proxy, a changed deploy) | Every build publishes `SHA256SUMS` and `build.json` (version, source commit, digest); the Pages workflow signs `SHA256SUMS` and the extension packages with build provenance in a separate job; Help → "This build" fingerprints every running file against the manifest; `gh attestation verify SHA256SUMS --repo riccardomenegazzo/beyond-90` proves who built it | unit test, e2e (site and extension) |
+| Hostile or broken input files | Every reader answers with its own error: seeded fuzzing of the loader, scoring and renderers (`tests/test_fuzz.py`) and of the news parsers, advisories and the browser analysis (`tests/test_fuzz_readers.py`; `FUZZ_ROUNDS` runs longer) | pytest |
 | A compromised dependency | Pyodide is the only shipped third-party software, served from the same origin, pinned in `site/npm/package-lock.json` with integrity hashes and installed with `npm ci --ignore-scripts`; the engine has no runtime dependencies; an SBOM is published with each release | `tests/test_security.py` |
 
 Not covered: malware or a hostile extension on the device, a person with the unlocked page open, data saved before a passphrase was set and an export made without one (both said on the page), and other pages published under the same `github.io` origin, which share its storage: publish only this app there, serve it from its own domain, or use the browser extension, whose origin no website shares. A forgotten passphrase cannot be recovered.
@@ -58,6 +60,8 @@ Not covered: malware or a hostile extension on the device, a person with the unl
 | A compromised build or test tool | Python tools installed from lock files with hashes (`pip --require-hashes`), npm from its lock file with `--ignore-scripts` |
 | Unsafe code merged | Ruff with the security rules, strict mypy, ESLint forbidding `eval` and HTML sinks, CodeQL (`security-extended`) on Python and JavaScript |
 | A tampered release | Built in a job without write access, then published with signed build provenance, an SBOM and checksums |
+| Practices drifting | OpenSSF Scorecard runs on every push and weekly; its findings go to code scanning and its score is public (badge in the README) |
+| A stolen maintainer account | Outside the code: see "Repository settings" in SECURITY.md |
 
 The package has no runtime dependencies to compromise.
 

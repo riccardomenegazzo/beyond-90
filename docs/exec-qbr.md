@@ -21,11 +21,12 @@ The review has six parts, one printed page each:
 5. **Exposure today.** Critical findings and those exposed to the internet, spend not yet connected, the threats of the period that touched the customer (with the cloud news loaded), and what happens if nothing is done.
 6. **Next quarter and the decisions we need.** Four priorities with owners and dates, and up to four decisions to ask for: connecting the rest of the spend, owners for critical findings, the one change that unblocks a group of connectors, new dates for what slipped.
 
-It is written for an executive: "effective coverage" and its four parts instead of internal stage names, no maturity labels, no internal score. Download it as HTML (it prints to PDF, one page per section) or Markdown.
+It is written for an executive: "effective coverage" and its four parts instead of internal stage names, no maturity labels, no internal score. Download it as **slides** (PowerPoint, six slides to present: the one-minute summary, coverage then and now, what the quarter delivered, exposure today, the two futures, the decisions to ask for), as HTML (it prints to PDF, one page per section) or as Markdown. The deck is written by the engine itself, in the browser, with no add-in or online service.
 
 ```
 beyond90 exec-qbr examples/portfolio/northwind examples/history/northwind-2026-09 --out review.html
 beyond90 exec-qbr DIR1 DIR2 DIR3 --from 2026-07-01 --to 2026-09-30 --threats advisories.json --format markdown
+beyond90 exec-qbr examples/portfolio/northwind examples/history/northwind-2026-09 --format pptx --out review.pptx
 ```
 
 The command takes the data directories of the same customer in any order; automated runs keep one per day under the state directory's `snapshots/`.
