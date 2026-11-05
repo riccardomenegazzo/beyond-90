@@ -267,6 +267,10 @@ def main(site: str) -> int:
             page.get_by_role("button", name="Download (.html, prints to PDF)").click()
         review = Path(dl.value.path()).read_text()
         check(review.startswith("<!doctype html>") and "Yield" not in review and "L4" not in review and "<script" not in review, "the executive review downloads without internal jargon or script")
+        with page.expect_download() as dl:
+            page.get_by_role("button", name="Download slides (.pptx)").click()
+        deck = Path(dl.value.path()).read_bytes()
+        check(deck[:2] == b"PK" and b"ppt/slides/slide6.xml" in deck and dl.value.suggested_filename.endswith(".pptx"), "the review downloads as a PowerPoint deck")
         page.select_option("#view select", "custom")
         page.fill("#view input[aria-label=From]", "2025-01-01")
         page.fill("#view input[aria-label=To]", "2025-03-31")

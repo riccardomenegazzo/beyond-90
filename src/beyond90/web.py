@@ -6,6 +6,7 @@ virtual folder, calls `analyze`, and shows what comes back.
 
 from __future__ import annotations
 
+import base64
 import json
 import re
 import tempfile
@@ -400,7 +401,8 @@ def exec_qbr_files(snapshots: list[Mapping[str, str]], start: str = "", end: str
             return {"ok": False, "errors": [m.replace(tmp + "/", "") for m in e.errors], "version": __version__}
         except ValueError as e:
             return {"ok": False, "errors": [str(e).replace(tmp + "/", "")], "version": __version__}
-    return {"ok": True, "version": __version__, "review": q, "markdown": execqbr.render_markdown(q), "html": execqbr.render_html(q)}
+    return {"ok": True, "version": __version__, "review": q, "markdown": execqbr.render_markdown(q), "html": execqbr.render_html(q),
+            "pptx": base64.b64encode(execqbr.render_pptx(q)).decode("ascii")}
 
 
 def exec_qbr_json(args_json: str) -> str:

@@ -298,3 +298,111 @@ def render_html(q: dict[str, Any]) -> str:
             "<meta http-equiv=Content-Security-Policy content=\"default-src 'none'; style-src 'unsafe-inline'\">"
             f"<title>{e(q['customer'])}: executive review {e(q['period']['label'])}</title><style>{css}</style></head><body>"
             + "".join(sec) + f"<footer>Built from {len(q['snapshots'])} recorded snapshot(s) ({e(', '.join(q['snapshots']))}). Print to PDF: one page per section.</footer></body></html>\n")
+
+
+# ------------------------------------------------------------------ as a PowerPoint deck
+
+MINUS = "\u2212"
+INK, MUTED, ACCENT, GOOD, BAD, SOFT, LINE = "1B2430", "5B6573", "2E46C8", "1E7F4F", "B4232A", "F3F5F9", "D5DBE8"
+
+
+def render_pptx(q: dict[str, Any]) -> bytes:
+    """The same review as slides to present: one idea per slide, the numbers large, no internal jargon."""
+    from .slides import Run, Slide, package
+
+    u, f, la = q["units"], q["first"], q["last"]
+    foot = f'{q["customer"]} · Executive review {q["period"]["label"]}'
+    slides: list[Slide] = []
+
+    def page(title: str, kicker: str) -> Slide:
+        s = Slide(name=title)
+        s.rect(0, 0, 13.333, 0.12, ACCENT)
+        s.text(0.8, 0.55, 11.7, 0.35, [[Run(kicker, 13, True, ACCENT)]])
+        s.text(0.8, 0.9, 11.7, 0.8, [[Run(title, 30, True, INK)]])
+        s.text(0.8, 6.95, 9.5, 0.3, [[Run(foot, 11, False, MUTED)]])
+        s.text(11.0, 6.95, 1.5, 0.3, [[Run(str(len(slides) + 1), 11, False, MUTED)]], align="r")
+        slides.append(s)
+        return s
+
+    def tile(s: Slide, x: float, y: float, w: float, value: str, label: str, color: str = ACCENT) -> None:
+        s.rect(x, y, w, 1.55, SOFT, radius=True)
+        s.text(x + 0.25, y + 0.2, w - 0.5, 0.7, [[Run(value, 34, True, color)]])
+        s.text(x + 0.25, y + 0.95, w - 0.5, 0.55, [[Run(label, 13, False, INK)]])
+
+    # 1. cover: who, when, and the four things to remember
+    s = Slide(name="Cover")
+    s.rect(0, 0, 0.28, 7.5, ACCENT)
+    s.text(0.9, 0.9, 11.5, 0.4, [[Run(f'Executive review · {q["period"]["label"]}', 16, True, ACCENT)]])
+    s.text(0.9, 1.35, 11.5, 1.1, [[Run(q["customer"], 44, True, INK)]])
+    s.text(0.9, 2.45, 11.5, 0.4, [[Run(f'{q["period"]["from"]} to {q["period"]["to"]}' + (f' · compared with {q["baseline"]}' if q["compared"] else ""), 16, False, MUTED)]])
+    s.text(0.9, 3.35, 11.5, 0.45, [[Run("In one minute", 20, True, INK)]])
+    s.text(0.9, 3.9, 11.5, 2.8, [[Run(h + ".", 20, False, INK)] for h in q["headline"][:5]], bullets=True, space_after=10)
+    s.text(0.9, 6.95, 9.5, 0.3, [[Run("Prepared with Beyond 90", 11, False, MUTED)]])
+    slides.append(s)
+
+    # 2. where they stand: the four parts of coverage, then and now
+    s = page("Where you stand", "Coverage, part by part")
+    y = 1.95
+    for k, (name, what) in PARTS.items():
+        now, then = la["parts"][k], f["parts"][k]
+        s.text(0.8, y, 3.3, 0.4, [[Run(name, 20, True, INK)]])
+        s.text(0.8, y + 0.42, 3.3, 0.4, [[Run(what, 11, False, MUTED)]])
+        s.rect(4.3, y + 0.1, 6.0, 0.26, SOFT)
+        if q["compared"]:
+            s.rect(4.3, y + 0.1, 6.0 * max(then, 0.005), 0.26, LINE)
+        s.rect(4.3, y + 0.46, 6.0, 0.26, SOFT)
+        s.rect(4.3, y + 0.46, 6.0 * max(now, 0.005), 0.26, ACCENT)
+        delta = (now - then) * 100
+        s.text(10.6, y + 0.02, 2.2, 0.45, [[Run(_pct(now), 22, True, INK)]], align="r")
+        if q["compared"]:
+            s.text(10.6, y + 0.48, 2.2, 0.35, [[Run(("+" if delta >= 0 else MINUS) + f"{abs(delta):.1f} pts since {q['baseline']}", 11, False, GOOD if delta >= 0 else BAD)]], align="r")
+        y += 1.08
+    if q["compared"]:
+        s.text(4.3, 6.35, 6.0, 0.3, [[Run(f"Grey: {q['baseline']}   Blue: {q['final']}", 11, False, MUTED)]])
+
+    # 3. what the quarter delivered
+    r = q["receipt"]
+    if r:
+        s = page("What the quarter delivered", "Results")
+        sev = r["findings"]["by_severity"]
+        for i, (v, label) in enumerate([(len(r["connected"]["accounts"]), f"{u} brought under watch"), (r["findings"]["closed"], f"findings closed ({sev.get('critical', 0)} critical)"),
+                                        (r["findings"]["decided"], "findings given an owner or a decision"), (r["capabilities"]["gained"], "protections switched on")]):
+            tile(s, 0.8 + i * 2.98, 1.95, 2.78, str(v), label, GOOD)
+        s.text(0.8, 3.85, 11.7, 2.0, [[Run(h + ".", 18, False, INK)] for h in r["headline"][:3]]
+               + [[Run(f"Our commitments: {r['promises']['kept']} delivered, {r['promises']['on_time']} on time.", 18, False, INK)]], bullets=True, space_after=8)
+        if r["remaining"]:
+            s.text(0.8, 5.85, 11.7, 0.9, [[Run("Still to do: ", 13, True, MUTED), Run("; ".join(x.rstrip(".") for x in r["remaining"][:3]) + ".", 13, False, MUTED)]])
+
+    # 4. exposure today
+    k = q["risk"]
+    s = page("Exposure today", "Risk")
+    tile(s, 0.8, 1.95, 3.8, str(k["critical_open"]), "critical findings open", BAD if k["critical_open"] else GOOD)
+    tile(s, 4.77, 1.95, 3.8, str(k["critical_internet"]), "of them exposed to the internet", BAD if k["critical_internet"] else GOOD)
+    tile(s, 8.74, 1.95, 3.8, f"{k['unconnected_spend_share']:.0%}", "of cloud spend not yet connected", BAD if k["unconnected_spend_share"] > 0.1 else INK)
+    body = [[Run(x, 16, False, INK)] for x in k["heaviest"][:2]]
+    for n in q["news"][:3]:
+        state = (f"{n['uncovered']} of {n['exposed']} exposed {u} not yet covered" if n["uncovered"] else
+                 f"all {n['exposed']} exposed {u} covered" if n["exposed"] else f"{n['unknown']} {u} could not be assessed")
+        body.append([Run(n["title"], 16, True, INK), Run(f" ({'known exploited' if n['kev'] else n['severity']}): {state}.", 16, False, INK)])
+    if body:
+        s.text(0.8, 3.9, 11.7, 2.8, body, bullets=True, space_after=8)
+
+    # 5. the two futures: if nothing changes, and the plan
+    s = page("Next quarter", "What happens next")
+    s.rect(0.8, 1.95, 5.5, 4.6, SOFT, radius=True)
+    s.rect(0.8, 1.95, 0.1, 4.6, BAD)
+    s.text(1.15, 2.2, 4.9, 0.45, [[Run("If nothing changes", 20, True, BAD)]])
+    s.text(1.15, 2.8, 4.9, 3.6, [[Run(q["if_nothing"]["summary"], 15, False, INK)]])
+    s.text(6.8, 1.95, 5.8, 0.45, [[Run("The plan", 20, True, ACCENT)]])
+    s.text(6.8, 2.55, 5.8, 4.0, [[Run(p["title"], 16, True, INK), Run(f"\n{p['owner']} · by {p['due']}", 12, False, MUTED)] for p in q["priorities"][:4]], bullets=True, space_after=12)
+
+    # 6. the decisions only they can take
+    if q["decisions"]:
+        s = page("Decisions we need from you", "Asks")
+        y = 1.95
+        for i, d in enumerate(q["decisions"][:4], 1):
+            s.rect(0.8, y, 11.7, 1.05, SOFT, radius=True)
+            s.text(1.05, y + 0.2, 0.7, 0.7, [[Run(str(i), 28, True, ACCENT)]])
+            s.text(1.8, y + 0.2, 10.4, 0.75, [[Run(d, 17, False, INK)]], anchor="ctr")
+            y += 1.2
+    return package(slides, foot)

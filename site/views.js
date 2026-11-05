@@ -772,7 +772,9 @@ export function execQbrView({ score, result, engine, files, saved, advisories, f
       out.replaceChildren(
         h("div", { class: "card callout good" }, h("h2", { text: `${q.customer}: ${q.period.label}` }), h("ul", {}, q.headline.map((x) => h("li", { text: x + "." }))),
           h("span", { class: "btnrow" },
-            h("button", { class: "btn small primary", type: "button", text: "Download (.html, prints to PDF)", onclick: () => saveBlob(r.html, name + ".html", "text/html") }),
+            h("button", { class: "btn small primary", type: "button", text: "Download slides (.pptx)", "data-tip": "The review as a PowerPoint deck to present: six slides, the numbers large, no internal jargon.",
+              onclick: () => saveBlob(Uint8Array.from(atob(r.pptx), (c) => c.charCodeAt(0)), name + ".pptx", "application/vnd.openxmlformats-officedocument.presentationml.presentation") }),
+            h("button", { class: "btn small", type: "button", text: "Download (.html, prints to PDF)", onclick: () => saveBlob(r.html, name + ".html", "text/html") }),
             h("button", { class: "btn small", type: "button", text: "Download (.md)", onclick: () => saveBlob(r.markdown, name + ".md", "text/markdown") }),
             h("button", { class: "btn small", type: "button", text: "Copy as Markdown", onclick: (e) => copyText(r.markdown).then((ok) => { e.target.textContent = ok ? "Copied" : "Copy not available"; }) }))),
         q.decisions.length ? card("Decisions to ask for", h("ol", {}, q.decisions.map((d) => h("li", { text: d })))) : null,

@@ -102,3 +102,42 @@ def test_the_cli_writes_the_review(tmp_path):
     out = tmp_path / "review.html"
     assert cli.main(["exec-qbr", str(NW), str(OLD), "--out", str(out)]) == 0
     assert "Decisions we need from you" in out.read_text()
+
+
+def test_the_review_is_also_a_powerpoint_deck_that_opens_cleanly():
+    import io
+    import zipfile
+    from xml.dom import minidom
+
+    from beyond90.radar import parse_threats
+
+    threats = parse_threats(json.loads((ROOT / "examples" / "threats.json").read_text()), CAT)
+    data = execqbr.render_pptx(execqbr.build([load(NW), load(OLD)], CAT, threats=threats))
+    z = zipfile.ZipFile(io.BytesIO(data))
+    names = z.namelist()
+    assert names[0] == "[Content_Types].xml" and "ppt/presentation.xml" in names
+    slides = sorted(n for n in names if re.fullmatch(r"ppt/slides/slide\d+\.xml", n))
+    assert len(slides) == 6
+    for n in names:
+        if n.endswith((".xml", ".rels")):
+            minidom.parseString(z.read(n))  # noqa: S318 - our own output, checked for well-formedness
+    text = " ".join(re.sub(r"<[^>]+>", " ", z.read(n).decode()) for n in slides)
+    assert "Northwind" in text and "Decisions we need from you" in text and "If nothing changes" in text
+    for word in ("Yield", "L1", "L2", "L3", "L4", "Bronze", "Silver"):
+        assert not re.search(rf"\b{word}\b", text), word
+    assert data == execqbr.render_pptx(execqbr.build([load(NW), load(OLD)], CAT, threats=threats)), "the deck is reproducible"
+
+
+def test_slide_text_cannot_break_the_file():
+    import io
+    import zipfile
+    from xml.dom import minidom
+
+    from beyond90.slides import Run, Slide, package
+
+    s = Slide(name='a "b" <c>')
+    s.text(0, 0, 1, 1, [[Run('x & <y> "z" \x00\x07\x1b end\nsecond line')]])
+    z = zipfile.ZipFile(io.BytesIO(package([s], "t & <t>")))
+    xml = z.read("ppt/slides/slide1.xml").decode()
+    minidom.parseString(xml)  # noqa: S318 - our own output, checked for well-formedness
+    assert "\x00" not in xml and "&lt;y&gt;" in xml and "<a:br>" in xml

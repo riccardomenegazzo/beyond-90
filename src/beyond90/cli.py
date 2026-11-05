@@ -497,6 +497,12 @@ def cmd_exec_qbr(args: argparse.Namespace) -> int:
     datas = [load_customer(d, cat, require_accounts=True)[0] for d in args.snapshots]
     threats = load_threats(args.threats, cat) if args.threats else None
     q = execqbr.build(datas, cat, start=_date.fromisoformat(args.from_) if args.from_ else None, end=_date.fromisoformat(args.to) if args.to else None, threats=threats)
+    if args.format == "pptx":
+        if not args.out:
+            print("exec-qbr --format pptx needs --out FILE.pptx", file=sys.stderr)
+            return 2
+        Path(args.out).write_bytes(execqbr.render_pptx(q))
+        return 0
     _emit(json.dumps(q, indent=2) if args.format == "json" else execqbr.render_html(q) if args.format == "html" else execqbr.render_markdown(q), args.out)
     return 0
 
@@ -867,7 +873,7 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--from", dest="from_", help="first day of the period (default: the quarter of the latest snapshot)")
     sp.add_argument("--to", help="last day of the period")
     sp.add_argument("--threats", help="an advisory feed, to show the threats that touched the customer")
-    sp.add_argument("--format", choices=["html", "markdown", "json"], default="html")
+    sp.add_argument("--format", choices=["html", "pptx", "markdown", "json"], default="html")
     sp.add_argument("--out")
     sp.set_defaults(func=cmd_exec_qbr)
 
