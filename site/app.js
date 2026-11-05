@@ -67,6 +67,7 @@ async function registerOffline() {
   if (/^(chrome|moz)-extension:$/.test(location.protocol)) {       // the extension carries every file: offline by nature
     $("offline").hidden = false;
     $("get-extension").hidden = true;
+    $("install-app").hidden = true;                                 // the extension is already an app of its own
     return;
   }
   if (!("serviceWorker" in navigator) || !(location.protocol === "https:" || ["localhost", "127.0.0.1"].includes(location.hostname))) return;
@@ -903,6 +904,24 @@ function renderRecent() {
 }
 
 // ---------- help: answers, terms and the tour
+// ---------- install as an app: offered when the browser allows it, explained when it does not
+let installPrompt = null;
+const standalone = () => matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+function refreshInstall() {
+  $("installed").hidden = !standalone();
+  $("install-now").hidden = standalone() || !installPrompt;
+}
+window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); installPrompt = e; refreshInstall(); });
+window.addEventListener("appinstalled", () => { installPrompt = null; refreshInstall(); });
+$("install-now").addEventListener("click", async () => {
+  if (!installPrompt) return;
+  installPrompt.prompt();
+  await installPrompt.userChoice.catch(() => null);
+  installPrompt = null;
+  refreshInstall();
+});
+refreshInstall();
+
 // ---------- this build: what it is made of, and a check that the files running are the ones published
 async function renderBuild() {
   let b = null;

@@ -3,10 +3,17 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self'; img-src 'self' data:; frame-src 'self'; worker-src 'self' blob:; base-uri 'none'; form-action 'none'; require-trusted-types-for 'script'; trusted-types b90-report b90-worker b90-sw">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self'; img-src 'self' data:; frame-src 'self'; manifest-src 'self'; worker-src 'self' blob:; base-uri 'none'; form-action 'none'; require-trusted-types-for 'script'; trusted-types b90-report b90-worker b90-sw">
 <meta name="referrer" content="no-referrer">
 <title>Beyond 90: what to do and say next, for every customer</title>
 <link rel="stylesheet" href="style.css">
+<link rel="manifest" href="app.webmanifest">
+<link rel="icon" href="icons/app-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-180.png">
+<meta name="theme-color" content="#2e46c8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Beyond 90">
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
@@ -209,6 +216,17 @@
         <p class="row left"><button class="btn" id="verify-build" type="button" data-tip="Fingerprint every file this page runs and compare it with the signed manifest.">Check every file</button></p>
         <p class="fine" id="verify-out" role="status"></p>
         <p class="fine">To check it on your own: download <a href="SHA256SUMS" download>SHA256SUMS</a>, then <code>gh attestation verify SHA256SUMS --repo riccardomenegazzo/beyond-90</code> proves GitHub built it from the public repository, and <code>sha256sum -c SHA256SUMS</code> in a copy of the site proves the files match.</p>
+      </section>
+      <section class="block" id="install-app" aria-labelledby="install-h">
+        <h2 id="install-h">Install it on any device</h2>
+        <p>Beyond 90 installs like an app on a phone, a tablet or a computer: its own icon, its own window, and it works with no connection. Nothing goes through a store, and your data stays on the device.</p>
+        <p class="row left"><button class="btn primary" id="install-now" type="button" hidden data-tip="Install Beyond 90 as an app on this device.">Install the app</button> <span class="chip on" id="installed" hidden>Installed on this device</span></p>
+        <ul class="install-ways">
+          <li><b>Chrome or Edge, on a computer:</b> the install icon at the right of the address bar, or the button above.</li>
+          <li><b>Android:</b> the browser menu, then “Install app” or “Add to Home screen”.</li>
+          <li><b>iPhone and iPad:</b> in Safari, the Share button, then “Add to Home Screen”.</li>
+          <li><b>Firefox on a computer:</b> it cannot install web apps; use the extension below.</li>
+        </ul>
       </section>
       <section class="block" id="get-extension" aria-labelledby="ext-h">
         <h2 id="ext-h">Use it from the browser toolbar</h2>

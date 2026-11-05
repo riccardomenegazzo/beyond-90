@@ -11,10 +11,13 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import os
 import shutil
+import struct
 import sys
 import zipfile
+import zlib
 from pathlib import Path
 from typing import Optional
 
@@ -72,12 +75,73 @@ def build(out: Path, pyodide: Path, feed: Optional[Path] = None, font: Path = FO
     (out / "feed" / "advisories.json").write_text(json.dumps(doc, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     shutil.copy(ROOT / "THIRD_PARTY.md", out / "THIRD_PARTY.md")
     shutil.copy(ROOT / "LICENSE", out / "LICENSE.txt")
+    write_app_manifest(out)
     write_service_worker(out)
     write_manifest(out)
     (out / ".nojekyll").write_text("")
 
 
 MANIFEST = ("SHA256SUMS", "build.json")
+APP_ICONS = {"icons/app-192.png": (192, None, 1.0), "icons/app-512.png": (512, None, 1.0),
+             "icons/maskable-512.png": (512, (0xFF, 0xFF, 0xFF), 0.72), "icons/apple-touch-180.png": (180, (0xFF, 0xFF, 0xFF), 0.8)}
+
+
+def icon(size: int, background: Optional[tuple[int, int, int]] = None, scale: float = 1.0) -> bytes:
+    """The ring of the logo as a PNG, drawn here so the site and the extension carry no binary that is not built from source.
+
+    `background` fills the square (installed apps and home screens want an opaque icon); `scale` shrinks the ring into
+    the safe zone that launchers crop to a circle or a rounded square.
+    """
+    track, arc = (0xD5, 0xDB, 0xE8), (0x2E, 0x46, 0xC8)
+    c, r, w = size / 2, size * 12 / 32 * scale, size * 4.4 / 32 * scale
+    n = 4 if size <= 128 else 2                                          # supersampling: enough for smooth edges
+    start, end = -math.pi / 2, math.atan2(12.3 - 16, 4.6 - 16) + 2 * math.pi   # the arc of the logo: from the top, clockwise
+    cap = (math.cos(end) * r + c, math.sin(end) * r + c)
+    rows = []
+    for y in range(size):
+        row = bytearray([0])
+        for x in range(size):
+            hits_arc = hits_track = 0
+            for sy in range(n):
+                for sx in range(n):
+                    px, py = x + (sx + 0.5) / n, y + (sy + 0.5) / n
+                    d = math.hypot(px - c, py - c)
+                    a = math.atan2(py - c, px - c)
+                    a = a + 2 * math.pi if a < start else a
+                    on_ring = abs(d - r) <= w / 2
+                    if (on_ring and a <= end) or math.hypot(px - c, py - c + r) <= w / 2 or math.hypot(px - cap[0], py - cap[1]) <= w / 2:
+                        hits_arc += 1
+                    elif on_ring:
+                        hits_track += 1
+            total, cover = n * n, hits_arc + hits_track
+            if background:
+                bg = background
+                row += bytes(round((arc[i] * hits_arc + track[i] * hits_track + bg[i] * (total - cover)) / total) for i in range(3)) + b"\xff"
+            elif not cover:
+                row += bytes(4)
+            else:
+                row += bytes([*(round((arc[i] * hits_arc + track[i] * hits_track) / cover) for i in range(3)), round(255 * cover / total)])
+        rows.append(bytes(row))
+
+    def chunk(kind: bytes, data: bytes) -> bytes:
+        return struct.pack(">I", len(data)) + kind + data + struct.pack(">I", zlib.crc32(kind + data) & 0xFFFFFFFF)
+
+    return (b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", struct.pack(">IIBBBBB", size, size, 8, 6, 0, 0, 0))
+            + chunk(b"IDAT", zlib.compress(b"".join(rows), 9)) + chunk(b"IEND", b""))
+
+
+def write_app_manifest(out: Path) -> None:
+    """What makes the page an app: install it from the browser on a phone, a tablet or a computer, and it opens in its own window."""
+    (out / "icons").mkdir(exist_ok=True)
+    for name, (size, bg, scale) in APP_ICONS.items():
+        (out / name).write_bytes(icon(size, bg, scale))
+    doc = {"name": "Beyond 90", "short_name": "Beyond 90", "id": "./", "start_url": "./index.html", "scope": "./", "display": "standalone",
+           "background_color": "#f3f5f9", "theme_color": "#2e46c8", "lang": "en", "dir": "ltr", "categories": ["business", "productivity"],
+           "description": "Customer health for cloud security teams: where each customer stands and what to do next. Your data never leaves the device.",
+           "icons": [{"src": "icons/app-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+                     {"src": "icons/app-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+                     {"src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}]}
+    (out / "app.webmanifest").write_text(json.dumps(doc, indent=1) + "\n", encoding="utf-8")
 
 
 def write_manifest(out: Path) -> None:

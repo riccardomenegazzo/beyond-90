@@ -506,6 +506,10 @@ def main(site: str) -> int:
         page.evaluate("navigator.serviceWorker.ready.then(() => 1)")
         boot()
         page.wait_for_selector("#offline:not([hidden])", timeout=60_000)
+        cdp = page.context.new_cdp_session(page._page if hasattr(page, "_page") else page)
+        errors = cdp.send("Page.getInstallabilityErrors")["installabilityErrors"]
+        manifest = cdp.send("Page.getAppManifest")
+        check(not errors and not manifest.get("errors"), f"the page installs as an app on any device: {errors or manifest.get('errors')}")
         ctx.set_offline(True)
         page.reload()
         page.wait_for_selector("#demo:not([disabled])", timeout=120_000)
