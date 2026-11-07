@@ -398,6 +398,74 @@ def cmd_onepager(args: argparse.Namespace) -> int:
     return 0
 
 
+def _parse_do(text: str) -> list[dict[str, Any]]:
+    """`connect_all,enable:runtime_sensor,fix:unowned` -> scenario steps."""
+    steps: list[dict[str, Any]] = []
+    for part in (x.strip() for x in text.split(",") if x.strip()):
+        head, _, arg = part.partition(":")
+        if head in ("connect_all", "enable_all"):
+            steps.append({"kind": head})
+        elif head == "enable" and arg:
+            steps.append({"kind": "enable_module", "module": arg})
+        elif head == "fix":
+            steps.append({"kind": "fix_findings", "leak": arg or "all"})
+        else:
+            raise SystemExit(f"beyond90: cannot read step {part!r}; use connect_all, enable_all, enable:<module>, fix or fix:<leak>")
+    return steps
+
+
+def cmd_whatif(args: argparse.Namespace) -> int:
+    from . import whatif
+
+    cat = _catalogue(args)
+    data, _ = load_customer(args.directory, cat, require_accounts=True)
+    ramp = RampModel(args.ramp_weeks)
+    try:
+        if args.reach is not None:
+            result: dict[str, Any] = whatif.reach(data, cat, args.reach)
+        else:
+            if args.scenarios:
+                loaded = json.loads(Path(args.scenarios).read_text(encoding="utf-8"))
+                scenarios = loaded if isinstance(loaded, list) else [loaded]
+            elif args.do:
+                scenarios = [{"name": args.do, "steps": _parse_do(args.do)}]
+            else:
+                raise SystemExit("beyond90: give --do, --scenarios or --reach")
+            result = whatif.run(data, cat, scenarios, ramp)
+    except (whatif.ScenarioError, json.JSONDecodeError, OSError) as e:
+        raise SystemExit(f"beyond90: {e}") from None
+    if args.format == "json":
+        _emit(json.dumps(result, indent=2, ensure_ascii=False), args.out)
+        return 0
+    lines = [f"{result['customer']} ({result['as_of']})"]
+    if "path" in result:
+        lines.append(f"Target {pct(result['target'])}: Yield {pct(result['start_yield'])} -> {pct(result['end_yield'])}"
+                     + ("" if result["reached"] else "  (not reached)"))
+        for i, p in enumerate(result["path"], 1):
+            lines.append(f"{i:>3}. {p['title']}   +{p['gain_points']:.1f} pts -> {pct(p['yield_after'])}")
+        lines += [f"Note: {n}" for n in result["notes"]]
+    else:
+        for sc in result["scenarios"]:
+            lines.append(f"\n{sc['name']}")
+            lines.append(f"  today {pct(sc['today']['yield'])}   right after {pct(sc['right_after']['yield'])}   settled {pct(sc['steady']['yield'])}"
+                         f"   ({sc['steady']['delta_points']:+.1f} pts)")
+            t = sc["touched"]
+            lines.append(f"  touches {t['accounts_connected']} accounts to connect, {t['activations_added']} modules to enable, {t['findings_fixed']} findings to repair")
+            lines += [f"  Note: {n}" for n in sc["notes"]]
+    lines += ["", "Assumptions:"] + [f"  - {a}" for a in result["assumptions"]]
+    _emit("\n".join(lines), args.out)
+    return 0
+
+
+def cmd_mcp(args: argparse.Namespace) -> int:
+    from .mcp_server import main as serve_mcp
+
+    try:
+        return serve_mcp(args.root, args.profile, args.catalogue_dir)
+    except ValueError as e:
+        raise SystemExit(f"beyond90: {e}") from None
+
+
 def cmd_successplan(args: argparse.Namespace) -> int:
     cat, data, _, score, actions, _, previous = _prepare(args)
     extras, previous = _extras(args, cat, data, score, previous)
@@ -844,6 +912,22 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--out", help="write to this file instead of stdout")
     sp.set_defaults(func=cmd_onepager)
 
+    sp = sub.add_parser("whatif", help="what Yield would be if you did X (including the dip first), or what it takes to reach a target")
+    common(sp, store=False)
+    sp.add_argument("--do", help="steps to try, comma separated: connect_all, enable_all, enable:<module>, fix, fix:<leak>")
+    sp.add_argument("--scenarios", help="JSON file with one scenario or a list of them, compared side by side")
+    sp.add_argument("--reach", type=float, help="instead: the steps that reach this Yield (for example 0.9)")
+    sp.add_argument("--ramp-weeks", type=int, default=2, help="weeks until a newly connected account is fully inventoried (default 2)")
+    sp.add_argument("--format", choices=["text", "json"], default="text")
+    sp.add_argument("--out")
+    sp.set_defaults(func=cmd_whatif)
+
+    sp = sub.add_parser("mcp", help="a local, read-only MCP server so an AI assistant on this machine can ask about the customers under ROOT")
+    sp.add_argument("root", help="directory whose sub-folders are customer data directories")
+    sp.add_argument("--profile", help="catalogue profile (see `beyond90 profiles`)")
+    sp.add_argument("--catalogue-dir", help="directory with custom resource_types.json, modules.json, playbooks.json")
+    sp.set_defaults(func=cmd_mcp)
+
     sp = sub.add_parser("successplan", help="draft a success plan the customer can sign: outcomes, measures, milestones, owners, risks")
     common(sp)
     analyses(sp)
@@ -955,7 +1039,7 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("config")
     sp.add_argument("--at", default="05:17", help="time of day in UTC, HH:MM")
     sp.add_argument("--every", choices=["hour", "day", "week"], default="day")
-    sp.add_argument("--install-from", default="beyond90", help='pip requirement for the workflow, e.g. "beyond90 @ git+https://github.com/OWNER/beyond-90@v0.28.0"')
+    sp.add_argument("--install-from", default="beyond90", help='pip requirement for the workflow, e.g. "beyond90 @ git+https://github.com/OWNER/beyond-90@v0.29.0"')
     sp.add_argument("--out")
     sp.set_defaults(func=cmd_schedule)
 

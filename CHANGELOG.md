@@ -2,6 +2,14 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.29.0
+
+Ask "what if" and "what would it take", and let an assistant ask too.
+
+- **Try a combination.** Tick what you would do (connect the accounts, switch on the modules that can run, give an owner, record a decision, put an expiry) and see Yield today, right after and once it settles. Connecting first lowers Yield, because the accounts enter the denominators before their inventory arrives; the page shows that dip instead of promising a straight line. Each combination is tried on a copy. `beyond90 whatif --do ... | --scenarios file.json`.
+- **What it takes to reach a target.** Pick 90% (or any target) and see the sequence of changes that gets there, biggest gain first. It says it does not estimate effort, and says so when the target cannot be reached with what it models. `beyond90 whatif --reach 0.9`.
+- **A local MCP server.** `beyond90 mcp ROOT` lets an AI assistant on your machine ask about the customers under one directory: list them by Yield, score one, rank its actions, compare scenarios, find the path to a target. Read only, no network, confined to that directory, with limits on message size. It does not make the assistant safe to show customer data to; the documentation says so.
+
 ## 0.28.0
 
 The health reading learns from what really happened, and the call has its own screen.

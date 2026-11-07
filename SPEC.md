@@ -1,4 +1,4 @@
-# Beyond 90: specification v0.28
+# Beyond 90: specification v0.29
 
 An adoption engine for Technical Account Managers. It measures how much of a customer's cloud estate is really covered and operated through a security platform, and turns every gap into an action. The bar keeps moving: when a customer grows or the product ships something, the denominators grow with it.
 
@@ -227,6 +227,14 @@ An outcome is `(customer, decided_on, outcome, note, reading)` with `outcome` on
 `calibrate.report` groups outcomes into stayed (renewed, expanded) and left (reduced, churned). A part is compared only when at least 3 customers on each side were measured on it: it reports the mean on each side, the gap and the counts. The score gets a concordance (the share of stayed/left pairs in which the one that stayed scored higher; 50% is chance), reported only when both sides have 3. Weights are suggested only when some part has a gap: each measured part's share becomes half of what its positive gap earns among the measured parts plus half of its current share, with a floor of 5%, then normalised. A part pointing the wrong way earns nothing. The result always carries its counts and says it is a hint, not proof. `health.compute` accepts a complete set of positive weights and reports whether it used the defaults or the applied ones.
 
 `callOutput` turns a call (agenda items covered or not with private notes, what was agreed, what we owe) into the recap (covered titles and agreed items only), a CSV of agreed and owed actions and the interactions line (first agreed item as next step). Notes appear in none of them.
+
+## 15y. What-if, the path to a target, the MCP server (0.29)
+
+A scenario is `{name, steps}`; a step is `connect_all`, `connect` (accounts), `enable_module` (module, optional accounts), `enable_all` or `fix_findings` (leak: all, unowned, no_decision, accepted_without_expiry, expired_acceptance). Each step is translated, against the data as it stands after the previous one, into the operations of `simulate.apply_ops`; enabling covers only active, connected accounts whose provider the module supports and that do not have it on. Every scenario is applied twice to copies: with the inventory lag (the reading right after) and in steady state (everything settled). `dip` is true when the reading right after is more than 0.05 points below today. A scenario file holds at most 20 scenarios of at most 50 steps; the input is never modified.
+
+`reach` repeats: among the candidates (connect the rest, enable each module where eligible, repair each kind of finding leak) pick the one with the largest steady-state gain, apply it, stop at the target, when nothing gains, or after 30 steps. It reports the path, the Yield after each step and the assumptions; it estimates no effort and claims no optimality.
+
+`mcp_server.Server` speaks JSON-RPC 2.0 over lines of text on standard input and output (protocol versions 2025-06-18, 2025-03-26, 2024-11-05; batches are refused). Five tools, all declared read-only: `list_customers`, `score`, `actions`, `what_if`, `path_to_target`. A customer is a folder name resolved to a real path whose parent must be the root; names with a path separator, a leading dot or a null byte, and links leaving the root, are refused. A message over 1 MiB is dropped with an error; an exception in a tool becomes an error result and the session continues. The module imports no network or process facility.
 
 ## 16. Positioning against the platform's own views
 

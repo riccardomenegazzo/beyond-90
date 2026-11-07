@@ -234,6 +234,78 @@ export function planView({ dash, score, files, engine, options }) {
     out);
 }
 
+// ------------------------------------------------------------------ try a combination
+const WHATIF_STEPS = [
+  { id: "connect", label: "Connect every account that is not connected", steps: [{ kind: "connect_all" }] },
+  { id: "enable", label: "Switch on every module that can run", steps: [{ kind: "enable_all" }] },
+  { id: "own", label: "Give an owner to findings without one", steps: [{ kind: "fix_findings", leak: "unowned" }] },
+  { id: "decide", label: "Record a decision on owned findings", steps: [{ kind: "fix_findings", leak: "no_decision" }] },
+  { id: "expire", label: "Put an expiry on accepted risks", steps: [{ kind: "fix_findings", leak: "accepted_without_expiry" }, { kind: "fix_findings", leak: "expired_acceptance" }] },
+];
+
+export function whatifView({ dash, score, files, engine }) {
+  const tryOut = h("div", { class: "whatifout whatif-try", "aria-live": "polite" });
+  const reachOut = h("div", { class: "whatifout whatif-reach", "aria-live": "polite" });
+  const status = h("p", { class: "note", role: "status" });
+  const boxes = WHATIF_STEPS.map((s) => ({ s, input: h("input", { type: "checkbox", id: "wi-" + s.id }) }));
+  const target = h("input", { type: "range", min: 50, max: 99, step: 1, value: 90, "aria-label": "Target Yield" });
+  const targetVal = h("output", { text: "90%" });
+  let seqTry = 0, seqReach = 0, timer = null;
+
+  async function ask(options) {
+    const r = await engine.json("whatif", { files, options });
+    if (!r.ok) throw new Error(r.errors.join("; "));
+    return r.result;
+  }
+  function drawTry(sc) {
+    const dip = sc.dip ? "warn" : "";
+    const t = sc.touched;
+    tryOut.replaceChildren(
+      h("div", { class: "kpiline" },
+        stat(pct(sc.today.yield), "today"),
+        stat(pct(sc.right_after.yield), "right after", dip),
+        stat(pct(sc.steady.yield), `once settled (${pts(sc.steady.delta_points)})`, sc.steady.delta_points > 0 ? "good" : "")),
+      h("p", { class: "note", text: `Touches ${t.accounts_connected} accounts to connect, ${t.activations_added} modules to switch on and ${t.findings_fixed} findings to repair.` }),
+      ...sc.notes.map((n) => h("p", { class: "note", text: n })));
+  }
+  async function recomputeTry() {
+    const picked = boxes.filter((b) => b.input.checked).flatMap((b) => b.s.steps);
+    const mine = ++seqTry;
+    if (!picked.length) { tryOut.replaceChildren(h("p", { class: "note", text: "Tick one or more changes to see where Yield would land." })); return; }
+    try {
+      const res = await ask({ scenarios: [{ name: "Your combination", steps: picked }] });
+      if (mine === seqTry) { status.textContent = ""; drawTry(res.scenarios[0]); }
+    } catch (e) { if (mine === seqTry) status.textContent = e.cancelled ? "" : "Could not compute: " + e.message; }
+  }
+  function drawReach(r) {
+    reachOut.replaceChildren(
+      h("div", { class: "kpiline" }, stat(pct(r.start_yield), "today"), stat(pct(r.end_yield), `after ${r.path.length} step${r.path.length === 1 ? "" : "s"}`, r.reached ? "good" : "warn")),
+      r.path.length ? h("ol", { class: "whatif-path" }, r.path.map((p) => h("li", {}, h("b", { text: p.title }), " ", h("span", { class: "muted", text: `${pts(p.gain_points)} → ${pct(p.yield_after)}` })))) : h("p", { class: "note", text: r.reached ? "Already there." : "Nothing this tool can model gets closer." }),
+      ...r.notes.map((n) => h("p", { class: "note", text: n })));
+  }
+  async function recomputeReach() {
+    const mine = ++seqReach;
+    try {
+      const res = await ask({ reach: Number(target.value) / 100 });
+      if (mine === seqReach) { status.textContent = ""; drawReach(res); }
+    } catch (e) { if (mine === seqReach) status.textContent = e.cancelled ? "" : "Could not compute: " + e.message; }
+  }
+  function schedule(fn) { clearTimeout(timer); status.textContent = "Recomputing…"; timer = setTimeout(fn, 300); }
+  for (const b of boxes) b.input.addEventListener("change", () => schedule(recomputeTry));
+  target.addEventListener("input", () => { targetVal.textContent = `${target.value}%`; schedule(recomputeReach); });
+  recomputeTry(); recomputeReach();
+  return h("div", {},
+    card("Try a combination", h("div", {},
+      h("fieldset", { class: "checks" }, h("legend", { class: "sr", text: "Changes to try" }),
+        boxes.map((b) => h("label", { class: "check" }, b.input, h("span", { text: b.s.label })))),
+      tryOut), { sub: "Nothing here changes your data: each combination is tried on a copy." }),
+    card("What it takes to reach a target", h("div", {},
+      h("label", { class: "slider" }, h("span", {}, "Target Yield ", targetVal), target), reachOut),
+      { sub: "The biggest gain first. Effort is not estimated: a small gain can be hard and a large one easy. The roadmap has hours and weeks." }),
+    status,
+    h("p", { class: "note", text: "Connecting an account first lowers Yield, because it enters the denominators before its inventory and modules arrive. That dip is real, and it is why \"right after\" can sit below \"today\"." }));
+}
+
 // ------------------------------------------------------------------ maturity
 export function maturityView({ score, dash }) {
   const rub = score.rubric, levels = ["bronze", "silver", "gold"];

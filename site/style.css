@@ -402,3 +402,5 @@ pre.recap{white-space:pre-wrap;word-break:break-word;background:var(--sunk);bord
 label.inline{display:flex;align-items:center;gap:9px;cursor:pointer}.agitem textarea,.agreed input[type=text]{width:100%}.agitem textarea{margin-top:8px}
 .agreed{display:grid;gap:8px}.agrow{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,1.4fr) minmax(0,1.3fr) auto;gap:8px;align-items:center}
 @media(max-width:560px){.agrow{grid-template-columns:1fr 1fr}.agrow input[type=text]:first-child{grid-column:1 / -1}}
+fieldset.checks{border:0;padding:0;margin:0 0 12px}
+.whatifout{margin-top:12px}.whatifout .whatif-path{padding-left:22px;display:grid;gap:8px}

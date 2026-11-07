@@ -15,7 +15,7 @@ from datetime import date
 from pathlib import Path
 from typing import Any, Optional
 
-from . import __version__, correlate, dashboard, execqbr, health, impact, onboarding, outlook, rhythm, stake, teams
+from . import __version__, correlate, dashboard, execqbr, health, impact, onboarding, outlook, rhythm, stake, teams, whatif
 from .attribution import explain
 from .book import build_book_plan, render_book_html, render_book_markdown
 from .candor import candor_items
@@ -149,6 +149,24 @@ def plan_files(files: Mapping[str, str], hours: float = 8.0, weeks: int = 26, re
             return {"ok": False, "errors": e.errors if isinstance(e, DataError) else [str(e)]}
         plan = build_plan(data, cat, hours_per_week=hours, horizon_weeks=weeks, realization=realization, ramp=RampModel(ramp_weeks))
         return {"ok": True, "plan": dashboard.plan_data(plan)}
+
+
+def whatif_files(files: Mapping[str, str], scenarios: Optional[list[Any]] = None, reach: Optional[float] = None, ramp_weeks: int = 2) -> dict[str, Any]:
+    """Scenarios side by side, or the steps to a target Yield, for the browser's "try a combination" view."""
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        _write(root, files)
+        try:
+            cat = Catalogue.for_directory(root)
+            data, _ = load_customer(root, cat, require_accounts=True)
+        except (DataError, ValueError) as e:
+            return {"ok": False, "errors": e.errors if isinstance(e, DataError) else [str(e)]}
+        try:
+            if reach is not None:
+                return {"ok": True, "result": whatif.reach(data, cat, float(reach))}
+            return {"ok": True, "result": whatif.run(data, cat, scenarios or [], RampModel(max(0, min(12, int(ramp_weeks)))))}
+        except (whatif.ScenarioError, TypeError, ValueError) as e:
+            return {"ok": False, "errors": [str(e)]}
 
 
 def _write(root: Path, files: Mapping[str, str]) -> None:
@@ -412,6 +430,14 @@ def preflight_json(options_json: str) -> str:
 
 def plan_json(files_json: str, options_json: str = "{}") -> str:
     return json.dumps(plan_files(json.loads(files_json), **json.loads(options_json)), ensure_ascii=False)
+
+
+def whatif_json(files_json: str, options_json: str = "{}") -> str:
+    o = json.loads(options_json)
+    scenarios = o.get("scenarios") if isinstance(o.get("scenarios"), list) else None
+    reach = o.get("reach") if isinstance(o.get("reach"), (int, float)) and not isinstance(o.get("reach"), bool) else None
+    ramp = o.get("ramp_weeks") if isinstance(o.get("ramp_weeks"), int) and not isinstance(o.get("ramp_weeks"), bool) else 2
+    return json.dumps(whatif_files(json.loads(files_json), scenarios, reach, ramp), ensure_ascii=False)
 
 
 def summarize_json(files_json: str) -> str:

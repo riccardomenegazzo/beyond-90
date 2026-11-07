@@ -347,7 +347,7 @@ function renderCompare() {
 const VIEWS = {
   overview: { kind: "view", view: "overview" }, connections: { kind: "view", view: "connectionsView" }, accounts: { kind: "view", view: "accountsView" }, findings: { kind: "view", view: "findingsView" },
   onboarding: { kind: "view", view: "onboardingView" }, maturity: { kind: "view", view: "maturityView" }, actions: { kind: "view", view: "actionsView" },
-  planview: { kind: "view", view: "planView" }, outlook: { kind: "view", view: "outlookView" }, teams: { kind: "view", view: "teamsView" },
+  planview: { kind: "view", view: "planView" }, whatif: { kind: "view", view: "whatifView" }, outlook: { kind: "view", view: "outlookView" }, teams: { kind: "view", view: "teamsView" },
   prep: { kind: "view", view: "prepView" }, call: { kind: "view", view: "callView" }, news: { kind: "view", view: "newsView" }, value: { kind: "view", view: "valueView" },
   execqbr: { kind: "view", view: "execQbrView" }, renewal: { kind: "view", view: "renewalView" }, changes: { kind: "view", view: "changesView" },
   report: { kind: "html", key: "report_html", file: "beyond90-report.html", type: "text/html" },

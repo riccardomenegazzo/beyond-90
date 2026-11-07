@@ -248,6 +248,21 @@ def main(site: str) -> int:
         page.click("[data-tab=prep]")
         check("Grant admin consent" in page.inner_text("#view"), "a logged call appears in the next preparation")
 
+        # try a combination: nothing is changed, the dip is shown, and a target gives a path
+        page.click("[data-tab=whatif]")
+        page.wait_for_selector("#view .whatif-reach .whatif-path li")
+        check("Connect the accounts that are not connected" in page.inner_text("#view .whatif-path"), "the path to a target starts with the biggest gain")
+        page.get_by_label("Connect every account that is not connected").check()
+        page.wait_for_selector("#view .whatif-try .kpiline")
+        view = page.inner_text("#view")
+        check("right after" in view and "once settled" in view and "Yield dips first" in view, "a combination shows today, right after and settled, and says when connecting dips first")
+        page.get_by_label("Switch on every module that can run").check()
+        for _ in range(60):
+            if not re.search(r"(?<!\d)0 modules", page.inner_text("#view .whatif-try .note")):
+                break
+            page.wait_for_timeout(250)
+        check(not re.search(r"(?<!\d)0 modules", page.inner_text("#view .whatif-try .note")), "adding a step changes what the combination touches")
+
         # what renewals taught: record outcomes, see them, remove one
         page.click("[data-tab=renewal]")
         page.select_option("#view select[aria-label='What happened']", "renewed")
@@ -481,7 +496,7 @@ def main(site: str) -> int:
         page.locator("#view tbody tr").first.get_by_role("button", name="Open").click()
         page.wait_for_selector("#run:not([disabled])", state="attached", timeout=180_000)
         page.wait_for_selector("#book-table[hidden]", state="attached")
-        check("Yield" in page.inner_text("#kpis") and page.locator("#tabs button").count() == 26, "opening a customer from the book shows its own report")
+        check("Yield" in page.inner_text("#kpis") and page.locator("#tabs button").count() == 27, "opening a customer from the book shows its own report")
         examples = Path(__file__).resolve().parent.parent / "examples" / "portfolio"
         page.set_input_files("#folder", str(examples))
         page.wait_for_selector("#status:has-text('customers found')")

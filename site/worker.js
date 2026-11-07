@@ -27,6 +27,7 @@ const ops = {
   triage: (a) => call("w.triage_json(_a, _b)", String(a.text || "").slice(0, 4000), JSON.stringify(a.options || {})),
   preflight: (a) => call("w.preflight_json(_a)", JSON.stringify(a.options || {})),
   plan: (a) => call("w.plan_json(_a, _b)", JSON.stringify(a.files), JSON.stringify(a.options || {})),
+  whatif: (a) => call("w.whatif_json(_a, _b)", JSON.stringify(a.files), JSON.stringify(a.options || {})),
   summarize: (a) => call("w.summarize_json(_a)", JSON.stringify(a.files)),
   workbook: (a) => call("w.workbook_json(_a, _b)", String(a.name || "workbook.xlsx"), String(a.data || "")),
   mapsuggest: (a) => call("w.mapping_suggest_json(_a, _b)", String(a.text || ""), JSON.stringify({ target: a.target || "", hint: a.hint || "" })),

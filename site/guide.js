@@ -14,6 +14,7 @@ export const CUSTOMER_NAV = [
   { question: "What should I do?", views: [
     { id: "actions", label: "Actions", icon: "actions", tip: "Every gap turned into a task, ranked by points gained per hour of work." },
     { id: "planview", label: "Plan and what-if", icon: "planview", tip: "Your hours per week turned into a week-by-week plan; move the sliders to see the effect." },
+    { id: "whatif", label: "Try a combination", icon: "planview", tip: "Tick what you would do and see Yield now, right after (connecting dips first) and once it settles; or pick a target and see the steps that reach it." },
     { id: "outlook", label: "If nothing is done", icon: "outlook", tip: "What breaks on which date if nobody acts: expiring secrets, ageing findings, slipping promises." },
     { id: "teams", label: "Teams", icon: "accounts", tip: "The customer's own teams, ranked by what is at stake on their side, each with a message ready to send." },
   ] },
