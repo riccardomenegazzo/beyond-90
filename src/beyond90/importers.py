@@ -229,6 +229,7 @@ def read_accounts(path: Path) -> list[Account]:
                 status=(r.get("status") or "active").strip().lower() or "active",
                 in_plan=(r.get("in_plan") or "").strip().lower() in ("true", "yes", "1"),
                 created_at=_day(r.get("created_at")),
+                criticality=(r.get("criticality") or "").strip().lower(),
             ))
     return out
 
@@ -237,11 +238,12 @@ def write_accounts(path: Path, accounts: list[Account]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", newline="", encoding="utf-8") as fh:
         w = csv.writer(fh, lineterminator="\n")
-        w.writerow(HEADER)
+        with_crit = any(a.criticality for a in accounts)      # the column appears only once someone uses it
+        w.writerow([*HEADER, "criticality"] if with_crit else HEADER)
         for a in sorted(accounts, key=lambda a: (a.provider, a.id)):
             w.writerow([a.id, a.provider, ";".join(a.sources), str(a.connected).lower(), a.owner,
                         f"{a.last_spend:g}" if a.last_spend else "", a.status, str(a.in_plan).lower(),
-                        a.created_at.isoformat() if a.created_at else ""])
+                        a.created_at.isoformat() if a.created_at else ""] + ([a.criticality] if with_crit else []))
 
 
 def merge(existing: list[Account], records: list[Record], *, authoritative_connected: bool = False) -> MergeResult:

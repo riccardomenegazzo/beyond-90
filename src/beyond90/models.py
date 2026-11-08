@@ -11,6 +11,7 @@ SEVERITIES = ("critical", "high", "medium", "low")
 EXPOSURES = ("internet", "internal")
 DECISIONS = ("fix", "accepted_risk", "exception", "false_positive")
 ACCOUNT_STATUSES = ("active", "decommissioned")
+CRITICALITIES = ("critical", "high", "medium", "low")
 UNIVERSE_SOURCES = ("billing", "org", "sso", "manual", "plan", "platform")
 INDEPENDENT_SOURCES = ("billing", "org", "sso")        # each one finds accounts the others miss
 
@@ -26,6 +27,7 @@ class Account:
     status: str = "active"
     in_plan: bool = False  # part of the onboarding plan the legacy metric is computed on
     created_at: Optional[date] = None
+    criticality: str = ""  # how much the customer depends on what runs there; empty = not said
 
 
 @dataclass(frozen=True)

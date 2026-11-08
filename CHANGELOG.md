@@ -2,6 +2,12 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.30.0
+
+What matters most to the customer, when they say it.
+
+- **Criticality.** An optional `criticality` column on accounts (critical, high, medium, low) lets the coverage weighted by what is at stake count an account the customer depends on more heavily, and a finding in it too. It multiplies the weight by spend, so a small account the customer cannot do without stops hiding behind a large one it barely uses. Yield is not touched; nothing infers criticality, the customer has to say it, and the page says which weights it used. The importer keeps the column when it rewrites a file.
+
 ## 0.29.0
 
 Ask "what if" and "what would it take", and let an assistant ask too.

@@ -1,4 +1,4 @@
-# Beyond 90: specification v0.29
+# Beyond 90: specification v0.30
 
 An adoption engine for Technical Account Managers. It measures how much of a customer's cloud estate is really covered and operated through a security platform, and turns every gap into an action. The bar keeps moving: when a customer grows or the product ships something, the denominators grow with it.
 
@@ -236,6 +236,10 @@ A scenario is `{name, steps}`; a step is `connect_all`, `connect` (accounts), `e
 
 `mcp_server.Server` speaks JSON-RPC 2.0 over lines of text on standard input and output (protocol versions 2025-06-18, 2025-03-26, 2024-11-05; batches are refused). Five tools, all declared read-only: `list_customers`, `score`, `actions`, `what_if`, `path_to_target`. A customer is a folder name resolved to a real path whose parent must be the root; names with a path separator, a leading dot or a null byte, and links leaving the root, are refused. A message over 1 MiB is dropped with an error; an exception in a tool becomes an error result and the session continues. The module imports no network or process facility.
 
+## 15z. Criticality (0.30)
+
+`accounts.csv` may carry a `criticality` column: `critical`, `high`, `medium`, `low` or empty (any other value is a loading error). It is optional, and the importer writes the column back only once some account has a value. `stake.weighted` multiplies an account's weight (its last spend, or 1 when no spend is known) by 4, 2, 1 or 0.5 (empty counts as 1), and weighs a finding's severity and exposure by the factor of the account it sits in. Yield, its stages and every other reading are untouched. With no criticality anywhere the output is what it was, plus `criticality_known: false`.
+
 ## 16. Positioning against the platform's own views
 
 Security platforms commonly ship their own adoption or maturity views and an ownership model. Beyond 90 does not replace them: it measures what a platform cannot see about itself (the true universe of units to cover, across a whole portfolio) and reads ownership and decisions rather than rebuilding routing. The research behind this is in `docs/research/`.
@@ -243,7 +247,7 @@ Security platforms commonly ship their own adoption or maturity views and an own
 ## 17. Not yet
 
 - Verification against real vendor APIs and CLIs. Collection is configuration-driven and tested against fake services; each real source must be checked with `sync` before it is trusted. No interactive OAuth flow.
-- Weighting by asset criticality.
+- Criticality per resource: it is per account for now, because that is the unit the customer lists. The customer has to say it; nothing infers it.
 - Validation of the health indicator against real renewals: the page can now record outcomes and compare, but nothing has been learnt from real customers yet, and its weights are still a judgement.
 
 ## 18. Roadmap

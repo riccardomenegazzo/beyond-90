@@ -37,6 +37,7 @@ from .models import (
     CONNECTOR_SCOPES,
     CONNECTOR_STATUSES,
     CONTACT_ROLES,
+    CRITICALITIES,
     DECISIONS,
     DEFAULT_INFLUENCE,
     EXPOSURES,
@@ -225,7 +226,7 @@ def _read_csv(
 
 
 KNOWN_COLUMNS: dict[str, tuple[str, ...]] = {
-    "accounts.csv": ("id", "provider", "sources", "connected", "owner", "last_spend", "status", "in_plan", "created_at"),
+    "accounts.csv": ("id", "provider", "sources", "connected", "owner", "last_spend", "status", "in_plan", "created_at", "criticality"),
     "inventory.csv": ("account_id", "resource_type", "count", "inventoried"),
     "activations.csv": ("account_id", "module_id", "active"),
     "findings.csv": ("id", "account_id", "severity", "exposure", "opened_at", "closed_at", "owner", "decision", "decision_reason",
@@ -400,6 +401,7 @@ def load_customer(
             status=status,
             in_plan=c.boolean(row, "in_plan"),
             created_at=c.date_(row, "created_at"),
+            criticality=c.choice(row, "criticality", CRITICALITIES, required=False),
         )
 
     accounts = _read_csv(base / "accounts.csv", ("id", "provider", "sources", "connected"), errors, parse_account, warnings)

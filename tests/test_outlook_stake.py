@@ -129,3 +129,64 @@ def test_both_reach_the_dashboard_the_brief_and_the_customer_page():
     ids = [i["id"] for i in d["rhythm"]["prep"]["items"]]
     assert "decay" in ids and "stake" in ids
     assert "Coming up if nothing changes" in r["onboarding_status_markdown"] and "BEGIN:VEVENT" in r["outlook_ics"]
+
+
+# ----------------------------------------------------------------------------- criticality
+def _with_criticality(src, tmp_path, marks):
+    d = tmp_path / "crit"
+    shutil.copytree(src, d)
+    rows = (d / "accounts.csv").read_text(encoding="utf-8").splitlines()
+    out = [rows[0] + ",criticality"]
+    for line in rows[1:]:
+        out.append(line + "," + marks.get(line.split(",")[0], ""))
+    (d / "accounts.csv").write_text("\n".join(out) + "\n", encoding="utf-8")
+    return d
+
+
+def test_without_criticality_nothing_changes(nw):
+    data = load(nw)
+    w = weighted(data, compute_score(data, CAT), CAT)
+    assert w["criticality_known"] is False and "criticality" not in w["weights"]["accounts"]
+
+
+def test_criticality_moves_the_weighted_reading_but_not_yield(nw, tmp_path):
+    base = load(nw)
+    unconnected = [a.id for a in base.accounts if a.status == "active" and not a.connected]
+    connected = [a.id for a in base.accounts if a.status == "active" and a.connected]
+    assert unconnected and connected
+    marks = {**dict.fromkeys(unconnected, "critical"), **dict.fromkeys(connected, "low")}
+    crit = load(_with_criticality(nw, tmp_path, marks))
+    s0, s1 = compute_score(base, CAT), compute_score(crit, CAT)
+    assert s1.yield_ == s0.yield_                      # the headline number is not touched
+    w0, w1 = weighted(base, s0, CAT), weighted(crit, s1, CAT)
+    assert w1["criticality_known"] and w1["stages"]["L1"] < w0["stages"]["L1"]
+    assert w1["unconnected_spend_share"] > w0["unconnected_spend_share"]
+    assert "criticality" in w1["weights"]["accounts"]
+    assert any(r["criticality"] == "critical" for r in w1["heaviest_accounts"])
+
+
+def test_a_finding_weighs_what_its_account_weighs(nw, tmp_path):
+    base = load(nw)
+    s = compute_score(base, CAT)
+    worst = weighted(base, s, CAT)["heaviest_findings"][0]
+    crit = load(_with_criticality(nw, tmp_path, {worst["account"]: "critical"}))
+    again = next(f for f in weighted(crit, compute_score(crit, CAT), CAT)["heaviest_findings"] if f["id"] == worst["id"])
+    assert again["weight"] == worst["weight"] * 4
+
+
+def test_a_criticality_the_loader_does_not_know_is_refused(nw, tmp_path):
+    from beyond90.loader import DataError
+    d = _with_criticality(nw, tmp_path, {next(a.id for a in load(nw).accounts): "vital"})
+    with pytest.raises(DataError, match="criticality"):
+        load_customer(d, CAT)
+
+
+def test_the_importer_keeps_criticality_and_adds_the_column_only_when_used(nw, tmp_path):
+    from beyond90.importers import read_accounts, write_accounts
+    plain = read_accounts(nw / "accounts.csv")
+    write_accounts(tmp_path / "a.csv", plain)
+    assert "criticality" not in (tmp_path / "a.csv").read_text(encoding="utf-8").splitlines()[0]
+    d = _with_criticality(nw, tmp_path, {plain[0].id: "high"})
+    marked = read_accounts(d / "accounts.csv")
+    write_accounts(tmp_path / "b.csv", marked)
+    assert {a.id: a.criticality for a in read_accounts(tmp_path / "b.csv")}[plain[0].id] == "high"

@@ -62,7 +62,7 @@ function stakeAndDecay({ dash, go }) {
   const first = o.events.find((e) => (e.points || 0) < 0);
   return {
     stake: card("Weighted by what is at stake", h("div", {},
-      h("div", { class: "kpiline" }, stat(pct(st.yield), "Yield, by count"), stat(pct(st.value), "Yield, by spend and exposure", st.value < st.yield - 0.02 ? "bad" : st.value > st.yield + 0.02 ? "good" : "")),
+      h("div", { class: "kpiline" }, stat(pct(st.yield), "Yield, by count"), stat(pct(st.value), st.criticality_known ? "Yield, by spend, criticality and exposure" : "Yield, by spend and exposure", st.value < st.yield - 0.02 ? "bad" : st.value > st.yield + 0.02 ? "good" : "")),
       st.say.length ? h("p", { class: "bad-text", text: st.say[0] }) : h("p", { class: "note first", text: "Counting and weighting agree: the gaps are where the stake is, not more or less." }),
       h("ul", { class: "rates wide" }, rows), h("p", { class: "legendline note" }, h("i", { class: "sw cnt" }), " by count ", h("i", { class: "sw wgt" }), " by stake")),
       { sub: `Accounts weigh their ${st.weights.accounts}; findings weigh ${st.weights.findings}.` }),

@@ -62,6 +62,7 @@ One row per cloud account, subscription or project. List each account once.
 | `status` | `active` (default) or `decommissioned` (excluded from everything) |
 | `in_plan` | Was it part of the onboarding plan the legacy metric is computed on? |
 | `created_at` | Used to detect new, unconnected accounts |
+| `criticality` | Optional: `critical`, `high`, `medium` or `low`, how much the customer would miss what runs there. Used only by the coverage weighted by what is at stake, next to the one by count (spend and criticality multiply: x4, x2, x1, x0.5; empty counts as medium). Yield itself does not change |
 
 The universe must come from somewhere other than the platform itself: billing exports, the organization hierarchy (AWS Organizations, Azure management groups, GCP folders), SSO application assignments. If you only list what the platform already knows, L1 is 100% by construction.
 
