@@ -25,6 +25,8 @@ export const CUSTOMER_NAV = [
     { id: "value", label: "Value receipt", icon: "renewal", tip: "What improved since an earlier snapshot, and the work that came before it." },
     { id: "execqbr", label: "Executive QBR", icon: "doc", tip: "A quarterly review for the CISO, built from this customer's saved history." },
     { id: "renewal", label: "Renewal and trust", icon: "renewal", tip: "Signals that predict the renewal, and how reliable we have been on our promises." },
+    { id: "commitments", label: "Promises", icon: "prep", tip: "What you and the customers have promised each other, across all customers: what is late, what is due this week, what you owe. Kept in this browser, sealed with your passphrase if you set one." },
+    { id: "handoff", label: "Handoff note", icon: "prep", tip: "One note for whoever picks this customer up: where adoption stands, what has been promised, renewal and people, risks. Built from what this page holds; copy it or download it." },
     { id: "calibration", label: "What renewals taught", icon: "renewal", tip: "What happened at each renewal you recorded, and which parts of the health reading told the customers that stayed from the ones that left." },
     { id: "changes", label: "Changes", icon: "changes", tip: "What moved since an earlier snapshot, split between the customer's work and new capabilities." },
   ] },

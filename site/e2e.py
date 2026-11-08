@@ -240,6 +240,12 @@ def main(site: str) -> int:
             page.get_by_role("button", name="Download the actions (CSV)").click()
         csv_text = Path(dl.value.path()).read_text()
         check(csv_text.startswith("Action,Owner,Due date,Customer,Call date,Source") and "Grant admin consent,identity team" in csv_text, "the agreed actions download as a CSV")
+        page.get_by_role("button", name="Keep in the ledger").click()
+        for _ in range(40):
+            if "kept in the ledger" in page.inner_text("#view"):
+                break
+            page.wait_for_timeout(250)
+        check("kept in the ledger" in page.inner_text("#view"), "what was agreed on the call can be kept in the ledger")
         page.click("[data-tab=prep]")
         page.click("[data-tab=call]")
         check(page.locator("#view details.agitem input[type=checkbox]:checked").count() == 1 and "Grant admin consent" in page.inner_text("#view pre.recap"), "a call in progress survives a visit to another view")
@@ -262,6 +268,22 @@ def main(site: str) -> int:
                 break
             page.wait_for_timeout(250)
         check(not re.search(r"(?<!\d)0 modules", page.inner_text("#view .whatif-try .note")), "adding a step changes what the combination touches")
+
+        # promises: the call's commitments are there, one can be added and closed, and the handoff note carries them
+        page.click("[data-tab=commitments]")
+        page.wait_for_selector("#view li.promise")
+        check("Grant admin consent" in page.inner_text("#view"), "the promises view lists what was agreed on the call")
+        page.get_by_label("What was promised").fill("Send the QBR deck")
+        page.get_by_role("button", name="Keep in the ledger").click()
+        page.wait_for_selector("#view li.promise:has-text('Send the QBR deck')")
+        page.get_by_role("button", name="Mark done: Send the QBR deck").click()
+        page.wait_for_selector("#view li.promise:has-text('done on')")
+        check("Closed in the last 30 days" in page.inner_text("#view"), "a promise marked done moves to the closed list")
+        page.click("[data-tab=handoff]")
+        note = page.inner_text("#view pre.recap")
+        check(note.startswith("# Handoff:") and "Send the QBR deck (done on" in note and "Grant admin consent" in note and "PRIVATE-NOTE-XYZ" not in note, "the handoff note carries the promises and never the private notes")
+        page.get_by_label("To (optional)").fill("Marco")
+        check("to Marco" in page.inner_text("#view pre.recap"), "the handoff note names who it is for")
 
         # what renewals taught: record outcomes, see them, remove one
         page.click("[data-tab=renewal]")
@@ -395,6 +417,7 @@ def main(site: str) -> int:
         doc = json.loads(exported.read_text())
         check(doc["format"] == "beyond90-workspace" and len(doc["snapshots"]) == 2, "export is a versioned workspace file")
         check(len(doc.get("outcomes", [])) == 1 and doc["outcomes"][0]["outcome"] == "renewed", "recorded renewal outcomes travel in the workspace file")
+        check(len(doc.get("commitments", [])) == 4 and any(c["status"] == "done" for c in doc["commitments"]), "promises travel in the workspace file")
         check("unencrypted" in page.inner_text("#vault-warn"), "unprotected customer data is called out")
         page.once("dialog", lambda dlg: dlg.accept())
         page.click("#forget")
@@ -402,6 +425,7 @@ def main(site: str) -> int:
         page.set_input_files("#import", str(exported))
         page.wait_for_selector("#ws-status:has-text('2 new')")
         check("1 renewal outcome(s) added" in page.inner_text("#ws-status"), "importing the workspace brings the recorded outcomes back")
+        check("4 commitment(s) added" in page.inner_text("#ws-status"), "importing the workspace brings the promises back")
         page.set_input_files("#import", str(exported))
         page.wait_for_selector("#ws-status:has-text('0 new')")
         check(page.locator("#hist-table tbody tr").count() == 2, "importing the same file twice leaves two snapshots")
@@ -496,7 +520,7 @@ def main(site: str) -> int:
         page.locator("#view tbody tr").first.get_by_role("button", name="Open").click()
         page.wait_for_selector("#run:not([disabled])", state="attached", timeout=180_000)
         page.wait_for_selector("#book-table[hidden]", state="attached")
-        check("Yield" in page.inner_text("#kpis") and page.locator("#tabs button").count() == 27, "opening a customer from the book shows its own report")
+        check("Yield" in page.inner_text("#kpis") and page.locator("#tabs button").count() == 29, "opening a customer from the book shows its own report")
         examples = Path(__file__).resolve().parent.parent / "examples" / "portfolio"
         page.set_input_files("#folder", str(examples))
         page.wait_for_selector("#status:has-text('customers found')")

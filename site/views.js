@@ -3,6 +3,8 @@ import { h, chip, pct, pts, num, cap, dataTable, chipFilter, searchBox, toCsv, s
 import { recap } from "./recap.js";
 import { OUTCOMES } from "./outcomes.js";
 import { newCall, callOutput } from "./callmode.js";
+import { ledger, CSV_COLUMNS } from "./commitments.js";
+import { buildHandoff } from "./handoff.js";
 import { connections } from "./graph.js";
 import { gauge, waterfall, lineChart, contributions, timeline, shareBar, funnel, STAGE, STAGE_NAME } from "./charts.js";
 
@@ -234,6 +236,64 @@ export function planView({ dash, score, files, engine, options }) {
     out);
 }
 
+// ------------------------------------------------------------------ promises
+let promiseScope = "all";                                   // survives the redraw that follows every change
+export function commitmentsView({ result, commitments, today, addCommitment, setCommitmentStatus, removeCommitment }) {
+  const scope = h("select", { "aria-label": "Show promises for" }, h("option", { value: "all", text: "All customers" }), h("option", { value: "this", text: result.customer }));
+  scope.value = promiseScope;
+  const body = h("div", {});
+  const say = h("p", { class: "note", role: "status" });
+  const f = { what: h("input", { type: "text", maxlength: 300, "aria-label": "What was promised", placeholder: "What was promised" }),
+    who: h("input", { type: "text", maxlength: 100, "aria-label": "Who owes it", placeholder: "Who (a name, or us)" }),
+    due: h("input", { type: "date", "aria-label": "Due date" }) };
+  const act = (fn) => async () => { try { await fn(); say.textContent = ""; } catch (e) { say.textContent = e.message; } };
+  const row = (c, { late = false } = {}) => h("li", { class: "promise" },
+    h("span", { class: "pmain" }, scope.value === "all" ? h("b", { text: c.customer + ": " }) : null, c.what,
+      h("small", { class: "muted", text: ` ${c.who || "owner not said"}${c.due ? `, due ${c.due}` : ", no date"}${late ? `, ${c.days_overdue} days late` : ""}${c.status !== "open" ? `, ${c.status} on ${c.closed_on}` : ""}` })),
+    h("span", { class: "btnrow" },
+      c.status === "open"
+        ? [h("button", { class: "btn small", type: "button", text: "Done", "aria-label": `Mark done: ${c.what}`, onclick: act(() => setCommitmentStatus(c.id, "done")) }),
+          h("button", { class: "btn small quiet", type: "button", text: "Drop", "aria-label": `Drop: ${c.what}`, onclick: act(() => setCommitmentStatus(c.id, "dropped")) })]
+        : h("button", { class: "btn small quiet", type: "button", text: "Reopen", "aria-label": `Reopen: ${c.what}`, onclick: act(() => setCommitmentStatus(c.id, "open")) }),
+      h("button", { class: "icon-btn", type: "button", text: "×", "aria-label": `Delete: ${c.what}`, onclick: act(() => removeCommitment(c.id)) })));
+  const group = (title, list, opt) => list.length ? card(title, h("ul", { class: "promises" }, list.map((c) => row(c, opt)))) : null;
+  const draw = () => {
+    const l = ledger(commitments, today, { customer: scope.value === "this" ? result.customer : "" });
+    const n = l.counts;
+    body.replaceChildren(
+      h("div", { class: "kpiline" }, stat(String(n.open), "open"), stat(String(n.overdue), "late", n.overdue ? "bad" : ""), stat(String(n.soon), "due this week", n.soon ? "warn" : ""), stat(String(n.we_owe), "we owe")),
+      !commitments.length ? h("p", { class: "note", text: "Nothing is kept yet. Add a promise below, or finish a call and choose “Keep in the ledger”." }) : null,
+      group("Late", l.late, { late: true }), group("Due this week", l.soon), group("Open", [...l.later, ...l.undated]), group("Closed in the last 30 days", l.recent),
+      l.customers.length > 1 ? card("By customer", h("ul", { class: "rates wide" }, l.customers.map((c) => h("li", {}, h("span", { class: "rl", text: c.customer }), h("span", { class: "rn", text: `${c.open} open${c.overdue ? `, ${c.overdue} late (oldest ${c.oldest_overdue_days} days)` : ""}` }))))) : null);
+  };
+  scope.addEventListener("change", () => { promiseScope = scope.value; draw(); });
+  draw();
+  return h("div", {},
+    card("Add a promise", h("div", {}, h("div", { class: "formgrid" }, h("label", { class: "wide2" }, "What", f.what), h("label", {}, "Who", f.who), h("label", {}, "By when", f.due)),
+      h("div", { class: "row left" }, h("button", { class: "btn small primary", type: "button", text: "Keep in the ledger", onclick: act(async () => { await addCommitment({ what: f.what.value, who: f.who.value, due: f.due.value }); f.what.value = ""; }) })), say),
+    { sub: `For ${result.customer}. Promises are kept in this browser, sealed with your passphrase if you set one, and travel with an exported workspace.` }),
+    card("Promises", h("div", {}, h("div", { class: "row left" }, h("label", { class: "inline" }, "Show ", scope),
+      h("button", { class: "btn small", type: "button", text: "Export CSV", onclick: () => saveBlob(toCsv(CSV_COLUMNS, [...commitments].sort((a, b) => a.customer.localeCompare(b.customer) || a.created_on.localeCompare(b.created_on))), "beyond90-promises.csv", "text/csv") })), body),
+    { sub: "Late first, then this week. A promise stays open until you mark it done or drop it." }));
+}
+
+// ------------------------------------------------------------------ handoff
+export function handoffView({ result, dash, score, commitments, outcomes, history, today }) {
+  const from = h("input", { type: "text", maxlength: 80, "aria-label": "From (optional)", placeholder: "From (optional)" });
+  const to = h("input", { type: "text", maxlength: 80, "aria-label": "To (optional)", placeholder: "To (optional)" });
+  const pre = h("pre", { class: "recap", tabindex: "0", "aria-label": "Handoff note" });
+  const build = () => buildHandoff({ score, dash, result, commitments, outcomes, history, today, from: from.value, to: to.value });
+  const draw = () => { pre.textContent = build(); };
+  from.addEventListener("input", draw); to.addEventListener("input", draw);
+  draw();
+  return card("Handoff note", h("div", {},
+    h("div", { class: "formgrid" }, h("label", {}, "From", from), h("label", {}, "To", to)), pre,
+    h("div", { class: "row left" },
+      h("button", { class: "btn small primary", type: "button", text: "Copy", onclick: (e) => copyText(build()).then((ok) => { e.target.textContent = ok ? "Copied" : "Copy not available here"; }) }),
+      h("button", { class: "btn small", type: "button", text: "Download .md", onclick: () => saveBlob(build(), `beyond90-handoff-${result.customer.replace(/[^A-Za-z0-9]+/g, "-").toLowerCase()}-${today}.md`, "text/markdown") }))),
+  { sub: "Built from what this page holds now: the reading, the promises kept here, the renewal log and the saved history. It leaves out your private call notes. Read it before you hand it over." });
+}
+
 // ------------------------------------------------------------------ try a combination
 const WHATIF_STEPS = [
   { id: "connect", label: "Connect every account that is not connected", steps: [{ kind: "connect_all" }] },
@@ -349,7 +409,7 @@ function healthCard(hl) {
 const calls = new Map();   // one call in progress per customer and data date, kept while the person moves between views
 
 /** One screen to use during the call: the agenda to tick off and annotate, what is agreed and what we owe as it happens, then the recap, the actions and the log line. */
-export function callView({ result, dash, score, logTouch, go }) {
+export function callView({ result, dash, score, logTouch, go, keepFromCall }) {
   const prep = dash.rhythm.prep, key = `${result.customer}|${result.as_of}`;
   if (!calls.has(key)) calls.set(key, { ...newCall(prep), logged: false });
   const call = calls.get(key);
@@ -402,6 +462,7 @@ export function callView({ result, dash, score, logTouch, go }) {
         h("button", { class: "btn small primary", type: "button", text: "Copy the recap", onclick: (e) => copyText(preview.textContent).then((ok) => { e.target.textContent = ok ? "Copied" : "Copy not available here"; }) }),
         h("button", { class: "btn small", type: "button", text: "Download the actions (CSV)", onclick: () => saveBlob(out().csv, `beyond90-call-actions-${date.value}.csv`, "text/csv") }),
         logBtn,
+        h("button", { class: "btn small", type: "button", text: "Keep in the ledger", onclick: async () => { try { const o = out(); const n = await keepFromCall({ agreed: o.agreed, ours: call.ours, date: date.value }); say.textContent = n ? `${n} promise(s) kept in the ledger (see Promises).` : "Nothing new to keep: what you agreed is already in the ledger."; } catch (e) { say.textContent = e.message; } } }),
         h("button", { class: "btn small quiet", type: "button", text: "Start a new call", onclick: () => { calls.delete(key); go("call"); } })),
       say),
     { sub: "The recap names only what you marked as covered and what you agreed, in the customer's words. Nothing is sent: you copy it. Logging adds a line to interactions.csv and re-runs." }));

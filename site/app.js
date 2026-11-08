@@ -5,6 +5,7 @@ import { PROVIDERS, problems as starterProblems, starterFiles } from "./starter.
 import { Engine } from "./engine.js";
 import * as W from "./workspace-core.js";
 import * as O from "./outcomes.js";
+import * as K from "./commitments.js";
 import * as store from "./store.js";
 import * as Vault from "./vault.js";
 import * as V from "./views.js";
@@ -19,7 +20,7 @@ const $ = (id) => document.getElementById(id);
 // which has no scripts and no access to this page. Its content is produced by the engine from the customer's files, escaped there.
 const swPolicy = window.trustedTypes ? window.trustedTypes.createPolicy("b90-sw", { createScriptURL: (u) => { if (u !== "./sw.js") throw new TypeError("only the page's own service worker may be registered"); return u; } }) : null;
 const reportPolicy = window.trustedTypes ? window.trustedTypes.createPolicy("b90-report", { createHTML: (t) => t }) : null;
-const state = { outcomes: [], calibration: null, healthWeights: null, advisories: null, files: {}, groups: {}, mode: "single", result: null, book: null, tab: "overview", saved: [], yields: new Map(), engine: null, running: false };
+const state = { commitments: [], outcomes: [], calibration: null, healthWeights: null, advisories: null, files: {}, groups: {}, mode: "single", result: null, book: null, tab: "overview", saved: [], yields: new Map(), engine: null, running: false };
 const ALLOWED = /\.(csv|toml|xlsx)$/i;
 const MAX_BYTES = 20 * 1024 * 1024;
 const pct = (x) => (x == null ? "n/a" : (x * 100).toFixed(1) + "%");
@@ -347,7 +348,7 @@ function renderCompare() {
 const VIEWS = {
   overview: { kind: "view", view: "overview" }, connections: { kind: "view", view: "connectionsView" }, accounts: { kind: "view", view: "accountsView" }, findings: { kind: "view", view: "findingsView" },
   onboarding: { kind: "view", view: "onboardingView" }, maturity: { kind: "view", view: "maturityView" }, actions: { kind: "view", view: "actionsView" },
-  planview: { kind: "view", view: "planView" }, whatif: { kind: "view", view: "whatifView" }, outlook: { kind: "view", view: "outlookView" }, teams: { kind: "view", view: "teamsView" },
+  planview: { kind: "view", view: "planView" }, whatif: { kind: "view", view: "whatifView" }, commitments: { kind: "view", view: "commitmentsView" }, handoff: { kind: "view", view: "handoffView" }, outlook: { kind: "view", view: "outlookView" }, teams: { kind: "view", view: "teamsView" },
   prep: { kind: "view", view: "prepView" }, call: { kind: "view", view: "callView" }, news: { kind: "view", view: "newsView" }, value: { kind: "view", view: "valueView" },
   execqbr: { kind: "view", view: "execQbrView" }, renewal: { kind: "view", view: "renewalView" }, changes: { kind: "view", view: "changesView" },
   report: { kind: "html", key: "report_html", file: "beyond90-report.html", type: "text/html" },
@@ -421,6 +422,8 @@ function context() {
   const r = state.result;
   if (r && state.parsedFor !== r) { state.parsed = JSON.parse(r.score_json); state.parsedFor = r; }
   return { result: r, dash: r.dashboard, score: state.parsed, engine: state.engine, files: state.files, options: options(), advisories: state.advisories, logTouch, go: (tab, extra) => selectTab(tab, extra),
+    commitments: state.commitments, addCommitment, setCommitmentStatus, removeCommitment, keepFromCall, today: todayIso(),
+    history: state.saved.filter((x) => x.customer === r.customer).map((x) => ({ as_of: x.as_of, yield: state.yields.get(x.id) })).filter((x) => typeof x.yield === "number"),
     outcomes: state.outcomes, calibration: state.calibration, healthWeights: state.healthWeights, recordOutcome, removeOutcome, applyWeights, resetWeights,
     saved: state.saved, frameHtml: (frame, html) => { frame.srcdoc = reportPolicy ? reportPolicy.createHTML(html) : html; } };
 }
@@ -539,7 +542,33 @@ async function removeOutcome(id) { await store.outcomeRemove(id); await refreshO
 async function applyWeights(w) { await store.setWeights(w); state.healthWeights = w; say("New health weights applied."); run(); }
 async function resetWeights() { await store.setWeights(null); state.healthWeights = null; say("Health weights are back to the defaults."); run(); }
 
+/** What has been promised, across customers. Read again whenever the saved data changes. */
+const todayIso = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
+async function refreshCommitments() {
+  try { state.commitments = await store.commitmentsAll(); } catch { state.commitments = []; }
+}
+async function addCommitment(p) {
+  const c = K.makeCommitment({ customer: state.result.customer, what: p.what, who: p.who, due: p.due, source: "manual", createdOn: todayIso() });
+  await store.commitmentPut([c]);
+  await refreshCommitments();
+  selectTab(state.tab);
+}
+async function setCommitmentStatus(id, status) {
+  const c = state.commitments.find((x) => x.id === id);
+  if (!c) return;
+  await store.commitmentPut([K.withStatus(c, status, todayIso() < c.created_on ? c.created_on : todayIso())]);
+  await refreshCommitments();
+  selectTab(state.tab);
+}
+async function removeCommitment(id) { await store.commitmentRemove(id); await refreshCommitments(); selectTab(state.tab); }
+async function keepFromCall({ agreed, ours, date }) {
+  const made = K.fromCall({ customer: state.result.customer, agreed, ours, date, existing: state.commitments });
+  if (made.length) { await store.commitmentPut(made); await refreshCommitments(); }
+  return made.length;
+}
+
 async function refreshHistory() {
+  await refreshCommitments();
   await refreshOutcomes();
   try { state.saved = await store.all(); }
   catch (e) { state.saved = []; wsSay("Saving is not available here: " + e.message); }
@@ -614,7 +643,7 @@ function drawTrend() {
 
 async function exportWorkspace() {
   if (await store.getVault() && !store.unlocked() && !(await unlockVaultUi())) return;
-  const text = W.serializeWorkspace(state.saved, { engine: state.engine ? state.engine.version : "", extra: { outcomes: state.outcomes } });
+  const text = W.serializeWorkspace(state.saved, { engine: state.engine ? state.engine.version : "", extra: { outcomes: state.outcomes, commitments: state.commitments } });
   const sealed = await store.sealExport(text);
   save(new Blob([sealed || text], { type: "application/json" }), sealed ? "beyond90-workspace.sealed.json" : "beyond90-workspace.json");
   wsSay(sealed ? `Exported ${state.saved.length} snapshot(s), sealed with your passphrase.`
@@ -767,7 +796,7 @@ async function sendWork() {
     return;
   }
   if (!store.unlocked() && !(await unlockVaultUi())) return;
-  const sealed = await store.sealExport(W.serializeWorkspace(state.saved, { engine: state.engine ? state.engine.version : "", extra: { outcomes: state.outcomes } }));
+  const sealed = await store.sealExport(W.serializeWorkspace(state.saved, { engine: state.engine ? state.engine.version : "", extra: { outcomes: state.outcomes, commitments: state.commitments } }));
   const file = new File([sealed], "beyond90-workspace.sealed.json", { type: "application/json" });
   if (navigator.canShare && navigator.canShare({ files: [file] })) {
     try {
@@ -796,9 +825,12 @@ async function importWorkspace(file) {
     const added = await store.put(ok);
     const outs = O.acceptOutcomes(unknown.outcomes);
     const addedOut = outs.ok.length ? await store.outcomePut(outs.ok) : 0;
+    const cms = K.acceptCommitments(unknown.commitments);
+    const addedCm = cms.ok.length ? await store.commitmentPut(cms.ok) : 0;
     await refreshHistory();
     wsSay(`Imported: ${added} new, ${ok.length - added} already here` + (rejected ? `, ${rejected} rejected because their content did not match their name` : "")
-      + (outs.ok.length || outs.rejected ? `; ${addedOut} renewal outcome(s) added` + (outs.rejected ? `, ${outs.rejected} refused` : "") : "") + ".");
+      + (outs.ok.length || outs.rejected ? `; ${addedOut} renewal outcome(s) added` + (outs.rejected ? `, ${outs.rejected} refused` : "") : "")
+      + (cms.ok.length || cms.rejected ? `; ${addedCm} commitment(s) added` + (cms.rejected ? `, ${cms.rejected} refused` : "") : "") + ".");
   } catch (e) {
     wsSay(e.message);
   }

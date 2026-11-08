@@ -22,6 +22,8 @@ Most adoption reporting stops at "90% of accounts connected" (or sites, tenants,
 
 **It answers "what if" and "what would it take".** Tick the changes you would make and see Yield now, right after (connecting dips first) and once it settles; or pick 90% and see the steps that get there, biggest gain first. See [docs/whatif.md](docs/whatif.md). `beyond90 mcp` lets an assistant on your machine ask the same questions of your customers, read only and with no network ([docs/mcp.md](docs/mcp.md)).
 
+**It keeps your promises.** A ledger across customers of what you and they have promised, with what is late, and a handoff note for whoever picks a customer up next. See [docs/promises.md](docs/promises.md).
+
 **It collects its own data.** A config file points at your sources (REST APIs, cloud CLIs, a drop folder) and `beyond90 run` does the rest on a schedule: collect, score, compare with last time, write the review, alert only on what changed. See [docs/automation.md](docs/automation.md).
 
 **For** Technical Account Managers, customer-success engineers and solutions teams at any security vendor: cloud, endpoint, identity, SIEM or other. One engine, a small catalogue ("profile") per kind of product; two ship today ([docs/profiles.md](docs/profiles.md)).

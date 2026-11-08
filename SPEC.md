@@ -1,4 +1,4 @@
-# Beyond 90: specification v0.30
+# Beyond 90: specification v0.31
 
 An adoption engine for Technical Account Managers. It measures how much of a customer's cloud estate is really covered and operated through a security platform, and turns every gap into an action. The bar keeps moving: when a customer grows or the product ships something, the denominators grow with it.
 
@@ -239,6 +239,14 @@ A scenario is `{name, steps}`; a step is `connect_all`, `connect` (accounts), `e
 ## 15z. Criticality (0.30)
 
 `accounts.csv` may carry a `criticality` column: `critical`, `high`, `medium`, `low` or empty (any other value is a loading error). It is optional, and the importer writes the column back only once some account has a value. `stake.weighted` multiplies an account's weight (its last spend, or 1 when no spend is known) by 4, 2, 1 or 0.5 (empty counts as 1), and weighs a finding's severity and exposure by the factor of the account it sits in. Yield, its stages and every other reading are untouched. With no criticality anywhere the output is what it was, plus `criticality_known: false`.
+
+## 15za. Promises and the handoff note (0.31)
+
+A **commitment** is `{id, customer, what (<=300), who (<=100), due (date or empty), status (open|done|dropped), source (call|ours|manual), created_on, updated_on, closed_on}`; `id` is `customer|created_on|suffix` with a 6 to 12 character lowercase suffix. `closed_on` is empty exactly when the status is open. It is validated field by field wherever it comes from outside (storage, an imported workspace), at most 5,000 are accepted, and the copies of one id merge to the one updated later (ties: the one that sorts first), so devices converge in any order. Commitments live in their own store in the browser, sealed with the passphrase like snapshots, and travel in an exported workspace under `commitments`.
+
+`fromCall` makes commitments from a finished call: each agreed item (with its person and date, if valid) and each thing we owe (person "us"), skipping any whose words equal an open commitment of the same customer. `ledger(list, today)` groups the open ones into late (due before today, most late first), due within 7 days, later, and undated, lists the ones closed within 30 days, and counts them per customer. Nothing reads a clock: today is passed in.
+
+The **handoff note** is Markdown built by `buildHandoff` from the reading, renewal, contacts, ledger, saved readings and renewal outcomes already on the page: in short, where adoption stands (and the three best actions), what has been promised, renewal and people, how Yield has moved, risks, earlier renewals, and what to check before relying on it. It contains no private call notes, because those are never stored. It is text for the person to read, edit and send; nothing is sent.
 
 ## 16. Positioning against the platform's own views
 

@@ -3,9 +3,10 @@
 // of it, cannot create a duplicate or lose a field.
 import { mergeSnapshots } from "./workspace-core.js";
 import { mergeOutcomes, validOutcome } from "./outcomes.js";
+import { mergeCommitments, validCommitment } from "./commitments.js";
 import { seal, openSealed, sealWorkspace } from "./vault.js";
 
-const DB = "beyond90", STORE = "snapshots", META = "meta", OUTCOMES = "outcomes";
+const DB = "beyond90", STORE = "snapshots", META = "meta", OUTCOMES = "outcomes", COMMITMENTS = "commitments";
 let key = null;                                      // the passphrase key, in memory only
 export const setKey = (k) => { key = k; };
 export const unlocked = () => key !== null;
@@ -18,11 +19,12 @@ export async function sealExport(text) {
 
 function open() {
   return new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB, 3);
+    const req = indexedDB.open(DB, 4);
     req.onupgradeneeded = () => {
       if (!req.result.objectStoreNames.contains(STORE)) req.result.createObjectStore(STORE, { keyPath: "id" });
       if (!req.result.objectStoreNames.contains(META)) req.result.createObjectStore(META, { keyPath: "k" });
       if (!req.result.objectStoreNames.contains(OUTCOMES)) req.result.createObjectStore(OUTCOMES, { keyPath: "id" });
+      if (!req.result.objectStoreNames.contains(COMMITMENTS)) req.result.createObjectStore(COMMITMENTS, { keyPath: "id" });
     };
     req.onsuccess = () => resolve(req.result);
     req.onerror = () => reject(req.error || new Error("Storage is not available in this browser mode."));
@@ -96,10 +98,17 @@ export async function convertAll({ toSealed, meta }) {
     if (!o) throw new Error("Some recorded outcomes could not be opened with this passphrase; nothing was changed.");
     outs.push(toSealed ? { id: o.id, sealed: await seal(key, o, o.id) } : o);
   }
+  const proms = [];
+  for (const rec of await rawAll(COMMITMENTS)) {
+    const c = await plain(rec);
+    if (!c) throw new Error("Some commitments could not be opened with this passphrase; nothing was changed.");
+    proms.push(toSealed ? { id: c.id, sealed: await seal(key, c, c.id) } : c);
+  }
   const db = await open();
-  const tx = db.transaction([STORE, META, OUTCOMES], "readwrite");
+  const tx = db.transaction([STORE, META, OUTCOMES, COMMITMENTS], "readwrite");
   for (const r of next) tx.objectStore(STORE).put(r);
   for (const r of outs) tx.objectStore(OUTCOMES).put(r);
+  for (const r of proms) tx.objectStore(COMMITMENTS).put(r);
   if (toSealed) tx.objectStore(META).put({ k: "vault", meta }); else tx.objectStore(META).delete("vault");
   await done(tx);
   db.close();
@@ -139,10 +148,11 @@ export async function remove(id) {
 
 export async function clear() {
   const db = await open();
-  const tx = db.transaction([STORE, META, OUTCOMES], "readwrite");
+  const tx = db.transaction([STORE, META, OUTCOMES, COMMITMENTS], "readwrite");
   tx.objectStore(STORE).clear();
   tx.objectStore(META).clear();
   tx.objectStore(OUTCOMES).clear();
+  tx.objectStore(COMMITMENTS).clear();
   await done(tx);
   db.close();
 }
@@ -184,6 +194,46 @@ export async function outcomeRemove(id) {
   const db = await open();
   const tx = db.transaction(OUTCOMES, "readwrite");
   tx.objectStore(OUTCOMES).delete(id);
+  await done(tx);
+  db.close();
+}
+
+// ---- what the TAM and the customer have promised each other. Customer facts, so they are sealed like snapshots.
+
+export async function commitmentsAll() {
+  const out = [];
+  for (const rec of await rawAll(COMMITMENTS)) { const c = await plain(rec); if (c && validCommitment(c)) out.push(c); }
+  return mergeCommitments(out, []);
+}
+
+/** Add or update commitments (idempotent; the copy updated later wins). Returns how many were new. */
+export async function commitmentPut(list) {
+  if ((await getVault()) && !key) throw new Error("Saved data is protected with a passphrase. Unlock it first.");
+  const recs = new Map((await rawAll(COMMITMENTS)).map((r) => [r.id, r]));
+  const before = new Set(recs.keys());
+  const merged = [];
+  for (const c of list) {
+    const old = recs.has(c.id) ? await plain(recs.get(c.id)) : null;
+    merged.push(old && validCommitment(old) ? mergeCommitments([old], [c])[0] : c);
+  }
+  const wrapped = await Promise.all(merged.map(async (c) => (key ? { id: c.id, sealed: await seal(key, c, c.id) } : c)));
+  const db = await open();
+  try {
+    const tx = db.transaction(COMMITMENTS, "readwrite");
+    for (const w of wrapped) tx.objectStore(COMMITMENTS).put(w);
+    await done(tx);
+  } catch (e) {
+    throw friendly(e);
+  } finally {
+    db.close();
+  }
+  return list.filter((c) => !before.has(c.id)).length;
+}
+
+export async function commitmentRemove(id) {
+  const db = await open();
+  const tx = db.transaction(COMMITMENTS, "readwrite");
+  tx.objectStore(COMMITMENTS).delete(id);
   await done(tx);
   db.close();
 }

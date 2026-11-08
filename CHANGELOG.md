@@ -2,6 +2,13 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.31.0
+
+What you owe each other, and a clean handover.
+
+- **Promises.** A ledger across all your customers of what you and they have promised: what is late, what is due this week, what you owe. A finished call can add what was agreed and what you owe in one click (nothing is added twice). Kept in this browser, sealed with your passphrase if you set one, exported with the workspace, and available as a CSV.
+- **Handoff note.** One note for whoever picks a customer up: where adoption stands and the three best next actions, what has been promised and what is late, renewal signals and people, how Yield has moved, risks, and earlier renewals. It says what it is built from, leaves out your private call notes, and is text to read and edit before you send it.
+
 ## 0.30.0
 
 What matters most to the customer, when they say it.

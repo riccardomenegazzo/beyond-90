@@ -404,3 +404,6 @@ label.inline{display:flex;align-items:center;gap:9px;cursor:pointer}.agitem text
 @media(max-width:560px){.agrow{grid-template-columns:1fr 1fr}.agrow input[type=text]:first-child{grid-column:1 / -1}}
 fieldset.checks{border:0;padding:0;margin:0 0 12px}
 .whatifout{margin-top:12px}.whatifout .whatif-path{padding-left:22px;display:grid;gap:8px}
+ul.promises{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+li.promise{display:flex;gap:12px;justify-content:space-between;align-items:flex-start;flex-wrap:wrap}
+li.promise .pmain{flex:1 1 260px}
