@@ -9,7 +9,8 @@ import * as K from "./commitments.js";
 import * as store from "./store.js";
 import * as Vault from "./vault.js";
 import * as V from "./views.js";
-import { h as el_, s as svg_, saveBlob, copyText, csvCell, icon, initTips, info } from "./ui.js";
+import { createPrivacy } from "./privacy.js";
+import { h as el_, s as svg_, saveBlob, copyText, setExitGate, csvCell, icon, initTips, info } from "./ui.js";
 import { CUSTOMER_NAV, BOOK_NAV, FAQ, GLOSSARY, TOUR } from "./guide.js";
 
 // Another site could frame this page and steer clicks on it; the app only runs as the top-level page.
@@ -26,6 +27,11 @@ const MAX_BYTES = 20 * 1024 * 1024;
 const pct = (x) => (x == null ? "n/a" : (x * 100).toFixed(1) + "%");
 
 const say = (text) => { $("status").textContent = text; };
+
+// What leaves the page (copy, download) passes through one gate: pseudonyms, a preview, and a log of what left.
+const privacy = createPrivacy({ state, store, $, say, unlockVaultUi: () => unlockVaultUi(), today: () => todayIso(), saveBlob, copyText });
+setExitGate(privacy.gate);
+privacy.onRefresh(() => refreshHistory());
 
 // ---------- engine
 async function boot() {
@@ -222,7 +228,7 @@ async function run(compareId) {
     if (base) opts.since_files = base.files;
     const res = await state.engine.json("analyze", { files: state.files, options: opts });
     if (!res.ok) return showErrors(res.errors);
-    state.result = res; state.book = null;
+    state.result = res; state.book = null; privacy.learn(res);
     state.compareId = base ? base.id : "";
     say(res.warnings.length ? res.warnings.length + " warning(s): " + res.warnings.join("; ") : "");
     showResults();
@@ -248,7 +254,7 @@ async function runBook() {
       hours: Number($("bookhours").value) || 30, week_hours: Number($("bookhours").value) || 30, weeks: o.weeks, realization: o.realization, weighting: $("weighting").value,
       ...(state.advisories ? { advisories: state.advisories } : {}) } });
     if (!res.ok) return showErrors(res.errors);
-    state.book = res; state.result = null;
+    state.book = res; state.result = null; privacy.learn(res);
     const skipped = Object.keys(res.errors || {});
     say(skipped.length ? `${skipped.length} customer(s) skipped because their data is invalid: ${skipped.join(", ")}.` : "");
     showBook();
@@ -489,7 +495,7 @@ function markdown(src) {
 // ---------- download / copy
 function download() {
   const t = current();
-  save(new Blob([payload()[t.key]], { type: t.type + ";charset=utf-8" }), t.file);
+  saveBlob(payload()[t.key], t.file, t.type + ";charset=utf-8");
 }
 function save(blob, name) {
   const a = Object.assign(document.createElement("a"), { href: URL.createObjectURL(blob), download: name });
@@ -497,8 +503,7 @@ function save(blob, name) {
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 async function copy() {
-  try { await navigator.clipboard.writeText(payload()[current().key]); say("Copied."); }
-  catch { say("Copy is not available here; use Download."); }
+  say((await copyText(payload()[current().key])) ? "Copied." : "Nothing was copied. If copying is not available here, use Download.");
 }
 
 // ---------- workspace (local-first)
@@ -596,6 +601,7 @@ async function refreshHistory() {
   computeYields();
   renderRecent();
   await refreshVault();
+  await privacy.render();
 }
 
 // Derived data is computed on demand and kept only in memory, keyed by the snapshot and the engine that read it.
@@ -686,7 +692,7 @@ $("st-add").addEventListener("click", () => { starterRow(); $("st-rows").lastEle
 $("st-cancel").addEventListener("click", () => $("starter").close());
 $("st-download").addEventListener("click", () => {
   const f = starterCheck();
-  if (f) for (const [name, text] of Object.entries(f)) saveBlob(text, name, name.endsWith(".csv") ? "text/csv" : "application/toml");
+  if (f) for (const [name, text] of Object.entries(f)) saveBlob(text, name, name.endsWith(".csv") ? "text/csv" : "application/toml", { raw: true });
 });
 $("starter-form").addEventListener("submit", (e) => {
   const f = starterCheck();
@@ -959,7 +965,7 @@ async function unlockVaultUi() {
     const p = await askPassphrase({ title: "Unlock saved data", confirm: false, help: tries ? "That was not the passphrase. Try again." : "Enter the passphrase you chose." });
     if (p == null) return false;
     const key = await Vault.unlockVault(meta, p);
-    if (key) { store.setKey(key); await refreshHistory(); wsSay("Unlocked."); return true; }
+    if (key) { store.setKey(key); await store.reslot(); await refreshHistory(); wsSay("Unlocked."); return true; }
     await new Promise((r) => setTimeout(r, 400 * 2 ** tries));          // slows guessing from inside the page; the key derivation already costs the rest
   }
   wsSay("Too many wrong passphrases. Reload the page to try again.");
@@ -1053,7 +1059,7 @@ function logTouch(e) {
   return "Added.";
 }
 function downloadInteractions() {
-  if (state.files["interactions.csv"]) saveBlob(state.files["interactions.csv"], "interactions.csv", "text/csv");
+  if (state.files["interactions.csv"]) saveBlob(state.files["interactions.csv"], "interactions.csv", "text/csv", { raw: true });
 }
 
 // ---------- theme
@@ -1099,7 +1105,7 @@ function copySummary() {
   const lines = [`${r.customer} · ${r.as_of}`, `Yield ${pct(r.yield)} (legacy metric ${pct(sc.naive)}), maturity ${r.level}`,
     ...Object.entries(sc.stages).map(([k, v]) => `${k} ${v.name}: ${pct(v.value)} (${v.numerator}/${v.denominator})`),
     d.actions[0] ? `Top action: ${d.actions[0].title} (+${d.actions[0].effect.toFixed(1)} pts, ${d.actions[0].hours.toFixed(1)} h)` : ""].filter(Boolean);
-  copyText(lines.join("\n")).then((ok) => say(ok ? "Summary copied." : "Copy is not available here."));
+  copyText(lines.join("\n")).then((ok) => say(ok ? "Summary copied." : "Nothing was copied."));
 }
 const pal = { el: $("palette"), q: $("palette-q"), list: $("palette-list"), items: [], at: 0 };
 function paintPalette() {

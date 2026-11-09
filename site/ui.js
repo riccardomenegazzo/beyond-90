@@ -44,15 +44,31 @@ export function toCsv(columns, rows) {
   return [columns.map((c) => csvCell(c.label)).join(","), ...rows.map((r) => columns.map((c) => csvCell(c.csv ? c.csv(r) : r[c.key])).join(","))].join("\n") + "\n";
 }
 
-export function saveBlob(text, name, type) {
-  const url = URL.createObjectURL(new Blob([text], { type }));
-  const a = Object.assign(document.createElement("a"), { href: url, download: name });
-  document.body.append(a); a.click(); a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 2000);
+// Everything that leaves the page as text goes through one gate. The app installs it (pseudonyms, a preview, the log of
+// what left); a call with { raw: true } is for text that must stay as it is: the sealed workspace backup and the
+// source files the person is making for their own use.
+let gate = null;
+export const setExitGate = (fn) => { gate = fn; };
+
+async function through(text, name, how, type, raw) {
+  if (!gate || raw) return { text, name };
+  return gate({ text, name, how, type });            // null when the person cancels
 }
 
-export async function copyText(text) {
-  try { await navigator.clipboard.writeText(text); return true; } catch { return false; }
+export async function saveBlob(text, name, type, { raw = false } = {}) {
+  const out = await through(text, name, "file", type, raw);
+  if (!out) return false;
+  const url = URL.createObjectURL(new Blob([out.text], { type }));
+  const a = Object.assign(document.createElement("a"), { href: url, download: out.name });
+  document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+  return true;
+}
+
+export async function copyText(text, { raw = false } = {}) {
+  const out = await through(text, "", "copy", "text/plain", raw);
+  if (!out) return false;
+  try { await navigator.clipboard.writeText(out.text); return true; } catch { return false; }
 }
 
 export function chip(text, kind = "") { return h("span", { class: "chip2 " + kind, text }); }

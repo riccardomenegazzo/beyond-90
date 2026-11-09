@@ -15,7 +15,7 @@ from datetime import date
 from pathlib import Path
 from typing import Any, Optional
 
-from . import __version__, correlate, dashboard, execqbr, health, impact, onboarding, outlook, rhythm, stake, teams, whatif
+from . import __version__, correlate, dashboard, execqbr, health, identifiers, impact, onboarding, outlook, rhythm, stake, teams, whatif
 from .attribution import explain
 from .book import build_book_plan, render_book_html, render_book_markdown
 from .candor import candor_items
@@ -134,6 +134,7 @@ def analyze(
         "roadmap_markdown": "\n".join([f"# Roadmap: {plan.customer}", "", *md_plan(plan, top=12)]),
         "score_json": render_json(score, actions, None),
         "summary": {k: summary[k] for k in summary if k in ("customer", "as_of", "yield", "stages")},
+        "identifiers": identifiers.collect(data),
     }
 
 
@@ -315,6 +316,7 @@ def analyze_book(
             "preps": preps,
             "onboarding": {"customers": onb_summary, "shared": _shared_causes(onb_summary)},
             "advisories": len(threats),
+            "identifiers_by_customer": {n: identifiers.collect(d) for n, d in customers},
             "news": news,
             "arr_weighted_yield": pf.arr_weighted_yield,
             "weighted_start": plan.weighted_start,

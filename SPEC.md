@@ -1,4 +1,4 @@
-# Beyond 90: specification v0.31
+# Beyond 90: specification v0.32
 
 An adoption engine for Technical Account Managers. It measures how much of a customer's cloud estate is really covered and operated through a security platform, and turns every gap into an action. The bar keeps moving: when a customer grows or the product ships something, the denominators grow with it.
 
@@ -247,6 +247,18 @@ A **commitment** is `{id, customer, what (<=300), who (<=100), due (date or empt
 `fromCall` makes commitments from a finished call: each agreed item (with its person and date, if valid) and each thing we owe (person "us"), skipping any whose words equal an open commitment of the same customer. `ledger(list, today)` groups the open ones into late (due before today, most late first), due within 7 days, later, and undated, lists the ones closed within 30 days, and counts them per customer. Nothing reads a clock: today is passed in.
 
 The **handoff note** is Markdown built by `buildHandoff` from the reading, renewal, contacts, ledger, saved readings and renewal outcomes already on the page: in short, where adoption stands (and the three best actions), what has been promised, renewal and people, how Yield has moved, risks, earlier renewals, and what to check before relying on it. It contains no private call notes, because those are never stored. It is text for the person to read, edit and send; nothing is sent.
+
+## 15zb. Sharing with pseudonyms, retention and erasure (0.32)
+
+`identifiers.collect(data)` lists, by kind, the strings that identify a customer or a person: the customer's name; owners of accounts and findings and the contacts' names (`person`); team names; account ids and connector names (`account`). Values are trimmed, at least 3 characters, distinct, longest first, at most 2,000 per kind. The engine returns them as `identifiers` (and `identifiers_by_customer` for a book).
+
+The page has three **sharing levels**: `full` (nothing replaced), `people` (kind `person`), `pseudonym` (all four kinds). Every text that leaves the page by copy or download passes one gate. At a level other than `full` it replaces each known identifier, whole words only and case-insensitively, longest first and in a single pass (an alias is never replaced again), with a stable alias (`Customer A`, `Person 1`, `Team 1`, `Account 1`); in a file name the alias is written as a slug. It then shows a preview with how many names were replaced and what the page can still see (identifiers the level does not cover, and anything shaped like an email address), and nothing leaves until the person confirms. A binary file (a presentation) cannot be searched, so at a level other than `full` it is refused. Not gated, on purpose: the sealed workspace backup, and the source files the person creates for their own use (the starter files, `interactions.csv`).
+
+The **alias table** (original, alias, kind, customer) lives in the browser only, sealed like any customer fact, so aliases stay the same from one share to the next and a pasted text with aliases can be turned back into real names. It is not part of an exported workspace.
+
+**Retention**: an optional keep-until date per customer; the page lists customers past it and those within 30 days. It never deletes by itself. **Erasure** removes, for one customer, its snapshots, recorded outcomes, promises, retention date, alias entries and entries of the export log, then reads the stores again and reports how many records for that customer it can still read (it refuses while sealed data is locked, because it could not see what to remove). The **export log** notes each time something left the page for the open customer (date, file or copy, level, file name); it is sealed with the other facts. The **erasure record** is a text the page writes about itself: what it removed, the second look, and the list of copies it cannot reach. It is not stored and is not independent proof.
+
+Sealed customer facts (outcomes, promises, retention, export log) are stored under a random 96-bit slot, not under their own id (which contains the customer's name); records made before 0.32 are moved to a slot the first time the data is unlocked. The database is version 5.
 
 ## 16. Positioning against the platform's own views
 

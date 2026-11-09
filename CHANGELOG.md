@@ -2,6 +2,15 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.32.0
+
+Share without the names, and keep only what you should.
+
+- **Sharing levels.** A control at the top chooses what leaves the page when you copy or download: full names, people hidden, or everything replaced by stable aliases (Customer A, Person 1, Team 1, Account 1). You see a preview first: how many names were replaced and what the page can still see. The aliases stay on this device, so you can paste an answer that uses them and put the real names back. A pseudonym is not anonymity, and a name typed in a free note is not something the page can find.
+- **Retention and erasure.** Set a keep-until date per customer and the page tells you when it has passed. Erase one customer completely (snapshots, outcomes, promises, aliases, the date, the log) and get an erasure record that says what was removed, that a second look found nothing left, and which earlier exports are beyond its reach. The record is something the page wrote about itself, not proof.
+- **A leak closed.** Sealed outcomes and promises were stored under keys that contained the customer's name. They now use random slots; older ones move the first time you unlock.
+- **Known limits.** The MCP server has no pseudonym mode (it is read only and has no place to keep aliases). Aliases, retention dates and the export log stay on the device and are not in an exported workspace. Presentations cannot have names replaced, so they are refused at the pseudonym levels.
+
 ## 0.31.0
 
 What you owe each other, and a clean handover.

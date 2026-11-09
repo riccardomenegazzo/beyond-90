@@ -29,7 +29,7 @@ PLACE_OF = {
     **dict.fromkeys(("open-starter", "open-mapper", "map-file", "map-body", "map-check", "map-use", "map-cancel", "map-notes", "demo", "demo-book", "demo-endpoint", "latest-adv", "demo-adv", "clear-adv", "adv-status", "run", "cancel",
                      "weeks", "hours", "real", "quarter", "bookhours", "weighting", "loaded", "status"), "start"),
     **dict.fromkeys(("demo-prev", "export", "forget", "vault-on", "vault-unlock", "vault-lock", "vault-off", "vault-state",
-                     "vault-warn", "ws-status", "history-body", "device-qr", "send-work", "history-empty", "hist-table", "trend", "autosave", "personal"), "saved"),
+                     "vault-warn", "ws-status", "history-body", "device-qr", "send-work", "history-empty", "hist-table", "trend", "autosave", "personal", "privacy-body", "restore-in", "restore-out", "restore-note", "erase-result"), "saved"),
     **dict.fromkeys(("selfcheck", "selfcheck-out", "faq-q", "tour-start", "verify-build", "verify-out", "build-info"), "help"),
 }
 
@@ -549,6 +549,11 @@ def main(site: str) -> int:
         raw = page.evaluate("""() => new Promise((res) => { const r = indexedDB.open('beyond90'); r.onsuccess = () => {
             const q = r.result.transaction('snapshots').objectStore('snapshots').getAll(); q.onsuccess = () => res(JSON.stringify(q.result)); }; })""")
         check("Northwind" not in raw and "accounts.csv" not in raw and "sealed" in raw, "sealed snapshots hold nothing readable")
+        facts = page.evaluate("""() => new Promise((res) => { const r = indexedDB.open('beyond90'); r.onsuccess = () => {
+            const names = ['outcomes', 'commitments', 'retention', 'exports', 'aliases'];
+            const tx = r.result.transaction(names); const out = {}; let left = names.length;
+            for (const n of names) { const q = tx.objectStore(n).getAll(); q.onsuccess = () => { out[n] = q.result; if (--left === 0) res(JSON.stringify(out)); }; } }; })""")
+        check("Northwind" not in facts and "Acme" not in facts and "renewed" not in facts and "sealed" in facts, "sealed outcomes and promises carry no customer name, not even in their keys")
         page.reload()
         page.wait_for_selector("#demo:not([disabled])", timeout=180_000)
         page.wait_for_selector("#vault-unlock:not([hidden])")
@@ -670,6 +675,63 @@ def main(site: str) -> int:
         finally:
             sw.write_text(original, encoding="utf-8")
 
+        # sharing with pseudonyms: a preview first, real names never in what leaves, and the names come back on this device
+        run_demo()
+        page.click("[data-tab=summary]")
+        page.select_option("#share-level", "pseudonym")
+        page.click("#copy")
+        page.wait_for_selector("#exit-dialog[open]")
+        shown = page.inner_text("#exit-text")
+        check("Northwind" not in shown and "Customer A" in shown, "pseudonym level replaces the customer's name in what is about to leave")
+        check("replaced" in page.inner_text("#exit-sum") and page.locator("#exit-left li").count() >= 1, "the preview says what was replaced and what the page can still see")
+        page.click("#exit-cancel")
+        page.wait_for_selector("#exit-dialog", state="hidden")
+        page.select_option("#share-level", "people")
+        page.click("#copy")
+        page.wait_for_selector("#exit-dialog[open]")
+        check("Northwind" in page.inner_text("#exit-text") and "customer name still visible" in page.inner_text("#exit-left"), "people-hidden level keeps the customer name and says so")
+        page.click("#exit-cancel")
+        page.wait_for_selector("#exit-dialog", state="hidden")
+        page.select_option("#share-level", "pseudonym")
+        with page.expect_download() as dl:
+            page.click("[data-tab=handoff]")
+            page.get_by_role("button", name="Download .md").click()
+            page.wait_for_selector("#exit-dialog[open]")
+            page.click("#exit-go")
+        check("northwind" not in dl.value.suggested_filename.lower() and "customer-a" in dl.value.suggested_filename, "the downloaded file's name carries the alias too")
+        saved_note = Path(tmp) / "handoff.md"
+        dl.value.save_as(saved_note)
+        check("Northwind" not in saved_note.read_text() and "Customer A" in saved_note.read_text(), "the downloaded file holds aliases, not names")
+        page.click(".rail [data-place=saved]")
+        page.locator("#privacy-body summary").click()
+        page.fill("#restore-in", "Customer A should renew; Customer A is at risk.")
+        page.click("#restore-go")
+        check("Northwind (mock) should renew" in page.inner_text("#restore-out") and "2 aliases restored" in page.inner_text("#restore-note"), "pasted aliases are turned back into the real names on this device")
+        page.select_option("#share-level", "full")
+
+        # keeping data only as long as it should be kept, and erasing one customer completely
+        page.click(".rail [data-place=saved]")
+        page.wait_for_timeout(1500)                      # the panel redraws when the saved data is read; let that settle before typing in it
+        page.locator("#privacy-body tr:has-text('Northwind') input[type=date]").fill("2020-01-01")
+        page.locator("#privacy-body tr:has-text('Northwind') button:has-text('Set')").click()
+        page.wait_for_selector("#privacy-body .bad-text")
+        check("Past the keep-until date" in page.inner_text("#privacy-body"), "a customer past its keep-until date is called out")
+        page.once("dialog", lambda dlg: dlg.accept())
+        page.locator("#privacy-body tr:has-text('Northwind') button:has-text('Erase all')").click()
+        page.wait_for_selector("#erase-result .note")
+        check("0 record(s) left" in page.inner_text("#erase-result"), "after erasing, a second look finds nothing left for that customer")
+        check("earlier export(s)" in page.inner_text("#erase-result"), "the erasure says which earlier exports are outside its reach")
+        check("Northwind" not in page.inner_text("#hist-table"), "erasing a customer removes its snapshots and leaves other customers' alone")
+        with page.expect_download() as rec:
+            page.get_by_role("button", name="Download the erasure record").click()
+        rec_path = Path(tmp) / "erasure.md"
+        rec.value.save_as(rec_path)
+        text = rec_path.read_text()
+        check("not independent proof" in text and re.search(r"saved snapshots: [1-9]", text) is not None and "recorded outcomes: 1" in text, "the erasure record is honest about what it proves and counts what it removed")
+        page.reload()
+        page.wait_for_selector("#demo:not([disabled])", timeout=180_000)
+        check("Northwind" not in page.inner_text("#privacy-body") if page.locator("#privacy-body").count() else True, "the erasure survives a reload")
+
         browser.close()
         browser = p.chromium.launch()
 
@@ -731,6 +793,7 @@ def main(site: str) -> int:
                 actx.close()
         else:
             print("skip accessibility audit (set AXE_CORE to axe.min.js)")
+
 
         check(not console, "no console errors or warnings" + (": " + "; ".join(console[:3]) if console else ""))
         browser.close()

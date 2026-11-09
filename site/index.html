@@ -28,6 +28,8 @@
     <span class="engine" id="version" data-tip="The analysis engine runs inside this tab. Nothing is sent anywhere.">Starting the engine…</span>
     <span class="update-bar" id="update-bar" role="status" hidden>New version ready <button class="btn small primary" id="update-now" type="button" data-tip="Switch to the latest version. Your saved work stays; an analysis that is open runs again from Start.">Update now</button></span>
     <span class="engine" id="offline" hidden data-tip="Everything this page needs is stored on this device, so it keeps working without a connection.">Works offline</span>
+    <label class="share-pick" data-tip="What leaves this page when you copy or download: real names, people hidden, or everything replaced by aliases. You see a preview before anything leaves."><span class="sr">Sharing level</span>
+      <select id="share-level" aria-label="Sharing level"><option value="full">Share: full names</option><option value="people">Share: people hidden</option><option value="pseudonym">Share: pseudonyms</option></select></label>
     <button class="icon-btn" id="theme" type="button" aria-label="Switch between light and dark" data-tip="Switch between light and dark."></button>
   </div>
 </header>
@@ -172,6 +174,11 @@
           <table class="hist" id="hist-table"><thead><tr><th>Customer</th><th>As of</th><th class="n">Yield</th><th>Snapshot</th><th><span class="sr">Actions</span></th></tr></thead><tbody></tbody></table>
         </div>
       </section>
+      <section class="block" id="privacy-block" aria-labelledby="privacy-h">
+        <h2 id="privacy-h">Sharing and retention</h2>
+        <p class="fine">Choose what leaves this page with the Share control at the top. Set how long to keep each customer, and erase one customer completely.</p>
+        <div id="privacy-body"></div>
+      </section>
       <section class="block" id="devices" aria-labelledby="devices-h">
         <h2 id="devices-h">On another device</h2>
         <div class="devices">
@@ -271,6 +278,18 @@
     <label id="vault-again-label">Again<input id="vault-pass2" type="password" autocomplete="off"></label>
     <p class="fine" id="vault-msg" role="alert"></p>
     <div class="row left"><button class="btn primary" id="vault-go" type="submit">Continue</button><button class="btn quiet" id="vault-cancel" type="button">Cancel</button></div>
+  </form>
+</dialog>
+
+<dialog id="exit-dialog" class="dialog starter" aria-labelledby="exit-title">
+  <form method="dialog" id="exit-form">
+    <h2 id="exit-title">Copy with pseudonyms</h2>
+    <p class="fine" id="exit-sum"></p>
+    <pre class="mono exit-text" id="exit-text" tabindex="0" aria-label="What will leave this page"></pre>
+    <h3>Still visible</h3>
+    <ul id="exit-left"></ul>
+    <p class="fine">A pseudonym is not anonymity. The aliases stay on this device, so you can put the real names back later.</p>
+    <div class="row left"><button class="btn primary" id="exit-go" type="button">Continue</button><button class="btn quiet" id="exit-cancel" type="button">Cancel</button></div>
   </form>
 </dialog>
 

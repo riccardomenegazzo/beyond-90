@@ -115,7 +115,7 @@ export function actionsView({ dash, score, focus }) {
       r.success ? h("p", {}, h("b", { text: "Done when: " }), r.success) : null,
       r.question ? h("p", {}, h("b", { text: "Ask the customer: " }), r.question) : null,
       r.commit ? h("p", {}, h("b", { text: "We commit to: " }), r.commit) : null,
-      h("button", { class: "btn small", type: "button", text: "Copy as ticket", onclick: (e) => copyText(ticket(r, score)).then((ok) => { e.target.textContent = ok ? "Copied" : "Copy not available"; }) })) });
+      h("button", { class: "btn small", type: "button", text: "Copy as ticket", onclick: (e) => copyText(ticket(r, score)).then((ok) => { e.target.textContent = ok ? "Copied" : "Not copied"; }) })) });
   const apply = () => t.setFilter((r) => (!leaks.size || leaks.has(r.leak)) && (!q || (r.title + " " + r.detail + " " + r.owner).toLowerCase().includes(q)));
   const total = rows.reduce((a, r) => a + r.effect, 0), hrs = rows.reduce((a, r) => a + r.hours, 0);
   return h("div", {},
@@ -289,7 +289,7 @@ export function handoffView({ result, dash, score, commitments, outcomes, histor
   return card("Handoff note", h("div", {},
     h("div", { class: "formgrid" }, h("label", {}, "From", from), h("label", {}, "To", to)), pre,
     h("div", { class: "row left" },
-      h("button", { class: "btn small primary", type: "button", text: "Copy", onclick: (e) => copyText(build()).then((ok) => { e.target.textContent = ok ? "Copied" : "Copy not available here"; }) }),
+      h("button", { class: "btn small primary", type: "button", text: "Copy", onclick: (e) => copyText(build()).then((ok) => { e.target.textContent = ok ? "Copied" : "Not copied"; }) }),
       h("button", { class: "btn small", type: "button", text: "Download .md", onclick: () => saveBlob(build(), `beyond90-handoff-${result.customer.replace(/[^A-Za-z0-9]+/g, "-").toLowerCase()}-${today}.md`, "text/markdown") }))),
   { sub: "Built from what this page holds now: the reading, the promises kept here, the renewal log and the saved history. It leaves out your private call notes. Read it before you hand it over." });
 }
@@ -459,7 +459,7 @@ export function callView({ result, dash, score, logTouch, go, keepFromCall }) {
       h("div", { class: "formgrid" }, h("label", {}, "With", who), h("label", {}, "Date", date)),
       preview,
       h("div", { class: "row left" },
-        h("button", { class: "btn small primary", type: "button", text: "Copy the recap", onclick: (e) => copyText(preview.textContent).then((ok) => { e.target.textContent = ok ? "Copied" : "Copy not available here"; }) }),
+        h("button", { class: "btn small primary", type: "button", text: "Copy the recap", onclick: (e) => copyText(preview.textContent).then((ok) => { e.target.textContent = ok ? "Copied" : "Not copied"; }) }),
         h("button", { class: "btn small", type: "button", text: "Download the actions (CSV)", onclick: () => saveBlob(out().csv, `beyond90-call-actions-${date.value}.csv`, "text/csv") }),
         logBtn,
         h("button", { class: "btn small", type: "button", text: "Keep in the ledger", onclick: async () => { try { const o = out(); const n = await keepFromCall({ agreed: o.agreed, ours: call.ours, date: date.value }); say.textContent = n ? `${n} promise(s) kept in the ledger (see Promises).` : "Nothing new to keep: what you agreed is already in the ledger."; } catch (e) { say.textContent = e.message; } } }),
@@ -583,7 +583,7 @@ function agenda(prep) {
 
 function briefButtons(markdown, name) {
   return h("span", { class: "btnrow" },
-    h("button", { class: "btn small", type: "button", text: "Copy", onclick: (e) => copyText(markdown).then((ok) => { e.target.textContent = ok ? "Copied" : "Copy not available"; }) }),
+    h("button", { class: "btn small", type: "button", text: "Copy", onclick: (e) => copyText(markdown).then((ok) => { e.target.textContent = ok ? "Copied" : "Not copied"; }) }),
     h("button", { class: "btn small", type: "button", text: "Download .md", onclick: () => saveBlob(markdown, name, "text/markdown") }));
 }
 
@@ -645,7 +645,7 @@ function recapCard({ score, result, prep, contacts }) {
   to.addEventListener("change", build); agreed.addEventListener("input", build); build();
   return card("Recap after the call", h("div", {},
     h("div", { class: "formgrid" }, h("label", {}, "To", to), h("label", { class: "wide2" }, "What we agreed", agreed)),
-    h("div", { class: "row left" }, h("button", { class: "btn small primary", type: "button", text: "Copy recap", onclick: (e) => copyText(out.textContent).then((ok) => { e.target.textContent = ok ? "Copied" : "Copy not available"; }) }),
+    h("div", { class: "row left" }, h("button", { class: "btn small primary", type: "button", text: "Copy recap", onclick: (e) => copyText(out.textContent).then((ok) => { e.target.textContent = ok ? "Copied" : "Not copied"; }) }),
       h("button", { class: "btn small", type: "button", text: "Download .txt", onclick: () => saveBlob(out.textContent, `beyond90-recap-${result.as_of}.txt`, "text/plain") })),
     out), { sub: "Covered = the agenda; promises = what we owe. Written in the customer's words, with no scores. Nothing leaves the browser." });
 }
@@ -686,7 +686,7 @@ export function newsView({ dash, score, result, advisories }) {
     h("div", { class: "card callout " + (exploited ? "bad" : "") }, h("h2", { text: exploited ? `${exploited} known exploited ${exploited === 1 ? "story lands" : "stories land"} on ${units} with no mitigation` : `${list.length} ${list.length === 1 ? "story touches" : "stories touch"} this customer` }),
       h("p", { text: "Matched against what is inventoried here. An advisory can also touch resources that were never inventoried; those are counted as unknown, not as safe." }),
       result.briefing_markdown ? h("span", { class: "btnrow" },
-        h("button", { class: "btn small primary", type: "button", text: "Copy the briefing for the customer", onclick: (ev) => copyText(result.briefing_markdown).then((ok) => { ev.target.textContent = ok ? "Copied" : "Copy not available"; }) }),
+        h("button", { class: "btn small primary", type: "button", text: "Copy the briefing for the customer", onclick: (ev) => copyText(result.briefing_markdown).then((ok) => { ev.target.textContent = ok ? "Copied" : "Not copied"; }) }),
         h("button", { class: "btn small", type: "button", text: "Download briefing (.md)", onclick: () => saveBlob(result.briefing_markdown, `beyond90-security-briefing-${result.as_of}.md`, "text/markdown") })) : null),
     list.map((e) => card(`${e.id}: ${e.title}`, h("div", {},
       h("div", { class: "kpiline" }, stat(String(e.exposed), `exposed ${units}`), stat(String(e.covered), "covered", e.covered ? "good" : ""), stat(String(e.uncovered), "not covered", e.uncovered ? "bad" : "good"), stat(String(e.unknown), "cannot be assessed", e.unknown ? "warn" : ""), e.yield_gain_points ? stat("+" + e.yield_gain_points.toFixed(1) + " pts", "Yield if covered") : null),
@@ -694,7 +694,7 @@ export function newsView({ dash, score, result, advisories }) {
       h("p", { class: "note" }, newsBadges(e, result.as_of), ` published ${e.published || "n/a"}${e.age_days != null ? ` (${e.age_days} days ago)` : ""} · mitigated by ${e.mitigated_by.join(", ")}`, e.severity_why ? ` · ${e.severity} because ${e.severity_why}` : ""),
       h("p", { class: "note" }, "Sources: ", sourceLinks(e)),
       e.uncovered_ids.length ? h("p", { class: "note", text: `Not covered: ${e.uncovered_ids.join(", ")}${e.uncovered > e.uncovered_ids.length ? ` and ${e.uncovered - e.uncovered_ids.length} more` : ""}` }) : null,
-      h("div", { class: "row left" }, h("button", { class: "btn small", type: "button", text: "Copy a note for the customer", onclick: (ev) => copyText(customerNote(e, score)).then((ok) => { ev.target.textContent = ok ? "Copied" : "Copy not available"; }) }))),
+      h("div", { class: "row left" }, h("button", { class: "btn small", type: "button", text: "Copy a note for the customer", onclick: (ev) => copyText(customerNote(e, score)).then((ok) => { ev.target.textContent = ok ? "Copied" : "Not copied"; }) }))),
       { cls: "news" })));
 }
 
@@ -776,7 +776,7 @@ export function onboardingView({ dash, score, result, engine }) {
     h("div", { class: "expand" }, h("p", { class: "note first", text: w.why }), h("ol", {}, w.steps.map((x) => h("li", { text: x }))), h("p", {}, h("b", { text: "Verify: " }), w.verify),
       commands(w.checks),
       h("p", { class: "note", text: `${Unit}s: ${w.accounts.join(", ")}` }),
-      h("button", { class: "btn small", type: "button", text: "Copy as ticket", onclick: (e) => copyText(waveTicket(w, result.customer, Unit + "s")).then((ok) => { e.target.textContent = ok ? "Copied" : "Copy not available"; }) }))))) : h("p", { class: "note", text: "Nothing is blocked." });
+      h("button", { class: "btn small", type: "button", text: "Copy as ticket", onclick: (e) => copyText(waveTicket(w, result.customer, Unit + "s")).then((ok) => { e.target.textContent = ok ? "Copied" : "Not copied"; }) }))))) : h("p", { class: "note", text: "Nothing is blocked." });
 
   let q = "", st = new Set(), pv = new Set();
   const cols = [
@@ -817,7 +817,7 @@ export function onboardingView({ dash, score, result, engine }) {
   const share = h("div", { class: "row left" },
     h("button", { class: "btn small primary", type: "button", text: "Status page for the customer (.html)", onclick: () => saveBlob(result.onboarding_status_html, `onboarding-status-${result.as_of}.html`, "text/html") }),
     h("button", { class: "btn small", type: "button", text: "As Markdown", onclick: () => saveBlob(result.onboarding_status_markdown, `onboarding-status-${result.as_of}.md`, "text/markdown") }),
-    h("button", { class: "btn small", type: "button", text: "Copy for an email", onclick: (e) => copyText(result.onboarding_status_markdown).then((ok) => { e.target.textContent = ok ? "Copied" : "Copy not available"; }) }),
+    h("button", { class: "btn small", type: "button", text: "Copy for an email", onclick: (e) => copyText(result.onboarding_status_markdown).then((ok) => { e.target.textContent = ok ? "Copied" : "Not copied"; }) }),
     h("span", { class: "note", text: "What is done, what waits on whose team, and the read-only commands to check. No internal scores." }));
   return h("div", {},
     head, share, gap, noDetail, since,
@@ -838,7 +838,7 @@ function commands(list) {
   if (!list || !list.length) return null;
   const text = list.join("\n");
   return h("div", { class: "cmds" }, h("div", { class: "cmdhead" }, h("span", { text: "To check (read-only)" }),
-    h("button", { class: "btn small", type: "button", text: "Copy commands", onclick: (e) => copyText(text).then((ok) => { e.target.textContent = ok ? "Copied" : "Copy not available"; }) })),
+    h("button", { class: "btn small", type: "button", text: "Copy commands", onclick: (e) => copyText(text).then((ok) => { e.target.textContent = ok ? "Copied" : "Not copied"; }) })),
     h("pre", { text }));
 }
 
@@ -889,7 +889,7 @@ function preflightCard(engine) {
       const r = await engine.json("preflight", { options });
       md = r.markdown;
       out.replaceChildren(...r.sections.map((sct) => h("section", { class: "agitem" }, h("h3", { text: sct.title }), h("ul", { class: "todo" }, sct.items.map((x) => h("li", {}, h("input", { type: "checkbox", "aria-label": x }), " ", x))))),
-        h("div", { class: "row left" }, h("button", { class: "btn small", type: "button", text: "Copy", onclick: (e) => copyText(md).then((ok) => { e.target.textContent = ok ? "Copied" : "Copy not available"; }) }),
+        h("div", { class: "row left" }, h("button", { class: "btn small", type: "button", text: "Copy", onclick: (e) => copyText(md).then((ok) => { e.target.textContent = ok ? "Copied" : "Not copied"; }) }),
           h("button", { class: "btn small", type: "button", text: "Download .md", onclick: () => saveBlob(md, "beyond90-preflight.md", "text/markdown") })));
     } catch (e) { if (!e.cancelled) out.replaceChildren(h("p", { class: "note", text: "Could not build it: " + e.message })); }
   };
@@ -974,7 +974,7 @@ export function valueView({ dash, result }) {
   const sev = v.findings.by_severity || {};
   const buttons = h("span", { class: "btnrow" },
     h("button", { class: "btn small primary", type: "button", text: "Download receipt (.html)", onclick: () => saveBlob(result.receipt_html, `beyond90-value-receipt-${result.as_of}.html`, "text/html") }),
-    h("button", { class: "btn small", type: "button", text: "Copy as Markdown", onclick: (e) => copyText(result.receipt_markdown).then((ok) => { e.target.textContent = ok ? "Copied" : "Copy not available"; }) }));
+    h("button", { class: "btn small", type: "button", text: "Copy as Markdown", onclick: (e) => copyText(result.receipt_markdown).then((ok) => { e.target.textContent = ok ? "Copied" : "Not copied"; }) }));
   const tl = v.touches.timeline;
   return h("div", {},
     h("div", { class: "card callout " + (v.headline.length ? "good" : "") }, h("h2", { text: `${v.from} \u2192 ${v.to} (${v.days} days)` }),
@@ -1002,7 +1002,7 @@ export function teamsView({ dash }) {
         stat(String(t.unconnected.length), "not connected", t.unconnected.length ? "warn" : "good"), stat(String(t.findings.filter((f) => f.severity === "critical").length), "critical open", t.findings.some((f) => f.severity === "critical") ? "bad" : "good")),
       t.asks.length ? h("ol", {}, t.asks.map((a) => h("li", { text: a }))) : h("p", { class: "note first", text: "Nothing to ask this month." }),
       h("details", {}, h("summary", { text: t.contacts.length ? `Message for ${t.contacts.map((c) => c.name).join(", ")}` : "Message (no contact on record)" }), h("pre", { class: "recap", tabindex: "0", text: t.message })),
-      h("div", { class: "row left" }, h("button", { class: "btn small", type: "button", text: "Copy message", onclick: (e) => copyText(t.message).then((ok) => { e.target.textContent = ok ? "Copied" : "Copy not available"; }) }))),
+      h("div", { class: "row left" }, h("button", { class: "btn small", type: "button", text: "Copy message", onclick: (e) => copyText(t.message).then((ok) => { e.target.textContent = ok ? "Copied" : "Not copied"; }) }))),
       { sub: t.contacts.length ? t.contacts.map((c) => c.role ? `${c.name} (${c.role})` : c.name).join(", ") : "No contact on record for this team." }))));
 }
 
@@ -1044,7 +1044,7 @@ export function execQbrView({ score, result, engine, files, saved, advisories, f
               onclick: () => saveBlob(Uint8Array.from(atob(r.pptx), (c) => c.charCodeAt(0)), name + ".pptx", "application/vnd.openxmlformats-officedocument.presentationml.presentation") }),
             h("button", { class: "btn small", type: "button", text: "Download (.html, prints to PDF)", onclick: () => saveBlob(r.html, name + ".html", "text/html") }),
             h("button", { class: "btn small", type: "button", text: "Download (.md)", onclick: () => saveBlob(r.markdown, name + ".md", "text/markdown") }),
-            h("button", { class: "btn small", type: "button", text: "Copy as Markdown", onclick: (e) => copyText(r.markdown).then((ok) => { e.target.textContent = ok ? "Copied" : "Copy not available"; }) }))),
+            h("button", { class: "btn small", type: "button", text: "Copy as Markdown", onclick: (e) => copyText(r.markdown).then((ok) => { e.target.textContent = ok ? "Copied" : "Not copied"; }) }))),
         q.decisions.length ? card("Decisions to ask for", h("ol", {}, q.decisions.map((d) => h("li", { text: d })))) : null,
         card("Preview", frame, { sub: `Built from ${q.snapshots.length} snapshot(s): ${q.snapshots.join(", ")}. Written for an executive reader: no internal scores or stage names.` }));
     } catch (e) { if (!e.cancelled) out.replaceChildren(h("p", { class: "bad-text", role: "alert", text: "Could not build it: " + e.message })); }
