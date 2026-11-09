@@ -4,7 +4,7 @@
 # Put it behind HTTPS to reach it from other machines (browsers allow offline use and passphrases only on
 # HTTPS or localhost), and pass the name it is reached by: docker run ... beyond90 --name beyond90.example.internal
 
-FROM node:22-slim AS assets
+FROM node:26-slim AS assets
 WORKDIR /b
 COPY site/npm/package.json site/npm/package-lock.json site/npm/
 RUN npm ci --ignore-scripts --prefix site/npm
