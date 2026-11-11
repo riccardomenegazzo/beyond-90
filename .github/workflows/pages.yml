@@ -40,9 +40,7 @@ jobs:
           if [ -f feed.json ]; then
             python -c "import json, beyond90.feeds as f; print(f.render_markdown(json.load(open('feed.json')), limit=40))" | tee -a "$GITHUB_STEP_SUMMARY"
           fi
-      - env:
-          B90_FORCE_UPDATE: "1"      # this release only: switch installed copies by themselves
-        run: python site/build_site.py --out _site --pyodide site/npm/node_modules/pyodide $( [ -f feed.json ] && echo --feed feed.json )
+      - run: python site/build_site.py --out _site --pyodide site/npm/node_modules/pyodide $( [ -f feed.json ] && echo --feed feed.json )
       - run: |
           python -m pip install --require-hashes -r requirements/e2e.txt
           # The package mirrors are sometimes unreachable: try the full install once, and if it fails fall back to the

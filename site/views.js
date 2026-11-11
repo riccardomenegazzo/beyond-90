@@ -143,7 +143,20 @@ export function actionsView({ dash, score, focus }) {
       h("button", { class: "btn small", type: "button", text: "Copy as ticket", onclick: (e) => copyText(ticket(r, score)).then((ok) => { e.target.textContent = ok ? "Copied" : "Not copied"; }) })) });
   const apply = () => t.setFilter((r) => (!leaks.size || leaks.has(r.leak)) && (!q || (r.title + " " + r.detail + " " + r.owner).toLowerCase().includes(q)));
   const total = rows.reduce((a, r) => a + r.effect, 0), hrs = rows.reduce((a, r) => a + r.hours, 0);
+  const start = rows.slice(0, 3).map((r) => h("article", { class: "startcard" },
+    h("div", { class: "startgain" }, h("span", { class: "gn", text: "+" + r.effect.toFixed(1) }), h("span", { class: "gl", text: "points" })),
+    h("div", { class: "startbody" },
+      h("h3", {}, h("span", { class: "stagepip", style: `border-color:${STAGE[r.leak] || "var(--accent)"}`, text: r.leak }), " ", r.title),
+      h("p", { class: "startdetail", text: r.detail }),
+      h("p", { class: "startmeta", text: `${r.hours.toFixed(1)} h of work · ${r.owner} · due ${r.due}` }),
+      r.steps.length || r.success || r.question ? h("details", { class: "how" }, h("summary", { text: "How to do it" }),
+        r.steps.length ? h("ol", {}, r.steps.map((s) => h("li", { text: s }))) : null,
+        r.success ? h("p", {}, h("b", { text: "Done when: " }), r.success) : null,
+        r.question ? h("p", {}, h("b", { text: "Ask the customer: " }), r.question) : null) : null,
+      h("button", { class: "btn small", type: "button", text: "Copy as ticket", onclick: (e) => copyText(ticket(r, score)).then((ok) => { e.target.textContent = ok ? "Copied" : "Not copied"; }) }))));
   return h("div", {},
+    rows.length ? h("section", { class: "startrow", "aria-label": "Start with these" }, h("h3", { class: "sect", text: rows.length > 3 ? "Start with these three" : "Start with these" }), start) : null,
+    rows.length > 3 ? h("h3", { class: "sect", text: `All ${rows.length} actions` }) : null,
     h("div", { class: "toolbar" }, searchBox("Search actions", (v) => { q = v; apply(); }),
       chipFilter("Stage", ["L1", "L2", "L3", "L4"], (s) => { leaks = s; apply(); }),
       csvButton("beyond90-actions.csv", [{ key: "rank", label: "rank" }, { key: "leak", label: "stage" }, { key: "title", label: "action" }, { key: "detail", label: "detail" }, { key: "effect", label: "effect_points" }, { key: "hours", label: "hours" }, { key: "owner", label: "owner" }, { key: "due", label: "due" }], () => t.rows())),
