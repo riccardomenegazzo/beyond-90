@@ -10,6 +10,7 @@ from typing import Optional
 SEVERITIES = ("critical", "high", "medium", "low")
 EXPOSURES = ("internet", "internal")
 DECISIONS = ("fix", "accepted_risk", "exception", "false_positive")
+CLOSED_BY = ("manual", "assisted", "automated")
 ACCOUNT_STATUSES = ("active", "decommissioned")
 CRITICALITIES = ("critical", "high", "medium", "low")
 UNIVERSE_SOURCES = ("billing", "org", "sso", "manual", "plan", "platform")
@@ -61,6 +62,7 @@ class Finding:
     severity_changed_at: Optional[date] = None
     verified_at: Optional[date] = None      # the date a later scan confirmed the fix, when the customer records it
     reopened: int = 0                       # how many times the finding came back after being closed
+    closed_by: str = ""                     # how it was closed: manual, assisted or automated; empty when not recorded
 
 
 @dataclass(frozen=True)

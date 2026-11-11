@@ -72,7 +72,7 @@ CSV_HEADERS = {
     "accounts.csv": "id,provider,sources,connected,owner,last_spend,status,in_plan,created_at",
     "inventory.csv": "account_id,resource_type,count,inventoried",
     "activations.csv": "account_id,module_id,active",
-    "findings.csv": "id,account_id,severity,exposure,opened_at,closed_at,owner,decision,decision_reason,expiry,previous_severity,severity_changed_at,verified_at,reopened",
+    "findings.csv": "id,account_id,severity,exposure,opened_at,closed_at,owner,decision,decision_reason,expiry,previous_severity,severity_changed_at,verified_at,reopened,closed_by",
     "teams.csv": "id,name,has_assets,active_users,sso,role_scoped,last_access_review",
     "entitlements.csv": "unit,licensed,used",
 }
@@ -1041,7 +1041,7 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("config")
     sp.add_argument("--at", default="05:17", help="time of day in UTC, HH:MM")
     sp.add_argument("--every", choices=["hour", "day", "week"], default="day")
-    sp.add_argument("--install-from", default="beyond90", help='pip requirement for the workflow, e.g. "beyond90 @ git+https://github.com/OWNER/beyond-90@v0.45.0"')
+    sp.add_argument("--install-from", default="beyond90", help='pip requirement for the workflow, e.g. "beyond90 @ git+https://github.com/OWNER/beyond-90@v0.46.0"')
     sp.add_argument("--out")
     sp.set_defaults(func=cmd_schedule)
 

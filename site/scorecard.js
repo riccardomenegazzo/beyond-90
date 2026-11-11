@@ -33,6 +33,7 @@ export function scorecard({ result, score, burndown, today, engine = "" }) {
       `- ${state}; ${b.open.high} high open.`,
       `- ${b.past_sla_total} open finding(s) older than their target age (${["critical", "high", "medium", "low"].map((s) => `${s} ${b.sla_days[s]} d`).join(", ")}${b.sla_is_default ? ", the default values" : ", set for this customer"}).`);
     if (b.focus && b.focus.raw) lines.push(`- ${b.focus.raw} finding(s) open, ${b.focus.matter} that need a decision now (${b.focus.rule.toLowerCase()}`.replace(/\.$/, "") + ").");
+    if (b.automation && b.automation.tracked) lines.push(`- ${Math.round(b.automation.automated_share * 100)}% of ${b.automation.tracked} recorded fixes in the last ${b.automation.window_days} days needed no one.`);
     const c = b.closure;
     if (c && c.raised) {
       lines.push(`- Critical and high findings raised in the last ${c.window_days} days: ${c.raised}; closed: ${c.closed}`

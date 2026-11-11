@@ -19,7 +19,7 @@ from __future__ import annotations
 from datetime import date, timedelta
 from typing import Any, Optional
 
-from .models import CustomerData, Finding
+from .models import CLOSED_BY, CustomerData, Finding
 
 SEVERITIES = ("critical", "high", "medium", "low")
 DEFAULT_SLA = {"critical": 7, "high": 30, "medium": 90, "low": 180}
@@ -116,6 +116,17 @@ def build(data: CustomerData, sla: Optional[dict[str, int]] = None) -> dict[str,
         "recurrence_rate": round(sum(1 for f in closed_f if f.reopened) / len(closed_f), 3) if tracks and closed_f else None,
     }
 
+    # How the fixes of the window were made, when the customer records it: by hand, with a tool's help, or with no one involved.
+    won = [f for f in findings if f.closed_at is not None and horizon <= f.closed_at <= today]
+    rungs: dict[str, Any] = {}
+    for rung in CLOSED_BY:
+        grp = [f for f in won if f.closed_by == rung]
+        days = [(f.closed_at - f.opened_at).days for f in grp if f.closed_at]
+        rungs[rung] = {"n": len(grp), "mean_days": round(sum(days) / len(days), 1) if len(days) >= 3 else None}
+    tracked = sum(r["n"] for r in rungs.values())
+    automation = {"window_days": CLOSURE_DAYS, "closed": len(won), "tracked": tracked, "rungs": rungs,
+                  "automated_share": round(rungs["automated"]["n"] / tracked, 3) if tracked else None}
+
     # What needs a person's decision now: every open critical or high finding, plus any open medium past its target age.
     matter = [f for f in opened if f.severity in ("critical", "high") or (f.severity == "medium" and (today - f.opened_at).days > targets.get("medium", 10**9))]
     focus = {"raw": len(opened), "matter": len(matter), "share": round(len(matter) / len(opened), 3) if opened else None,
@@ -136,6 +147,7 @@ def build(data: CustomerData, sla: Optional[dict[str, int]] = None) -> dict[str,
         "flow": flow,
         "closure": closure,
         "focus": focus,
+        "automation": automation,
         "zero_critical": _zero_critical(findings, today),
         "unowned_urgent": sum(1 for f in opened if f.severity in ("critical", "high") and not f.owner),
         "oldest_urgent": [{"id": f.id, "account_id": f.account_id, "severity": f.severity, "age_days": (today - f.opened_at).days, "owner": f.owner} for f in urgent],

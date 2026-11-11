@@ -371,11 +371,19 @@ def build(name: str, p: dict) -> None:
         age = rng.randint(31, 45)
         changed = AS_OF - timedelta(days=age) + timedelta(days=SLA["high"] - 1)  # one day before the high-severity SLA deadline
         finding("medium", "internal", age, owner=rng.choice(OWNERS), decision="fix", prev="high", changed=changed.isoformat())
-    write_csv(
-        out / "findings.csv",
-        ["id", "account_id", "severity", "exposure", "opened_at", "closed_at", "owner", "decision", "decision_reason", "expiry", "previous_severity", "severity_changed_at"],
-        rows,
-    )
+    header = ["id", "account_id", "severity", "exposure", "opened_at", "closed_at", "owner", "decision", "decision_reason", "expiry", "previous_severity", "severity_changed_at"]
+    # How fixes were made (no randomness, so nothing else in the examples shifts). One customer records it mostly automated, one mostly by hand,
+    # and one not at all, so the page shows all three situations.
+    ladder = {"northwind": ["manual", "assisted", "automated", "automated", "manual"], "fabrikam-labs": ["manual", "manual", "manual", "assisted", "manual"]}.get(name)
+    if ladder:
+        header = header + ["closed_by"]
+        seen = 0
+        rows = [list(r) + [""] for r in rows]
+        for r in rows:
+            if r[5]:
+                r[-1] = ladder[seen % len(ladder)]
+                seen += 1
+    write_csv(out / "findings.csv", header, rows)
 
     # Teams.
     n, with_users, with_sso, with_rbac, fresh = p["teams"]

@@ -2,6 +2,11 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.46.0
+
+- **How fixes get made.** An optional `closed_by` column in `findings.csv` (`manual`, `assisted` or `automated`) lets the risk view show, for the last 180 days, how many fixes needed no one, how many needed a tool's help and how many were by hand, with the average days each took (shown from three fixes up). Without the column it says what to add. The scorecard carries the automated share when it is recorded. Ignored on a finding that is still open.
+- The example customers show all three cases: mostly automated, mostly by hand, not recorded.
+
 ## 0.45.0
 
 - **A forgiving search.** "Search or jump to…" now finds a view from part of a word, from a slip of the keys ("acitons" finds Actions), or from its letters in order ("rbd" finds Risk burn-down), and ranks whole words first. Written in the page itself: no library was added.

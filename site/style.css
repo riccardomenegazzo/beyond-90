@@ -537,3 +537,9 @@ h1,h2,h3,.tnum,.kpi b,.ws-title,.stat b,.stat .v{font-family:var(--display);lett
 .bdnoise b{color:#5eead4;font-family:var(--display);font-size:19px}
 .bdnoise small{display:block;margin-top:4px;color:#9fb2c7;font-size:13.5px}
 .startpov{margin:0 0 18px}.startpov>summary{cursor:pointer;font-family:var(--display);font-size:18px;font-weight:700;padding:10px 4px;color:var(--accent-text)}
+.ladder{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:10px}
+.ladder li{display:grid;grid-template-columns:160px 1fr;gap:6px 14px;align-items:center}
+.ladder .rname{font-weight:600}.ladder .rnum{grid-column:2;color:var(--ink2);font-size:14px}
+.ladder .rbar{height:14px;background:var(--sunk);border-radius:999px;overflow:hidden}.ladder .rbar i{display:block;height:100%;border-radius:999px}
+.r-automated{background:var(--accent)}.r-assisted{background:var(--s2,#d29a1d)}.r-manual{background:var(--muted)}
+@media (max-width:560px){.ladder li{grid-template-columns:1fr}.ladder .rnum{grid-column:1}}

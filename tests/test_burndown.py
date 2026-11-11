@@ -112,3 +112,23 @@ def test_focus_counts_what_needs_a_decision():
                          f(5, "low", TODAY - timedelta(days=500)), f(6, "critical", TODAY - timedelta(days=9), TODAY - timedelta(days=1))]))
     assert r["focus"]["raw"] == 5 and r["focus"]["matter"] == 3 and r["focus"]["share"] == 0.6
     assert build(data_with([]))["focus"] == {**r["focus"], "raw": 0, "matter": 0, "share": None}
+
+
+def test_automation_counts_how_fixes_were_made():
+    from dataclasses import replace
+    def closed(i, how, days=4):
+        return replace(f(i, "high", TODAY - timedelta(days=days + 5), TODAY - timedelta(days=5)), closed_by=how)
+    r = build(data_with([closed(1, "manual", 10), closed(2, "manual", 20), closed(3, "manual", 30), closed(4, "automated", 1), closed(5, "automated", 2),
+                         closed(6, "automated", 3), closed(7, "assisted"), closed(8, "")]))["automation"]
+    assert r["closed"] == 8 and r["tracked"] == 7
+    assert r["rungs"]["manual"] == {"n": 3, "mean_days": 20.0}
+    assert r["rungs"]["automated"] == {"n": 3, "mean_days": 2.0}
+    assert r["rungs"]["assisted"] == {"n": 1, "mean_days": None}, "fewer than three is too few for a mean"
+    assert r["automated_share"] == round(3 / 7, 3)
+
+
+def test_automation_is_empty_when_nothing_is_recorded_and_ignores_old_fixes():
+    from dataclasses import replace
+    old = replace(f(1, "high", TODAY - timedelta(days=400), TODAY - timedelta(days=300)), closed_by="automated")
+    r = build(data_with([old, f(2, "high", TODAY - timedelta(days=9), TODAY - timedelta(days=2))]))["automation"]
+    assert r["tracked"] == 0 and r["automated_share"] is None and r["closed"] == 1

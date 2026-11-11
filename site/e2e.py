@@ -296,6 +296,7 @@ def main(site: str) -> int:
         page.click("[data-tab=burndown]")
         page.wait_for_selector("#view .bd-flow")
         check("critical open" in page.inner_text("#view") and "older than target" in page.inner_text("#view"), "the burn-down view shows open risk against a stated service target")
+        check("How fixes get made" in page.inner_text("#view") and "needed no one" in page.inner_text("#view") and page.locator("#view .ladder li").count() == 3, "the burn-down shows how fixes get made when the file records it")
         page.click("[data-tab=asks]")
         page.get_by_label("What is being asked").fill("Export findings to our ticket tool")
         page.get_by_label("What is at stake (a number, optional)").fill("40000")

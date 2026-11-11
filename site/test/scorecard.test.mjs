@@ -33,3 +33,9 @@ test("the scorecard states the focus counts and the rule behind them", () => {
   assert.match(t, /40 finding\(s\) open, 7 that need a decision now/);
   assert.ok(!/finding\(s\) open, undefined/.test(scorecard({ result, score, burndown: { ...bd, focus: undefined }, today: "2026-11-11" })));
 });
+
+test("the scorecard states the automated share only when fixes were recorded", () => {
+  const withA = { ...bd, automation: { window_days: 180, closed: 10, tracked: 8, automated_share: 0.5, rungs: {} } };
+  assert.match(scorecard({ result, score, burndown: withA, today: "2026-11-11" }), /50% of 8 recorded fixes/);
+  assert.ok(!/recorded fixes/.test(scorecard({ result, score, burndown: { ...bd, automation: { tracked: 0 } }, today: "2026-11-11" })));
+});

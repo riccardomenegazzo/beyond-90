@@ -1084,6 +1084,7 @@ export function burndownView({ dash, setSla }) {
     card("By severity and age", table, { sub: b.sla_is_default ? "Target ages are the default (7, 30, 90, 180 days). Set the customer's own below before quoting a figure." : "Target ages as set for this customer." }),
     slaCard(b, setSla),
     closureCard(b.closure),
+    automationCard(b.automation),
     card("The last six months", flow, { sub: "Rebuilt from each finding's open and close dates." }),
     h("p", { class: "note", text: b.note }));
 }
@@ -1316,6 +1317,21 @@ function slaCard(b, setSla) {
   return card("Target ages", h("div", {}, h("div", { class: "formgrid" }, h("label", {}, "Preset", pick), SLA.SEVERITIES.map((s) => h("label", {}, `${s} (days)`, box[s]))),
     h("div", { class: "row left" }, h("button", { class: "btn small primary", type: "button", text: "Apply and recompute", onclick: apply })), say),
     { sub: "Saved in the customer's own file (customer.toml, settings.sla_days), so a snapshot keeps it and the score and this view always agree. Pick the ages the customer has agreed; the presets are only starting points." });
+}
+
+const RUNG = { manual: "By hand", assisted: "With a tool's help", automated: "With no one involved" };
+function automationCard(a) {
+  if (!a || !a.closed) return null;
+  if (!a.tracked) return card("How fixes get made", h("p", { class: "note first", text: `${a.closed} finding${a.closed === 1 ? " was" : "s were"} closed in the last ${a.window_days} days, but the file does not say how. Add a closed_by column (manual, assisted or automated) to see how much of the fixing no longer needs a person.` }));
+  const top = Math.max(1, ...Object.values(a.rungs).map((r) => r.n));
+  return card("How fixes get made", h("div", {},
+    h("p", { class: "note first", text: `${Math.round(a.automated_share * 100)}% of the ${a.tracked} fixes recorded in the last ${a.window_days} days needed no one.${a.tracked < a.closed ? ` (${a.closed - a.tracked} more were not recorded.)` : ""}` }),
+    h("ol", { class: "ladder" }, ["automated", "assisted", "manual"].map((k) => {
+      const r = a.rungs[k];
+      return h("li", {}, h("span", { class: "rname", text: RUNG[k] }),
+        h("span", { class: "rbar" }, h("i", { class: "r-" + k, style: `width:${Math.round((r.n / top) * 100)}%` })),
+        h("span", { class: "rnum", text: `${r.n} fixed${r.mean_days == null ? "" : `, ${r.mean_days} days on average`}` }));
+    }))), { sub: "As recorded by the customer. The more of it is automatic, the less of your time it takes." });
 }
 
 function closureCard(c) {
