@@ -306,9 +306,9 @@ def main(site: str) -> int:
         page.locator("#view button[aria-label^='Save result for']").first.click()
         page.wait_for_selector("#view .kpiline .stat:has-text('1/4')")
         check("1/4" in page.inner_text("#view .kpiline"), "marking a criterion met moves the count")
-        page.select_option("#role-select", "se")
+        page.click("#role-pick button[data-role=se]")
         check(page.locator("#tabs details.navmore").count() == 1 and page.locator("#tabs > .navgroup button[data-tab=pov]").count() == 1, "a role puts its views first and the rest under More views")
-        page.select_option("#role-select", "all")
+        page.click("#role-pick button[data-role=all]")
         check(page.locator("#tabs button").count() == 32 and page.locator("#tabs details").count() == 0, "showing everything brings every view back")
 
         # what renewals taught: record outcomes, see them, remove one

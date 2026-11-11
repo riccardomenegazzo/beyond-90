@@ -41,7 +41,7 @@
     <button class="place-btn" type="button" data-place="help" data-tip="Questions and answers, what each term means, and a short tour.">Help</button>
     <div class="workspace" id="workspace" hidden>
       <p class="ws-title" id="ws-title"></p>
-      <label class="rolepick">I work as <select id="role-select" aria-label="Show the views for my role"></select></label>
+      <div class="rolepick" id="role-pick" role="group" aria-label="Show the views for my role"></div>
       <div class="tabs" id="tabs"></div>
     </div>
   </nav>
@@ -53,6 +53,7 @@
         <p class="lede">Beyond 90 reads what a security customer really uses, shows where their coverage leaks, and turns it into actions, call agendas and reviews. It all happens in this tab; your files go nowhere.</p>
         <p class="row left hero-cta"><button class="btn primary big" id="try-now" type="button" disabled>Loading the engine…</button><span class="fine">One click, made-up data, nothing leaves this tab.</span></p>
       </div>
+      <div class="hero-roles" id="hero-roles" role="group" aria-label="What do you do? Your views come first."></div>
       <ol class="steps" aria-label="How it works">
         <li class="is-now">Choose the data</li>
         <li>Analyse</li>

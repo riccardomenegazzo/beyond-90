@@ -2,6 +2,14 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.34.2
+
+Simpler to pick, lighter on a phone.
+
+- **Role chips.** "I work as" is now a compact row of chips in the sidebar, and the Start page asks it right under the main button, so your views come first from the first result.
+- **A tighter phone.** The numbers strip uses three columns, so the first view is visible without scrolling.
+- **A cleaner Start page.** The soft background glow fades out instead of ending in a visible edge.
+
 ## 0.34.1
 
 - Proofs of value and asks now travel in an exported workspace file and are read back on import (validated, merged, never overwriting a newer copy).

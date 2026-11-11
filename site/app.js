@@ -399,19 +399,25 @@ function renderNav(groups, title) {
   tabDefs = groups.flatMap((g) => g.views.map((v) => ({ ...v, ...VIEWS[v.id], group: g.question })));   // every view stays reachable, whatever the role
   $("workspace").hidden = false;
   $("ws-title").textContent = title;
-  const pick = $("role-select");
-  if (!pick.options.length) {
-    pick.replaceChildren(...ROLE_IDS.map((id) => el_("option", { value: id, text: ROLES[id].label })));
-    pick.addEventListener("change", () => { try { localStorage.setItem("beyond90.role", pick.value); } catch { /* the choice just does not persist */ } renderNav(navGroups, navTitle); markTab(); });
-  }
-  pick.value = savedRole();
-  pick.title = ROLES[pick.value].hint;
-  const { main, more } = shape(groups, pick.value);
+  paintRoles();
+  const { main, more } = shape(groups, savedRole());
   const btn = (v) => el_("button", { type: "button", dataset: { tab: v.id }, "data-tip": v.tip, onclick: () => selectTab(v.id) }, icon(v.icon), el_("span", { text: v.label }));
   const grp = (g, i, p) => el_("div", { class: "navgroup", role: "group", "aria-labelledby": `grp-${p}${i}` }, el_("p", { class: "grp", id: `grp-${p}${i}`, text: g.question }), g.views.map(btn));
   const kids = main.map((g, i) => grp(g, i, "m"));
   if (more.length) kids.push(el_("details", { class: "navmore", open: more.some((g) => g.views.some((v) => v.id === state.tab)) }, el_("summary", { text: "More views" }), more.map((g, i) => grp(g, i, "x"))));
   $("tabs").replaceChildren(...kids);
+}
+function setRole(id) {
+  try { localStorage.setItem("beyond90.role", id); } catch { /* the choice just does not persist */ }
+  paintRoles();
+  if (!$("workspace").hidden && navGroups.length) { renderNav(navGroups, navTitle); markTab(); }
+}
+function paintRoles() {
+  const now = savedRole();
+  for (const [id, host] of [["role-pick", $("role-pick")], ["hero-roles", $("hero-roles")]]) {
+    if (!host) continue;
+    host.replaceChildren(...(id === "hero-roles" ? [el_("span", { class: "fine", text: "I work as" })] : []), ...ROLE_IDS.map((r) => el_("button", { type: "button", class: "chip-btn", dataset: { role: r }, "aria-pressed": String(r === now), title: ROLES[r].hint, text: id === "hero-roles" ? (r === "all" ? "Not sure yet" : ROLES[r].label) : ROLES[r].short, onclick: () => setRole(r) })));
+  }
 }
 function markTab() { for (const b of document.querySelectorAll("#tabs button")) b.toggleAttribute("aria-current", b.dataset.tab === state.tab); }
 
@@ -924,6 +930,7 @@ $("drop").addEventListener("dragover", (e) => { e.preventDefault(); $("drop").cl
 $("drop").addEventListener("dragleave", () => $("drop").classList.remove("over"));
 $("drop").addEventListener("drop", dropped);
 $("demo").addEventListener("click", loadDemo);
+paintRoles();
 $("try-now").addEventListener("click", async () => { $("try-now").disabled = true; try { await loadDemo(); await run(); } finally { $("try-now").disabled = false; } });
 $("demo-book").addEventListener("click", loadDemoBook);
 $("demo-endpoint").addEventListener("click", loadDemoEndpoint);

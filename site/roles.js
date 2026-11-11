@@ -2,10 +2,10 @@
 // main list and which go under "More views". Pure functions, no DOM, no storage.
 
 export const ROLES = {
-  all: { label: "Show everything", hint: "Every view, grouped by the question it answers." },
-  tam: { label: "Technical account manager", hint: "You look after customers after the sale: adoption, risk going down, promises, renewal." },
-  sa: { label: "Solutions architect", hint: "You design how it gets connected and rolled out: coverage, order of work, what changes what." },
-  se: { label: "Sales engineer", hint: "You run demos and proofs of value: a plan with success criteria, a clear picture, a result to hand over." },
+  all: { label: "Show everything", short: "Everything", hint: "Every view, grouped by the question it answers." },
+  tam: { label: "Technical account manager", short: "TAM", hint: "You look after customers after the sale: adoption, risk going down, promises, renewal." },
+  sa: { label: "Solutions architect", short: "SA", hint: "You design how it gets connected and rolled out: coverage, order of work, what changes what." },
+  se: { label: "Sales engineer", short: "SE", hint: "You run demos and proofs of value: a plan with success criteria, a clear picture, a result to hand over." },
 };
 export const ROLE_IDS = Object.keys(ROLES);
 
