@@ -1,11 +1,13 @@
 # Views for the people who use this
 
+Every customer opens on **Today**: the score, one sentence on where they stand, the three things to do first and the one thing to watch. The full overview is one click away.
+
 The page keeps every view. A role only decides which ones sit first and which go under "More views". Pick yours in the box at the top of the workspace ("I work as"); the choice is kept in this browser.
 
 | Role | What it puts first |
 |---|---|
-| Technical account manager | Overview, risk burn-down, accounts, findings, onboarding, actions, promises, asks, renewal, handoff |
-| Solutions architect | Overview, connections, accounts, onboarding, maturity, plan, what-if, proof of value, burn-down |
+| Technical account manager | Today, overview, risk burn-down, accounts, findings, onboarding, actions, promises, asks, renewal, handoff |
+| Solutions architect | Today, overview, connections, accounts, onboarding, maturity, plan, what-if, proof of value, burn-down |
 | Sales engineer | Proof of value, overview, maturity, what-if, connections, burn-down, one-pager, call |
 
 "Show everything" is the default and keeps the full list.

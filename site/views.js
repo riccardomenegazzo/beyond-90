@@ -10,6 +10,7 @@ import * as A from "./asks.js";
 import * as SLA from "./sla.js";
 import * as SC from "./scorecard.js";
 import { connections } from "./graph.js";
+import { headline } from "./today.js";
 import { gauge, waterfall, lineChart, contributions, timeline, shareBar, funnel, STAGE, STAGE_NAME } from "./charts.js";
 
 const card = (title, body, { sub = "", cls = "", actions = null } = {}) =>
@@ -20,6 +21,26 @@ const STATUS_KIND = { ok: "good", pass: "good", watch: "warn", risk: "bad", fail
 
 function csvButton(name, columns, getRows) {
   return h("button", { class: "btn small", type: "button", text: "Export CSV", onclick: () => saveBlob(toCsv(columns, getRows()), name, "text/csv") });
+}
+
+// ------------------------------------------------------------------ today: the screen to open first
+export function todayView({ result, dash, score, go }) {
+  const flags = attention({ result, dash, score });
+  const top = dash.actions.slice(0, 3);
+  const watch = flags[0];
+  const big = (label, hint, to) => h("button", { class: "bigbtn", type: "button", onclick: () => go(to) }, h("b", { text: label }), h("small", { text: hint }));
+  return h("div", { class: "today" },
+    h("section", { class: "card todayhero" },
+      h("div", { class: "todayscore" }, h("span", { class: "tnum", text: pct(score.yield) }), h("span", { class: "tcap", text: "Yield" })),
+      h("p", { class: "tline", text: headline({ customer: result.customer, yield: score.yield, target: score.target && score.target.value, stages: score.stages, openActions: dash.actions.length }) })),
+    card("Do these first", top.length ? h("div", { class: "opps" }, top.map((a) => h("button", { type: "button", class: "opp", onclick: () => go("actions", { open: a.id }) },
+      h("span", { class: "stagepip", style: `border-color:${STAGE[a.leak] || "var(--accent)"}`, text: a.leak }),
+      h("span", { class: "opp-t" }, h("b", { text: a.title }), h("small", { text: `${a.owner}, due ${a.due}` })),
+      h("span", { class: "opp-e", text: "+" + a.effect.toFixed(1) + " pts" })))) : h("p", { class: "note", text: "Nothing is waiting to be done." })),
+    card("Keep an eye on", watch ? h("div", { class: "flags" }, h("p", { class: watch.kind }, h("b", { text: watch.title }), watch.text ? ` ${watch.text}` : ""),
+      watch.go ? h("button", { class: "btn small", type: "button", text: watch.cta || "Open", onclick: () => go(watch.go) }) : null,
+      flags.length > 1 ? h("p", { class: "note", text: `${flags.length - 1} more on the overview.` }) : null) : h("p", { class: "note", text: "Nothing stands out." })),
+    h("div", { class: "bigrow" }, big("Prepare the call", "What to say and ask", "prep"), big("One-page summary", "To send or print", "onepager"), big("The full picture", "Overview, with every chart", "overview")));
 }
 
 // ------------------------------------------------------------------ overview

@@ -2,6 +2,14 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.40.0
+
+A first screen that answers one question.
+
+- **Today.** The page now opens on one number, one sentence (how far from the target, and which stage holds the score down most), the three things to do first, and the one thing to watch. Three large buttons lead to the call preparation, the one-page summary and the full overview, which is unchanged. It promises no date and says nothing the numbers do not support.
+- **Security review.** Written up in the threat model, with what it does not cover. No code change was needed. Tightening the page's policy against style attributes was tried and withdrawn, because the generated reports use them.
+- Tested on made-up data only.
+
 ## 0.39.0
 
 - **Out of the noise.** The burn-down shows how many findings are open and how many need a decision now: every open critical or high, and any open medium older than its target age. The rule is printed beside the number, and the page says it is a rule on severity and age, not a judgement of what is exploitable. The scorecard carries the same two counts.

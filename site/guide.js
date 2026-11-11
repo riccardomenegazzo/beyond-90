@@ -4,6 +4,7 @@
 /** Every view, grouped by the question a TAM is asking when they open it. `tip` is one sentence on what it is for. */
 export const CUSTOMER_NAV = [
   { question: "Where do they stand?", views: [
+    { id: "today", label: "Today", icon: "overview", tip: "One sentence on where they stand, the three things to do first, and the one thing to watch." },
     { id: "overview", label: "Overview", icon: "overview", tip: "The score, where it is lost, and what needs attention first." },
     { id: "connections", label: "Connections", icon: "layers", tip: "Where the separate problems meet: security stories, gaps, accounts, findings and owners on one interactive map, with what it means." },
     { id: "accounts", label: "Accounts", icon: "accounts", tip: "Every cloud account and cluster: connected or not, what is visible, what is switched on." },

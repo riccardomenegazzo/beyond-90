@@ -76,6 +76,12 @@ Not covered: malware or a hostile extension on the device, a person with the unl
 
 The package has no runtime dependencies to compromise.
 
+## Review of 11 November 2026 and what stays open
+
+A pass over the page's network use, storage, policy and dependencies changed no code. Findings: the page makes no request to any other origin (the one probe to a third-party address exists to show that it is refused); `npm audit` for the shipped dependencies reports none; the Python package has no runtime dependencies. One thing was tried and withdrawn: forbidding style attributes in the page's policy. The generated reports use them and are shown inside the page, so the page keeps `style-src 'unsafe-inline'`; script remains locked to the page's own files with Trusted Types required, and no script writes HTML from a string.
+
+This is a review by the author, not an independent audit, and nothing here makes data impossible to take. Someone with access to your browser profile, your machine or your passphrase can read what is kept there; a file you export or share leaves the page's control; and a connected assistant sees what its tools return (see the MCP document). Ask for an independent review before relying on this with data you are not allowed to expose.
+
 ## Reporting
 
 See SECURITY.md.

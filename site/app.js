@@ -25,7 +25,7 @@ const $ = (id) => document.getElementById(id);
 // which has no scripts and no access to this page. Its content is produced by the engine from the customer's files, escaped there.
 const swPolicy = window.trustedTypes ? window.trustedTypes.createPolicy("b90-sw", { createScriptURL: (u) => { if (u !== "./sw.js") throw new TypeError("only the page's own service worker may be registered"); return u; } }) : null;
 const reportPolicy = window.trustedTypes ? window.trustedTypes.createPolicy("b90-report", { createHTML: (t) => t }) : null;
-const state = { commitments: [], outcomes: [], povs: [], asks: [], calibration: null, healthWeights: null, advisories: null, files: {}, groups: {}, mode: "single", result: null, book: null, tab: "overview", saved: [], yields: new Map(), engine: null, running: false };
+const state = { commitments: [], outcomes: [], povs: [], asks: [], calibration: null, healthWeights: null, advisories: null, files: {}, groups: {}, mode: "single", result: null, book: null, tab: "today", saved: [], yields: new Map(), engine: null, running: false };
 const ALLOWED = /\.(csv|toml|xlsx)$/i;
 const MAX_BYTES = 20 * 1024 * 1024;
 const pct = (x) => (x == null ? "n/a" : (x * 100).toFixed(1) + "%");
@@ -342,7 +342,7 @@ function showResults() {
   renderCompare();
   $("worktools").hidden = false;
   $("book-table").hidden = true;
-  if (!VIEWS[state.tab] || !CUSTOMER_NAV.some((g) => g.views.some((v) => v.id === state.tab))) state.tab = "overview";
+  if (!VIEWS[state.tab] || !CUSTOMER_NAV.some((g) => g.views.some((v) => v.id === state.tab))) state.tab = "today";
   renderNav(CUSTOMER_NAV, r.customer);
   selectTab(state.tab);
   offerTour();
@@ -357,7 +357,7 @@ function renderCompare() {
 
 // ---------- places and views
 const VIEWS = {
-  overview: { kind: "view", view: "overview" }, connections: { kind: "view", view: "connectionsView" }, accounts: { kind: "view", view: "accountsView" }, findings: { kind: "view", view: "findingsView" },
+  today: { kind: "view", view: "todayView" }, overview: { kind: "view", view: "overview" }, connections: { kind: "view", view: "connectionsView" }, accounts: { kind: "view", view: "accountsView" }, findings: { kind: "view", view: "findingsView" },
   onboarding: { kind: "view", view: "onboardingView" }, maturity: { kind: "view", view: "maturityView" }, actions: { kind: "view", view: "actionsView" },
   planview: { kind: "view", view: "planView" }, whatif: { kind: "view", view: "whatifView" }, commitments: { kind: "view", view: "commitmentsView" }, handoff: { kind: "view", view: "handoffView" }, outlook: { kind: "view", view: "outlookView" }, teams: { kind: "view", view: "teamsView" }, burndown: { kind: "view", view: "burndownView" }, asks: { kind: "view", view: "asksView" }, scorecard: { kind: "view", view: "scorecardView" }, pov: { kind: "view", view: "povView" },
   prep: { kind: "view", view: "prepView" }, call: { kind: "view", view: "callView" }, news: { kind: "view", view: "newsView" }, value: { kind: "view", view: "valueView" },

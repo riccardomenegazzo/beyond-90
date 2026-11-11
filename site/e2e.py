@@ -116,6 +116,9 @@ def main(site: str) -> int:
         run_demo()
         check("Yield" in page.inner_text("#kpis") and "Maturity level" in page.inner_text("#kpis"), "demo produces a Yield tile and a maturity level")
         # the native dashboard
+        check(page.locator("#view .todayhero").count() == 1 and "72." in page.inner_text("#view .todayhero") and page.locator("#view .opp").count() == 3, "the first screen gives the score, one sentence and three things to do")
+        check("short of its" in page.inner_text("#view .tline") and page.locator("#view .bigbtn").count() == 3, "the first screen says how far from the target and offers three next steps")
+        page.click("[data-tab=overview]")
         check(page.locator("#view .gauge").count() == 1 and "72." in (page.text_content("#view .gauge") or ""), "overview draws the Yield gauge")
         check(page.locator("#view .opp").count() == 5 and page.locator("#view svg.chart").count() >= 2, "overview lists opportunities and draws the charts")
         page.click("[data-tab=actions]")
@@ -319,7 +322,7 @@ def main(site: str) -> int:
         page.click("#role-pick button[data-role=se]")
         check(page.locator("#tabs details.navmore").count() == 1 and page.locator("#tabs > .navgroup button[data-tab=pov]").count() == 1, "a role puts its views first and the rest under More views")
         page.click("#role-pick button[data-role=all]")
-        check(page.locator("#tabs button").count() == 33 and page.locator("#tabs details").count() == 0, "showing everything brings every view back")
+        check(page.locator("#tabs button").count() == 34 and page.locator("#tabs details").count() == 0, "showing everything brings every view back")
 
         # what renewals taught: record outcomes, see them, remove one
         page.click("[data-tab=renewal]")
@@ -561,7 +564,7 @@ def main(site: str) -> int:
         page.locator("#view tbody tr").first.get_by_role("button", name="Open").click()
         page.wait_for_selector("#run:not([disabled])", state="attached", timeout=180_000)
         page.wait_for_selector("#book-table[hidden]", state="attached")
-        check("Yield" in page.inner_text("#kpis") and page.locator("#tabs button").count() == 33, "opening a customer from the book shows its own report")
+        check("Yield" in page.inner_text("#kpis") and page.locator("#tabs button").count() == 34, "opening a customer from the book shows its own report")
         examples = Path(__file__).resolve().parent.parent / "examples" / "portfolio"
         page.set_input_files("#folder", str(examples))
         page.wait_for_selector("#status:has-text('customers found')")
