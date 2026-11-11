@@ -2,6 +2,11 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.41.0
+
+- **A calmer look on every screen.** Softer surfaces and shadows instead of hard borders, rounder corners, more space around cards and the figure tiles, a larger page title, quieter side rail. Today hides the figure strip and repeated title so only the answer is left. Dark mode follows the same tokens. Contrast is still checked by the accessibility test in both colour schemes.
+- Pages: the deploy no longer fails when the package mirrors are unreachable (this had stopped 0.35 to 0.40 reaching the live page), and one e2e check waits for the saved snapshots before counting them.
+
 ## 0.40.0
 
 A first screen that answers one question.

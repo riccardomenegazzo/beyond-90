@@ -460,3 +460,26 @@ li.promise .pmain{flex:1 1 260px}
 .bigbtn small{color:var(--ink2);font-size:13.5px}
 .bigbtn:hover{border-color:var(--accent);background:var(--accent-soft)}
 .bigbtn:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+/* A calmer look across the whole page: softer surfaces, rounder corners, more room, quieter chrome. */
+:root{--page:#f6f7f9;--line:#e3e7ea;--r:16px;--shadow:0 1px 2px rgba(20,32,41,.05),0 10px 30px -20px rgba(20,32,41,.28)}
+.card{padding:22px 24px;box-shadow:var(--shadow);border-color:transparent;margin-bottom:18px}
+.card h2,.card h3{letter-spacing:-.01em}
+.viewhead{border-bottom:0;margin:36px 0 18px}
+.viewhead h2{font-size:30px;font-weight:700;letter-spacing:-.02em}
+.kpis{border:0;gap:12px;background:none;overflow:visible}
+.kpi{border-radius:14px;box-shadow:var(--shadow);padding:14px 18px}
+.rail{border-right-color:transparent;box-shadow:1px 0 0 var(--line)}
+.tabs button{border-radius:10px}
+.btn{border-radius:10px}
+.opp{border-radius:12px;border-color:transparent;background:var(--sunk);padding:12px 14px}
+.opp:hover{background:var(--accent-soft)}
+/* Today: nothing but the answer. */
+body[data-view=today] :is(#kpis,#saved-note,#view-tip){display:none}
+body[data-view=today] #res-title{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+body[data-view=today] .viewhead{margin:8px 0 0;padding:0}
+.todayhero{padding:32px 30px;gap:14px;border-radius:22px}
+.tnum{font-size:clamp(56px,14vw,96px)}
+.tline{font-size:clamp(17px,2.6vw,21px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--page:#0d1216;--line:#212b32}}
+:root[data-theme=dark]{--page:#0d1216;--line:#212b32}
