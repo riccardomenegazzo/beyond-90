@@ -393,7 +393,7 @@ function setStep(n) {
 }
 
 let navGroups = [], navTitle = "";
-function savedRole() { try { const r = localStorage.getItem("beyond90.role"); return isRole(r) ? r : "all"; } catch { return "all"; } }
+function savedRole() { try { const r = localStorage.getItem("beyond90.role"); return isRole(r) ? r : "core"; } catch { return "core"; } }
 function renderNav(groups, title) {
   navGroups = groups; navTitle = title;
   tabDefs = groups.flatMap((g) => g.views.map((v) => ({ ...v, ...VIEWS[v.id], group: g.question })));   // every view stays reachable, whatever the role
@@ -416,7 +416,7 @@ function paintRoles() {
   const now = savedRole();
   for (const [id, host] of [["role-pick", $("role-pick")], ["hero-roles", $("hero-roles")]]) {
     if (!host) continue;
-    host.replaceChildren(...(id === "hero-roles" ? [el_("span", { class: "fine", text: "I work as" })] : []), ...ROLE_IDS.map((r) => el_("button", { type: "button", class: "chip-btn", dataset: { role: r }, "aria-pressed": String(r === now), title: ROLES[r].hint, text: id === "hero-roles" ? (r === "all" ? "Not sure yet" : ROLES[r].label) : ROLES[r].short, onclick: () => setRole(r) })));
+    host.replaceChildren(...(id === "hero-roles" ? [el_("span", { class: "fine", text: "I work as" })] : []), ...ROLE_IDS.map((r) => el_("button", { type: "button", class: "chip-btn", dataset: { role: r }, "aria-pressed": String(r === now), title: ROLES[r].hint, text: id === "hero-roles" ? (r === "core" ? "Not sure yet" : r === "all" ? "Show everything" : ROLES[r].label) : ROLES[r].short, onclick: () => setRole(r) })));
   }
 }
 function markTab() { for (const b of document.querySelectorAll("#tabs button")) b.toggleAttribute("aria-current", b.dataset.tab === state.tab); }
@@ -426,6 +426,7 @@ const payload = () => (state.mode === "book" || state.book ? state.book : state.
 
 function selectTab(name, extra) {
   state.tab = name;
+  document.body.dataset.view = name;
   state.focus = extra && extra.open;
   const t = current();
   showPlace("work");

@@ -90,6 +90,7 @@ def main(site: str) -> int:
     with sync_playwright() as p, tempfile.TemporaryDirectory() as tmp:
         browser = p.chromium.launch()
         ctx = browser.new_context(accept_downloads=True)
+        ctx.add_init_script("try { if (!localStorage.getItem('beyond90.role')) localStorage.setItem('beyond90.role', 'all'); } catch (e) {}")
         page = Guided(ctx.new_page())
         console: list[str] = []
         # The self-check tries to reach another site on purpose, and the browser logs that it blocked it.
@@ -307,6 +308,9 @@ def main(site: str) -> int:
         page.wait_for_selector("#view .kpiline .stat:has-text('1/4')")
         check("1/4" in page.inner_text("#view .kpiline"), "marking a criterion met moves the count")
         page.click("#role-pick button[data-role=se]")
+        page.click("#role-pick button[data-role=core]")
+        check(page.locator("#tabs details.navmore").count() == 1 and page.locator("#tabs > .navgroup button").count() <= 12, "the essentials show about ten views and keep the rest under More views")
+        page.click("#role-pick button[data-role=se]")
         check(page.locator("#tabs details.navmore").count() == 1 and page.locator("#tabs > .navgroup button[data-tab=pov]").count() == 1, "a role puts its views first and the rest under More views")
         page.click("#role-pick button[data-role=all]")
         check(page.locator("#tabs button").count() == 32 and page.locator("#tabs details").count() == 0, "showing everything brings every view back")
@@ -332,7 +336,7 @@ def main(site: str) -> int:
         page.wait_for_selector("#palette[open]")
         page.fill("#palette-q", "findings")
         page.keyboard.press("Enter")
-        check(page.get_attribute("[data-tab=findings]", "aria-current") is not None, "the command palette navigates")
+        check(page.get_attribute("#tabs [data-tab=findings]", "aria-current") is not None, "the command palette navigates")
         theme0 = page.evaluate("document.documentElement.dataset.theme || ''")
         page.click("#theme")
         check(page.evaluate("document.documentElement.dataset.theme || ''") != theme0, "the theme switches")
@@ -774,6 +778,7 @@ def main(site: str) -> int:
 
         # a phone: places at the bottom, nothing wider than the screen, tables as cards
         mctx = browser.new_context(**p.devices["Pixel 7"])
+        mctx.add_init_script("try { localStorage.setItem('beyond90.role', 'all'); } catch (e) {}")
         mp = mctx.new_page()
         mp.goto(base)
         mp.wait_for_selector("#demo:not([disabled])", timeout=180_000)

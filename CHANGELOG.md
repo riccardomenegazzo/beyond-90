@@ -2,6 +2,14 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.34.3
+
+A calmer first screen.
+
+- **Core views by default.** Until you pick a role, the sidebar shows about ten views (overview, connections, accounts, findings, burn-down, actions, plan, prep, proof of value, report) and keeps the other twenty under "More views". "All" brings back everything.
+- **Plainer wording on the gauge.** "The old metric says 92.0% (19.4 points higher than what is really working)", and only the 90 target is labelled on the dial.
+- **Phone.** Views other than the overview no longer start with the numbers strip, so the content is the first thing you see.
+
 ## 0.34.2
 
 Simpler to pick, lighter on a phone.

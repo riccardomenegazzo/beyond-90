@@ -36,7 +36,7 @@ export function gauge({ value, marker = null, ticks = [0.9, 0.95, 0.98], size = 
   for (const t of ticks) {
     const [x0, y0] = pt(t, r - W / 2 - 3), [x1, y1] = pt(t, r + W / 2 + 3), [lx, ly] = pt(t, r + 20);
     svg.append(s("line", { x1: x0, y1: y0, x2: x1, y2: y1, stroke: "var(--ink2)", "stroke-width": 1.5 }));
-    svg.append(s("text", { x: lx, y: ly + 4, "text-anchor": "middle", class: "tick" }, String(Math.round(t * 100))));
+    if (t === ticks[0]) svg.append(s("text", { x: lx, y: ly + 4, "text-anchor": "middle", class: "tick" }, String(Math.round(t * 100))));
   }
   if (marker != null) {
     const [x0, y0] = pt(marker, r - W / 2 - 6), [x1, y1] = pt(marker, r + W / 2 + 6);
