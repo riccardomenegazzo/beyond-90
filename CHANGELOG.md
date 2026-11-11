@@ -2,6 +2,14 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.33.0
+
+A faster first look.
+
+- **One click to a result.** The Start page has a main button that loads the example customer and analyses it, so a newcomer sees a real result without choosing a card and pressing Analyse.
+- **A quieter header.** The sharing control is shorter ("Names: shown / people hidden / pseudonyms") and fits a phone's header; the empty "No customer open" label is hidden on small screens.
+- **Overview without repeats.** The gauge card no longer repeats reach, open actions and confidence, which the strip above it already shows.
+
 ## 0.32.0
 
 Share without the names, and keep only what you should.

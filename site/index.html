@@ -29,7 +29,7 @@
     <span class="update-bar" id="update-bar" role="status" hidden>New version ready <button class="btn small primary" id="update-now" type="button" data-tip="Switch to the latest version. Your saved work stays; an analysis that is open runs again from Start.">Update now</button></span>
     <span class="engine" id="offline" hidden data-tip="Everything this page needs is stored on this device, so it keeps working without a connection.">Works offline</span>
     <label class="share-pick" data-tip="What leaves this page when you copy or download: real names, people hidden, or everything replaced by aliases. You see a preview before anything leaves."><span class="sr">Sharing level</span>
-      <select id="share-level" aria-label="Sharing level"><option value="full">Share: full names</option><option value="people">Share: people hidden</option><option value="pseudonym">Share: pseudonyms</option></select></label>
+      <select id="share-level" aria-label="Sharing level"><option value="full">Names: shown</option><option value="people">Names: people hidden</option><option value="pseudonym">Names: pseudonyms</option></select></label>
     <button class="icon-btn" id="theme" type="button" aria-label="Switch between light and dark" data-tip="Switch between light and dark."></button>
   </div>
 </header>
@@ -50,6 +50,7 @@
       <div class="start-head">
         <h1 id="start-title">Know what to do and say next, for every customer.</h1>
         <p class="lede">Beyond 90 reads what a security customer really uses, shows where their coverage leaks, and turns it into actions, call agendas and reviews. It all happens in this tab; your files go nowhere.</p>
+        <p class="row left hero-cta"><button class="btn primary big" id="try-now" type="button" disabled>Loading the engine…</button><span class="fine">One click, made-up data, nothing leaves this tab.</span></p>
       </div>
       <ol class="steps" aria-label="How it works">
         <li class="is-now">Choose the data</li>

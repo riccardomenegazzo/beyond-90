@@ -41,6 +41,7 @@ async function boot() {
     $("version").textContent = "engine " + state.engine.version;
     say("");
     $("demo").disabled = false;
+    $("try-now").disabled = false; $("try-now").textContent = "See it on an example";
     refreshRun();
   } catch (e) {
     $("version").textContent = "engine failed";
@@ -881,6 +882,7 @@ $("drop").addEventListener("dragover", (e) => { e.preventDefault(); $("drop").cl
 $("drop").addEventListener("dragleave", () => $("drop").classList.remove("over"));
 $("drop").addEventListener("drop", dropped);
 $("demo").addEventListener("click", loadDemo);
+$("try-now").addEventListener("click", async () => { $("try-now").disabled = true; try { await loadDemo(); await run(); } finally { $("try-now").disabled = false; } });
 $("demo-book").addEventListener("click", loadDemoBook);
 $("demo-endpoint").addEventListener("click", loadDemoEndpoint);
 $("run").addEventListener("click", () => run());

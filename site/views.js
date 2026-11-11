@@ -27,7 +27,7 @@ export function overview({ result, dash, score, go }) {
       h("span", { class: "levelbadge lv-" + rub.level, text: cap(rub.level) + (rub.provisional ? " (provisional)" : "") }),
       next ? h("span", { class: "note", text: `${rub.blocking.length} check${rub.blocking.length === 1 ? "" : "s"} to ${cap(next)}` }) : h("span", { class: "note", text: "Top level" })),
     h("p", { class: "legacy" }, "Legacy metric ", h("b", { text: pct(score.naive) }), score.naive != null ? h("span", { class: "gap", text: ` · gap ${((score.naive - score.yield) * 100).toFixed(1)} pts` }) : null),
-    h("div", { class: "mini" }, stat(pct(score.target.value, 0), `target (${score.target.mode})`), stat(pct(result.reach), "reach"), stat(String(result.actions), "open actions"), stat(result.confidence, "input confidence")),
+    h("div", { class: "mini" }, stat(pct(score.target.value, 0), `target (${score.target.mode})`)),
     score.baseline && Math.abs(score.baseline.yield - score.yield) > 0.0005 ? h("p", { class: "note", text: `Against the frozen baseline ceiling (${score.baseline.ceiling}) Yield is ${pct(score.baseline.yield)}; the difference is headroom added by releases since.` }) : null);
   const hero = h("section", { class: "card hero" }, h("div", { class: "gaugebox" }, gauge({ value: score.yield, marker: score.naive })), heroRight);
 

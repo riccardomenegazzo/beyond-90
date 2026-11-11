@@ -732,6 +732,16 @@ def main(site: str) -> int:
         page.wait_for_selector("#demo:not([disabled])", timeout=180_000)
         check("Northwind" not in page.inner_text("#privacy-body") if page.locator("#privacy-body").count() else True, "the erasure survives a reload")
 
+        # the first look: one click on a fresh page goes from nothing to a result
+        first = browser.new_page()
+        first.goto(base)
+        first.wait_for_selector("#try-now:not([disabled])", timeout=180_000)
+        first.click("#try-now")
+        first.wait_for_selector("#view-overview, .kpis, [data-tab=overview]", timeout=180_000)
+        first.wait_for_selector("text=Northwind (mock)", timeout=60_000)
+        check(first.locator("#try-now").count() == 1, "one click on a fresh page opens the example customer's result")
+        first.close()
+
         browser.close()
         browser = p.chromium.launch()
 

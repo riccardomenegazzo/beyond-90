@@ -412,3 +412,13 @@ li.promise .pmain{flex:1 1 260px}
 .share-pick select[data-level="people"],.share-pick select[data-level="pseudonym"]{border-color:var(--accent);font-weight:600}
 .exit-text{max-height:240px;overflow:auto;white-space:pre-wrap;word-break:break-word;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
 #restore-in{width:100%;font:inherit;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink)}
+
+/* a first look worth the click: the one-click example, a quieter header */
+.hero-cta{align-items:center;gap:14px;margin-top:18px}
+.hero-cta .btn.big{padding:14px 26px;font-size:17px;box-shadow:0 6px 18px color-mix(in srgb,var(--accent) 35%,transparent)}
+.start-head{position:relative}
+.start-head::before{content:"";position:absolute;inset:-40px 0 -8px 0;z-index:-1;background:radial-gradient(70% 100% at 10% 0%,color-mix(in srgb,var(--accent) 10%,transparent),transparent 70%);pointer-events:none}
+.demo{transition:transform .15s ease,box-shadow .15s ease}
+.demo:not(:disabled):hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(20,30,60,.12)}
+.share-pick select{max-width:160px}
+@media (max-width:900px){.share-pick select{max-width:104px;font-size:12px;padding:5px 4px}.context-empty{display:none}.hero-cta{flex-direction:column;align-items:stretch}}
