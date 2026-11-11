@@ -104,3 +104,11 @@ def test_closure_funnel_says_nothing_about_verification_when_not_recorded():
     t = TODAY
     c = build(data_with([f(1, "critical", t - timedelta(days=30), t - timedelta(days=20))]))["closure"]
     assert not c["tracks_verification"] and c["verified"] is None and c["recurrence_rate"] is None
+
+
+def test_focus_counts_what_needs_a_decision():
+    r = build(data_with([f(1, "critical", TODAY - timedelta(days=3)), f(2, "high", TODAY - timedelta(days=3)),
+                         f(3, "medium", TODAY - timedelta(days=200)), f(4, "medium", TODAY - timedelta(days=5)),
+                         f(5, "low", TODAY - timedelta(days=500)), f(6, "critical", TODAY - timedelta(days=9), TODAY - timedelta(days=1))]))
+    assert r["focus"]["raw"] == 5 and r["focus"]["matter"] == 3 and r["focus"]["share"] == 0.6
+    assert build(data_with([]))["focus"] == {**r["focus"], "raw": 0, "matter": 0, "share": None}

@@ -5,7 +5,7 @@ import { scorecard, matches, shortFingerprint } from "../scorecard.js";
 const result = { customer: "Acme", as_of: "2026-11-01", yield: 0.726, level: "Bronze", input_hash: "ab12cd34ef56ab78cd90ef12ab34cd56ef78ab90cd12ef34ab56cd78ef90ab12" };
 const score = { stages: { L1: { value: 0.9 }, L2: { value: 0.8 }, L3: { value: 0.7 }, L4: { value: 0.6 } } };
 const bd = { open: { critical: 2, high: 5, medium: 0, low: 0 }, past_sla_total: 3, sla_days: { critical: 7, high: 30, medium: 90, low: 180 }, sla_is_default: true,
-  zero_critical: { now: false, never_had: false }, closure: { window_days: 180, raised: 10, closed: 6, tracks_verification: false, verified: null, reopened: null } };
+  zero_critical: { now: false, never_had: false }, focus: { raw: 40, matter: 7, share: 0.175, rule: "Open critical and high findings, and open medium findings older than their target age." }, closure: { window_days: 180, raised: 10, closed: 6, tracks_verification: false, verified: null, reopened: null } };
 
 test("the scorecard carries the numbers, the fingerprint and what it does not prove", () => {
   const t = scorecard({ result, score, burndown: bd, today: "2026-11-11", engine: "0.36.0" });
@@ -26,4 +26,10 @@ test("a pasted fingerprint matches only the data it came from", () => {
   const fp = shortFingerprint(result.input_hash);
   assert.ok(matches(fp, result.input_hash)); assert.ok(matches("Fingerprint: " + fp.toUpperCase(), result.input_hash));
   assert.ok(!matches("ab12cd34ef56ab79", result.input_hash)); assert.ok(!matches("ab12", result.input_hash)); assert.ok(!matches("", result.input_hash)); assert.ok(!matches(fp, ""));
+});
+
+test("the scorecard states the focus counts and the rule behind them", () => {
+  const t = scorecard({ result, score, burndown: bd, today: "2026-11-11" });
+  assert.match(t, /40 finding\(s\) open, 7 that need a decision now/);
+  assert.ok(!/finding\(s\) open, undefined/.test(scorecard({ result, score, burndown: { ...bd, focus: undefined }, today: "2026-11-11" })));
 });

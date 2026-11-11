@@ -2,6 +2,11 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.39.0
+
+- **Out of the noise.** The burn-down shows how many findings are open and how many need a decision now: every open critical or high, and any open medium older than its target age. The rule is printed beside the number, and the page says it is a rule on severity and age, not a judgement of what is exploitable. The scorecard carries the same two counts.
+- Tested on made-up data only.
+
 ## 0.38.0
 
 Start only the proofs worth running, and see how fast they pay off.

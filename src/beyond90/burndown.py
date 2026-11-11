@@ -116,6 +116,11 @@ def build(data: CustomerData, sla: Optional[dict[str, int]] = None) -> dict[str,
         "recurrence_rate": round(sum(1 for f in closed_f if f.reopened) / len(closed_f), 3) if tracks and closed_f else None,
     }
 
+    # What needs a person's decision now: every open critical or high finding, plus any open medium past its target age.
+    matter = [f for f in opened if f.severity in ("critical", "high") or (f.severity == "medium" and (today - f.opened_at).days > targets.get("medium", 10**9))]
+    focus = {"raw": len(opened), "matter": len(matter), "share": round(len(matter) / len(opened), 3) if opened else None,
+             "rule": "Open critical and high findings, and open medium findings older than their target age."}
+
     urgent = sorted((f for f in opened if f.severity in ("critical", "high")), key=lambda f: (f.opened_at, f.id))[:5]
     return {
         "as_of": str(today),
@@ -130,6 +135,7 @@ def build(data: CustomerData, sla: Optional[dict[str, int]] = None) -> dict[str,
         "mttr_window_days": MTTR_WINDOW_DAYS,
         "flow": flow,
         "closure": closure,
+        "focus": focus,
         "zero_critical": _zero_critical(findings, today),
         "unowned_urgent": sum(1 for f in opened if f.severity in ("critical", "high") and not f.owner),
         "oldest_urgent": [{"id": f.id, "account_id": f.account_id, "severity": f.severity, "age_days": (today - f.opened_at).days, "owner": f.owner} for f in urgent],
