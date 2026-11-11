@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.43.1
+
+- **Risk burn-down, rebuilt.** It opens on one sentence on a dark card (whether the customer is at zero criticals, and how many of the open findings need a decision now), then the four counts, then the oldest critical and high findings to start with. The tables, the target-age editor and the six-month flow follow.
+
 ## 0.43.0
 
 - **Actions, rebuilt.** The page opens on the three to start with, each a large card with the points it gains, the hours it takes, who owns it and when it is due, and a "How to do it" fold-out with the steps, when it is done and what to ask the customer. The full list and its filters follow unchanged.

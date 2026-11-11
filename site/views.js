@@ -1073,16 +1073,18 @@ export function burndownView({ dash, setSla }) {
       h("td", { text: b.mttr[sv].days == null ? (b.mttr[sv].n ? `too few (${b.mttr[sv].n})` : "none closed") : `${b.mttr[sv].days} (${b.mttr[sv].n})` }))))));
   const oldest = b.oldest_urgent.length ? h("ol", {}, b.oldest_urgent.map((o) => h("li", { text: `${o.severity} ${o.id} in ${o.account_id}: ${o.age_days} days old, ${o.owner ? "owner " + o.owner : "no owner"}` })))
     : h("p", { class: "note first", text: "No critical or high finding is open." });
+  const f = b.focus;
   return h("div", {},
-    h("p", { class: "note", role: "status", text: zeroText }),
+    h("section", { class: "card bdhero" },
+      h("p", { class: "bdlead", role: "status", text: zeroText }),
+      f && f.raw ? h("p", { class: "bdnoise" }, h("b", { text: `${f.raw} open` }), " → ", h("b", { text: `${f.matter} need a decision now` }), h("small", { text: `${Math.round(f.share * 100)}% of what is open. ${f.rule} A rule on severity and age, not a judgement of what is exploitable.` })) : null),
     h("div", { class: "kpiline" }, stat(String(b.open.critical), "critical open", b.open.critical ? "bad" : "good"), stat(String(b.open.high), "high open", b.open.high ? "warn" : "good"),
       stat(String(b.past_sla_total), "older than target", b.past_sla_total ? "warn" : "good"), stat(String(b.unowned_urgent), "critical or high with no owner", b.unowned_urgent ? "warn" : "good")),
+    card("Start with the oldest critical and high", oldest),
     card("By severity and age", table, { sub: b.sla_is_default ? "Target ages are the default (7, 30, 90, 180 days). Set the customer's own below before quoting a figure." : "Target ages as set for this customer." }),
-    focusCard(b.focus),
     slaCard(b, setSla),
     closureCard(b.closure),
     card("The last six months", flow, { sub: "Rebuilt from each finding's open and close dates." }),
-    card("Oldest critical and high", oldest),
     h("p", { class: "note", text: b.note }));
 }
 
@@ -1310,13 +1312,6 @@ function slaCard(b, setSla) {
   return card("Target ages", h("div", {}, h("div", { class: "formgrid" }, h("label", {}, "Preset", pick), SLA.SEVERITIES.map((s) => h("label", {}, `${s} (days)`, box[s]))),
     h("div", { class: "row left" }, h("button", { class: "btn small primary", type: "button", text: "Apply and recompute", onclick: apply })), say),
     { sub: "Saved in the customer's own file (customer.toml, settings.sla_days), so a snapshot keeps it and the score and this view always agree. Pick the ages the customer has agreed; the presets are only starting points." });
-}
-
-function focusCard(f) {
-  if (!f || !f.raw) return null;
-  return card("Out of the noise", h("div", {},
-    h("p", { class: "note" }, h("strong", { text: `${f.raw} open finding${f.raw === 1 ? "" : "s"}, ${f.matter} that need a decision now.` })),
-    h("p", { class: "note", text: `${Math.round(f.share * 100)}% of what is open. ${f.rule} It is a rule on severity and age, not a judgement of what is exploitable here: confirm with the customer before narrowing the list.` })));
 }
 
 function closureCard(c) {
