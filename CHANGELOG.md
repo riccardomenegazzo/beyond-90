@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.41.2
+
+- **This release switches installed copies by itself.** The previous offer could not be seen on some phones, so this build asks installed copies to take it without waiting; the page reloads once. Saved work is kept. From the next release a new build waits for the person again.
+
 ## 0.41.1
 
 - **The update offer can be seen.** "New version ready" sat in the crowded top bar and was easy to miss on a phone. It is now a bar fixed near the bottom of the screen with a large button.

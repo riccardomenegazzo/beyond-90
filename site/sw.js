@@ -5,6 +5,7 @@ const CACHE = "__CACHE__";
 const ASSETS = __ASSETS__;
 
 self.addEventListener("install", (event) => {
+  /*__FORCE__*/
   event.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)));
 });
 

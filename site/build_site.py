@@ -163,6 +163,11 @@ def write_manifest(out: Path) -> None:
     (out / "build.json").write_text(json.dumps(doc, indent=1) + "\n", encoding="utf-8")
 
 
+# One release can ask installed copies to switch at once (a build that must reach everyone, for instance after an update
+# offer that could not be seen). Normally empty: a new build waits until the person accepts it.
+FORCE_UPDATE = "self.skipWaiting();  // forced for this release only" if os.environ.get("B90_FORCE_UPDATE") == "1" else ""
+
+
 def write_service_worker(out: Path) -> None:
     """Precache every file under a name derived from their content, so a new build is a new cache."""
     files = sorted(p.relative_to(out).as_posix() for p in out.rglob("*") if p.is_file() and p.name not in MANIFEST) + list(MANIFEST)
@@ -171,7 +176,7 @@ def write_service_worker(out: Path) -> None:
         digest.update(name.encode() + b"\0" + (out / name).read_bytes() + b"\0")
     template = (ROOT / "site" / "sw.js").read_text(encoding="utf-8")
     assets = ["./"] + [f"./{n}" for n in files]
-    (out / "sw.js").write_text(template.replace("__CACHE__", "beyond90-" + digest.hexdigest()[:16]).replace("__ASSETS__", json.dumps(assets)), encoding="utf-8")
+    (out / "sw.js").write_text(template.replace("__CACHE__", "beyond90-" + digest.hexdigest()[:16]).replace("__ASSETS__", json.dumps(assets)).replace("/*__FORCE__*/", FORCE_UPDATE), encoding="utf-8")
 
 
 def main() -> None:

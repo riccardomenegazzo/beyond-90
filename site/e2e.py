@@ -709,7 +709,7 @@ def main(site: str) -> int:
         sw = Path(site) / "sw.js"
         original = sw.read_text(encoding="utf-8")
         try:
-            sw.write_text(re.sub(r'const CACHE = "(beyond90-[0-9a-f]+)"', r'const CACHE = "\1-next"', original), encoding="utf-8")
+            sw.write_text(re.sub(r'self\.skipWaiting\(\);  // forced[^\n]*', '', re.sub(r'const CACHE = "(beyond90-[0-9a-f]+)"', r'const CACHE = "\1-next"', original)), encoding="utf-8")
             page.reload()
             page.wait_for_selector("#update-bar:not([hidden])", timeout=60_000)
             check(page.is_visible("#offline"), "the current version keeps working while the new one waits")
