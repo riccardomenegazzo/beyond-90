@@ -1,5 +1,6 @@
 // Beyond 90 in the browser. The Python engine runs in a worker (WebAssembly, Pyodide) from this same origin.
 // Files are read with the File API and handed to the worker as text. User data is never sent anywhere.
+import { rank } from "./fuzzy.js";
 import { qrSvg } from "./qr.js";
 import { PROVIDERS, problems as starterProblems, starterFiles } from "./starter.js";
 import { Engine } from "./engine.js";
@@ -1169,7 +1170,7 @@ function copySummary() {
 const pal = { el: $("palette"), q: $("palette-q"), list: $("palette-list"), items: [], at: 0 };
 function paintPalette() {
   const q = pal.q.value.trim().toLowerCase();
-  pal.items = commands().filter((c) => !q || c.label.toLowerCase().includes(q));
+  pal.items = rank(q, commands(), (c) => c.label);
   pal.at = Math.min(pal.at, Math.max(0, pal.items.length - 1));
   pal.list.replaceChildren(...pal.items.map((c, i) => {
     const li = el_("li", { role: "option", "aria-selected": String(i === pal.at) }, el_("span", { text: c.label }), el_("small", { text: c.hint }));
