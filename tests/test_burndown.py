@@ -1,0 +1,86 @@
+"""Risk burn-down: what is open, how old, how long fixes take, and whether the customer is at zero."""
+from dataclasses import replace
+from datetime import date, timedelta
+from pathlib import Path
+
+from beyond90 import web
+from beyond90.burndown import DEFAULT_SLA, MTTR_MIN, build
+from beyond90.catalogue import Catalogue
+from beyond90.loader import load_customer
+from beyond90.models import Finding
+
+DIR = Path(__file__).parent.parent / "examples" / "portfolio" / "northwind"
+TODAY = date(2026, 11, 9)
+
+
+def data_with(findings):
+    d = load_customer(str(DIR), Catalogue.for_directory(str(DIR)), require_accounts=True)[0]
+    return replace(d, as_of=TODAY, findings=findings)
+
+
+def f(i, sev, opened, closed=None, owner="x"):
+    return Finding(id=f"f{i}", account_id="a", severity=sev, exposure="internal", opened_at=opened, closed_at=closed, owner=owner)
+
+
+def test_open_counts_aging_and_past_target():
+    r = build(data_with([f(1, "critical", TODAY - timedelta(days=3)), f(2, "critical", TODAY - timedelta(days=40)),
+                         f(3, "high", TODAY - timedelta(days=100)), f(4, "low", TODAY - timedelta(days=5)),
+                         f(5, "high", TODAY - timedelta(days=60), TODAY - timedelta(days=2))]))
+    assert r["open"] == {"critical": 2, "high": 1, "medium": 0, "low": 1}
+    assert r["open_total"] == 4
+    assert r["aging"]["critical"] == {"0-7": 1, "8-30": 0, "31-90": 1, "91+": 0}
+    assert r["past_sla"]["critical"] == 1 and r["past_sla"]["high"] == 1 and r["past_sla"]["low"] == 0
+    assert r["sla_days"] == DEFAULT_SLA and r["sla_is_default"]
+
+
+def test_a_custom_target_changes_what_is_late():
+    d = data_with([f(1, "critical", TODAY - timedelta(days=3))])
+    assert build(d)["past_sla"]["critical"] == 0
+    r = build(d, {"critical": 2})
+    assert r["past_sla"]["critical"] == 1 and not r["sla_is_default"]
+
+
+def test_time_to_fix_needs_enough_closed_findings():
+    few = [f(i, "high", TODAY - timedelta(days=20), TODAY - timedelta(days=10)) for i in range(MTTR_MIN - 1)]
+    assert build(data_with(few))["mttr"]["high"] == {"days": None, "n": MTTR_MIN - 1}
+    enough = [f(i, "high", TODAY - timedelta(days=20), TODAY - timedelta(days=10 - i)) for i in range(MTTR_MIN)]
+    m = build(data_with(enough))["mttr"]["high"]
+    assert m["n"] == MTTR_MIN and m["days"] == 11.0
+    old = [f(i, "high", TODAY - timedelta(days=400), TODAY - timedelta(days=300)) for i in range(5)]
+    assert build(data_with(old))["mttr"]["high"]["n"] == 0
+
+
+def test_flow_rebuilds_the_past_from_dates():
+    r = build(data_with([f(1, "critical", date(2026, 8, 10), date(2026, 9, 20)), f(2, "critical", date(2026, 10, 5))]))
+    by = {m["month"]: m for m in r["flow"]}
+    assert len(r["flow"]) == 6 and r["flow"][-1]["month"] == "2026-11"
+    assert by["2026-08"]["opened"] == 1 and by["2026-08"]["open_critical"] == 1
+    assert by["2026-09"]["closed"] == 1 and by["2026-09"]["open_critical"] == 0
+    assert by["2026-10"]["opened"] == 1 and by["2026-10"]["open_critical"] == 1
+
+
+def test_zero_critical_now_since_and_last_zero():
+    r = build(data_with([f(1, "critical", TODAY - timedelta(days=50), TODAY - timedelta(days=12))]))["zero_critical"]
+    assert r["now"] and r["days"] == 12 and r["since"] == str(TODAY - timedelta(days=12))
+    r = build(data_with([f(1, "critical", TODAY - timedelta(days=50), TODAY - timedelta(days=30)), f(2, "critical", TODAY - timedelta(days=5))]))["zero_critical"]
+    assert not r["now"] and r["last_zero"] == str(TODAY - timedelta(days=30))
+    r = build(data_with([f(1, "high", TODAY - timedelta(days=5))]))["zero_critical"]
+    assert r["now"] and r["never_had"] and r["days"] is None
+    r = build(data_with([f(1, "critical", TODAY - timedelta(days=5))]))["zero_critical"]
+    assert not r["now"] and r["last_zero"] is None
+
+
+def test_unowned_and_oldest_urgent():
+    r = build(data_with([f(1, "critical", TODAY - timedelta(days=9), owner=""), f(2, "high", TODAY - timedelta(days=30)), f(3, "low", TODAY - timedelta(days=90), owner="")]))
+    assert r["unowned_urgent"] == 1
+    assert [x["id"] for x in r["oldest_urgent"]] == ["f2", "f1"]
+
+
+def test_no_findings_is_quiet_not_an_error():
+    r = build(data_with([]))
+    assert r["open_total"] == 0 and r["zero_critical"]["never_had"] and all(m["opened"] == 0 for m in r["flow"])
+
+
+def test_the_browser_result_carries_it():
+    r = web.analyze(str(DIR))
+    assert r["ok"] and r["dashboard"]["burndown"]["open_total"] >= 0 and "flow" in r["dashboard"]["burndown"]

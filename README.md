@@ -24,6 +24,8 @@ Most adoption reporting stops at "90% of accounts connected" (or sites, tenants,
 
 **It lets you share without the names, and keep only what you should.** Copy or download with the customer, people, teams and accounts replaced by stable aliases (after a preview), put the real names back on your device, set a keep-until date per customer and erase one customer completely, with a record of what the page could not reach. A pseudonym is not anonymity. See [docs/privacy.md](docs/privacy.md).
 
+**It fits the job you do.** Pick technical account manager, solutions architect or sales engineer and your views come first. There is a risk burn-down (is risk going away, and how fast are fixes made), a proof-of-value planner with success criteria and an honest result, and a ledger of what customers ask the vendor for. See [docs/roles.md](docs/roles.md).
+
 **It keeps your promises.** A ledger across customers of what you and they have promised, with what is late, and a handoff note for whoever picks a customer up next. See [docs/promises.md](docs/promises.md).
 
 **It collects its own data.** A config file points at your sources (REST APIs, cloud CLIs, a drop folder) and `beyond90 run` does the rest on a schedule: collect, score, compare with last time, write the review, alert only on what changed. See [docs/automation.md](docs/automation.md).

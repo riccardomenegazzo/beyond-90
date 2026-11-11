@@ -1,4 +1,4 @@
-# Beyond 90: specification v0.33
+# Beyond 90: specification v0.34
 
 An adoption engine for Technical Account Managers. It measures how much of a customer's cloud estate is really covered and operated through a security platform, and turns every gap into an action. The bar keeps moving: when a customer grows or the product ships something, the denominators grow with it.
 
@@ -259,6 +259,16 @@ The **alias table** (original, alias, kind, customer) lives in the browser only,
 **Retention**: an optional keep-until date per customer; the page lists customers past it and those within 30 days. It never deletes by itself. **Erasure** removes, for one customer, its snapshots, recorded outcomes, promises, retention date, alias entries and entries of the export log, then reads the stores again and reports how many records for that customer it can still read (it refuses while sealed data is locked, because it could not see what to remove). The **export log** notes each time something left the page for the open customer (date, file or copy, level, file name); it is sealed with the other facts. The **erasure record** is a text the page writes about itself: what it removed, the second look, and the list of copies it cannot reach. It is not stored and is not independent proof.
 
 Sealed customer facts (outcomes, promises, retention, export log) are stored under a random 96-bit slot, not under their own id (which contains the customer's name); records made before 0.32 are moved to a slot the first time the data is unlocked. The database is version 5.
+
+## 15zc. Burn-down, proof of value, asks and roles (0.34)
+
+`burndown.build(data, sla=None)` reads findings only. Severities are critical, high, medium, low; `DEFAULT_SLA` is 7, 30, 90 and 180 days and `sla_is_default` is true until the caller passes their own. A finding is open when it has no close date on or before the as-of date. Age is as-of minus opened. Mean days to fix is reported only with at least `MTTR_MIN` (3) findings closed in the last `MTTR_WINDOW_DAYS` (90). The flow lists the last six calendar months with opened, closed and the critical and high counts open at the month's end. `zero_critical` says whether none is open now, since when, and the last day there was none.
+
+A proof of value (`site/pov.js`) has a sponsor, a champion, a window, criteria (status open, met, partly, not_met, dropped; evidence up to 300 characters), at most 20 working sessions and a readiness list. Records merge by id, the later `updated_on` wins, and anything that fails validation is rejected whole. The verdict is "in progress" while any counted criterion is open; otherwise "all criteria met" when all are met, "mostly met" when none failed and at least 75% are met, else "not met". The result text always includes what the result does not show.
+
+An ask (`site/asks.js`) has a kind (feature, blocker, escalation), a status (open, shared, done, declined) and an integer `at_stake` typed by the user. The digest groups open asks by normalised title, counts each customer's figure once per group, and lists escalations apart, oldest first.
+
+Roles (`site/roles.js`) only order and group the navigation; every view stays reachable and the palette and shortcuts use the full list.
 
 ## 16. Positioning against the platform's own views
 

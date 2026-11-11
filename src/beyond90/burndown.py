@@ -1,0 +1,124 @@
+"""How fast risk is being retired: what is open, how old, how long fixes take, and whether the customer is at zero.
+
+Coverage (Yield) says what is connected and decided. This says whether the findings that matter are going away.
+It reads only the findings already loaded and rebuilds the past from their open and close dates, so it needs no history file.
+
+Everything it reports is plain arithmetic on dates:
+
+* open now, by severity, and how many of them are past a target age (the SLA targets are printed, and are a default
+  the customer should replace with its own: critical 7 days, high 30, medium 90, low 180);
+* age buckets of what is open;
+* time to fix: the mean days from opened to closed for findings closed in the last 90 days, with the count behind it
+  (no figure when fewer than 3 closed, because a mean of one or two is an anecdote);
+* a six-month flow: opened, closed and how many critical and high were still open at each month end;
+* whether the customer is at zero critical findings now, since when, or when it last was.
+"""
+
+from __future__ import annotations
+
+from datetime import date, timedelta
+from typing import Any, Optional
+
+from .models import CustomerData, Finding
+
+SEVERITIES = ("critical", "high", "medium", "low")
+DEFAULT_SLA = {"critical": 7, "high": 30, "medium": 90, "low": 180}
+BUCKETS = (("0-7", 0, 7), ("8-30", 8, 30), ("31-90", 31, 90), ("91+", 91, 10**9))
+MTTR_WINDOW_DAYS = 90
+MTTR_MIN = 3
+MONTHS = 6
+
+
+def _open_on(f: Finding, day: date) -> bool:
+    return f.opened_at <= day and (f.closed_at is None or f.closed_at > day)
+
+
+def _month_end(year: int, month: int) -> date:
+    nxt = date(year + (month == 12), month % 12 + 1, 1)
+    return nxt - timedelta(days=1)
+
+
+def _months_back(end: date, n: int) -> list[tuple[int, int]]:
+    out: list[tuple[int, int]] = []
+    y, m = end.year, end.month
+    for _ in range(n):
+        out.append((y, m))
+        y, m = (y - 1, 12) if m == 1 else (y, m - 1)
+    return out[::-1]
+
+
+def _zero_critical(findings: list[Finding], today: date) -> dict[str, Any]:
+    crit = [f for f in findings if f.severity == "critical"]
+    now_open = sum(1 for f in crit if _open_on(f, today))
+    if not crit:
+        return {"now": True, "never_had": True, "since": None, "days": None, "last_zero": None}
+    events = sorted({d for f in crit for d in (f.opened_at, f.closed_at) if d is not None and d <= today})
+    zero_from: Optional[date] = None
+    last_zero: Optional[date] = None
+    for d in events:
+        n = sum(1 for f in crit if _open_on(f, d))
+        if n == 0:
+            zero_from = d
+            last_zero = d
+        else:
+            zero_from = None
+    if now_open == 0:
+        return {"now": True, "never_had": False, "since": str(zero_from) if zero_from else None,
+                "days": (today - zero_from).days if zero_from else None, "last_zero": str(last_zero) if last_zero else None}
+    return {"now": False, "never_had": False, "since": None, "days": None, "last_zero": str(last_zero) if last_zero else None}
+
+
+def build(data: CustomerData, sla: Optional[dict[str, int]] = None) -> dict[str, Any]:
+    today = data.as_of
+    targets = {**DEFAULT_SLA, **(sla or {})}
+    findings = list(data.findings)
+    opened = [f for f in findings if _open_on(f, today)]
+
+    open_by = {s: sum(1 for f in opened if f.severity == s) for s in SEVERITIES}
+    aging = {s: {name: 0 for name, _, _ in BUCKETS} for s in SEVERITIES}
+    past = dict.fromkeys(SEVERITIES, 0)
+    for f in opened:
+        age = (today - f.opened_at).days
+        for name, lo, hi in BUCKETS:
+            if lo <= age <= hi:
+                aging[f.severity][name] += 1
+                break
+        if age > targets.get(f.severity, 10**9):
+            past[f.severity] += 1
+
+    since = today - timedelta(days=MTTR_WINDOW_DAYS)
+    mttr: dict[str, dict[str, Any]] = {}
+    for s in SEVERITIES:
+        done = [(f.closed_at - f.opened_at).days for f in findings if f.severity == s and f.closed_at and since <= f.closed_at <= today]
+        mttr[s] = {"days": round(sum(done) / len(done), 1) if len(done) >= MTTR_MIN else None, "n": len(done)}
+
+    flow = []
+    for y, m in _months_back(today, MONTHS):
+        start, end = date(y, m, 1), min(_month_end(y, m), today)
+        flow.append({
+            "month": f"{y:04d}-{m:02d}",
+            "opened": sum(1 for f in findings if start <= f.opened_at <= end),
+            "closed": sum(1 for f in findings if f.closed_at and start <= f.closed_at <= end),
+            "open_critical": sum(1 for f in findings if f.severity == "critical" and _open_on(f, end)),
+            "open_high": sum(1 for f in findings if f.severity == "high" and _open_on(f, end)),
+        })
+
+    urgent = sorted((f for f in opened if f.severity in ("critical", "high")), key=lambda f: (f.opened_at, f.id))[:5]
+    return {
+        "as_of": str(today),
+        "sla_days": targets,
+        "sla_is_default": sla is None,
+        "open": open_by,
+        "open_total": sum(open_by.values()),
+        "aging": aging,
+        "past_sla": past,
+        "past_sla_total": sum(past.values()),
+        "mttr": mttr,
+        "mttr_window_days": MTTR_WINDOW_DAYS,
+        "flow": flow,
+        "zero_critical": _zero_critical(findings, today),
+        "unowned_urgent": sum(1 for f in opened if f.severity in ("critical", "high") and not f.owner),
+        "oldest_urgent": [{"id": f.id, "account_id": f.account_id, "severity": f.severity, "age_days": (today - f.opened_at).days, "owner": f.owner} for f in urgent],
+        "note": ("The target ages are a default, not the customer's own: replace them with theirs before you quote a figure. "
+                 "Time to fix is shown only when at least 3 findings closed in the window."),
+    }

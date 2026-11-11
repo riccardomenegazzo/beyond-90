@@ -8,6 +8,7 @@ export const CUSTOMER_NAV = [
     { id: "connections", label: "Connections", icon: "layers", tip: "Where the separate problems meet: security stories, gaps, accounts, findings and owners on one interactive map, with what it means." },
     { id: "accounts", label: "Accounts", icon: "accounts", tip: "Every cloud account and cluster: connected or not, what is visible, what is switched on." },
     { id: "findings", label: "Findings", icon: "findings", tip: "Open findings and whether each one has an owner and a decision." },
+    { id: "burndown", label: "Risk burn-down", icon: "findings", tip: "Is risk going away? Critical and high findings open, how old, how long fixes take, the last six months, and whether the customer is at zero criticals." },
     { id: "onboarding", label: "Onboarding", icon: "onboarding", tip: "Connectors that are stuck, why, and the one change that unblocks each group." },
     { id: "maturity", label: "Maturity", icon: "maturity", tip: "The bronze, silver, gold ladder and the checks between here and the next level." },
   ] },
@@ -21,6 +22,7 @@ export const CUSTOMER_NAV = [
   { question: "What do I say?", views: [
     { id: "prep", label: "Prep a call", icon: "prep", tip: "The agenda for the next call in the order that earns attention, and the recap afterwards." },
     { id: "call", label: "On the call", icon: "prep", tip: "One screen for the call itself: tick the agenda, note what is agreed and what we owe, then the recap, the actions and the log line are ready." },
+    { id: "asks", label: "Asks", icon: "prep", tip: "What customers asked the vendor for: features, blockers, escalations, with what is at stake. Group the same ask across customers and copy a digest for the product team. Kept in this browser." },
     { id: "news", label: "News", icon: "news", tip: "Security news that touches this customer's resources, with a briefing you can send." },
     { id: "value", label: "Value receipt", icon: "renewal", tip: "What improved since an earlier snapshot, and the work that came before it." },
     { id: "execqbr", label: "Executive QBR", icon: "doc", tip: "A quarterly review for the CISO, built from this customer's saved history." },
@@ -29,6 +31,9 @@ export const CUSTOMER_NAV = [
     { id: "handoff", label: "Handoff note", icon: "prep", tip: "One note for whoever picks this customer up: where adoption stands, what has been promised, renewal and people, risks. Built from what this page holds; copy it or download it." },
     { id: "calibration", label: "What renewals taught", icon: "renewal", tip: "What happened at each renewal you recorded, and which parts of the health reading told the customers that stayed from the ones that left." },
     { id: "changes", label: "Changes", icon: "changes", tip: "What moved since an earlier snapshot, split between the customer's work and new capabilities." },
+  ] },
+  { question: "Prove the value", views: [
+    { id: "pov", label: "Proof of value", icon: "maturity", tip: "Plan an evaluation: success criteria agreed up front, a readiness checklist, working sessions, then a result that says what was shown and what was not. Kept in this browser." },
   ] },
   { question: "Documents to share", views: [
     { id: "report", label: "Report", icon: "doc", tip: "The full report as a page you can save or print." },
@@ -49,6 +54,7 @@ export const BOOK_NAV = [
     { id: "bookmap", label: "Portfolio map", icon: "bookmap", tip: "Every customer's four stages side by side, so the weak spot of the book stands out." },
     { id: "bookonboard", label: "Onboarding", icon: "onboarding", tip: "Stuck connectors across customers, and the causes they share." },
     { id: "booknews", label: "Cloud news", icon: "news", tip: "Each security story against every customer: who is exposed and who is not covered." },
+    { id: "pov", label: "Proof of value", icon: "maturity", tip: "Evaluations across customers: criteria, readiness, sessions and results. Kept in this browser." },
   ] },
   { question: "Documents to share", views: [
     { id: "portfolio", label: "Portfolio", icon: "doc", tip: "The portfolio in Markdown: customers, levels and shared patterns." },

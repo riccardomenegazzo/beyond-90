@@ -143,7 +143,7 @@ export function createPrivacy({ state, store, $, say, unlockVaultUi, today, save
   async function erase(customer, logs) {
     if ((await store.getVault()) && !store.unlocked() && !(await unlockVaultUi())) return;
     const n = await store.countFor(customer);
-    const sentence = `Erase everything this browser holds for ${customer}?\n\n${n.snapshots} snapshot(s), ${n.outcomes} outcome(s), ${n.commitments} promise(s), ${n.aliases} alias(es), ${n.exports} export log entr${n.exports === 1 ? "y" : "ies"}.\n\nThis cannot be undone. Copies you already downloaded or copied are not touched.`;
+    const sentence = `Erase everything this browser holds for ${customer}?\n\n${n.snapshots} snapshot(s), ${n.outcomes} outcome(s), ${n.commitments} promise(s), ${n.povs || 0} proof(s) of value, ${n.asks || 0} ask(s), ${n.aliases} alias(es), ${n.exports} export log entr${n.exports === 1 ? "y" : "ies"}.\n\nThis cannot be undone. Copies you already downloaded or copied are not touched.`;
     if (!confirm(sentence)) return;
     const copies = outside(logs.length ? logs : await store.exportsAll(), customer);   // read before the log entries go
     try {

@@ -6,6 +6,8 @@ import { Engine } from "./engine.js";
 import * as W from "./workspace-core.js";
 import * as O from "./outcomes.js";
 import * as K from "./commitments.js";
+import * as ASK from "./asks.js";
+import { ROLES, ROLE_IDS, isRole, shape } from "./roles.js";
 import * as store from "./store.js";
 import * as Vault from "./vault.js";
 import * as V from "./views.js";
@@ -21,7 +23,7 @@ const $ = (id) => document.getElementById(id);
 // which has no scripts and no access to this page. Its content is produced by the engine from the customer's files, escaped there.
 const swPolicy = window.trustedTypes ? window.trustedTypes.createPolicy("b90-sw", { createScriptURL: (u) => { if (u !== "./sw.js") throw new TypeError("only the page's own service worker may be registered"); return u; } }) : null;
 const reportPolicy = window.trustedTypes ? window.trustedTypes.createPolicy("b90-report", { createHTML: (t) => t }) : null;
-const state = { commitments: [], outcomes: [], calibration: null, healthWeights: null, advisories: null, files: {}, groups: {}, mode: "single", result: null, book: null, tab: "overview", saved: [], yields: new Map(), engine: null, running: false };
+const state = { commitments: [], outcomes: [], povs: [], asks: [], calibration: null, healthWeights: null, advisories: null, files: {}, groups: {}, mode: "single", result: null, book: null, tab: "overview", saved: [], yields: new Map(), engine: null, running: false };
 const ALLOWED = /\.(csv|toml|xlsx)$/i;
 const MAX_BYTES = 20 * 1024 * 1024;
 const pct = (x) => (x == null ? "n/a" : (x * 100).toFixed(1) + "%");
@@ -355,7 +357,7 @@ function renderCompare() {
 const VIEWS = {
   overview: { kind: "view", view: "overview" }, connections: { kind: "view", view: "connectionsView" }, accounts: { kind: "view", view: "accountsView" }, findings: { kind: "view", view: "findingsView" },
   onboarding: { kind: "view", view: "onboardingView" }, maturity: { kind: "view", view: "maturityView" }, actions: { kind: "view", view: "actionsView" },
-  planview: { kind: "view", view: "planView" }, whatif: { kind: "view", view: "whatifView" }, commitments: { kind: "view", view: "commitmentsView" }, handoff: { kind: "view", view: "handoffView" }, outlook: { kind: "view", view: "outlookView" }, teams: { kind: "view", view: "teamsView" },
+  planview: { kind: "view", view: "planView" }, whatif: { kind: "view", view: "whatifView" }, commitments: { kind: "view", view: "commitmentsView" }, handoff: { kind: "view", view: "handoffView" }, outlook: { kind: "view", view: "outlookView" }, teams: { kind: "view", view: "teamsView" }, burndown: { kind: "view", view: "burndownView" }, asks: { kind: "view", view: "asksView" }, pov: { kind: "view", view: "povView" },
   prep: { kind: "view", view: "prepView" }, call: { kind: "view", view: "callView" }, news: { kind: "view", view: "newsView" }, value: { kind: "view", view: "valueView" },
   execqbr: { kind: "view", view: "execQbrView" }, renewal: { kind: "view", view: "renewalView" }, changes: { kind: "view", view: "changesView" },
   report: { kind: "html", key: "report_html", file: "beyond90-report.html", type: "text/html" },
@@ -389,14 +391,28 @@ function setStep(n) {
   [...document.querySelectorAll(".steps li")].forEach((li, i) => { li.className = i + 1 < n ? "is-done" : i + 1 === n ? "is-now" : ""; });
 }
 
+let navGroups = [], navTitle = "";
+function savedRole() { try { const r = localStorage.getItem("beyond90.role"); return isRole(r) ? r : "all"; } catch { return "all"; } }
 function renderNav(groups, title) {
-  tabDefs = groups.flatMap((g) => g.views.map((v) => ({ ...v, ...VIEWS[v.id], group: g.question })));
+  navGroups = groups; navTitle = title;
+  tabDefs = groups.flatMap((g) => g.views.map((v) => ({ ...v, ...VIEWS[v.id], group: g.question })));   // every view stays reachable, whatever the role
   $("workspace").hidden = false;
   $("ws-title").textContent = title;
-  $("tabs").replaceChildren(...groups.map((g, i) => el_("div", { class: "navgroup", role: "group", "aria-labelledby": `grp-${i}` },
-    el_("p", { class: "grp", id: `grp-${i}`, text: g.question }),
-    g.views.map((v) => el_("button", { type: "button", dataset: { tab: v.id }, "data-tip": v.tip, onclick: () => selectTab(v.id) }, icon(v.icon), el_("span", { text: v.label }))))));
+  const pick = $("role-select");
+  if (!pick.options.length) {
+    pick.replaceChildren(...ROLE_IDS.map((id) => el_("option", { value: id, text: ROLES[id].label })));
+    pick.addEventListener("change", () => { try { localStorage.setItem("beyond90.role", pick.value); } catch { /* the choice just does not persist */ } renderNav(navGroups, navTitle); markTab(); });
+  }
+  pick.value = savedRole();
+  pick.title = ROLES[pick.value].hint;
+  const { main, more } = shape(groups, pick.value);
+  const btn = (v) => el_("button", { type: "button", dataset: { tab: v.id }, "data-tip": v.tip, onclick: () => selectTab(v.id) }, icon(v.icon), el_("span", { text: v.label }));
+  const grp = (g, i, p) => el_("div", { class: "navgroup", role: "group", "aria-labelledby": `grp-${p}${i}` }, el_("p", { class: "grp", id: `grp-${p}${i}`, text: g.question }), g.views.map(btn));
+  const kids = main.map((g, i) => grp(g, i, "m"));
+  if (more.length) kids.push(el_("details", { class: "navmore", open: more.some((g) => g.views.some((v) => v.id === state.tab)) }, el_("summary", { text: "More views" }), more.map((g, i) => grp(g, i, "x"))));
+  $("tabs").replaceChildren(...kids);
 }
+function markTab() { for (const b of document.querySelectorAll("#tabs button")) b.toggleAttribute("aria-current", b.dataset.tab === state.tab); }
 
 const current = () => tabDefs.find((t) => t.id === state.tab) || tabDefs[0];
 const payload = () => (state.mode === "book" || state.book ? state.book : state.result);
@@ -425,10 +441,11 @@ function selectTab(name, extra) {
 }
 
 function context() {
-  if (state.book) return { book: state.book, advisories: state.advisories, openCustomer: (key, tab = "prep") => { state.mode = "single"; state.files = { ...state.groups[key] }; state.book = null; state.tab = tab; renderLoaded(); run(); } };
+  if (state.book) return { book: state.book, povs: state.povs, savePov, removePov, today: todayIso(), advisories: state.advisories, openCustomer: (key, tab = "prep") => { state.mode = "single"; state.files = { ...state.groups[key] }; state.book = null; state.tab = tab; renderLoaded(); run(); } };
   const r = state.result;
   if (r && state.parsedFor !== r) { state.parsed = JSON.parse(r.score_json); state.parsedFor = r; }
   return { result: r, dash: r.dashboard, score: state.parsed, engine: state.engine, files: state.files, options: options(), advisories: state.advisories, logTouch, go: (tab, extra) => selectTab(tab, extra),
+    povs: state.povs, savePov, removePov, asks: state.asks, addAsk, setAskStatus, removeAsk,
     commitments: state.commitments, addCommitment, setCommitmentStatus, removeCommitment, keepFromCall, today: todayIso(),
     history: state.saved.filter((x) => x.customer === r.customer).map((x) => ({ as_of: x.as_of, yield: state.yields.get(x.id) })).filter((x) => typeof x.yield === "number"),
     outcomes: state.outcomes, calibration: state.calibration, healthWeights: state.healthWeights, recordOutcome, removeOutcome, applyWeights, resetWeights,
@@ -573,8 +590,26 @@ async function keepFromCall({ agreed, ours, date }) {
   return made.length;
 }
 
+async function refreshPovs() { try { state.povs = await store.povsAll(); } catch { state.povs = []; } }
+async function refreshAsks() { try { state.asks = await store.asksAll(); } catch { state.asks = []; } }
+async function savePov(p) { await store.povPut([p]); await refreshPovs(); selectTab(state.tab); }
+async function removePov(id) { await store.povRemove(id); await refreshPovs(); selectTab(state.tab); }
+async function addAsk(p) {
+  await store.askPut([ASK.makeAsk({ customer: state.result.customer, kind: p.kind, title: p.title, detail: p.detail, atStake: p.atStake, ref: p.ref, createdOn: todayIso() })]);
+  await refreshAsks(); selectTab(state.tab);
+}
+async function setAskStatus(id, status) {
+  const a = state.asks.find((x) => x.id === id);
+  if (!a) return;
+  await store.askPut([ASK.withAskStatus(a, status, todayIso() < a.created_on ? a.created_on : todayIso())]);
+  await refreshAsks(); selectTab(state.tab);
+}
+async function removeAsk(id) { await store.askRemove(id); await refreshAsks(); selectTab(state.tab); }
+
 async function refreshHistory() {
   await refreshCommitments();
+  await refreshPovs();
+  await refreshAsks();
   await refreshOutcomes();
   try { state.saved = await store.all(); }
   catch (e) { state.saved = []; wsSay("Saving is not available here: " + e.message); }

@@ -5,6 +5,8 @@ import { OUTCOMES } from "./outcomes.js";
 import { newCall, callOutput } from "./callmode.js";
 import { ledger, CSV_COLUMNS } from "./commitments.js";
 import { buildHandoff } from "./handoff.js";
+import * as P from "./pov.js";
+import * as A from "./asks.js";
 import { connections } from "./graph.js";
 import { gauge, waterfall, lineChart, contributions, timeline, shareBar, funnel, STAGE, STAGE_NAME } from "./charts.js";
 
@@ -1006,6 +1008,45 @@ export function teamsView({ dash }) {
       { sub: t.contacts.length ? t.contacts.map((c) => c.role ? `${c.name} (${c.role})` : c.name).join(", ") : "No contact on record for this team." }))));
 }
 
+// ------------------------------------------------------------------ risk burn-down
+const SEV_ORDER = ["critical", "high", "medium", "low"];
+
+/** Whether the findings that matter are going away: open now, how old, how long fixes take, and the last six months. */
+export function burndownView({ dash }) {
+  const b = dash.burndown;
+  if (!b) return h("p", { class: "note", text: "No findings were loaded, so there is nothing to burn down." });
+  const z = b.zero_critical;
+  const zeroText = z.never_had ? "No critical finding is on record."
+    : z.now ? (z.days != null ? `Zero critical findings open, for ${z.days} day${z.days === 1 ? "" : "s"} (since ${z.since}).` : "Zero critical findings open.")
+      : `${b.open.critical} critical finding${b.open.critical === 1 ? "" : "s"} open${z.last_zero ? `; the last time there were none was ${z.last_zero}` : "; there has been no day without one on record"}.`;
+  const peak = Math.max(1, ...b.flow.map((m) => Math.max(m.opened, m.closed)));
+  const bar = (n, kind) => h("span", { class: "bd-bar " + kind, style: `width:${Math.round((n / peak) * 100)}%`, title: String(n) });
+  const flow = h("div", { class: "bd-flow", role: "table", "aria-label": "Opened and closed by month" },
+    h("div", { class: "bd-row bd-head", role: "row" }, h("span", { role: "columnheader", text: "Month" }), h("span", { role: "columnheader", text: "Opened and closed" }), h("span", { role: "columnheader", text: "Critical open at month end" }), h("span", { role: "columnheader", text: "High" })),
+    ...b.flow.map((m) => h("div", { class: "bd-row", role: "row" },
+      h("span", { role: "cell", text: m.month }),
+      h("span", { role: "cell", class: "bd-bars" }, bar(m.opened, "opened"), h("small", { text: `${m.opened} opened` }), bar(m.closed, "closed"), h("small", { text: `${m.closed} closed` })),
+      h("span", { role: "cell", text: String(m.open_critical) }), h("span", { role: "cell", text: String(m.open_high) }))));
+  const table = h("div", { class: "tablewrap" }, h("table", { class: "dt", "aria-label": "By severity" },
+    h("thead", {}, h("tr", {}, ["Severity", "Open", `Older than target`, "0-7 days", "8-30", "31-90", "91+", `Mean days to fix (last ${b.mttr_window_days})`].map((t) => h("th", { text: t })))),
+    h("tbody", {}, SEV_ORDER.map((sv) => h("tr", {},
+      h("td", {}, chip(sv, SEV[sv])),
+      h("td", { text: String(b.open[sv]) }),
+      h("td", { text: `${b.past_sla[sv]} (target ${b.sla_days[sv]}d)` }),
+      ...Object.values(b.aging[sv]).map((n) => h("td", { text: String(n) })),
+      h("td", { text: b.mttr[sv].days == null ? (b.mttr[sv].n ? `too few (${b.mttr[sv].n})` : "none closed") : `${b.mttr[sv].days} (${b.mttr[sv].n})` }))))));
+  const oldest = b.oldest_urgent.length ? h("ol", {}, b.oldest_urgent.map((o) => h("li", { text: `${o.severity} ${o.id} in ${o.account_id}: ${o.age_days} days old, ${o.owner ? "owner " + o.owner : "no owner"}` })))
+    : h("p", { class: "note first", text: "No critical or high finding is open." });
+  return h("div", {},
+    h("p", { class: "note", role: "status", text: zeroText }),
+    h("div", { class: "kpiline" }, stat(String(b.open.critical), "critical open", b.open.critical ? "bad" : "good"), stat(String(b.open.high), "high open", b.open.high ? "warn" : "good"),
+      stat(String(b.past_sla_total), "older than target", b.past_sla_total ? "warn" : "good"), stat(String(b.unowned_urgent), "critical or high with no owner", b.unowned_urgent ? "warn" : "good")),
+    card("By severity and age", table, { sub: b.sla_is_default ? "Target ages are a default (7, 30, 90, 180 days). Replace them with the customer's own before quoting a figure." : "Target ages as set for this customer." }),
+    card("The last six months", flow, { sub: "Rebuilt from each finding's open and close dates." }),
+    card("Oldest critical and high", oldest),
+    h("p", { class: "note", text: b.note }));
+}
+
 // ------------------------------------------------------------------ executive QBR
 const quarterOf = (iso) => { const [y, m] = iso.split("-").map(Number); const q = Math.floor((m - 1) / 3); const s = `${y}-${String(3 * q + 1).padStart(2, "0")}-01`;
   const e = new Date(Date.UTC(y, 3 * q + 3, 0)).toISOString().slice(0, 10); return { from: s, to: e, label: `Q${q + 1} ${y}` }; };
@@ -1071,4 +1112,110 @@ export function connectionsView({ dash, go }) {
 /** The same across the book: what several customers share, so one piece of work serves them all. */
 export function bookConnectionsView({ book, openCustomer }) {
   return book.graph ? connections(book.graph, { go: () => {}, open: openCustomer }) : h("p", { class: "note first", text: "Run the book again to see what its customers share." });
+}
+
+// ------------------------------------------------------------------ asks to the vendor
+let askScope = "all";
+export function asksView({ result, asks, today, addAsk, setAskStatus, removeAsk }) {
+  const say = h("p", { class: "note", role: "status" });
+  const act = (fn) => async () => { try { await fn(); say.textContent = ""; } catch (e) { say.textContent = e.message; } };
+  const f = {
+    kind: h("select", { "aria-label": "Kind of ask" }, A.KINDS.map((k) => h("option", { value: k, text: A.KIND_TEXT[k] }))),
+    title: h("input", { type: "text", maxlength: 120, "aria-label": "What is being asked", placeholder: "What is being asked" }),
+    stake: h("input", { type: "number", min: 0, step: 1, "aria-label": "What is at stake (a number, optional)", placeholder: "At stake (optional)" }),
+    ref: h("input", { type: "text", maxlength: 60, "aria-label": "Ticket or reference (optional)", placeholder: "Ticket (optional)" }),
+    detail: h("input", { type: "text", maxlength: 500, "aria-label": "Detail (optional)", placeholder: "Detail (optional)" }),
+  };
+  const scope = h("select", { "aria-label": "Show asks for" }, h("option", { value: "all", text: "All customers" }), h("option", { value: "this", text: result.customer }));
+  scope.value = askScope;
+  const body = h("div", {});
+  const row = (a) => h("li", { class: "promise" },
+    h("span", { class: "pmain" }, h("b", { text: a.customer + ": " }), a.title,
+      h("small", { class: "muted", text: ` ${A.KIND_TEXT[a.kind].toLowerCase()}, ${a.status}${a.at_stake ? `, at stake ${a.at_stake.toLocaleString("en-US")}` : ""}${a.ref ? `, ${a.ref}` : ""}, raised ${a.created_on}` })),
+    h("span", { class: "btnrow" },
+      a.status === "open" || a.status === "shared"
+        ? [a.status === "open" ? h("button", { class: "btn small", type: "button", text: "Passed on", "aria-label": `Mark passed on: ${a.title}`, onclick: act(() => setAskStatus(a.id, "shared")) }) : null,
+          h("button", { class: "btn small", type: "button", text: "Done", "aria-label": `Mark done: ${a.title}`, onclick: act(() => setAskStatus(a.id, "done")) }),
+          h("button", { class: "btn small quiet", type: "button", text: "Declined", "aria-label": `Mark declined: ${a.title}`, onclick: act(() => setAskStatus(a.id, "declined")) })]
+        : h("button", { class: "btn small quiet", type: "button", text: "Reopen", "aria-label": `Reopen: ${a.title}`, onclick: act(() => setAskStatus(a.id, "open")) }),
+      h("button", { class: "icon-btn", type: "button", text: "×", "aria-label": `Delete: ${a.title}`, onclick: act(() => removeAsk(a.id)) })));
+  const draw = () => {
+    const list = scope.value === "this" ? asks.filter((a) => a.customer === result.customer) : asks;
+    const d = A.digest(list, today);
+    const open = list.filter((a) => a.status === "open" || a.status === "shared");
+    body.replaceChildren(
+      h("div", { class: "kpiline" }, stat(String(d.counts.open), "open"), stat(String(d.counts.themes), "different asks"), stat(String(d.counts.escalations), "escalations", d.counts.escalations ? "warn" : ""), stat(String(d.counts.customers), "customers")),
+      !asks.length ? h("p", { class: "note", text: "Nothing is kept yet. Add what a customer asked for below." }) : null,
+      d.themes.length ? card("Asked by several customers first", h("ul", { class: "rates wide" }, d.themes.map((t) => h("li", {}, h("span", { class: "rl", text: t.title }),
+        h("span", { class: "rn", text: `${t.customers.length} customer${t.customers.length === 1 ? "" : "s"}: ${t.customers.join(", ")}${t.at_stake ? `; at stake ${t.at_stake.toLocaleString("en-US")}` : ""}` }))))) : null,
+      open.length ? card("Open", h("ul", { class: "promises" }, open.map(row))) : null,
+      list.length > open.length ? card("Closed", h("ul", { class: "promises" }, list.filter((a) => !open.includes(a)).map(row))) : null,
+      h("div", { class: "row left" },
+        h("button", { class: "btn small primary", type: "button", text: "Copy digest", onclick: (e) => copyText(A.digestMarkdown(d, today)).then((ok) => { e.target.textContent = ok ? "Copied" : "Not copied"; }) }),
+        h("button", { class: "btn small", type: "button", text: "Export CSV", onclick: () => saveBlob(toCsv(A.CSV_COLUMNS, [...list].sort((x, y) => x.customer.localeCompare(y.customer) || x.created_on.localeCompare(y.created_on))), "beyond90-asks.csv", "text/csv") })));
+  };
+  scope.addEventListener("change", () => { askScope = scope.value; draw(); });
+  draw();
+  return h("div", {},
+    card("Add an ask", h("div", {}, h("div", { class: "formgrid" }, h("label", {}, "Kind", f.kind), h("label", { class: "wide2" }, "What", f.title), h("label", {}, "At stake", f.stake), h("label", {}, "Ticket", f.ref), h("label", { class: "wide2" }, "Detail", f.detail)),
+      h("div", { class: "row left" }, h("button", { class: "btn small primary", type: "button", text: "Keep in the ledger", onclick: act(async () => { await addAsk({ kind: f.kind.value, title: f.title.value, atStake: f.stake.value, ref: f.ref.value, detail: f.detail.value }); f.title.value = ""; f.detail.value = ""; }) })), say),
+    { sub: `For ${result.customer}. At stake is a figure you type (a renewal amount, say): the page does not measure it. Kept in this browser; erasing a customer removes their asks.` }),
+    card("Asks", h("div", {}, h("div", { class: "row left" }, h("label", { class: "inline" }, "Show ", scope)), body)),
+    );
+}
+
+// ------------------------------------------------------------------ proof of value
+let povPick = "";
+export function povView({ result, book, povs, today, savePov, removePov }) {
+  const customers = book ? book.customers.map((r) => r.customer) : [result.customer];
+  const say = h("p", { class: "note", role: "status" });
+  const act = (fn) => async () => { try { await fn(); say.textContent = ""; } catch (e) { say.textContent = e.message; } };
+  const mine = book ? povs : povs.filter((p) => p.customer === result.customer);
+  const body = h("div", {});
+  const sel = h("select", { "aria-label": "Proof of value to show" }, mine.map((p) => h("option", { value: p.id, text: `${p.customer}, ${p.start || p.created_on}` })));
+  if (mine.some((p) => p.id === povPick)) sel.value = povPick;
+  const nf = { cust: h("select", { "aria-label": "Customer" }, customers.map((c) => h("option", { value: c, text: c }))),
+    sponsor: h("input", { type: "text", maxlength: 100, "aria-label": "Sponsor", placeholder: "Sponsor" }), champion: h("input", { type: "text", maxlength: 100, "aria-label": "Champion", placeholder: "Champion" }),
+    start: h("input", { type: "date", "aria-label": "Start date" }), end: h("input", { type: "date", "aria-label": "End date" }) };
+  const draw = () => {
+    povPick = sel.value;
+    const p = mine.find((x) => x.id === sel.value);
+    if (!p) { body.replaceChildren(h("p", { class: "note", text: "No proof of value yet. Fill in the plan above to start one with starter criteria you can change." })); return; }
+    const pr = P.progress(p);
+    const edit = (fn) => act(async () => { await savePov(fn(p)); });
+    const crit = p.criteria.map((c) => {
+      const st = h("select", { "aria-label": `Result for: ${c.text}` }, P.STATUSES.map((s) => h("option", { value: s, text: P.STATUS_TEXT[s] })));
+      st.value = c.status;
+      const ev = h("input", { type: "text", maxlength: 300, value: c.evidence, "aria-label": `What was seen for: ${c.text}`, placeholder: "What was seen" });
+      return h("li", { class: "promise" }, h("span", { class: "pmain" }, c.text, h("small", { class: "muted", text: c.target ? ` Target: ${c.target}` : "" })),
+        h("span", { class: "btnrow" }, st, ev, h("button", { class: "btn small", type: "button", text: "Save", "aria-label": `Save result for: ${c.text}`, onclick: edit((q) => P.setCriterion(q, c.id, { status: st.value, evidence: ev.value }, today)) })));
+    });
+    const ready = p.readiness.map((r) => h("li", {}, h("label", { class: "inline" }, h("input", { type: "checkbox", checked: r.done, onchange: edit((q) => P.setReady(q, r.id, !r.done, today)) }), " " + r.text)));
+    const nc = h("input", { type: "text", maxlength: 200, "aria-label": "New criterion", placeholder: "New criterion" }), nt = h("input", { type: "text", maxlength: 200, "aria-label": "How we will know", placeholder: "How we will know" });
+    const sd = h("input", { type: "date", "aria-label": "Session date" }), st2 = h("input", { type: "text", maxlength: 120, "aria-label": "Session topic", placeholder: "Session topic" });
+    const summ = h("textarea", { rows: 3, maxlength: 1000, "aria-label": "Summary in your words", placeholder: "Summary in your words" }); summ.value = p.summary;
+    const stage = h("select", { "aria-label": "Stage" }, P.STAGES.map((s) => h("option", { value: s, text: s }))); stage.value = p.stage;
+    body.replaceChildren(
+      h("div", { class: "kpiline" }, stat(pr.verdict, "result so far"), stat(`${pr.met}/${pr.total}`, "criteria met"), stat(`${pr.ready}/${pr.ready_total}`, "ready"), stat(String(p.sessions.length), "sessions")),
+      card("Success criteria", h("ul", { class: "promises" }, crit), { sub: "Agree these with the sponsor before you start. Mark each one when you have seen it, and write what you saw." }),
+      card("Add a criterion", h("div", { class: "formgrid" }, h("label", { class: "wide2" }, "Criterion", nc), h("label", { class: "wide2" }, "How we will know", nt),
+        h("button", { class: "btn small", type: "button", text: "Add criterion", onclick: edit((q) => P.addCriterion(q, { text: nc.value, target: nt.value }, today)) }))),
+      card("Ready to start?", h("ul", { class: "plain" }, ready)),
+      card("Working sessions", h("div", {}, p.sessions.length ? h("ul", { class: "plain" }, p.sessions.map((s) => h("li", { text: `${s.on}: ${s.topic}${s.who ? ` (${s.who})` : ""}` }))) : h("p", { class: "note", text: "No sessions yet." }),
+        h("div", { class: "formgrid" }, h("label", {}, "Date", sd), h("label", { class: "wide2" }, "Topic", st2), h("button", { class: "btn small", type: "button", text: "Add session", onclick: edit((q) => P.addSession(q, { on: sd.value, topic: st2.value }, today)) })))),
+      card("Summary and stage", h("div", {}, h("label", {}, "Stage ", stage), summ,
+        h("div", { class: "row left" }, h("button", { class: "btn small", type: "button", text: "Save summary", onclick: edit((q) => P.edit(q, { summary: summ.value.trim(), stage: stage.value }, today)) })))),
+      h("div", { class: "row left" },
+        h("button", { class: "btn small primary", type: "button", text: "Copy plan", onclick: (e) => copyText(P.planMarkdown(p)).then((ok) => { e.target.textContent = ok ? "Copied" : "Not copied"; }) }),
+        h("button", { class: "btn small primary", type: "button", text: "Copy result", onclick: (e) => copyText(P.valueReport(p, today)).then((ok) => { e.target.textContent = ok ? "Copied" : "Not copied"; }) }),
+        h("button", { class: "btn small", type: "button", text: "Download result .md", onclick: () => saveBlob(P.valueReport(p, today), `beyond90-pov-${p.customer.replace(/[^A-Za-z0-9]+/g, "-").toLowerCase()}-${today}.md`, "text/markdown") }),
+        h("button", { class: "icon-btn", type: "button", text: "×", "aria-label": `Delete proof of value for ${p.customer}`, onclick: act(() => removePov(p.id)) })));
+  };
+  sel.addEventListener("change", draw);
+  draw();
+  return h("div", {},
+    card("Start a proof of value", h("div", {}, h("div", { class: "formgrid" }, book ? h("label", {}, "Customer", nf.cust) : null, h("label", {}, "Sponsor", nf.sponsor), h("label", {}, "Champion", nf.champion), h("label", {}, "Start", nf.start), h("label", {}, "End", nf.end)),
+      h("div", { class: "row left" }, h("button", { class: "btn small primary", type: "button", text: "Create the plan", onclick: act(async () => { await savePov(P.makePov({ customer: nf.cust.value, sponsor: nf.sponsor.value, champion: nf.champion.value, start: nf.start.value, end: nf.end.value, createdOn: today }), true); }) })), say),
+    { sub: "A proof of value is only worth what was agreed before it started. Kept in this browser, sealed with your passphrase if you set one." }),
+    mine.length ? card("Your proofs of value", h("div", {}, h("label", { class: "inline" }, "Show ", sel), body)) : body);
 }

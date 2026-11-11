@@ -147,3 +147,9 @@ def test_the_web_functions_round_trip() -> None:
     assert r["ok"] and r["rows"] == 2 and len(r["preview"]) == 2
     bad = json.loads(web.mapping_suggest_json(""))
     assert not bad["ok"] and "header" in bad["error"]
+
+
+def test_more_export_column_names_are_recognised() -> None:
+    text = "Issue ID,Cloud Account,Severity,Created Date,Resolved Date,Widely Internet Exposed\nI1,A1,HIGH,2026-01-02,2026-02-03,yes\n"
+    m = suggest(text)["mapping"]
+    assert m["opened_at"] == "Created Date" and m["closed_at"] == "Resolved Date" and m["exposure"] == "Widely Internet Exposed"

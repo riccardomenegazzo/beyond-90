@@ -15,7 +15,22 @@ from datetime import date
 from pathlib import Path
 from typing import Any, Optional
 
-from . import __version__, correlate, dashboard, execqbr, health, identifiers, impact, onboarding, outlook, rhythm, stake, teams, whatif
+from . import (
+    __version__,
+    burndown,
+    correlate,
+    dashboard,
+    execqbr,
+    health,
+    identifiers,
+    impact,
+    onboarding,
+    outlook,
+    rhythm,
+    stake,
+    teams,
+    whatif,
+)
 from .attribution import explain
 from .book import build_book_plan, render_book_html, render_book_markdown
 from .candor import candor_items
@@ -124,7 +139,7 @@ def analyze(
         "receipt_html": impact.render(value, html=True) if value else "",
         "dashboard": dashboard.build(data, score, cat, plan, {**extras, "rhythm": rh, "onboarding": onb, "outlook": look, "stake": weighted, "impact": value, "health": healthy,
                                                               "teams": teams.digests(data, onb, look, weighted, cat.terms["units"]),
-                                                              "graph": graph}, actions),
+                                                              "graph": graph, "burndown": burndown.build(data)}, actions),
         "report_html": render_html(score, actions, None, previous, **extras),
         "report_markdown": render_markdown(score, actions, None, previous, **extras),
         "qbr_markdown": render_qbr(score, actions, previous, quarter, **extras),
