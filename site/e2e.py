@@ -446,6 +446,7 @@ def main(site: str) -> int:
 
         # persistence across a reload
         boot()
+        page.wait_for_selector("#hist-table tbody tr:nth-child(2)", timeout=30_000)
         check(page.locator("#hist-table tbody tr").count() == 2, "snapshots survive a reload")
 
         # export, wipe, import, import again
