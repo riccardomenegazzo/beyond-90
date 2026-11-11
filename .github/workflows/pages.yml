@@ -43,13 +43,9 @@ jobs:
       - run: python site/build_site.py --out _site --pyodide site/npm/node_modules/pyodide $( [ -f feed.json ] && echo --feed feed.json )
       - run: |
           python -m pip install --require-hashes -r requirements/e2e.txt
-          # The package mirrors are sometimes unreachable for a few minutes: try again instead of failing the deploy.
-          for attempt in 1 2 3 4; do
-            sudo apt-get update -o Acquire::Retries=3 || true
-            python -m playwright install --with-deps chromium && break
-            [ "$attempt" = 4 ] && exit 1
-            sleep $((attempt * 30))
-          done
+          # The package mirrors are sometimes unreachable: try the full install once, and if it fails fall back to the
+          # browser alone (the runner image already has the libraries it needs) instead of failing the deploy.
+          timeout 240 python -m playwright install --with-deps chromium || python -m playwright install chromium
       - run: python site/e2e.py _site
         env:
           AXE_CORE: site/npm/node_modules/axe-core/axe.min.js
