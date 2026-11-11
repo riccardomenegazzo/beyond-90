@@ -22,6 +22,20 @@ beyond90 mcp ~/customers
 | `what_if` | scenarios compared: today, right after, once settled (see [what-if](whatif.md)) |
 | `path_to_target` | the steps that reach a target Yield, biggest gain first |
 
+## Prompts
+
+The server also offers three ready-made requests your assistant can list: `qbr_prep` (one customer), `weekly_book_review` (the customers to call first) and `escalation_triage` (one customer and the issue). Each tells the assistant which tools to call, to use only the numbers they return and to say what is not known.
+
+## Aliases
+
+Add `--pseudonyms` and the assistant sees Customer A, Person 1, Team 1 and Account 1 instead of real names. It can send "Customer A" back and the server finds the folder. Add `--aliases FILE` to keep the table between sessions; the file is readable by you only and holds the real names, so keep it out of anything you share.
+
+```json
+{ "mcpServers": { "beyond90": { "command": "beyond90", "args": ["mcp", "/home/me/customers", "--pseudonyms", "--aliases", "/home/me/.b90-aliases.json"] } } }
+```
+
+Limits: only names the loader found are replaced, a name typed inside free text passes through, and an alias is not anonymity: the numbers and the shape of the data can still point at one customer. The table is separate from the one in the browser.
+
 ## What it promises
 
 - **Read only.** No tool writes, sends or deletes. Each is declared read-only to the assistant, and a test checks that using every tool changes no file.

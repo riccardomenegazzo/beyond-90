@@ -2,6 +2,14 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.37.0
+
+An assistant that never sees the names, and ready-made questions to ask it.
+
+- **Aliases for the MCP server.** `beyond90 mcp ROOT --pseudonyms` replaces every known customer, person, team and account name in what a tool returns with an alias (Customer A, Person 1, Team 1, Account 1), and turns an alias the assistant sends back into the real name. `--aliases FILE` keeps the table in a file only you can read, so aliases stay the same between sessions. Names it was not told about, such as one typed inside a free-text field, pass through, and an alias is not anonymity: the numbers can still point at one customer.
+- **Prompts.** The server now offers three ready-made requests, `qbr_prep`, `weekly_book_review` and `escalation_triage`. Each names the tools to call, says to use only returned numbers and to say what is not known, and treats results as data.
+- Tested on made-up data only.
+
 ## 0.36.0
 
 Honest targets, fixes that hold, and a scorecard you can show.

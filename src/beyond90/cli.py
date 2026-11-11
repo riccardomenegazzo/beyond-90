@@ -461,7 +461,7 @@ def cmd_mcp(args: argparse.Namespace) -> int:
     from .mcp_server import main as serve_mcp
 
     try:
-        return serve_mcp(args.root, args.profile, args.catalogue_dir)
+        return serve_mcp(args.root, args.profile, args.catalogue_dir, args.pseudonyms, args.aliases)
     except ValueError as e:
         raise SystemExit(f"beyond90: {e}") from None
 
@@ -926,6 +926,8 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("root", help="directory whose sub-folders are customer data directories")
     sp.add_argument("--profile", help="catalogue profile (see `beyond90 profiles`)")
     sp.add_argument("--catalogue-dir", help="directory with custom resource_types.json, modules.json, playbooks.json")
+    sp.add_argument("--pseudonyms", action="store_true", help="replace customer, people, team and account names in every result by aliases before the assistant sees them")
+    sp.add_argument("--aliases", metavar="FILE", help="keep the alias table in FILE (readable by you only) so aliases stay the same between sessions; implies --pseudonyms")
     sp.set_defaults(func=cmd_mcp)
 
     sp = sub.add_parser("successplan", help="draft a success plan the customer can sign: outcomes, measures, milestones, owners, risks")
@@ -1039,7 +1041,7 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("config")
     sp.add_argument("--at", default="05:17", help="time of day in UTC, HH:MM")
     sp.add_argument("--every", choices=["hour", "day", "week"], default="day")
-    sp.add_argument("--install-from", default="beyond90", help='pip requirement for the workflow, e.g. "beyond90 @ git+https://github.com/OWNER/beyond-90@v0.36.0"')
+    sp.add_argument("--install-from", default="beyond90", help='pip requirement for the workflow, e.g. "beyond90 @ git+https://github.com/OWNER/beyond-90@v0.37.0"')
     sp.add_argument("--out")
     sp.set_defaults(func=cmd_schedule)
 

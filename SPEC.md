@@ -1,4 +1,4 @@
-# Beyond 90: specification v0.36
+# Beyond 90: specification v0.37
 
 An adoption engine for Technical Account Managers. It measures how much of a customer's cloud estate is really covered and operated through a security platform, and turns every gap into an action. The bar keeps moving: when a customer grows or the product ships something, the denominators grow with it.
 
