@@ -41,7 +41,15 @@ jobs:
             python -c "import json, beyond90.feeds as f; print(f.render_markdown(json.load(open('feed.json')), limit=40))" | tee -a "$GITHUB_STEP_SUMMARY"
           fi
       - run: python site/build_site.py --out _site --pyodide site/npm/node_modules/pyodide $( [ -f feed.json ] && echo --feed feed.json )
-      - run: python -m pip install --require-hashes -r requirements/e2e.txt && python -m playwright install --with-deps chromium
+      - run: |
+          python -m pip install --require-hashes -r requirements/e2e.txt
+          # The package mirrors are sometimes unreachable for a few minutes: try again instead of failing the deploy.
+          for attempt in 1 2 3 4; do
+            sudo apt-get update -o Acquire::Retries=3 || true
+            python -m playwright install --with-deps chromium && break
+            [ "$attempt" = 4 ] && exit 1
+            sleep $((attempt * 30))
+          done
       - run: python site/e2e.py _site
         env:
           AXE_CORE: site/npm/node_modules/axe-core/axe.min.js
