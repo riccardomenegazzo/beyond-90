@@ -14,6 +14,7 @@ const DATE = /^\d{4}-\d{2}-\d{2}$/;
 const NONCE = /^[a-z0-9]{6,12}$/;
 const cmp = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
 const text = (v, max) => String(v == null ? "" : v).replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim().slice(0, max);
+export const clean = text;
 const isDate = (v) => typeof v === "string" && DATE.test(v) && !Number.isNaN(Date.parse(v));
 
 function randomNonce() {
@@ -42,7 +43,7 @@ export const READINESS_TEMPLATES = [
   "An owner is named for each result",
 ];
 
-export function makePov({ customer, sponsor = "", champion = "", start = "", end = "", createdOn, nonce = "", criteria = null }) {
+export function makePov({ customer, sponsor = "", champion = "", start = "", end = "", createdOn, nonce = "", criteria = null, problem = "", outOfScope = "" }) {
   const name = text(customer, 200);
   if (!name) throw new Error("Say who the proof of value is for.");
   if (!isDate(createdOn)) throw new Error("A plan needs the date it was made.");
@@ -57,6 +58,7 @@ export function makePov({ customer, sponsor = "", champion = "", start = "", end
   return {
     id: `${name}|${createdOn}|${n}`, customer: name, sponsor: text(sponsor, 100), champion: text(champion, 100), start, end, stage: "planned",
     criteria: list, sessions: [], readiness: READINESS_TEMPLATES.map((t, i) => ({ id: `r${i + 1}`, text: t, done: false })),
+    problem: text(problem, 300), out_of_scope: text(outOfScope, 300), signed_off_on: "", first_value_on: "",
     summary: "", created_on: createdOn, updated_on: createdOn,
   };
 }
@@ -71,6 +73,9 @@ export function validPov(p) {
   if (typeof p.customer !== "string" || !p.customer || p.customer.length > 200) return false;
   if (typeof p.sponsor !== "string" || p.sponsor.length > 100 || typeof p.champion !== "string" || p.champion.length > 100) return false;
   if (!(p.start === "" || isDate(p.start)) || !(p.end === "" || isDate(p.end)) || (p.start && p.end && p.end < p.start)) return false;
+  // Optional, so plans kept before these existed stay valid.
+  for (const k of ["problem", "out_of_scope"]) if (p[k] != null && (typeof p[k] !== "string" || p[k].length > 300)) return false;
+  for (const k of ["signed_off_on", "first_value_on"]) if (p[k] != null && !(p[k] === "" || isDate(p[k]))) return false;
   if (!STAGES.includes(p.stage) || typeof p.summary !== "string" || p.summary.length > 1000) return false;
   if (!isDate(p.created_on) || !isDate(p.updated_on) || p.updated_on < p.created_on) return false;
   if (!Array.isArray(p.criteria) || p.criteria.length > MAX_CRITERIA || !p.criteria.every(okCriterion) || new Set(p.criteria.map((c) => c.id)).size !== p.criteria.length) return false;
@@ -135,6 +140,30 @@ export function progress(p) {
   return { total, met, partly, not_met: notMet, open, dropped: p.criteria.length - total, verdict, ready, ready_total: p.readiness.length };
 }
 
+const daysBetween = (a, b) => Math.round((Date.parse(b) - Date.parse(a)) / 86400000);
+
+/** Is this worth starting? Five questions asked before the first session, each answered from what is written in the plan. */
+export function qualify(p) {
+  const counted = p.criteria.filter((c) => c.status !== "dropped");
+  const days = p.start && p.end ? daysBetween(p.start, p.end) + 1 : null;
+  const items = [
+    { id: "problem", text: "The problem is stated in the customer's words", ok: !!(p.problem || "").trim(), fix: "Write the problem this proof must settle." },
+    { id: "criteria", text: "Success criteria are signed off, each with how we will know", ok: !!p.signed_off_on && counted.length > 0 && counted.every((c) => c.target), fix: p.signed_off_on ? "Give every criterion a target." : "Record the date the sponsor signed off the criteria." },
+    { id: "sponsor", text: "A sponsor and a champion are named", ok: !!(p.sponsor && p.champion), fix: "Name who decides and who does the work." },
+    { id: "schedule", text: "The window is realistic for the number of criteria", ok: days != null && days >= 5 && days <= 60 && counted.length <= Math.max(1, Math.floor(days / 2)), fix: days == null ? "Set a start and an end." : days < 5 ? "Under five days is a demo, not a proof." : days > 60 ? "Past 60 days it drifts: shorten it." : "Too many criteria for the time: cut some or lengthen the window." },
+    { id: "scope", text: "What is out of scope is written down", ok: !!(p.out_of_scope || "").trim(), fix: "List what this proof will not try to show." },
+  ];
+  const gaps = items.filter((i) => !i.ok);
+  return { items, passed: items.length - gaps.length, total: items.length, ready: gaps.length === 0, verdict: gaps.length ? `not ready: ${gaps.length} to settle` : "ready to start" };
+}
+
+/** Days from the start of the window to the first value the customer saw, or null if either date is missing. */
+export function timeToFirstValue(p) {
+  if (!p.start || !p.first_value_on) return null;
+  const d = daysBetween(p.start, p.first_value_on);
+  return d < 0 ? null : d;
+}
+
 const cell = (t) => String(t || "").replace(/\|/g, "/").replace(/\n/g, " ");
 
 /** The plan as text to agree on before starting: who, when, what success means, what must be ready. */
@@ -143,11 +172,13 @@ export function planMarkdown(p) {
   const lines = [`# Proof of value: ${p.customer}`, "",
     `Sponsor: ${p.sponsor || "to be named"}. Champion: ${p.champion || "to be named"}.`,
     `Window: ${p.start || "to be set"} to ${p.end || "to be set"}.`, "",
+    ...(p.problem ? ["## The problem", "", p.problem, ""] : []),
     "## What success means", "", "| # | Criterion | How we will know |", "|---|---|---|",
     ...p.criteria.filter((c) => c.status !== "dropped").map((c, i) => `| ${i + 1} | ${cell(c.text)} | ${cell(c.target)} |`), "",
     "## Before we start", "", ...p.readiness.map((r) => `- [${r.done ? "x" : " "}] ${r.text}`), ""];
+  if (p.out_of_scope) lines.push("## Out of scope", "", p.out_of_scope, "");
   if (p.sessions.length) lines.push("## Working sessions", "", ...p.sessions.map((s) => `- ${s.on}: ${s.topic}${s.who ? ` (${s.who})` : ""}`), "");
-  lines.push(`Ready: ${pr.ready} of ${pr.ready_total}.`, "");
+  lines.push(`Ready: ${pr.ready} of ${pr.ready_total}. Qualification: ${qualify(p).verdict}.`, "");
   return lines.join("\n");
 }
 
@@ -159,6 +190,9 @@ export function valueReport(p, today) {
     `**Result: ${pr.verdict}.** ${pr.met} of ${pr.total} criteria met, ${pr.partly} partly, ${pr.not_met} not met, ${pr.open} not yet tried${pr.dropped ? `, ${pr.dropped} dropped` : ""}.`, "",
     "| Criterion | Result | What was seen |", "|---|---|---|",
     ...counted.map((c) => `| ${cell(c.text)} | ${STATUS_TEXT[c.status]} | ${cell(c.evidence) || "nothing recorded"} |`), ""];
+  const t = timeToFirstValue(p);
+  if (t != null) lines.push(`First value seen ${t === 0 ? "on the first day" : `${t} day${t === 1 ? "" : "s"} after the start`} (${p.first_value_on}).`, "");
+  else lines.push("When the first value was seen was not recorded.", "");
   if (p.summary) lines.push("## In short", "", p.summary, "");
   const carry = counted.filter((c) => c.status === "met" || c.status === "partly");
   lines.push("## What to carry into the rollout", "",

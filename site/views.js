@@ -1179,7 +1179,8 @@ export function povView({ result, book, povs, today, savePov, removePov }) {
   const sel = h("select", { "aria-label": "Proof of value to show" }, mine.map((p) => h("option", { value: p.id, text: `${p.customer}, ${p.start || p.created_on}` })));
   if (mine.some((p) => p.id === povPick)) sel.value = povPick;
   const nf = { cust: h("select", { "aria-label": "Customer" }, customers.map((c) => h("option", { value: c, text: c }))),
-    sponsor: h("input", { type: "text", maxlength: 100, "aria-label": "Sponsor", placeholder: "Sponsor" }), champion: h("input", { type: "text", maxlength: 100, "aria-label": "Champion", placeholder: "Champion" }),
+    sponsor: h("input", { type: "text", maxlength: 100, "aria-label": "Sponsor" }), champion: h("input", { type: "text", maxlength: 100, "aria-label": "Champion" }),
+    problem: h("input", { type: "text", maxlength: 300, "aria-label": "The problem to settle" }), scope: h("input", { type: "text", maxlength: 300, "aria-label": "Out of scope" }),
     start: h("input", { type: "date", "aria-label": "Start date" }), end: h("input", { type: "date", "aria-label": "End date" }) };
   const draw = () => {
     povPick = sel.value;
@@ -1200,10 +1201,11 @@ export function povView({ result, book, povs, today, savePov, removePov }) {
     const summ = h("textarea", { rows: 3, maxlength: 1000, "aria-label": "Summary in your words", placeholder: "Summary in your words" }); summ.value = p.summary;
     const stage = h("select", { "aria-label": "Stage" }, P.STAGES.map((s) => h("option", { value: s, text: s }))); stage.value = p.stage;
     body.replaceChildren(
-      h("div", { class: "kpiline" }, stat(pr.verdict, "result so far"), stat(`${pr.met}/${pr.total}`, "criteria met"), stat(`${pr.ready}/${pr.ready_total}`, "ready"), stat(String(p.sessions.length), "sessions")),
+      h("div", { class: "kpiline" }, stat(pr.verdict, "result so far"), stat(`${pr.met}/${pr.total}`, "criteria met"), stat(`${pr.ready}/${pr.ready_total}`, "ready"), stat(String(p.sessions.length), "sessions"), stat(P.timeToFirstValue(p) == null ? "not set" : `${P.timeToFirstValue(p)} d`, "to first value")),
       card("Success criteria", h("ul", { class: "promises" }, crit), { sub: "Agree these with the sponsor before you start. Mark each one when you have seen it, and write what you saw." }),
       card("Add a criterion", h("div", { class: "formgrid" }, h("label", { class: "wide2" }, "Criterion", nc), h("label", { class: "wide2" }, "How we will know", nt),
         h("button", { class: "btn small", type: "button", text: "Add criterion", onclick: edit((q) => P.addCriterion(q, { text: nc.value, target: nt.value }, today)) }))),
+      qualCard(p, edit, today),
       card("Ready to start?", h("ul", { class: "plain" }, ready)),
       card("Working sessions", h("div", {}, p.sessions.length ? h("ul", { class: "plain" }, p.sessions.map((s) => h("li", { text: `${s.on}: ${s.topic}${s.who ? ` (${s.who})` : ""}` }))) : h("p", { class: "note", text: "No sessions yet." }),
         h("div", { class: "formgrid" }, h("label", {}, "Date", sd), h("label", { class: "wide2" }, "Topic", st2), h("button", { class: "btn small", type: "button", text: "Add session", onclick: edit((q) => P.addSession(q, { on: sd.value, topic: st2.value }, today)) })))),
@@ -1218,10 +1220,25 @@ export function povView({ result, book, povs, today, savePov, removePov }) {
   sel.addEventListener("change", draw);
   draw();
   return h("div", {},
-    card("Start a proof of value", h("div", {}, h("div", { class: "formgrid" }, book ? h("label", {}, "Customer", nf.cust) : null, h("label", {}, "Sponsor", nf.sponsor), h("label", {}, "Champion", nf.champion), h("label", {}, "Start", nf.start), h("label", {}, "End", nf.end)),
-      h("div", { class: "row left" }, h("button", { class: "btn small primary", type: "button", text: "Create the plan", onclick: act(async () => { await savePov(P.makePov({ customer: nf.cust.value, sponsor: nf.sponsor.value, champion: nf.champion.value, start: nf.start.value, end: nf.end.value, createdOn: today }), true); }) })), say),
+    card("Start a proof of value", h("div", {}, h("div", { class: "formgrid" }, book ? h("label", {}, "Customer", nf.cust) : null, h("label", {}, "Sponsor", nf.sponsor), h("label", {}, "Champion", nf.champion), h("label", {}, "Start", nf.start), h("label", {}, "End", nf.end),
+      h("label", { class: "wide2" }, "The problem to settle", nf.problem), h("label", { class: "wide2" }, "Out of scope", nf.scope)),
+      h("div", { class: "row left" }, h("button", { class: "btn small primary", type: "button", text: "Create the plan", onclick: act(async () => { await savePov(P.makePov({ customer: nf.cust.value, sponsor: nf.sponsor.value, champion: nf.champion.value, start: nf.start.value, end: nf.end.value, createdOn: today, problem: nf.problem.value, outOfScope: nf.scope.value }), true); }) })), say),
     { sub: "A proof of value is only worth what was agreed before it started. Kept in this browser, sealed with your passphrase if you set one." }),
     mine.length ? card("Your proofs of value", h("div", {}, h("label", { class: "inline" }, "Show ", sel), body)) : body);
+}
+
+function qualCard(p, edit, today) {
+  const q = P.qualify(p);
+  const prob = h("input", { type: "text", maxlength: 300, value: p.problem || "", "aria-label": "The problem to settle" });
+  const scope = h("input", { type: "text", maxlength: 300, value: p.out_of_scope || "", "aria-label": "Out of scope" });
+  const signed = h("input", { type: "date", value: p.signed_off_on || "", "aria-label": "Date the criteria were signed off" });
+  const first = h("input", { type: "date", value: p.first_value_on || "", "aria-label": "Date the first value was seen" });
+  return card(`Worth starting? ${q.verdict}`, h("div", {},
+    h("ul", { class: "plain" }, q.items.map((i) => h("li", {}, h("strong", { text: i.ok ? "Yes: " : "Not yet: " }), i.text, i.ok ? null : h("small", { class: "muted", text: ` ${i.fix}` })))),
+    h("div", { class: "formgrid" }, h("label", { class: "wide2" }, "The problem to settle", prob), h("label", { class: "wide2" }, "Out of scope", scope),
+      h("label", {}, "Criteria signed off on", signed), h("label", {}, "First value seen on", first),
+      h("button", { class: "btn small", type: "button", text: "Save answers", onclick: edit((x) => P.edit(x, { problem: P.clean(prob.value, 300), out_of_scope: P.clean(scope.value, 300), signed_off_on: signed.value, first_value_on: first.value }, today)) }))),
+  { sub: "Asked before the first session. A proof that starts without these usually ends in an argument about what it was meant to show. Time to first value runs from the start date to the day the customer first saw something useful." });
 }
 
 // ------------------------------------------------------------------ the book's risk burn-down

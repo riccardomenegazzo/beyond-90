@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { makePov, validPov, acceptPovs, mergePovs, edit, setCriterion, addCriterion, addSession, setReady, progress, planMarkdown, valueReport, CRITERIA_TEMPLATES, MAX_POVS } from "../pov.js";
+import { makePov, validPov, acceptPovs, mergePovs, edit, setCriterion, addCriterion, addSession, setReady, progress, qualify, timeToFirstValue, planMarkdown, valueReport, CRITERIA_TEMPLATES, MAX_POVS } from "../pov.js";
 
 const mk = (o = {}) => makePov({ customer: "Acme", sponsor: "Dana", champion: "Lee", start: "2026-11-10", end: "2026-11-24", createdOn: "2026-11-01", nonce: "abc123", ...o });
 
@@ -65,4 +65,48 @@ test("the texts say what they are and what they do not show", () => {
   assert.match(rep, /Result: in progress/); assert.match(rep, /12 of 12 \/ visible/); assert.match(rep, /only partly shown/);
   assert.match(rep, /does not show/); assert.match(rep, /not an independent measurement/); assert.match(rep, /Good start\./);
   assert.match(valueReport(mk({ criteria: [] }), "2026-11-25"), /Nothing was shown yet/);
+});
+
+test("qualification asks five questions and says what to fix", () => {
+  let p = mk();
+  let q = qualify(p);
+  assert.equal(q.total, 5); assert.ok(!q.ready);
+  assert.deepEqual(q.items.filter((i) => !i.ok).map((i) => i.id), ["problem", "criteria", "scope"]);
+  p = edit(p, { problem: "We cannot see what runs in two clouds", out_of_scope: "Runtime on laptops", signed_off_on: "2026-11-05" }, "2026-11-05");
+  q = qualify(p);
+  assert.ok(q.ready, JSON.stringify(q.items)); assert.equal(q.verdict, "ready to start");
+});
+
+test("a window that is too short, too long or too crowded does not qualify", () => {
+  const full = { problem: "x", out_of_scope: "y", signed_off_on: "2026-11-02" };
+  const base = (o) => edit(mk(o), full, "2026-11-02");
+  assert.ok(!qualify(base({ start: "2026-11-10", end: "2026-11-12" })).ready);
+  assert.ok(!qualify(base({ start: "2026-11-10", end: "2027-02-10" })).ready);
+  assert.ok(!qualify(base({ start: "2026-11-10", end: "2026-11-16", criteria: CRITERIA_TEMPLATES })).ready);
+  assert.ok(!qualify(base({ start: "", end: "" })).ready);
+  assert.ok(qualify(base({})).ready);
+});
+
+test("an unsigned or untargeted criterion blocks the sign-off item", () => {
+  const p = edit(mk(), { signed_off_on: "2026-11-02" }, "2026-11-02");
+  const bad = { ...p, criteria: p.criteria.map((c, i) => (i ? c : { ...c, target: "" })) };
+  assert.ok(!qualify(bad).items.find((i) => i.id === "criteria").ok);
+});
+
+test("time to first value counts days from the start and is empty when unknown", () => {
+  let p = mk();
+  assert.equal(timeToFirstValue(p), null);
+  p = edit(p, { first_value_on: "2026-11-11" }, "2026-11-11");
+  assert.equal(timeToFirstValue(p), 1);
+  assert.equal(timeToFirstValue(edit(p, { first_value_on: "2026-11-09" }, "2026-11-11")), null);
+  assert.match(valueReport(p, "2026-11-12"), /1 day after the start/);
+  assert.match(valueReport(mk(), "2026-11-12"), /was not recorded/);
+});
+
+test("plans kept before the new fields still validate; bad new fields do not", () => {
+  const old = mk(); for (const k of ["problem", "out_of_scope", "signed_off_on", "first_value_on"]) delete old[k];
+  assert.ok(validPov(old));
+  assert.ok(!validPov({ ...old, first_value_on: "soon" }));
+  assert.ok(!validPov({ ...old, problem: "x".repeat(301) }));
+  assert.match(planMarkdown(edit(old, { problem: "Blind spots" }, "2026-11-02")), /## The problem/);
 });

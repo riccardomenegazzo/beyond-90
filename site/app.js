@@ -588,7 +588,7 @@ async function addCommitment(p) {
 async function setCommitmentStatus(id, status) {
   const c = state.commitments.find((x) => x.id === id);
   if (!c) return;
-  await store.commitmentPut([K.withStatus(c, status, todayIso() < c.created_on ? c.created_on : todayIso())]);
+  await store.commitmentPut([K.withStatus(c, status, todayIso() < c.created_on ? c.created_on : todayIso())], true);
   await refreshCommitments();
   selectTab(state.tab);
 }
@@ -607,7 +607,7 @@ async function setSla(days) {
 let holdSave = false;
 async function refreshPovs() { try { state.povs = await store.povsAll(); } catch { state.povs = []; } }
 async function refreshAsks() { try { state.asks = await store.asksAll(); } catch { state.asks = []; } }
-async function savePov(p) { await store.povPut([p]); await refreshPovs(); selectTab(state.tab); }
+async function savePov(p) { await store.povPut([p], true); await refreshPovs(); selectTab(state.tab); }
 async function removePov(id) { await store.povRemove(id); await refreshPovs(); selectTab(state.tab); }
 async function addAsk(p) {
   await store.askPut([ASK.makeAsk({ customer: state.result.customer, kind: p.kind, title: p.title, detail: p.detail, atStake: p.atStake, ref: p.ref, createdOn: todayIso() })]);
@@ -616,7 +616,7 @@ async function addAsk(p) {
 async function setAskStatus(id, status) {
   const a = state.asks.find((x) => x.id === id);
   if (!a) return;
-  await store.askPut([ASK.withAskStatus(a, status, todayIso() < a.created_on ? a.created_on : todayIso())]);
+  await store.askPut([ASK.withAskStatus(a, status, todayIso() < a.created_on ? a.created_on : todayIso())], true);
   await refreshAsks(); selectTab(state.tab);
 }
 async function removeAsk(id) { await store.askRemove(id); await refreshAsks(); selectTab(state.tab); }

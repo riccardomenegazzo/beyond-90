@@ -196,7 +196,8 @@ async function factsAll(name) {
 }
 
 /** Add or update facts (idempotent; the merge rule of each store decides which copy wins). Returns how many were new. */
-async function factsPut(name, list) {
+// `edit` is a deliberate change made here: on the same day it must win over what is kept, not lose a tie-break meant for merging two files.
+async function factsPut(name, list, edit = false) {
   if ((await getVault()) && !key) throw new Error("Saved data is protected with a passphrase. Unlock it first.");
   const have = new Map((await openFacts(name)).map((x) => [ID_OF[name](x.fact), x]));
   const writes = [], gone = [];
@@ -205,7 +206,7 @@ async function factsPut(name, list) {
     const id = ID_OF[name](f);
     const old = have.get(id);
     if (!old) added++;
-    const merged = old ? MERGE[name]([old.fact], [f])[0] : f;
+    const merged = !old || (edit && !(f.updated_on < old.fact.updated_on)) ? f : MERGE[name]([old.fact], [f])[0];
     writes.push(await slot(name, merged, !!key));
     if (old) gone.push(old.slot);
   }
@@ -256,13 +257,13 @@ export const outcomesAll = () => factsAll(OUTCOMES);
 export const outcomePut = (list) => factsPut(OUTCOMES, list);
 export const outcomeRemove = (id) => factsRemove(OUTCOMES, id);
 export const commitmentsAll = () => factsAll(COMMITMENTS);
-export const commitmentPut = (list) => factsPut(COMMITMENTS, list);
+export const commitmentPut = (list, edit = false) => factsPut(COMMITMENTS, list, edit);
 export const commitmentRemove = (id) => factsRemove(COMMITMENTS, id);
 export const povsAll = () => factsAll(POVS);
-export const povPut = (list) => factsPut(POVS, list);
+export const povPut = (list, edit = false) => factsPut(POVS, list, edit);
 export const povRemove = (id) => factsRemove(POVS, id);
 export const asksAll = () => factsAll(ASKS);
-export const askPut = (list) => factsPut(ASKS, list);
+export const askPut = (list, edit = false) => factsPut(ASKS, list, edit);
 export const askRemove = (id) => factsRemove(ASKS, id);
 export const retentionAll = () => factsAll(RETENTION);
 export const retentionPut = (list) => factsPut(RETENTION, list);

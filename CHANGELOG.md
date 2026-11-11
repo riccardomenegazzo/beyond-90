@@ -2,6 +2,16 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.38.0
+
+Start only the proofs worth running, and see how fast they pay off.
+
+- **Is it worth starting?** A proof of value now asks five questions before the first session: the problem in the customer's words, criteria signed off with a way to tell, a named sponsor and champion, a window that fits the number of criteria, and what is out of scope. It says what to fix for each gap. The answers are yours, not checks against the customer.
+- **Time to first value.** Record the day the customer first saw something useful; the result states the days from the start. If it was not recorded, the result says so.
+- **Fix: two edits on the same day.** A second change to a proof of value, ask or promise made on the same day could be dropped by the rule meant for merging two files. A change made here now always wins over what is kept. Older plans open as before.
+- The Sponsor and Champion fields no longer repeat their label as placeholder text.
+- Tested on made-up data only.
+
 ## 0.37.0
 
 An assistant that never sees the names, and ready-made questions to ask it.
