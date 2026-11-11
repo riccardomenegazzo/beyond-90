@@ -536,3 +536,4 @@ h1,h2,h3,.tnum,.kpi b,.ws-title,.stat b,.stat .v{font-family:var(--display);lett
 .bdnoise{margin:0;color:#c5d2e1;font-size:16px}
 .bdnoise b{color:#5eead4;font-family:var(--display);font-size:19px}
 .bdnoise small{display:block;margin-top:4px;color:#9fb2c7;font-size:13.5px}
+.startpov{margin:0 0 18px}.startpov>summary{cursor:pointer;font-family:var(--display);font-size:18px;font-weight:700;padding:10px 4px;color:var(--accent-text)}

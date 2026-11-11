@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.44.0
+
+- **Proof of value, rebuilt.** With a plan open, the page leads with one sentence on a dark card (criteria met so far, whether it is worth starting, and days to first value), then the criteria. The form for a new plan folds away under "Start another proof of value" and is open when there is none.
+
 ## 0.43.1
 
 - **Risk burn-down, rebuilt.** It opens on one sentence on a dark card (whether the customer is at zero criticals, and how many of the open findings need a decision now), then the four counts, then the oldest critical and high findings to start with. The tables, the target-age editor and the six-month flow follow.

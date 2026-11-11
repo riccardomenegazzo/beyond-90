@@ -1237,7 +1237,11 @@ export function povView({ result, book, povs, today, savePov, removePov }) {
     const sd = h("input", { type: "date", "aria-label": "Session date" }), st2 = h("input", { type: "text", maxlength: 120, "aria-label": "Session topic", placeholder: "Session topic" });
     const summ = h("textarea", { rows: 3, maxlength: 1000, "aria-label": "Summary in your words", placeholder: "Summary in your words" }); summ.value = p.summary;
     const stage = h("select", { "aria-label": "Stage" }, P.STAGES.map((s) => h("option", { value: s, text: s }))); stage.value = p.stage;
+    const ql = P.qualify(p), ttv = P.timeToFirstValue(p);
     body.replaceChildren(
+      h("section", { class: "card bdhero" },
+        h("p", { class: "bdlead", role: "status", text: `${p.customer}: ${pr.met} of ${pr.total} criteria met.` }),
+        h("p", { class: "bdnoise" }, h("b", { text: ql.verdict }), ttv == null ? "" : ` · first value after ${ttv} day${ttv === 1 ? "" : "s"}`)),
       h("div", { class: "kpiline" }, stat(pr.verdict, "result so far"), stat(`${pr.met}/${pr.total}`, "criteria met"), stat(`${pr.ready}/${pr.ready_total}`, "ready"), stat(String(p.sessions.length), "sessions"), stat(P.timeToFirstValue(p) == null ? "not set" : `${P.timeToFirstValue(p)} d`, "to first value")),
       card("Success criteria", h("ul", { class: "promises" }, crit), { sub: "Agree these with the sponsor before you start. Mark each one when you have seen it, and write what you saw." }),
       card("Add a criterion", h("div", { class: "formgrid" }, h("label", { class: "wide2" }, "Criterion", nc), h("label", { class: "wide2" }, "How we will know", nt),
@@ -1256,12 +1260,12 @@ export function povView({ result, book, povs, today, savePov, removePov }) {
   };
   sel.addEventListener("change", draw);
   draw();
-  return h("div", {},
-    card("Start a proof of value", h("div", {}, h("div", { class: "formgrid" }, book ? h("label", {}, "Customer", nf.cust) : null, h("label", {}, "Sponsor", nf.sponsor), h("label", {}, "Champion", nf.champion), h("label", {}, "Start", nf.start), h("label", {}, "End", nf.end),
+  const startForm = (inner) => h("details", { class: "startpov", open: !mine.length }, h("summary", { text: mine.length ? "Start another proof of value" : "Start a proof of value" }), inner);
+  const startCard = card("The plan", h("div", {}, h("div", { class: "formgrid" }, book ? h("label", {}, "Customer", nf.cust) : null, h("label", {}, "Sponsor", nf.sponsor), h("label", {}, "Champion", nf.champion), h("label", {}, "Start", nf.start), h("label", {}, "End", nf.end),
       h("label", { class: "wide2" }, "The problem to settle", nf.problem), h("label", { class: "wide2" }, "Out of scope", nf.scope)),
       h("div", { class: "row left" }, h("button", { class: "btn small primary", type: "button", text: "Create the plan", onclick: act(async () => { await savePov(P.makePov({ customer: nf.cust.value, sponsor: nf.sponsor.value, champion: nf.champion.value, start: nf.start.value, end: nf.end.value, createdOn: today, problem: nf.problem.value, outOfScope: nf.scope.value }), true); }) })), say),
-    { sub: "A proof of value is only worth what was agreed before it started. Kept in this browser, sealed with your passphrase if you set one." }),
-    mine.length ? card("Your proofs of value", h("div", {}, h("label", { class: "inline" }, "Show ", sel), body)) : body);
+    { sub: "A proof of value is only worth what was agreed before it started. Kept in this browser, sealed with your passphrase if you set one." });
+  return h("div", {}, ...(mine.length ? [card("Your proofs of value", h("div", {}, h("label", { class: "inline" }, "Show ", sel), body)), startForm(startCard)] : [startForm(startCard), body]));
 }
 
 function qualCard(p, edit, today) {

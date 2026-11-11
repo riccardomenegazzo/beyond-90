@@ -314,7 +314,7 @@ def main(site: str) -> int:
         page.wait_for_selector("#view .kpiline .stat:has-text('1/4')")
         check("1/4" in page.inner_text("#view .kpiline"), "marking a criterion met moves the count")
         check("Worth starting? not ready" in page.inner_text("#view"), "a plan with gaps says it is not ready to start")
-        page.locator("#view input[aria-label='The problem to settle']").last.fill("We cannot see two of our clouds")
+        page.locator("#view input[aria-label='The problem to settle']").first.fill("We cannot see two of our clouds")
         page.locator("#view input[aria-label='Date the first value was seen']").fill("2026-11-12")
         page.get_by_role("button", name="Save answers").click()
         page.wait_for_selector("#view li:has-text('Yes: The problem is stated')")
