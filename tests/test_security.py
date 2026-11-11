@@ -110,7 +110,7 @@ def test_the_sbom_lists_what_the_site_ships_with_hashes():
     bom = mod.build()
     assert bom["bomFormat"] == "CycloneDX" and bom["metadata"]["component"]["name"] == "beyond90"
     names = {c["name"]: c for c in bom["components"]}
-    assert set(names) == {"pyodide", "@fontsource-variable/atkinson-hyperlegible-next"}, "only what is shipped is listed; test tools are not"
+    assert set(names) == {"pyodide", "@fontsource-variable/atkinson-hyperlegible-next", "@fontsource-variable/bricolage-grotesque"}, "only what is shipped is listed; test tools are not"
     assert all(len(c["hashes"][0]["content"]) == 128 for c in names.values())
 
 

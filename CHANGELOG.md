@@ -2,6 +2,14 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.42.0
+
+A visibly new look.
+
+- **New typeface for titles and figures** (Bricolage Grotesque, served with the page like the body face; no request leaves the page), a **dark navigation rail**, a **teal accent** in place of blue, rounder and larger cards and figure tiles.
+- **Today** puts the score on a dark card in large teal figures: the one place the page is loud.
+- Light and dark modes both follow it, and the accessibility test still passes in each.
+
 ## 0.41.2
 
 - **This release switches installed copies by itself.** The previous offer could not be seen on some phones, so this build asks installed copies to take it without waiting; the page reloads once. Saved work is kept. From the next release a new build waits for the person again.

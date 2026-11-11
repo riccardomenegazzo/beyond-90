@@ -25,6 +25,8 @@ ROOT = Path(__file__).resolve().parent.parent
 PYODIDE_FILES = ("pyodide.mjs", "pyodide.asm.mjs", "pyodide.asm.wasm", "python_stdlib.zip", "pyodide-lock.json", "package.json")
 FONT = ROOT / "site" / "npm" / "node_modules" / "@fontsource-variable" / "atkinson-hyperlegible-next"
 FONT_FILES = {f"files/atkinson-hyperlegible-next-{s}-wght-normal.woff2": f"atkinson-{s}.woff2" for s in ("latin", "latin-ext")} | {"LICENSE": "OFL.txt"}
+DISPLAY = ROOT / "site" / "npm" / "node_modules" / "@fontsource-variable" / "bricolage-grotesque"
+DISPLAY_FILES = {f"files/bricolage-grotesque-{s}-wght-normal.woff2": f"display-{s}.woff2" for s in ("latin", "latin-ext")} | {"LICENSE": "OFL-display.txt"}
 DEMO = ROOT / "examples" / "portfolio" / "northwind"
 DEMO_ENDPOINT = ROOT / "examples" / "profiles" / "endpoint" / "acme-endpoint"
 DEMO_PREVIOUS = ROOT / "examples" / "history" / "northwind-2026-09"
@@ -65,6 +67,10 @@ def build(out: Path, pyodide: Path, feed: Optional[Path] = None, font: Path = FO
         if not (font / src).exists():
             sys.exit(f"missing {font / src}: run npm ci in site/npm first")
         shutil.copy(font / src, out / "fonts" / name)
+    for src, name in DISPLAY_FILES.items():
+        if not (DISPLAY / src).exists():
+            sys.exit(f"missing {DISPLAY / src}: run npm ci in site/npm first")
+        shutil.copy(DISPLAY / src, out / "fonts" / name)
     # Always a feed file, so the page never asks for one that is missing; an empty one when none was collected.
     doc = {"schema": "beyond90-feed/1", "as_of": "", "window_days": 0, "sources": [], "threats": [], "general": [], "note": "No feed was collected for this build."}
     if feed is not None and feed.is_file():

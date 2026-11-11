@@ -17,7 +17,8 @@ ROOT = Path(__file__).resolve().parent.parent
 
 
 ROLE = {"pyodide": "Copied into the published site as the in-browser Python runtime",
-        "@fontsource-variable/atkinson-hyperlegible-next": "Copied into the published site as its typeface"}
+        "@fontsource-variable/atkinson-hyperlegible-next": "Copied into the published site as its typeface",
+        "@fontsource-variable/bricolage-grotesque": "Copied into the published site as its display typeface"}
 
 
 def build() -> dict:

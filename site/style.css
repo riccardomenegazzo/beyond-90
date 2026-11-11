@@ -483,3 +483,35 @@ body[data-view=today] .viewhead{margin:8px 0 0;padding:0}
 .tline{font-size:clamp(17px,2.6vw,21px)}
 @media (prefers-color-scheme:dark){:root:not([data-theme=light]){--page:#0d1216;--line:#212b32}}
 :root[data-theme=dark]{--page:#0d1216;--line:#212b32}
+
+/* ================================================================ a new face (0.42): one display type, a dark rail, a teal accent, one bold moment */
+@font-face{font-family:"Display";src:url(fonts/display-latin.woff2) format("woff2-variations");font-weight:200 800;font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Display";src:url(fonts/display-latin-ext.woff2) format("woff2-variations");font-weight:200 800;font-display:swap;unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+1E00-1EFF,U+2020,U+20A0-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+:root{--display:"Display","Atkinson",ui-sans-serif,system-ui,sans-serif;
+  --accent:#0f766e;--accent-text:#0b5f59;--accent-btn:#0f766e;--accent-soft:rgba(15,118,110,.09);--page:#f1f4f4;--navy:#0c1a2a}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--accent:#5eead4;--accent-text:#7ef0dc;--accent-btn:#0f766e;--accent-soft:rgba(94,234,212,.12);--navy:#07111c}}
+:root[data-theme=dark]{--accent:#5eead4;--accent-text:#7ef0dc;--accent-btn:#0f766e;--accent-soft:rgba(94,234,212,.12);--navy:#07111c}
+h1,h2,h3,.tnum,.kpi b,.ws-title,.stat b,.stat .v{font-family:var(--display);letter-spacing:-.02em}
+.viewhead h2{font-size:34px;font-weight:700}
+.card>h2,.card>header h2,.card h2{font-size:20px;font-weight:700}
+.kpi b{font-size:30px;font-weight:700}
+.kpi{border-radius:18px}
+.card{border-radius:20px}
+/* the rail: dark, with its own palette so every control inside it follows */
+.rail{--ink:#eef3f8;--ink2:#c5d2e1;--muted:#9fb2c7;--line:rgba(255,255,255,.13);--surface:var(--navy);--accent:#5eead4;--accent-text:#fff;--accent-soft:rgba(255,255,255,.1);--accent-btn:#5eead4;--on:#05231f;--sunk:rgba(255,255,255,.07);--raised:rgba(255,255,255,.08);
+  background:var(--navy);color:var(--ink);box-shadow:none;border-right:0}
+.rail .place-btn,.rail .tabs button{border-radius:12px;font-size:15.5px}
+.rail .tabs button[aria-current]{background:rgba(94,234,212,.16);color:#fff}
+.rail .place-btn[aria-current]::before,.rail .tabs button[aria-current]::before{left:-12px;background:#5eead4}
+.grp{text-transform:none;letter-spacing:0;font-size:12.5px;font-weight:600;color:var(--muted)}
+/* the one bold moment: the score on a dark card */
+.todayhero{background:var(--navy);color:#eef3f8;border:0;box-shadow:0 24px 48px -24px rgba(12,26,42,.6)}
+.todayhero .tnum{color:#5eead4;font-weight:800;letter-spacing:-.04em}
+.todayhero .tcap{color:#c5d2e1}
+.todayhero .tline{color:#eef3f8}
+.bigbtn{border-radius:18px;border-color:transparent;background:var(--surface);box-shadow:var(--shadow)}
+.bigbtn b{font-family:var(--display);font-size:17px}
+.opp .opp-e{font-family:var(--display);font-weight:700}
+.btn.primary,button.primary{background:var(--accent-btn);color:#fff;border-color:transparent}
+@media (max-width:900px){.rail .place-btn{border-radius:0}}
+.rolepick button[aria-pressed=true]{color:var(--on)}
