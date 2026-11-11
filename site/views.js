@@ -1219,3 +1219,24 @@ export function povView({ result, book, povs, today, savePov, removePov }) {
     { sub: "A proof of value is only worth what was agreed before it started. Kept in this browser, sealed with your passphrase if you set one." }),
     mine.length ? card("Your proofs of value", h("div", {}, h("label", { class: "inline" }, "Show ", sel), body)) : body);
 }
+
+// ------------------------------------------------------------------ the book's risk burn-down
+export function bookBurndownView({ book, openCustomer }) {
+  const rows = book.customers.map((c) => ({ c, b: (book.burndown || {})[c.key] })).filter((x) => x.b)
+    .sort((x, y) => y.b.open_critical - x.b.open_critical || (y.b.oldest_urgent_days || 0) - (x.b.oldest_urgent_days || 0) || x.c.name.localeCompare(y.c.name));
+  if (!rows.length) return h("p", { class: "note", text: "No findings were loaded for these customers, so there is nothing to burn down." });
+  const sum = (f) => rows.reduce((t, r) => t + f(r.b), 0);
+  const zero = rows.filter((r) => r.b.zero_critical.now || r.b.zero_critical.never_had).length;
+  const head = ["Customer", "Critical open", "High open", "Older than target", "Oldest urgent", "No owner", "Critical state"];
+  return h("div", {},
+    h("div", { class: "kpiline" }, stat(String(sum((b) => b.open_critical)), "critical open", sum((b) => b.open_critical) ? "bad" : "good"), stat(String(sum((b) => b.open_high)), "high open"),
+      stat(String(sum((b) => b.past_sla_total)), "older than target", sum((b) => b.past_sla_total) ? "warn" : "good"), stat(`${zero}/${rows.length}`, "at zero criticals")),
+    card("By customer", h("div", { class: "tablewrap" }, h("table", { class: "dt", "aria-label": "Risk by customer" },
+      h("thead", {}, h("tr", {}, head.map((t) => h("th", { text: t })))),
+      h("tbody", {}, rows.map(({ c, b }) => h("tr", {},
+        h("td", {}, h("button", { class: "btn small quiet", type: "button", text: c.name, "aria-label": `Open ${c.name}'s risk burn-down`, onclick: () => openCustomer(c.key, "burndown") })),
+        h("td", { text: String(b.open_critical) }), h("td", { text: String(b.open_high) }), h("td", { text: String(b.past_sla_total) }),
+        h("td", { text: b.oldest_urgent_days == null ? "none open" : `${b.oldest_urgent_days} days` }), h("td", { text: String(b.unowned_urgent) }),
+        h("td", { text: b.zero_critical.never_had ? "none on record" : b.zero_critical.now ? (b.zero_critical.days != null ? `zero for ${b.zero_critical.days} days` : "zero") : "open" })))))),
+      { sub: "Most critical findings first, then the oldest. Target ages are the default (7, 30, 90, 180 days) until you set the customer's own, so compare customers with care." }));
+}

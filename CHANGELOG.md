@@ -2,6 +2,14 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.35.0
+
+The burn-down for the whole book.
+
+- **Book burn-down.** In book mode, a table of every customer: critical and high open, findings older than target, the oldest urgent finding, findings with no owner, and who is at zero criticals. Most critical first. Click a customer to open their own burn-down.
+- **A fix.** With the Core views chosen, the book's own navigation no longer fell under "More views"; the book always shows all of its views.
+- Target ages are still the default (7, 30, 90, 180 days) until a customer's own are set, and the view says to compare customers with care.
+
 ## 0.34.3
 
 A calmer first screen.

@@ -186,3 +186,13 @@ def test_the_site_publishes_a_manifest_of_every_file(tmp_path):
     doc = json.loads((out / "build.json").read_text())
     assert doc["digest"] == hashlib.sha256(sums.encode()).hexdigest() and doc["files"] == 3
     assert '"./SHA256SUMS"' in (out / "sw.js").read_text() and '"./build.json"' in (out / "sw.js").read_text()
+
+
+def test_book_carries_a_slim_burndown_per_customer() -> None:
+    from beyond90.web import analyze_book
+
+    r = analyze_book(book_groups(), hours=20, weeks=12)
+    assert set(r["burndown"]) == {c["key"] for c in r["customers"]}
+    for b in r["burndown"].values():
+        assert {"open_critical", "open_high", "past_sla_total", "unowned_urgent", "zero_critical", "oldest_urgent_days", "sla_is_default"} <= set(b)
+        assert b["open_critical"] >= 0 and b["sla_is_default"] is True

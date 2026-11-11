@@ -247,6 +247,15 @@ def _slug(key: str, taken: set[str]) -> str:
     return out
 
 
+def _slim_burndown(data: Any, name: str) -> dict[str, Any]:
+    """What the book view needs from one customer's burn-down: the headline numbers, not the whole table."""
+    b = burndown.build(data)
+    oldest = max((o["age_days"] for o in b["oldest_urgent"]), default=None)
+    return {"name": name, "open_critical": b["open"]["critical"], "open_high": b["open"]["high"], "past_sla_total": b["past_sla_total"],
+            "unowned_urgent": b["unowned_urgent"], "zero_critical": b["zero_critical"], "oldest_urgent_days": oldest,
+            "mttr_critical": b["mttr"]["critical"]["days"], "sla_is_default": b["sla_is_default"]}
+
+
 def analyze_book(
     groups: Mapping[str, Mapping[str, str]],
     hours: float = 30.0,
@@ -333,6 +342,7 @@ def analyze_book(
             "advisories": len(threats),
             "identifiers_by_customer": {n: identifiers.collect(d) for n, d in customers},
             "news": news,
+            "burndown": {keys[n]: _slim_burndown(d, n) for n, d in customers},
             "arr_weighted_yield": pf.arr_weighted_yield,
             "weighted_start": plan.weighted_start,
             "weighted_end": plan.weighted_end,

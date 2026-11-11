@@ -1,4 +1,4 @@
-# Beyond 90: specification v0.34
+# Beyond 90: specification v0.35
 
 An adoption engine for Technical Account Managers. It measures how much of a customer's cloud estate is really covered and operated through a security platform, and turns every gap into an action. The bar keeps moving: when a customer grows or the product ships something, the denominators grow with it.
 
@@ -267,6 +267,8 @@ Sealed customer facts (outcomes, promises, retention, export log) are stored und
 A proof of value (`site/pov.js`) has a sponsor, a champion, a window, criteria (status open, met, partly, not_met, dropped; evidence up to 300 characters), at most 20 working sessions and a readiness list. Records merge by id, the later `updated_on` wins, and anything that fails validation is rejected whole. The verdict is "in progress" while any counted criterion is open; otherwise "all criteria met" when all are met, "mostly met" when none failed and at least 75% are met, else "not met". The result text always includes what the result does not show.
 
 An ask (`site/asks.js`) has a kind (feature, blocker, escalation), a status (open, shared, done, declined) and an integer `at_stake` typed by the user. The digest groups open asks by normalised title, counts each customer's figure once per group, and lists escalations apart, oldest first.
+
+In book mode `analyze_book` adds `burndown`, keyed by customer: open critical and high, findings past target, unowned urgent findings, the zero-critical state, the age of the oldest urgent finding and the mean days to fix critical ones. It uses the same default target ages.
 
 Roles (`site/roles.js`) only order and group the navigation; every view stays reachable and the palette and shortcuts use the full list.
 

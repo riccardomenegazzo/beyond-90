@@ -52,6 +52,7 @@ export const BOOK_NAV = [
     { id: "week", label: "This week", icon: "week", tip: "Which customers to contact this week, in order, with the reason and the call prepared." },
     { id: "bookconnections", label: "Shared patterns", icon: "layers", tip: "What several customers have in common: the same blocker, the same exposed story, the same missing capability. One piece of work, done once for all of them." },
     { id: "bookmap", label: "Portfolio map", icon: "bookmap", tip: "Every customer's four stages side by side, so the weak spot of the book stands out." },
+    { id: "bookburndown", label: "Risk burn-down", icon: "findings", tip: "Which customers carry the most critical and high risk, how old it is, and who is at zero criticals." },
     { id: "bookonboard", label: "Onboarding", icon: "onboarding", tip: "Stuck connectors across customers, and the causes they share." },
     { id: "booknews", label: "Cloud news", icon: "news", tip: "Each security story against every customer: who is exposed and who is not covered." },
     { id: "pov", label: "Proof of value", icon: "maturity", tip: "Evaluations across customers: criteria, readiness, sessions and results. Kept in this browser." },

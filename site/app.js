@@ -370,7 +370,7 @@ const VIEWS = {
   summary: { kind: "md", key: "report_markdown", file: "beyond90-summary.md", type: "text/markdown" },
   json: { kind: "json", key: "score_json", file: "beyond90-score.json", type: "application/json" },
   week: { kind: "view", view: "weekView" }, bookmap: { kind: "view", view: "bookView" }, bookonboard: { kind: "view", view: "bookOnboardView" },
-  booknews: { kind: "view", view: "bookNewsView" }, bookconnections: { kind: "view", view: "bookConnectionsView" },
+  booknews: { kind: "view", view: "bookNewsView" }, bookburndown: { kind: "view", view: "bookBurndownView" }, bookconnections: { kind: "view", view: "bookConnectionsView" },
   calibration: { kind: "view", view: "calibrationView" },
   portfolio: { kind: "md", key: "portfolio_markdown", file: "beyond90-portfolio.md", type: "text/markdown" },
   book: { kind: "md", key: "book_markdown", file: "beyond90-book.md", type: "text/markdown" },
@@ -400,7 +400,7 @@ function renderNav(groups, title) {
   $("workspace").hidden = false;
   $("ws-title").textContent = title;
   paintRoles();
-  const { main, more } = shape(groups, savedRole());
+  const { main, more } = groups === BOOK_NAV ? { main: groups, more: [] } : shape(groups, savedRole());
   const btn = (v) => el_("button", { type: "button", dataset: { tab: v.id }, "data-tip": v.tip, onclick: () => selectTab(v.id) }, icon(v.icon), el_("span", { text: v.label }));
   const grp = (g, i, p) => el_("div", { class: "navgroup", role: "group", "aria-labelledby": `grp-${p}${i}` }, el_("p", { class: "grp", id: `grp-${p}${i}`, text: g.question }), g.views.map(btn));
   const kids = main.map((g, i) => grp(g, i, "m"));
