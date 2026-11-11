@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.41.1
+
+- **The update offer can be seen.** "New version ready" sat in the crowded top bar and was easy to miss on a phone. It is now a bar fixed near the bottom of the screen with a large button.
+
 ## 0.41.0
 
 - **A calmer look on every screen.** Softer surfaces and shadows instead of hard borders, rounder corners, more space around cards and the figure tiles, a larger page title, quieter side rail. Today hides the figure strip and repeated title so only the answer is left. Dark mode follows the same tokens. Contrast is still checked by the accessibility test in both colour schemes.
