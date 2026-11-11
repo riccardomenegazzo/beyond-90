@@ -444,6 +444,7 @@ def main(site: str) -> int:
         check(doc["format"] == "beyond90-workspace" and len(doc["snapshots"]) == 2, "export is a versioned workspace file")
         check(len(doc.get("outcomes", [])) == 1 and doc["outcomes"][0]["outcome"] == "renewed", "recorded renewal outcomes travel in the workspace file")
         check(len(doc.get("commitments", [])) == 4 and any(c["status"] == "done" for c in doc["commitments"]), "promises travel in the workspace file")
+        check(len(doc.get("povs", [])) == 1 and len(doc.get("asks", [])) == 1, "proofs of value and asks travel in the workspace file")
         check("unencrypted" in page.inner_text("#vault-warn"), "unprotected customer data is called out")
         page.once("dialog", lambda dlg: dlg.accept())
         page.click("#forget")

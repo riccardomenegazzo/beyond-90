@@ -7,6 +7,7 @@ import * as W from "./workspace-core.js";
 import * as O from "./outcomes.js";
 import * as K from "./commitments.js";
 import * as ASK from "./asks.js";
+import * as POV from "./pov.js";
 import { ROLES, ROLE_IDS, isRole, shape } from "./roles.js";
 import * as store from "./store.js";
 import * as Vault from "./vault.js";
@@ -685,7 +686,7 @@ function drawTrend() {
 
 async function exportWorkspace() {
   if (await store.getVault() && !store.unlocked() && !(await unlockVaultUi())) return;
-  const text = W.serializeWorkspace(state.saved, { engine: state.engine ? state.engine.version : "", extra: { outcomes: state.outcomes, commitments: state.commitments } });
+  const text = W.serializeWorkspace(state.saved, { engine: state.engine ? state.engine.version : "", extra: { outcomes: state.outcomes, commitments: state.commitments, povs: state.povs, asks: state.asks } });
   const sealed = await store.sealExport(text);
   save(new Blob([sealed || text], { type: "application/json" }), sealed ? "beyond90-workspace.sealed.json" : "beyond90-workspace.json");
   wsSay(sealed ? `Exported ${state.saved.length} snapshot(s), sealed with your passphrase.`
@@ -838,7 +839,7 @@ async function sendWork() {
     return;
   }
   if (!store.unlocked() && !(await unlockVaultUi())) return;
-  const sealed = await store.sealExport(W.serializeWorkspace(state.saved, { engine: state.engine ? state.engine.version : "", extra: { outcomes: state.outcomes, commitments: state.commitments } }));
+  const sealed = await store.sealExport(W.serializeWorkspace(state.saved, { engine: state.engine ? state.engine.version : "", extra: { outcomes: state.outcomes, commitments: state.commitments, povs: state.povs, asks: state.asks } }));
   const file = new File([sealed], "beyond90-workspace.sealed.json", { type: "application/json" });
   if (navigator.canShare && navigator.canShare({ files: [file] })) {
     try {
@@ -869,10 +870,16 @@ async function importWorkspace(file) {
     const addedOut = outs.ok.length ? await store.outcomePut(outs.ok) : 0;
     const cms = K.acceptCommitments(unknown.commitments);
     const addedCm = cms.ok.length ? await store.commitmentPut(cms.ok) : 0;
+    const pvs = POV.acceptPovs(unknown.povs);
+    const addedPv = pvs.ok.length ? await store.povPut(pvs.ok) : 0;
+    const aks = ASK.acceptAsks(unknown.asks);
+    const addedAk = aks.ok.length ? await store.askPut(aks.ok) : 0;
     await refreshHistory();
     wsSay(`Imported: ${added} new, ${ok.length - added} already here` + (rejected ? `, ${rejected} rejected because their content did not match their name` : "")
       + (outs.ok.length || outs.rejected ? `; ${addedOut} renewal outcome(s) added` + (outs.rejected ? `, ${outs.rejected} refused` : "") : "")
-      + (cms.ok.length || cms.rejected ? `; ${addedCm} commitment(s) added` + (cms.rejected ? `, ${cms.rejected} refused` : "") : "") + ".");
+      + (cms.ok.length || cms.rejected ? `; ${addedCm} commitment(s) added` + (cms.rejected ? `, ${cms.rejected} refused` : "") : "")
+      + (pvs.ok.length || pvs.rejected ? `; ${addedPv} proof(s) of value added` + (pvs.rejected ? `, ${pvs.rejected} refused` : "") : "")
+      + (aks.ok.length || aks.rejected ? `; ${addedAk} ask(s) added` + (aks.rejected ? `, ${aks.rejected} refused` : "") : "") + ".");
   } catch (e) {
     wsSay(e.message);
   }

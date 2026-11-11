@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.34.1
+
+- Proofs of value and asks now travel in an exported workspace file and are read back on import (validated, merged, never overwriting a newer copy).
+
 ## 0.34.0
 
 Views for the people who run adoption, design the rollout and prove the value.
@@ -11,7 +15,7 @@ Views for the people who run adoption, design the rollout and prove the value.
 - **Asks.** A ledger of what customers asked the vendor for, with what is at stake as a figure you type. The digest groups the same ask across customers and lists escalations oldest first.
 - **A role lens.** Choose technical account manager, solutions architect or sales engineer and that role's views come first; the rest sit under "More views". Nothing is removed.
 - **Importer.** More column names are recognised (cloud platform, widely internet exposed, created date, resolved date).
-- **Known limits.** Proofs of value and asks stay in this browser and are not in an exported workspace file. Tested on made-up data only.
+- **Known limits.** Tested on made-up data only.
 
 ## 0.33.0
 

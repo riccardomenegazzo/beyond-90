@@ -20,7 +20,7 @@ The page keeps every view. A role only decides which ones sit first and which go
 
 ## Where the data lives
 
-Proofs of value and asks are kept in this browser like promises: sealed with your passphrase if you set one, erased with the customer, and passed through the sharing gate (the customer name and people can be replaced by aliases) when you copy or download. They are not part of an exported workspace file, so moving to another device means copying their text.
+Proofs of value and asks are kept in this browser like promises: sealed with your passphrase if you set one, erased with the customer, and passed through the sharing gate (the customer name and people can be replaced by aliases) when you copy or download. They travel in an exported workspace file (sealed with the file, if you seal it), so moving to another device keeps them.
 
 ## Importing exports from other tools
 
