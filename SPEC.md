@@ -1,4 +1,4 @@
-# Beyond 90: specification v0.35
+# Beyond 90: specification v0.36
 
 An adoption engine for Technical Account Managers. It measures how much of a customer's cloud estate is really covered and operated through a security platform, and turns every gap into an action. The bar keeps moving: when a customer grows or the product ships something, the denominators grow with it.
 
@@ -269,6 +269,10 @@ A proof of value (`site/pov.js`) has a sponsor, a champion, a window, criteria (
 An ask (`site/asks.js`) has a kind (feature, blocker, escalation), a status (open, shared, done, declined) and an integer `at_stake` typed by the user. The digest groups open asks by normalised title, counts each customer's figure once per group, and lists escalations apart, oldest first.
 
 In book mode `analyze_book` adds `burndown`, keyed by customer: open critical and high, findings past target, unowned urgent findings, the zero-critical state, the age of the oldest urgent finding and the mean days to fix critical ones. It uses the same default target ages.
+
+The burn-down reads its target ages from `settings.sla_days` of the customer (the same table the score uses); `sla_is_default` is true when they equal 7, 30, 90 and 180. `closure` counts critical and high findings raised in the last 180 days (or still open): with an owner, with a decision, closed and, only when any finding carries `verified_at` or `reopened`, confirmed and reopened, with `recurrence_rate` = closed findings that came back / closed findings. `verified_at` must not precede `closed_at` and needs a close date.
+
+The scorecard (`site/scorecard.js`) is text built from the reading, the burn-down and the first 16 hex characters of the input fingerprint. `matches` compares a pasted fingerprint of at least 12 characters with the loaded one. It shows that numbers came from those inputs, not that the inputs are true.
 
 Roles (`site/roles.js`) only order and group the navigation; every view stays reachable and the palette and shortcuts use the full list.
 

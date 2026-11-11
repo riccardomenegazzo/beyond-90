@@ -53,7 +53,7 @@ ACCOUNTS = Target(
 )
 FINDINGS = Target(
     "findings.csv",
-    ("id", "account_id", "severity", "exposure", "opened_at", "closed_at", "owner", "decision"),
+    ("id", "account_id", "severity", "exposure", "opened_at", "closed_at", "owner", "decision", "verified_at", "reopened"),
     ("id", "account_id", "severity", "opened_at"),
     {
         "id": ("id", "findingid", "issueid", "alertid", "key", "ref", "number"),
@@ -64,6 +64,8 @@ FINDINGS = Target(
         "closed_at": ("closedat", "closed", "resolvedat", "resolved", "fixedat", "fixed", "remediatedat", "resolutiondate", "resolveddate", "resolvedon", "closeddate", "closedon", "fixeddate"),
         "owner": ("owner", "assignee", "assignedto", "responsible", "team"),
         "decision": ("decision", "disposition", "resolution", "triagestatus", "triage"),
+        "verified_at": ("verifiedat", "verified", "verifieddate", "confirmedat", "rescannedat", "verificationdate"),
+        "reopened": ("reopened", "reopencount", "reopens", "reopenedcount", "recurrences"),
     },
 )
 TARGETS = {t.file: t for t in (ACCOUNTS, FINDINGS)}
@@ -227,7 +229,7 @@ def convert(text: str, target: str, mapping: Mapping[str, Optional[str]], defaul
 
     if target == "accounts.csv" and not col("connected"):
         notes.append("No column says which accounts are connected, so every account was counted as not connected.")
-    dates = {f: _Dates([r.get(col(f) or "", "") for r in rows]) for f in ("opened_at", "closed_at", "created_at") if col(f)}
+    dates = {f: _Dates([r.get(col(f) or "", "") for r in rows]) for f in ("opened_at", "closed_at", "created_at", "verified_at") if col(f)}
     for f, d in dates.items():
         if d.ambiguous:
             notes.append(f"Dates in {col(f)!r} could be day/month or month/day; they were read as day/month/year. Check the sample.")
@@ -296,9 +298,16 @@ def convert(text: str, target: str, mapping: Mapping[str, Optional[str]], defaul
             decision = _DECISION.get(_key(dec_raw), "")
             if dec_raw and not decision:
                 adjust(f"decision not understood and left empty (for example {dec_raw[:20]!r})")
-            out_rows.append([fid, acc, sev, exposure, opened.isoformat(), closed.isoformat() if closed else "", r.get(col("owner") or "", ""), decision])
+            verified = dates["verified_at"].read(r.get(col("verified_at") or "", "")) if "verified_at" in dates else None
+            if verified and (closed is None or verified < closed):
+                verified = None
+                adjust("verified date is empty, or before the close date, and was left empty")
+            reo_raw = (r.get(col("reopened") or "", "") if col("reopened") else "").strip()
+            reopened = str(int(reo_raw)) if reo_raw.isdigit() else ""
+            out_rows.append([fid, acc, sev, exposure, opened.isoformat(), closed.isoformat() if closed else "", r.get(col("owner") or "", ""), decision,
+                             verified.isoformat() if verified else "", reopened])
     header = ["id", "provider", "sources", "connected", "owner", "last_spend", "status", "in_plan", "created_at"] if target == "accounts.csv" else \
-        ["id", "account_id", "severity", "exposure", "opened_at", "closed_at", "owner", "decision"]
+        ["id", "account_id", "severity", "exposure", "opened_at", "closed_at", "owner", "decision", "verified_at", "reopened"]
     buf = io.StringIO()
     w = csv.writer(buf, lineterminator="\n")
     w.writerow(header)

@@ -13,9 +13,9 @@ export const ROLE_IDS = Object.keys(ROLES);
 // In the order they should appear. An id that is not a view of the open screen (a book view, say) is simply skipped.
 const ESSENTIALS = {
   core: ["overview", "connections", "accounts", "findings", "burndown", "actions", "planview", "prep", "pov", "report"],
-  tam: ["overview", "burndown", "accounts", "findings", "onboarding", "actions", "outlook", "teams", "prep", "call", "commitments", "asks", "renewal", "execqbr", "handoff", "value", "plan"],
+  tam: ["overview", "burndown", "accounts", "findings", "onboarding", "actions", "outlook", "teams", "prep", "call", "commitments", "asks", "renewal", "execqbr", "handoff", "value", "plan", "scorecard"],
   sa: ["overview", "connections", "accounts", "onboarding", "maturity", "planview", "whatif", "teams", "pov", "burndown", "roadmap", "report"],
-  se: ["pov", "overview", "maturity", "whatif", "connections", "burndown", "news", "execqbr", "onepager", "value", "report", "call"],
+  se: ["pov", "overview", "maturity", "whatif", "connections", "burndown", "news", "execqbr", "onepager", "scorecard", "value", "report", "call"],
 };
 
 export const isRole = (r) => ROLE_IDS.includes(r);

@@ -84,3 +84,23 @@ def test_no_findings_is_quiet_not_an_error():
 def test_the_browser_result_carries_it():
     r = web.analyze(str(DIR))
     assert r["ok"] and r["dashboard"]["burndown"]["open_total"] >= 0 and "flow" in r["dashboard"]["burndown"]
+
+
+def test_uses_the_customers_own_targets_and_reports_the_closure_funnel():
+    t = TODAY
+    fs = [Finding("a", "a", "critical", "internal", t - timedelta(days=30), t - timedelta(days=20), owner="o", decision="fix", verified_at=t - timedelta(days=18)),
+          Finding("b", "a", "high", "internal", t - timedelta(days=25), t - timedelta(days=10), owner="o", reopened=1),
+          Finding("c", "a", "critical", "internal", t - timedelta(days=60))]
+    d = data_with(fs)
+    d = replace(d, settings=replace(d.settings, sla_days={"critical": 3, "high": 14, "medium": 60, "low": 120}))
+    r = build(d)
+    assert r["sla_days"]["critical"] == 3 and not r["sla_is_default"]
+    c = r["closure"]
+    assert c["raised"] == 3 and c["with_owner"] == 3 - 1 and c["closed"] == 2 and c["tracks_verification"]
+    assert c["verified"] == 1 and c["reopened"] == 1 and c["recurrence_rate"] == 0.5
+
+
+def test_closure_funnel_says_nothing_about_verification_when_not_recorded():
+    t = TODAY
+    c = build(data_with([f(1, "critical", t - timedelta(days=30), t - timedelta(days=20))]))["closure"]
+    assert not c["tracks_verification"] and c["verified"] is None and c["recurrence_rate"] is None

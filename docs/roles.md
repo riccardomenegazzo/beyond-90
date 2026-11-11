@@ -16,6 +16,10 @@ The page keeps every view. A role only decides which ones sit first and which go
 
 In book mode the same idea is a table across customers: critical and high open, findings older than target, the oldest urgent one, findings with no owner and who is at zero criticals, most critical first.
 
+The target ages are the customer's own, kept in `customer.toml` (`settings.sla_days`) and shared with the score; the card on this view edits them. Below the table, "From raised to confirmed" counts critical and high findings from raised to closed and, when the findings file has `verified_at` and `reopened`, how many fixes held.
+
+**Posture scorecard.** One page for a customer to show their own buyers: Yield, stages, risk, how fixes held, and a fingerprint of the input files. It is not an audit. Paste a fingerprint from a scorecard you were given to see whether it matches the data loaded now.
+
 **Proof of value.** A plan for an evaluation, written before it starts: who sponsors it, who champions it, the window, success criteria with how each will be judged, and a readiness checklist (access agreed, accounts listed, security and procurement steps known). During it, mark each criterion (not yet tried, met, partly, not met, dropped) and write what was seen. The result says "all criteria met" only when every counted criterion is; "mostly met" needs no failures and at least three quarters met. It ends with what carries into the rollout, what is still open, and what the result does not show: one environment, one window, the evaluator's own judgement.
 
 **Asks.** What customers asked the vendor for: a feature, an adoption blocker, an escalation, each with a figure you type for what is at stake (a renewal amount, say; the page does not measure it). The digest groups the same ask across customers, counts each customer's figure once, and lists escalations oldest first, ready to paste for a product team. Nothing is sent anywhere.

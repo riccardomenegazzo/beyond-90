@@ -59,6 +59,8 @@ class Finding:
     expiry: Optional[date] = None
     previous_severity: str = ""
     severity_changed_at: Optional[date] = None
+    verified_at: Optional[date] = None      # the date a later scan confirmed the fix, when the customer records it
+    reopened: int = 0                       # how many times the finding came back after being closed
 
 
 @dataclass(frozen=True)

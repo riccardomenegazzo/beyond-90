@@ -93,6 +93,8 @@ The universe must come from somewhere other than the platform itself: billing ex
 | `decision` | `fix`, `accepted_risk`, `exception`, `false_positive` |
 | `decision_reason`, `expiry` | An accepted risk needs a future `expiry` |
 | `previous_severity`, `severity_changed_at` | Set when severity was changed; feeds the anti-gaming check |
+| `verified_at` | no | date | When a later scan confirmed the fix. Must not be before `closed_at`. Without it the page cannot say how many fixes held. |
+| `reopened` | no | whole number | How many times the finding came back after being closed. |
 
 ## teams.csv
 

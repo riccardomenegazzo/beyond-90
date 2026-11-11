@@ -2,6 +2,15 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.36.0
+
+Honest targets, fixes that hold, and a scorecard you can show.
+
+- **One set of target ages.** The burn-down used its own default while the score used the customer's `settings.sla_days`. Both now read the customer's file, and the burn-down has a card to set the ages (presets or your own) that writes them there. A changed target is not saved as a new snapshot until you save. In the book, each customer now counts against its own targets.
+- **From raised to confirmed.** For critical and high findings of the last 180 days: raised, with an owner, with a decision, closed, and, when the file has the new optional `verified_at` and `reopened` columns, confirmed fixed by a later scan and how many came back. Without those columns the page says it cannot tell. The importer recognises common names for both.
+- **Posture scorecard.** One page a customer can show their own buyers or auditors: Yield, stages, risk, how fixes held, and the input fingerprint. It names no finding, account or person, goes through the sharing gate, and says what it does not prove. You can paste a fingerprint to check it against the data loaded now.
+- Tested on made-up data only.
+
 ## 0.35.0
 
 The burn-down for the whole book.

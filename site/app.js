@@ -8,6 +8,7 @@ import * as O from "./outcomes.js";
 import * as K from "./commitments.js";
 import * as ASK from "./asks.js";
 import * as POV from "./pov.js";
+import * as SLA from "./sla.js";
 import { ROLES, ROLE_IDS, isRole, shape } from "./roles.js";
 import * as store from "./store.js";
 import * as Vault from "./vault.js";
@@ -236,7 +237,7 @@ async function run(compareId) {
     state.compareId = base ? base.id : "";
     say(res.warnings.length ? res.warnings.length + " warning(s): " + res.warnings.join("; ") : "");
     showResults();
-    if ($("autosave").checked) await saveSnapshot({ quiet: true });   // the history a review is built from
+    if ($("autosave").checked && !holdSave) await saveSnapshot({ quiet: true });   // the history a review is built from
   } catch (e) {
     if (e.cancelled) say("Cancelled. The engine was restarted.");
     else showErrors(["Unexpected error: " + e.message]);
@@ -358,7 +359,7 @@ function renderCompare() {
 const VIEWS = {
   overview: { kind: "view", view: "overview" }, connections: { kind: "view", view: "connectionsView" }, accounts: { kind: "view", view: "accountsView" }, findings: { kind: "view", view: "findingsView" },
   onboarding: { kind: "view", view: "onboardingView" }, maturity: { kind: "view", view: "maturityView" }, actions: { kind: "view", view: "actionsView" },
-  planview: { kind: "view", view: "planView" }, whatif: { kind: "view", view: "whatifView" }, commitments: { kind: "view", view: "commitmentsView" }, handoff: { kind: "view", view: "handoffView" }, outlook: { kind: "view", view: "outlookView" }, teams: { kind: "view", view: "teamsView" }, burndown: { kind: "view", view: "burndownView" }, asks: { kind: "view", view: "asksView" }, pov: { kind: "view", view: "povView" },
+  planview: { kind: "view", view: "planView" }, whatif: { kind: "view", view: "whatifView" }, commitments: { kind: "view", view: "commitmentsView" }, handoff: { kind: "view", view: "handoffView" }, outlook: { kind: "view", view: "outlookView" }, teams: { kind: "view", view: "teamsView" }, burndown: { kind: "view", view: "burndownView" }, asks: { kind: "view", view: "asksView" }, scorecard: { kind: "view", view: "scorecardView" }, pov: { kind: "view", view: "povView" },
   prep: { kind: "view", view: "prepView" }, call: { kind: "view", view: "callView" }, news: { kind: "view", view: "newsView" }, value: { kind: "view", view: "valueView" },
   execqbr: { kind: "view", view: "execQbrView" }, renewal: { kind: "view", view: "renewalView" }, changes: { kind: "view", view: "changesView" },
   report: { kind: "html", key: "report_html", file: "beyond90-report.html", type: "text/html" },
@@ -453,7 +454,7 @@ function context() {
   const r = state.result;
   if (r && state.parsedFor !== r) { state.parsed = JSON.parse(r.score_json); state.parsedFor = r; }
   return { result: r, dash: r.dashboard, score: state.parsed, engine: state.engine, files: state.files, options: options(), advisories: state.advisories, logTouch, go: (tab, extra) => selectTab(tab, extra),
-    povs: state.povs, savePov, removePov, asks: state.asks, addAsk, setAskStatus, removeAsk,
+    povs: state.povs, savePov, removePov, setSla, asks: state.asks, addAsk, setAskStatus, removeAsk,
     commitments: state.commitments, addCommitment, setCommitmentStatus, removeCommitment, keepFromCall, today: todayIso(),
     history: state.saved.filter((x) => x.customer === r.customer).map((x) => ({ as_of: x.as_of, yield: state.yields.get(x.id) })).filter((x) => typeof x.yield === "number"),
     outcomes: state.outcomes, calibration: state.calibration, healthWeights: state.healthWeights, recordOutcome, removeOutcome, applyWeights, resetWeights,
@@ -598,6 +599,12 @@ async function keepFromCall({ agreed, ours, date }) {
   return made.length;
 }
 
+async function setSla(days) {
+  state.files["customer.toml"] = SLA.applySla(state.files["customer.toml"], days);
+  holdSave = true;                    // a changed target is not a new reading: it is kept only when you save
+  try { await run(); } finally { holdSave = false; }
+}
+let holdSave = false;
 async function refreshPovs() { try { state.povs = await store.povsAll(); } catch { state.povs = []; } }
 async function refreshAsks() { try { state.asks = await store.asksAll(); } catch { state.asks = []; } }
 async function savePov(p) { await store.povPut([p]); await refreshPovs(); selectTab(state.tab); }

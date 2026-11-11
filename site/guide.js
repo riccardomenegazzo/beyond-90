@@ -42,6 +42,7 @@ export const CUSTOMER_NAV = [
     { id: "roadmap", label: "Roadmap", icon: "doc", tip: "The plan week by week, with the dip before the gain." },
     { id: "onepager", label: "CISO one-pager", icon: "doc", tip: "A single printable page for the customer's CISO: coverage, exposure, next steps, decisions." },
     { id: "actionscsv", label: "Actions (CSV)", icon: "doc", tip: "Every open action, one per row, ready to import into a ticket tracker." },
+    { id: "scorecard", label: "Posture scorecard", icon: "doc", tip: "One page a customer can show their own buyers: Yield, risk, how fixes hold, and a fingerprint tying it to the exact input files. Check a fingerprint against loaded data." },
     { id: "summary", label: "Summary", icon: "doc", tip: "A short written summary for a message or a ticket." },
     { id: "json", label: "Data (JSON)", icon: "doc", tip: "Every number behind the views, for your own tools." },
   ] },

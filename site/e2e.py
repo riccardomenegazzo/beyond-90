@@ -313,7 +313,7 @@ def main(site: str) -> int:
         page.click("#role-pick button[data-role=se]")
         check(page.locator("#tabs details.navmore").count() == 1 and page.locator("#tabs > .navgroup button[data-tab=pov]").count() == 1, "a role puts its views first and the rest under More views")
         page.click("#role-pick button[data-role=all]")
-        check(page.locator("#tabs button").count() == 32 and page.locator("#tabs details").count() == 0, "showing everything brings every view back")
+        check(page.locator("#tabs button").count() == 33 and page.locator("#tabs details").count() == 0, "showing everything brings every view back")
 
         # what renewals taught: record outcomes, see them, remove one
         page.click("[data-tab=renewal]")
@@ -555,7 +555,7 @@ def main(site: str) -> int:
         page.locator("#view tbody tr").first.get_by_role("button", name="Open").click()
         page.wait_for_selector("#run:not([disabled])", state="attached", timeout=180_000)
         page.wait_for_selector("#book-table[hidden]", state="attached")
-        check("Yield" in page.inner_text("#kpis") and page.locator("#tabs button").count() == 32, "opening a customer from the book shows its own report")
+        check("Yield" in page.inner_text("#kpis") and page.locator("#tabs button").count() == 33, "opening a customer from the book shows its own report")
         examples = Path(__file__).resolve().parent.parent / "examples" / "portfolio"
         page.set_input_files("#folder", str(examples))
         page.wait_for_selector("#status:has-text('customers found')")
@@ -781,6 +781,32 @@ def main(site: str) -> int:
         browser = p.chromium.launch()
 
         # a phone: places at the bottom, nothing wider than the screen, tables as cards
+        # target ages, the closure path and the scorecard, on a fresh page so the history above is untouched
+        bctx = browser.new_context()
+        bctx.add_init_script("try { localStorage.setItem('beyond90.role', 'all'); } catch (e) {}")
+        tp = bctx.new_page()
+        tp.goto(base)
+        tp.wait_for_selector("#demo:not([disabled])", timeout=180_000)
+        tp.click("#demo")
+        tp.click("#run")
+        tp.wait_for_selector("#results:not([hidden])", timeout=180_000)
+        tp.click("[data-tab=burndown]")
+        tp.wait_for_selector("#view .bd-flow")
+        tp.get_by_label("Target age for critical findings, in days").fill("3")
+        tp.get_by_role("button", name="Apply and recompute").click()
+        tp.wait_for_selector("#view td:has-text('(target 3d)')", timeout=120_000)
+        check("From raised to confirmed" in tp.inner_text("#view"), "the burn-down shows the path from raised to confirmed")
+        check("customer's own file" in tp.inner_text("#view"), "the burn-down says where the target ages are kept")
+        tp.click("[data-tab=scorecard]")
+        sc = tp.inner_text("#view pre.recap")
+        check(sc.startswith("# Posture scorecard:") and "Input fingerprint:" in sc and "not an audit" in sc, "the scorecard carries a fingerprint and says what it does not prove")
+        fp = re.search(r"Input fingerprint: `([0-9a-f]{16})`", sc).group(1)
+        tp.get_by_label("Fingerprint to check").fill(fp)
+        check("matches the data loaded now" in tp.inner_text("#view") and "does not match" not in tp.inner_text("#view"), "a fingerprint from this data matches")
+        tp.get_by_label("Fingerprint to check").fill("0123456789abcdef")
+        check("does not match" in tp.inner_text("#view"), "a different fingerprint does not")
+        bctx.close()
+
         mctx = browser.new_context(**p.devices["Pixel 7"])
         mctx.add_init_script("try { localStorage.setItem('beyond90.role', 'all'); } catch (e) {}")
         mp = mctx.new_page()

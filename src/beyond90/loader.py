@@ -230,7 +230,7 @@ KNOWN_COLUMNS: dict[str, tuple[str, ...]] = {
     "inventory.csv": ("account_id", "resource_type", "count", "inventoried"),
     "activations.csv": ("account_id", "module_id", "active"),
     "findings.csv": ("id", "account_id", "severity", "exposure", "opened_at", "closed_at", "owner", "decision", "decision_reason",
-                     "expiry", "previous_severity", "severity_changed_at"),
+                     "expiry", "previous_severity", "severity_changed_at", "verified_at", "reopened"),
     "teams.csv": ("id", "name", "has_assets", "active_users", "sso", "role_scoped", "last_access_review"),
     "entitlements.csv": ("unit", "licensed", "used"),
     "contacts.csv": ("id", "name", "role", "team", "influence", "last_contact", "credibility", "reliability", "intimacy", "self_orientation"),
@@ -461,6 +461,12 @@ def load_customer(
         expiry = c.date_(row, "expiry")
         prev = c.choice(row, "previous_severity", SEVERITIES, required=False)
         changed = c.date_(row, "severity_changed_at")
+        verified = c.date_(row, "verified_at")
+        if verified and closed and verified < closed:
+            c.err("verified_at is before closed_at")
+        if verified and not closed:
+            c.err("verified_at is set but the finding is not closed")
+        reopened = int(c.number(row, "reopened", default=0.0, minimum=0.0))
         if prev and not changed:
             c.err("severity_changed_at is required when previous_severity is set")
         severity = c.choice(row, "severity", SEVERITIES)
@@ -470,7 +476,7 @@ def load_customer(
         return Finding(
             id=fid, account_id=aid, severity=severity, exposure=exposure, opened_at=opened, closed_at=closed,
             owner=c.text(row, "owner"), decision=decision, decision_reason=c.text(row, "decision_reason"),
-            expiry=expiry, previous_severity=prev, severity_changed_at=changed,
+            expiry=expiry, previous_severity=prev, severity_changed_at=changed, verified_at=verified, reopened=reopened,
         )
 
     findings = _read_csv(base / "findings.csv", ("id", "account_id", "severity", "opened_at"), errors, parse_finding, warnings)

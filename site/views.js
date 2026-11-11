@@ -7,6 +7,8 @@ import { ledger, CSV_COLUMNS } from "./commitments.js";
 import { buildHandoff } from "./handoff.js";
 import * as P from "./pov.js";
 import * as A from "./asks.js";
+import * as SLA from "./sla.js";
+import * as SC from "./scorecard.js";
 import { connections } from "./graph.js";
 import { gauge, waterfall, lineChart, contributions, timeline, shareBar, funnel, STAGE, STAGE_NAME } from "./charts.js";
 
@@ -1012,7 +1014,7 @@ export function teamsView({ dash }) {
 const SEV_ORDER = ["critical", "high", "medium", "low"];
 
 /** Whether the findings that matter are going away: open now, how old, how long fixes take, and the last six months. */
-export function burndownView({ dash }) {
+export function burndownView({ dash, setSla }) {
   const b = dash.burndown;
   if (!b) return h("p", { class: "note", text: "No findings were loaded, so there is nothing to burn down." });
   const z = b.zero_critical;
@@ -1041,7 +1043,9 @@ export function burndownView({ dash }) {
     h("p", { class: "note", role: "status", text: zeroText }),
     h("div", { class: "kpiline" }, stat(String(b.open.critical), "critical open", b.open.critical ? "bad" : "good"), stat(String(b.open.high), "high open", b.open.high ? "warn" : "good"),
       stat(String(b.past_sla_total), "older than target", b.past_sla_total ? "warn" : "good"), stat(String(b.unowned_urgent), "critical or high with no owner", b.unowned_urgent ? "warn" : "good")),
-    card("By severity and age", table, { sub: b.sla_is_default ? "Target ages are a default (7, 30, 90, 180 days). Replace them with the customer's own before quoting a figure." : "Target ages as set for this customer." }),
+    card("By severity and age", table, { sub: b.sla_is_default ? "Target ages are the default (7, 30, 90, 180 days). Set the customer's own below before quoting a figure." : "Target ages as set for this customer." }),
+    slaCard(b, setSla),
+    closureCard(b.closure),
     card("The last six months", flow, { sub: "Rebuilt from each finding's open and close dates." }),
     card("Oldest critical and high", oldest),
     h("p", { class: "note", text: b.note }));
@@ -1239,4 +1243,50 @@ export function bookBurndownView({ book, openCustomer }) {
         h("td", { text: b.oldest_urgent_days == null ? "none open" : `${b.oldest_urgent_days} days` }), h("td", { text: String(b.unowned_urgent) }),
         h("td", { text: b.zero_critical.never_had ? "none on record" : b.zero_critical.now ? (b.zero_critical.days != null ? `zero for ${b.zero_critical.days} days` : "zero") : "open" })))))),
       { sub: "Most critical findings first, then the oldest. Target ages are the default (7, 30, 90, 180 days) until you set the customer's own, so compare customers with care." }));
+}
+
+function slaCard(b, setSla) {
+  const say = h("p", { class: "note", role: "status" });
+  const pick = h("select", { "aria-label": "Preset target ages" }, [...SLA.PRESETS.map((p) => h("option", { value: p.id, text: p.label })), h("option", { value: "custom", text: "Custom" })]);
+  pick.value = SLA.preset(b.sla_days);
+  const box = Object.fromEntries(SLA.SEVERITIES.map((s) => [s, h("input", { type: "number", min: 1, max: 730, step: 1, value: b.sla_days[s], "aria-label": `Target age for ${s} findings, in days` })]));
+  pick.addEventListener("change", () => { const p = SLA.PRESETS.find((x) => x.id === pick.value); if (p) for (const s of SLA.SEVERITIES) box[s].value = p.days[s]; });
+  const apply = async () => {
+    const days = Object.fromEntries(SLA.SEVERITIES.map((s) => [s, Number(box[s].value)]));
+    try { await setSla(days); } catch (e) { say.textContent = e.message; }
+  };
+  return card("Target ages", h("div", {}, h("div", { class: "formgrid" }, h("label", {}, "Preset", pick), SLA.SEVERITIES.map((s) => h("label", {}, `${s} (days)`, box[s]))),
+    h("div", { class: "row left" }, h("button", { class: "btn small primary", type: "button", text: "Apply and recompute", onclick: apply })), say),
+    { sub: "Saved in the customer's own file (customer.toml, settings.sla_days), so a snapshot keeps it and the score and this view always agree. Pick the ages the customer has agreed; the presets are only starting points." });
+}
+
+function closureCard(c) {
+  if (!c || !c.raised) return null;
+  const rows = [["Critical and high raised", c.raised], ["With an owner", c.with_owner], ["With a recorded decision", c.with_decision], ["Closed", c.closed]];
+  if (c.tracks_verification) rows.push(["Confirmed fixed by a later scan", c.verified], ["Came back after closing", c.reopened]);
+  return card(`From raised to confirmed (last ${c.window_days} days)`, h("div", {},
+    h("ul", { class: "rates wide" }, rows.map(([l, n]) => h("li", {}, h("span", { class: "rl", text: l }), h("span", { class: "rn", text: `${n} of ${c.raised}` })))),
+    c.tracks_verification ? h("p", { class: "note", text: c.recurrence_rate == null ? "Nothing has closed yet, so there is no recurrence rate." : `${Math.round(c.recurrence_rate * 100)}% of closed findings came back.` })
+      : h("p", { class: "note", text: "A closed finding is not the same as a confirmed fix. Add verified_at and reopened columns to the findings file to see how many fixes held." })),
+  { sub: "Counts from the findings file. A stage is only as good as the dates and owners recorded in it." });
+}
+
+// ------------------------------------------------------------------ the scorecard
+export function scorecardView({ result, dash, score, engine, today }) {
+  const text = () => SC.scorecard({ result, score, burndown: dash.burndown, today, engine: engine ? engine.version : "" });
+  const pre = h("pre", { class: "recap", tabindex: "0", "aria-label": "Posture scorecard" }, text());
+  const paste = h("input", { type: "text", "aria-label": "Fingerprint to check", placeholder: "Paste a fingerprint to check it against the data loaded now" });
+  const verdict = h("p", { class: "note", role: "status" });
+  paste.addEventListener("input", () => {
+    if (!paste.value.trim()) { verdict.textContent = ""; return; }
+    verdict.textContent = SC.matches(paste.value, result.input_hash) ? "This fingerprint matches the data loaded now." : "This fingerprint does not match the data loaded now (or it is shorter than 12 characters).";
+  });
+  const file = `beyond90-scorecard-${result.customer.replace(/[^A-Za-z0-9]+/g, "-").toLowerCase()}-${today}.md`;
+  return h("div", {},
+    card("Posture scorecard", h("div", {}, pre, h("div", { class: "row left" },
+      h("button", { class: "btn small primary", type: "button", text: "Copy", onclick: (e) => copyText(text()).then((ok) => { e.target.textContent = ok ? "Copied" : "Not copied"; }) }),
+      h("button", { class: "btn small", type: "button", text: "Download .md", onclick: () => saveBlob(text(), file, "text/markdown") }))),
+    { sub: "One page a customer can show their own buyers or auditors. It names no finding, account or person. It is tied to the exact input files by a fingerprint." }),
+    card("Check a fingerprint", h("div", {}, h("label", {}, "Fingerprint", paste), verdict),
+    { sub: "Load the same input files, paste the fingerprint from a scorecard you were given, and see whether it matches. It proves the numbers came from those files, not that the files are true." }));
 }

@@ -27,6 +27,7 @@ BUCKETS = (("0-7", 0, 7), ("8-30", 8, 30), ("31-90", 31, 90), ("91+", 91, 10**9)
 MTTR_WINDOW_DAYS = 90
 MTTR_MIN = 3
 MONTHS = 6
+CLOSURE_DAYS = 180
 
 
 def _open_on(f: Finding, day: date) -> bool:
@@ -70,7 +71,7 @@ def _zero_critical(findings: list[Finding], today: date) -> dict[str, Any]:
 
 def build(data: CustomerData, sla: Optional[dict[str, int]] = None) -> dict[str, Any]:
     today = data.as_of
-    targets = {**DEFAULT_SLA, **(sla or {})}
+    targets = {**data.settings.sla_days, **(sla or {})}
     findings = list(data.findings)
     opened = [f for f in findings if _open_on(f, today)]
 
@@ -103,11 +104,23 @@ def build(data: CustomerData, sla: Optional[dict[str, int]] = None) -> dict[str,
             "open_high": sum(1 for f in findings if f.severity == "high" and _open_on(f, end)),
         })
 
+    horizon = today - timedelta(days=CLOSURE_DAYS)
+    raised = [f for f in findings if f.severity in ("critical", "high") and (f.opened_at >= horizon or _open_on(f, today))]
+    closed_f = [f for f in raised if f.closed_at is not None and f.closed_at <= today]
+    tracks = any(f.verified_at is not None or f.reopened for f in findings)
+    closure = {
+        "window_days": CLOSURE_DAYS, "raised": len(raised), "with_owner": sum(1 for f in raised if f.owner),
+        "with_decision": sum(1 for f in raised if f.decision), "closed": len(closed_f), "tracks_verification": tracks,
+        "verified": sum(1 for f in closed_f if f.verified_at is not None) if tracks else None,
+        "reopened": sum(1 for f in closed_f if f.reopened) if tracks else None,
+        "recurrence_rate": round(sum(1 for f in closed_f if f.reopened) / len(closed_f), 3) if tracks and closed_f else None,
+    }
+
     urgent = sorted((f for f in opened if f.severity in ("critical", "high")), key=lambda f: (f.opened_at, f.id))[:5]
     return {
         "as_of": str(today),
         "sla_days": targets,
-        "sla_is_default": sla is None,
+        "sla_is_default": targets == DEFAULT_SLA,
         "open": open_by,
         "open_total": sum(open_by.values()),
         "aging": aging,
@@ -116,9 +129,11 @@ def build(data: CustomerData, sla: Optional[dict[str, int]] = None) -> dict[str,
         "mttr": mttr,
         "mttr_window_days": MTTR_WINDOW_DAYS,
         "flow": flow,
+        "closure": closure,
         "zero_critical": _zero_critical(findings, today),
         "unowned_urgent": sum(1 for f in opened if f.severity in ("critical", "high") and not f.owner),
         "oldest_urgent": [{"id": f.id, "account_id": f.account_id, "severity": f.severity, "age_days": (today - f.opened_at).days, "owner": f.owner} for f in urgent],
-        "note": ("The target ages are a default, not the customer's own: replace them with theirs before you quote a figure. "
-                 "Time to fix is shown only when at least 3 findings closed in the window."),
+        "note": (("The target ages are the default, not necessarily the customer's own: set theirs in customer.toml (settings.sla_days) before you quote a figure. "
+                  if targets == DEFAULT_SLA else "Target ages are the ones set for this customer. ")
+                 + "Time to fix is shown only when at least 3 findings closed in the window."),
     }
