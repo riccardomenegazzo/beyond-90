@@ -65,9 +65,13 @@ def test_site_build_is_reproducible_and_has_no_third_party_urls(tmp_path):
     for n in build_site.FONT_FILES:
         (font / n).parent.mkdir(parents=True, exist_ok=True)
         (font / n).write_bytes(b"x")
+    display = tmp_path / "display"
+    for n in build_site.DISPLAY_FILES:
+        (display / n).parent.mkdir(parents=True, exist_ok=True)
+        (display / n).write_bytes(b"y")
     a, b = tmp_path / "a", tmp_path / "b"
-    build_site.build(a, fake, font=font)
-    build_site.build(b, fake, font=font)
+    build_site.build(a, fake, font=font, display=display)
+    build_site.build(b, fake, font=font, display=display)
     assert (a / "beyond90.zip").read_bytes() == (b / "beyond90.zip").read_bytes()
     assert {"index.html", "app.js", "style.css", "demo.json", "beyond90.zip", ".nojekyll"} <= {p.name for p in a.iterdir()}
     import re

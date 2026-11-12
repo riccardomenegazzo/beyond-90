@@ -32,7 +32,7 @@ DEMO_ENDPOINT = ROOT / "examples" / "profiles" / "endpoint" / "acme-endpoint"
 DEMO_PREVIOUS = ROOT / "examples" / "history" / "northwind-2026-09"
 
 
-def build(out: Path, pyodide: Path, feed: Optional[Path] = None, font: Path = FONT) -> None:
+def build(out: Path, pyodide: Path, feed: Optional[Path] = None, font: Path = FONT, display: Path = DISPLAY) -> None:
     if out.exists():
         shutil.rmtree(out)
     out.mkdir(parents=True)
@@ -68,9 +68,9 @@ def build(out: Path, pyodide: Path, feed: Optional[Path] = None, font: Path = FO
             sys.exit(f"missing {font / src}: run npm ci in site/npm first")
         shutil.copy(font / src, out / "fonts" / name)
     for src, name in DISPLAY_FILES.items():
-        if not (DISPLAY / src).exists():
-            sys.exit(f"missing {DISPLAY / src}: run npm ci in site/npm first")
-        shutil.copy(DISPLAY / src, out / "fonts" / name)
+        if not (display / src).exists():
+            sys.exit(f"missing {display / src}: run npm ci in site/npm first")
+        shutil.copy(display / src, out / "fonts" / name)
     # Always a feed file, so the page never asks for one that is missing; an empty one when none was collected.
     doc = {"schema": "beyond90-feed/1", "as_of": "", "window_days": 0, "sources": [], "threats": [], "general": [], "note": "No feed was collected for this build."}
     if feed is not None and feed.is_file():
