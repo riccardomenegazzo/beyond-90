@@ -112,6 +112,8 @@ function attention({ result, dash, score }) {
   const ob = dash.onboarding;
   if (ob && (ob.listed_but_broken.length || ob.stalled.length)) out.push({ kind: ob.listed_but_broken.length ? "bad" : "warn", title: ob.listed_but_broken.length ? `${ob.listed_but_broken.length} connector(s) counted as connected are failing` : `${ob.stalled.length} ${score.terms.units} stuck in onboarding`, text: ob.waves[0] ? `Unblock first: ${ob.waves[0].title} (${ob.waves[0].count}).` : "", go: "onboarding", cta: "See onboarding" });
   if (ob && ob.secrets.some((x) => x.days_left <= 14)) out.push({ kind: "warn", title: "A connector secret expires within two weeks", text: ob.secrets.filter((x) => x.days_left <= 14).map((x) => `${x.connector} (${x.expires_on})`).join(", "), go: "onboarding" });
+  const late = score.relationship?.reliability?.overdue_open || [];
+  if (late.length) out.unshift({ kind: "bad", title: `${late.length} promise${late.length === 1 ? "" : "s"} to the customer ${late.length === 1 ? "is" : "are"} overdue`, text: "Keep the date, or tell them early that it will move.", go: "commitments", cta: "Open promises" });
   const rh = dash.rhythm;
   if (rh && (rh.touch.state === "overdue" || rh.touch.state === "never")) out.unshift({ kind: "bad", title: rh.touch.state === "never" ? "No touch on record" : `${rh.touch.days_since} days since the last touch`, text: `The cadence for this customer is every ${rh.touch.cadence_days} days.`, go: "prep", cta: "Prepare the call" });
   const news = rh ? rh.exposures.filter((e) => e.uncovered && (e.severity === "critical" || e.severity === "high")) : [];

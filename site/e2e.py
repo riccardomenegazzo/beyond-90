@@ -543,6 +543,8 @@ def main(site: str) -> int:
         run_and_wait()
         page.wait_for_selector("#results:not([hidden])")
         check("Acme Endpoint" in page.inner_text("#context"), "the endpoint demo runs with its own profile")
+        page.click("[data-tab=today]")
+        check("promise to the customer is overdue" in page.inner_text("#view .flags"), "Today flags a promise to the customer that is overdue")
         page.click("[data-tab=qbr]")
         qbr = page.inner_text("#doc")
         check("site(s)" in qbr and "cloud" not in qbr.lower(), "and reads in its own words (sites, not cloud accounts)")

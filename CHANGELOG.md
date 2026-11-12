@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.57.0
+
+- **Today flags promises you owe.** When a promise to the customer is past its date, Today puts it at the top of "Keep an eye on", with a button to the promises ledger. It is the thing an account manager forgets first and the customer remembers longest.
+
 ## 0.56.0
 
 - **Two more profiles: identity and SIEM.** `--profile identity` scores directories, identity providers, privileged access and cloud identity on sign-in strength, single sign-on, vaulting, just-in-time access, access reviews, lifecycle, service accounts and identity threat detection. `--profile siem` scores environments on log source onboarding, parsing, detection content, enrichment, retention, case handling, playbooks and source health. Both had been listed "on paper" and are now shipped, with an invented example customer each (Harbor Identity, Lantern SIEM).
