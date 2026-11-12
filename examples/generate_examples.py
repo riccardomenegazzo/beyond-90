@@ -376,9 +376,9 @@ def build(name: str, p: dict) -> None:
     # and one not at all, so the page shows all three situations.
     ladder = {"northwind": ["manual", "assisted", "automated", "automated", "manual"], "fabrikam-labs": ["manual", "manual", "manual", "assisted", "manual"]}.get(name)
     if ladder:
-        header = header + ["closed_by"]
+        header = [*header, "closed_by"]
         seen = 0
-        rows = [list(r) + [""] for r in rows]
+        rows = [[*r, ""] for r in rows]
         for r in rows:
             if r[5]:
                 r[-1] = ladder[seen % len(ladder)]
