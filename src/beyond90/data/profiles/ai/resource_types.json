@@ -1,0 +1,41 @@
+{
+  "version": "2026.4",
+  "description": "AI security: environments where models, agents and AI-enabled tools run, with their endpoints, data stores, tool connections and keys.",
+  "terms": {
+    "estate": "AI",
+    "unit": "environment",
+    "units": "environments"
+  },
+  "types": {
+    "model": "Models in use, hosted or self-run",
+    "inference_endpoint": "Endpoints that serve model requests",
+    "agent": "Autonomous or semi-autonomous agents",
+    "tool_connection": "Tools and servers an agent or assistant can call",
+    "vector_store": "Vector databases and retrieval indexes",
+    "training_dataset": "Datasets used to train or tune models",
+    "api_key": "Keys and tokens that reach model providers"
+  },
+  "expected": {
+    "hosted_models": [
+      "model",
+      "inference_endpoint",
+      "api_key"
+    ],
+    "self_hosted_models": [
+      "model",
+      "inference_endpoint",
+      "vector_store",
+      "training_dataset"
+    ],
+    "agents": [
+      "agent",
+      "tool_connection",
+      "api_key",
+      "vector_store"
+    ],
+    "coding_assistants": [
+      "tool_connection",
+      "api_key"
+    ]
+  }
+}

@@ -1,0 +1,173 @@
+{
+  "use_cases": {
+    "inventory": "Know what AI is in use",
+    "guard": "Guardrails and data protection",
+    "access": "Access and permissions",
+    "assurance": "Testing and assurance"
+  },
+  "modules": [
+    {
+      "id": "ai_inventory",
+      "name": "AI asset inventory and discovery",
+      "category": "identify",
+      "since": "2025.1",
+      "providers": [
+        "hosted_models",
+        "self_hosted_models",
+        "agents",
+        "coding_assistants"
+      ],
+      "requires_any": [],
+      "on_connect": true,
+      "use_case": "inventory",
+      "csf": [
+        "identify"
+      ]
+    },
+    {
+      "id": "guardrails",
+      "name": "Input and output guardrails",
+      "category": "protect",
+      "since": "2025.2",
+      "providers": [
+        "hosted_models",
+        "self_hosted_models",
+        "agents",
+        "coding_assistants"
+      ],
+      "requires_any": [
+        "inference_endpoint",
+        "agent"
+      ],
+      "on_connect": false,
+      "use_case": "guard",
+      "csf": [
+        "protect"
+      ]
+    },
+    {
+      "id": "prompt_logging",
+      "name": "Prompt and response logging",
+      "category": "detect",
+      "since": "2025.2",
+      "providers": [
+        "hosted_models",
+        "self_hosted_models",
+        "agents",
+        "coding_assistants"
+      ],
+      "requires_any": [
+        "inference_endpoint",
+        "agent"
+      ],
+      "on_connect": false,
+      "use_case": "guard",
+      "csf": [
+        "detect"
+      ]
+    },
+    {
+      "id": "data_leak_prevention",
+      "name": "Sensitive data kept out of prompts and stores",
+      "category": "protect",
+      "since": "2025.3",
+      "providers": [
+        "hosted_models",
+        "self_hosted_models",
+        "agents",
+        "coding_assistants"
+      ],
+      "requires_any": [
+        "vector_store",
+        "inference_endpoint"
+      ],
+      "on_connect": false,
+      "use_case": "guard",
+      "csf": [
+        "protect"
+      ]
+    },
+    {
+      "id": "tool_permission_scoping",
+      "name": "Least-privilege scoping of tools an agent can call",
+      "category": "protect",
+      "since": "2025.3",
+      "providers": [
+        "hosted_models",
+        "self_hosted_models",
+        "agents",
+        "coding_assistants"
+      ],
+      "requires_any": [
+        "tool_connection"
+      ],
+      "on_connect": false,
+      "use_case": "access",
+      "csf": [
+        "protect"
+      ]
+    },
+    {
+      "id": "key_management",
+      "name": "Key rotation and ownership for model access",
+      "category": "protect",
+      "since": "2026.1",
+      "providers": [
+        "hosted_models",
+        "self_hosted_models",
+        "agents",
+        "coding_assistants"
+      ],
+      "requires_any": [
+        "api_key"
+      ],
+      "on_connect": false,
+      "use_case": "access",
+      "csf": [
+        "protect"
+      ]
+    },
+    {
+      "id": "model_supply_chain",
+      "name": "Provenance and integrity checks on models and datasets",
+      "category": "identify",
+      "since": "2026.1",
+      "providers": [
+        "hosted_models",
+        "self_hosted_models",
+        "agents",
+        "coding_assistants"
+      ],
+      "requires_any": [
+        "model",
+        "training_dataset"
+      ],
+      "on_connect": false,
+      "use_case": "assurance",
+      "csf": [
+        "identify"
+      ]
+    },
+    {
+      "id": "adversarial_testing",
+      "name": "Regular adversarial testing of models and agents",
+      "category": "identify",
+      "since": "2026.2",
+      "providers": [
+        "hosted_models",
+        "self_hosted_models",
+        "agents",
+        "coding_assistants"
+      ],
+      "requires_any": [
+        "model",
+        "agent"
+      ],
+      "on_connect": false,
+      "use_case": "assurance",
+      "csf": [
+        "identify"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,203 @@
+{
+  "use_cases": {
+    "identity": "Identity and access",
+    "apps": "Third-party app risk",
+    "data": "Data sharing and loss",
+    "posture": "Configuration posture",
+    "detect": "Detection and response"
+  },
+  "modules": [
+    {
+      "id": "mfa_enforcement",
+      "name": "Enforced strong sign-in for all users",
+      "category": "protect",
+      "since": "2025.1",
+      "providers": [
+        "microsoft365",
+        "google_workspace",
+        "crm",
+        "collaboration",
+        "code_hosting"
+      ],
+      "requires_any": [
+        "user"
+      ],
+      "on_connect": true,
+      "use_case": "identity",
+      "csf": [
+        "protect"
+      ]
+    },
+    {
+      "id": "privileged_role_review",
+      "name": "Privileged role monitoring and review",
+      "category": "protect",
+      "since": "2025.1",
+      "providers": [
+        "microsoft365",
+        "google_workspace",
+        "crm",
+        "collaboration",
+        "code_hosting"
+      ],
+      "requires_any": [
+        "privileged_role"
+      ],
+      "on_connect": false,
+      "use_case": "identity",
+      "csf": [
+        "protect",
+        "identify"
+      ]
+    },
+    {
+      "id": "oauth_app_governance",
+      "name": "Third-party app and OAuth grant governance",
+      "category": "protect",
+      "since": "2025.2",
+      "providers": [
+        "microsoft365",
+        "google_workspace",
+        "crm",
+        "collaboration",
+        "code_hosting"
+      ],
+      "requires_any": [
+        "service_principal"
+      ],
+      "on_connect": false,
+      "use_case": "apps",
+      "csf": [
+        "protect",
+        "identify"
+      ]
+    },
+    {
+      "id": "external_sharing_controls",
+      "name": "External sharing detection and control",
+      "category": "protect",
+      "since": "2025.2",
+      "providers": [
+        "microsoft365",
+        "google_workspace",
+        "crm",
+        "collaboration",
+        "code_hosting"
+      ],
+      "requires_any": [
+        "external_share"
+      ],
+      "on_connect": false,
+      "use_case": "data",
+      "csf": [
+        "protect"
+      ]
+    },
+    {
+      "id": "data_loss_prevention",
+      "name": "Sensitive data detection and loss prevention",
+      "category": "protect",
+      "since": "2025.3",
+      "providers": [
+        "microsoft365",
+        "google_workspace",
+        "crm",
+        "collaboration",
+        "code_hosting"
+      ],
+      "requires_any": [
+        "external_share",
+        "mailbox"
+      ],
+      "on_connect": false,
+      "use_case": "data",
+      "csf": [
+        "protect",
+        "detect"
+      ]
+    },
+    {
+      "id": "configuration_drift",
+      "name": "Configuration drift against a baseline",
+      "category": "identify",
+      "since": "2025.1",
+      "providers": [
+        "microsoft365",
+        "google_workspace",
+        "crm",
+        "collaboration",
+        "code_hosting"
+      ],
+      "requires_any": [],
+      "on_connect": true,
+      "use_case": "posture",
+      "csf": [
+        "identify"
+      ]
+    },
+    {
+      "id": "session_anomaly_detection",
+      "name": "Anomalous sign-in and session detection",
+      "category": "detect",
+      "since": "2025.3",
+      "providers": [
+        "microsoft365",
+        "google_workspace",
+        "crm",
+        "collaboration",
+        "code_hosting"
+      ],
+      "requires_any": [
+        "user"
+      ],
+      "on_connect": false,
+      "use_case": "detect",
+      "csf": [
+        "detect"
+      ]
+    },
+    {
+      "id": "token_hygiene",
+      "name": "Token and webhook rotation and expiry tracking",
+      "category": "protect",
+      "since": "2026.1",
+      "providers": [
+        "microsoft365",
+        "google_workspace",
+        "crm",
+        "collaboration",
+        "code_hosting"
+      ],
+      "requires_any": [
+        "integration_token"
+      ],
+      "on_connect": false,
+      "use_case": "apps",
+      "csf": [
+        "protect"
+      ]
+    },
+    {
+      "id": "automated_response",
+      "name": "Automatic response (revoke session, suspend app, remove share)",
+      "category": "respond",
+      "since": "2026.2",
+      "providers": [
+        "microsoft365",
+        "google_workspace",
+        "crm",
+        "collaboration",
+        "code_hosting"
+      ],
+      "requires_any": [
+        "user",
+        "service_principal"
+      ],
+      "on_connect": false,
+      "use_case": "detect",
+      "csf": [
+        "respond"
+      ]
+    }
+  ]
+}

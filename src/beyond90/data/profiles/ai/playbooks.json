@@ -1,0 +1,14 @@
+{
+  "playbooks": {
+    "l1_connect_account": {
+      "title": "Bring unmonitored AI environments into view",
+      "why": "The environment is in use, but nothing reports what models, agents and keys it holds, so no control can be checked there.",
+      "steps": [
+        "Find who runs the environment and what AI services it uses, including ones adopted without a request.",
+        "Connect the environment's logs and inventory source.",
+        "Record who owns each model, agent and key."
+      ],
+      "success": "Every known AI environment reports its models, agents and keys."
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "playbooks": {
+    "l1_connect_account": {
+      "title": "Connect the tenants that are not yet monitored",
+      "why": "The tenant is in use by the business, but the platform does not read its settings or identities, so nothing in it is checked.",
+      "steps": [
+        "Find the application owner and the administrator who can grant read access.",
+        "Grant a read-only integration with the least privilege the platform documents.",
+        "Confirm the first sync completed and the tenant shows users and settings."
+      ],
+      "success": "Every business-owned tenant is connected and syncing."
+    }
+  }
+}

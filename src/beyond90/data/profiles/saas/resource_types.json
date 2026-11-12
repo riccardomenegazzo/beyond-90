@@ -1,0 +1,50 @@
+{
+  "version": "2026.4",
+  "description": "SaaS security posture: tenants of business applications (mail and office suites, CRM, chat, code hosting) whose settings, identities, third-party apps and shared data must be watched.",
+  "terms": {
+    "estate": "SaaS",
+    "unit": "tenant",
+    "units": "tenants"
+  },
+  "types": {
+    "user": "People with an account in the tenant",
+    "privileged_role": "Administrator and other privileged roles",
+    "service_principal": "Third-party apps, OAuth grants and service accounts",
+    "external_share": "Files, links and channels shared outside the organisation",
+    "mailbox": "Mailboxes, including shared and service mailboxes",
+    "integration_token": "API tokens and webhooks held by integrations"
+  },
+  "expected": {
+    "microsoft365": [
+      "user",
+      "privileged_role",
+      "service_principal",
+      "external_share",
+      "mailbox"
+    ],
+    "google_workspace": [
+      "user",
+      "privileged_role",
+      "service_principal",
+      "external_share",
+      "mailbox"
+    ],
+    "crm": [
+      "user",
+      "privileged_role",
+      "service_principal",
+      "integration_token"
+    ],
+    "collaboration": [
+      "user",
+      "service_principal",
+      "external_share",
+      "integration_token"
+    ],
+    "code_hosting": [
+      "user",
+      "privileged_role",
+      "integration_token"
+    ]
+  }
+}

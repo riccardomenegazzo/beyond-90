@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.47.0
+
+- **Two new profiles: SaaS and AI.** `--profile saas` scores tenants of business applications (mail and office suites, CRM, collaboration, code hosting) on strong sign-in, privileged roles, third-party app governance, sharing controls, data loss prevention, drift, session anomalies, token hygiene and automated response. `--profile ai` scores AI environments (hosted and self-run models, agents, coding assistants) on inventory, guardrails, prompt logging, data leak prevention, tool scoping, key management, model supply chain and adversarial testing. Both are vendor-neutral and checked by the same consistency test as the others.
+
 ## 0.46.0
 
 - **How fixes get made.** An optional `closed_by` column in `findings.csv` (`manual`, `assisted` or `automated`) lets the risk view show, for the last 180 days, how many fixes needed no one, how many needed a tool's help and how many were by hand, with the average days each took (shown from three fixes up). Without the column it says what to add. The scorecard carries the automated share when it is recorded. Ignored on a finding that is still open.
