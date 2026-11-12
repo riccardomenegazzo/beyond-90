@@ -151,7 +151,7 @@ beyond90 explain acme --store history.db   # what changed since the last stored 
 
 ## For account managers
 
-[The first 90 days with a new customer](docs/first-90-days.md) is a plan you can put in front of a customer, and [Showing Beyond 90 in five minutes](docs/demo-5-minutes.md) is a short script for explaining it out loud.
+[The first 90 days with a new customer](docs/first-90-days.md) is a plan you can put in front of a customer, and [Showing Beyond 90 in five minutes](docs/demo-5-minutes.md) is a short script for explaining it out loud. [A worked case](docs/case-northwind.md) follows one customer from "we are at 92%" to a plan.
 
 ## Honest limits
 

@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.59.0
+
+- **A worked case.** [docs/case-northwind.md](docs/case-northwind.md) follows the example customer from "we are at 92%" to a plan: what the four stages show, what to say, the three actions, the questions to expect. The figures are the ones in the example data.
+
 ## 0.58.0
 
 - **Spreadsheet exports in other locales.** Files separated by `;` or a tab (what many spreadsheet programs write where the comma is the decimal mark) are now read, and the loader says which separator it used. In a `;` file a decimal comma such as `1234,5` is read as a number. A row with more values than columns is refused instead of silently cut. A date written day-first (`31/10/2026`) still is not guessed, because it is ambiguous, but the message now says to save dates as `YYYY-MM-DD`. The account importer reads such files too.
