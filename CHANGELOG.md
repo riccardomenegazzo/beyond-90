@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.55.0
+
+- **A warning before private material leaves.** The QBR draft ends with a section for the account manager only (renewal readiness, the trust reading, ratings of people). When a text with any of that is copied or downloaded, the page now says so: in the status line at full names, and at the top of the preview when pseudonyms are on. It warns and does not block, because you may be sending it to yourself.
+
 ## 0.54.0
 
 - **Three tests that stop the page from sending data out.** The build now fails if any script of the page uses a channel that could carry data away (XMLHttpRequest, WebSocket, beacons, event streams, peer connections), if a `fetch` points anywhere but a file of the site itself (apart from the two offline probes, which are meant to fail), or if a `fetch` is given a body or a method. The device's share sheet is allowed once, for the encrypted workspace only. The CSP already forbade these; now the code is checked too.

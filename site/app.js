@@ -1,5 +1,6 @@
 // Beyond 90 in the browser. The Python engine runs in a worker (WebAssembly, Pyodide) from this same origin.
 // Files are read with the File API and handed to the worker as text. User data is never sent anywhere.
+import { internalWarning } from "./internal.js";
 import { rank } from "./fuzzy.js";
 import { qrSvg } from "./qr.js";
 import { PROVIDERS, problems as starterProblems, starterFiles } from "./starter.js";
@@ -539,7 +540,8 @@ function save(blob, name) {
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 async function copy() {
-  say((await copyText(payload()[current().key])) ? "Copied." : "Nothing was copied. If copying is not available here, use Download.");
+  const text = payload()[current().key], warn = internalWarning(text);
+  say((await copyText(text)) ? "Copied." + (warn ? " " + warn : "") : "Nothing was copied. If copying is not available here, use Download.");
 }
 
 // ---------- workspace (local-first)

@@ -517,6 +517,9 @@ def main(site: str) -> int:
         check(page.locator("#reshead img, #context img").count() == 0 and "<img" in page.inner_text("#reshead") and "<img" in page.inner_text("#context"), "a hostile customer name is shown as text in the header")
         page.click("[data-tab=qbr]")
         check(page.locator("#doc img, #doc script").count() == 0 and "Injected" in page.inner_text("#doc"), "and in the rendered Markdown")
+        page.click("#copy")
+        page.wait_for_selector("#status:has-text('meant for you only')", state="attached", timeout=10_000)
+        check("meant for you only" in page.text_content("#status"), "copying a QBR draft warns that it holds material for the TAM only")
         for tab in ("overview", "onboarding", "outlook", "teams", "prep", "execqbr", "actions", "accounts", "findings", "maturity", "renewal"):
             page.click(f"[data-tab={tab}]")
             check(page.locator("#view img, #view script, #view iframe").count() == 0, f"and in the {tab} view")
