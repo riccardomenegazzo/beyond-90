@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.49.0
+
+- **Three more checks on the input data.** The "how far to trust this number" panel now also flags findings dated after the data (every age is wrong for them), owner values that are placeholders such as "tbd" or "n/a" (they count as owned and flatter L4), and accounts marked not connected that still show active capabilities or inventoried assets (one of the files is stale). Each says what to check. They change the confidence, never the score.
+
 ## 0.48.0
 
 - **Accounts and Findings open with the answer.** Each view now starts with one sentence ("3 of 12 accounts are not connected", "2 of 10 findings past triage need a person") and the three to look at first, with the reason for each. The tables, filters and CSV export stay below, unchanged.

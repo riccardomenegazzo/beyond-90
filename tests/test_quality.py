@@ -76,3 +76,33 @@ def test_no_findings_is_a_note_and_confidence_is_attached_to_the_score():
     d.findings = []
     assert by_id(assess(d))["findings"]["status"] == "note"
     assert compute_score(good()).quality["confidence"] == "high"
+
+
+def test_findings_dated_after_the_data_are_flagged():
+    d = good()
+    d.findings = [finding("f", owner="o", decision="fix", opened_days_ago=-5)]
+    c = by_id(assess(d))["future"]
+    assert c["status"] == "weak" and "1 of 1" in c["detail"]
+    d.findings = [finding(f"f{i}", owner="o", decision="fix", opened_days_ago=3) for i in range(9)] + [finding("late", owner="o", decision="fix", opened_days_ago=-1)]
+    assert by_id(assess(d))["future"]["status"] == "note"
+    assert "future" not in by_id(assess(good()))
+
+
+def test_placeholder_owners_are_not_owners():
+    d = good()
+    d.findings = [finding(f"f{i}", owner="TBD", decision="fix", opened_days_ago=3) for i in range(4)]
+    c = by_id(assess(d))["placeholders"]
+    assert c["status"] == "weak" and "4 owner values" in c["detail"]
+    d.findings = [finding("a", owner="Maria", decision="fix", opened_days_ago=3), finding("b", owner="n/a", decision="fix", opened_days_ago=3)] * 3
+    assert by_id(assess(d))["placeholders"]["status"] == "weak"
+    d.findings = [finding(f"g{i}", owner="Maria", decision="fix", opened_days_ago=3) for i in range(9)] + [finding("h", owner="unknown", decision="fix", opened_days_ago=3)]
+    assert by_id(assess(d))["placeholders"]["status"] == "note"
+    assert "placeholders" not in by_id(assess(good()))
+
+
+def test_activity_on_an_account_marked_not_connected_is_a_contradiction():
+    d = good()
+    d.accounts[0] = account("a0", connected=False, sources=("billing", "org"), owner="o")
+    c = by_id(assess(d))["contradiction"]
+    assert c["status"] == "note" and "a0" in c["detail"]
+    assert "contradiction" not in by_id(assess(good()))

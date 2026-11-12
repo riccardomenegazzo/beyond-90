@@ -18,6 +18,8 @@ from .models import INDEPENDENT_SOURCES, CustomerData
 from .terms import say
 
 STALE_DAYS = 21
+# Words people type when they have no owner. They fill the column without naming anyone.
+PLACEHOLDER_OWNERS = frozenset({"tbd", "tba", "n/a", "na", "none", "unknown", "unassigned", "nobody", "-", "?", "todo", "xxx"})
 
 
 def _check(id: str, status: str, title: str, detail: str) -> dict[str, str]:
@@ -88,6 +90,28 @@ def assess(data: CustomerData, terms: Optional[Mapping[str, str]] = None) -> dic
     silent = [a for a in active if not a.connected and a.last_spend <= 0 and not a.owner]
     if len(silent) >= max(3, len(active) // 4):
         checks.append(_check("orphans", "note", "Many unconnected accounts have no owner and no spend", f"{len(silent)} of {len(active)}. They may be dead accounts that should be marked decommissioned, or they may be the ones that matter."))
+
+    # 7. Dates that cannot be true: an event after the date of the data makes every age wrong.
+    future = [f for f in data.findings if f.opened_at > data.as_of or (f.closed_at and f.closed_at > data.as_of)]
+    if future:
+        checks.append(_check("future", "weak" if len(future) * 5 >= len(data.findings) else "note", "Findings dated after the data",
+                             f"{len(future)} of {len(data.findings)} findings open or close after {data.as_of}. Ages and the burn-down are off for them; check as_of in customer.toml or the export date."))
+
+    # 8. An owner column filled with placeholders looks complete and names no one.
+    named = [f for f in data.findings if f.owner]
+    fake = [f for f in named if f.owner.strip().lower() in PLACEHOLDER_OWNERS]
+    fake_acc = [a for a in active if a.owner and a.owner.strip().lower() in PLACEHOLDER_OWNERS]
+    if fake or fake_acc:
+        total = len(fake) + len(fake_acc)
+        checks.append(_check("placeholders", "weak" if named and len(fake) * 4 >= len(named) else "note", "Owners that name no one",
+                             f"{total} owner values read like placeholders (tbd, n/a, unknown). They count as owned, so L4 and the ownership figures look better than they are."))
+
+    # 9. Rows that contradict each other: activity recorded for an account marked not connected.
+    off = {a.id for a in active if not a.connected}
+    odd = sorted({r.account_id for r in data.activations if r.active and r.account_id in off} | {r.account_id for r in data.inventory if r.inventoried and r.account_id in off})
+    if odd:
+        checks.append(_check("contradiction", "note", "Not connected, yet something is switched on",
+                             f"{len(odd)} {'account is' if len(odd) == 1 else 'accounts are'} marked not connected but {'has' if len(odd) == 1 else 'have'} active capabilities or inventoried assets (for example {odd[0]}). Either connected is wrong or the other files are stale."))
 
     weak = sum(1 for c in checks if c["status"] == "weak")
     note = sum(1 for c in checks if c["status"] == "note")
