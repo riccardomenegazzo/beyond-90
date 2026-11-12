@@ -1,0 +1,40 @@
+{
+  "version": "2026.4",
+  "description": "Security monitoring (SIEM and SOC): environments whose log sources must be onboarded, parsed and covered by detections, with a response path.",
+  "terms": {
+    "estate": "log",
+    "unit": "environment",
+    "units": "environments"
+  },
+  "types": {
+    "cloud_audit_source": "Cloud audit and control-plane logs",
+    "endpoint_source": "Endpoint and server logs",
+    "network_source": "Firewall, proxy and DNS logs",
+    "identity_source": "Sign-in and directory logs",
+    "saas_source": "Business application audit logs",
+    "detection_rule": "Detections written for these sources"
+  },
+  "expected": {
+    "cloud": [
+      "cloud_audit_source",
+      "identity_source",
+      "detection_rule"
+    ],
+    "on_premises": [
+      "endpoint_source",
+      "network_source",
+      "identity_source",
+      "detection_rule"
+    ],
+    "saas": [
+      "saas_source",
+      "identity_source",
+      "detection_rule"
+    ],
+    "managed_service": [
+      "cloud_audit_source",
+      "endpoint_source",
+      "identity_source"
+    ]
+  }
+}

@@ -1,0 +1,41 @@
+id,account_id,severity,exposure,opened_at,closed_at,owner,decision,decision_reason,expiry,previous_severity,severity_changed_at,verified_at,reopened,closed_by
+x-001,siem-08,medium,internet,2026-07-26,,network-ops,,,,,,,,
+x-002,siem-14,critical,internal,2026-08-11,2026-09-01,cloud-platform,fix,,,,,,,automated
+x-003,siem-14,medium,internet,2026-07-31,2026-08-12,network-ops,accepted_risk,business process depends on it,2027-02-04,,,,,manual
+x-004,siem-04,low,internet,2026-09-22,,,,,,,,,,
+x-005,siem-18,low,internal,2026-07-20,2026-07-24,,,,,,,,,assisted
+x-006,siem-02,medium,internet,2026-09-22,2026-10-20,network-ops,,,,,,,,automated
+x-007,siem-10,medium,internet,2026-09-15,2026-09-16,,,,,,,,,automated
+x-008,siem-08,high,internet,2026-10-21,,,,,,,,,,
+x-009,siem-08,low,internet,2026-09-04,,,,,,,,,,
+x-010,siem-04,medium,internal,2026-09-23,,detection-engineering,accepted_risk,business process depends on it,2027-02-15,,,,,
+x-011,siem-05,medium,internal,2026-10-06,,,,,,,,,,
+x-012,siem-17,low,internal,2026-07-06,2026-07-12,network-ops,,,,,,,,assisted
+x-013,siem-08,medium,internet,2026-07-22,2026-08-08,soc-tier1,fix,,,,,,,manual
+x-014,siem-05,low,internal,2026-08-19,,network-ops,fix,,,,,,,
+x-015,siem-12,medium,internal,2026-09-20,2026-10-01,soc-tier1,fix,,,,,,,assisted
+x-016,siem-10,high,internal,2026-08-25,,,,,,,,,,
+x-017,siem-08,low,internet,2026-07-17,,detection-engineering,accepted_risk,business process depends on it,2027-01-18,,,,,
+x-018,siem-10,critical,internal,2026-07-28,,security-ops,fix,,,,,,,
+x-019,siem-14,medium,internet,2026-09-14,,,,,,,,,,
+x-020,siem-12,low,internal,2026-10-26,,,,,,,,,,
+x-021,siem-17,low,internet,2026-10-24,,network-ops,,,,,,,,
+x-022,siem-04,low,internal,2026-07-09,,cloud-platform,fix,,,,,,,
+x-023,siem-10,high,internal,2026-08-24,,detection-engineering,,,,,,,,
+x-024,siem-10,high,internet,2026-08-07,2026-09-01,network-ops,fix,,,,,,,manual
+x-025,siem-18,high,internal,2026-10-25,,,,,,,,,,
+x-026,siem-15,medium,internal,2026-07-08,2026-08-03,network-ops,accepted_risk,business process depends on it,2027-01-31,,,,,assisted
+x-027,siem-05,high,internal,2026-08-03,,soc-tier1,accepted_risk,business process depends on it,2026-12-17,,,,,
+x-028,siem-13,low,internal,2026-08-11,2026-08-28,,,,,,,,,manual
+x-029,siem-02,low,internal,2026-10-27,,,,,,,,,,
+x-030,siem-04,critical,internet,2026-09-01,,,,,,,,,,
+x-031,siem-12,medium,internet,2026-09-28,2026-10-03,cloud-platform,accepted_risk,business process depends on it,2026-12-21,,,,,automated
+x-032,siem-04,low,internal,2026-08-08,2026-09-06,network-ops,fix,,,,,,,manual
+x-033,siem-06,high,internal,2026-10-21,,detection-engineering,fix,,,,,,,
+x-034,siem-18,high,internet,2026-08-27,2026-09-26,,,,,,,,,assisted
+x-035,siem-08,high,internal,2026-08-04,2026-08-13,cloud-platform,,,,,,,,assisted
+x-036,siem-15,low,internet,2026-09-11,,,,,,,,,,
+x-037,siem-06,low,internal,2026-09-06,,soc-tier1,fix,,,,,,,
+x-038,siem-15,low,internal,2026-07-15,,network-ops,fix,,,,,,,
+x-039,siem-02,medium,internet,2026-09-17,2026-09-26,,,,,,,,,assisted
+x-040,siem-02,high,internal,2026-07-30,2026-08-02,detection-engineering,,,,,,,,assisted

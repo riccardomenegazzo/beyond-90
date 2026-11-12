@@ -1,0 +1,14 @@
+{
+  "playbooks": {
+    "l1_connect_account": {
+      "title": "Onboard the environments that send no logs",
+      "why": "The environment is in scope, but no logs arrive from it, so nothing that happens there can be detected.",
+      "steps": [
+        "Name the owner of the environment and the person who can enable log export.",
+        "Turn on the audit log export and point it at the collector.",
+        "Check that events arrive and that the source shows as healthy."
+      ],
+      "success": "Every environment in scope sends logs and shows healthy."
+    }
+  }
+}

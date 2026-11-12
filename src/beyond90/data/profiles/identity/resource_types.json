@@ -1,0 +1,42 @@
+{
+  "version": "2026.4",
+  "description": "Identity and access security: directories, identity providers, privileged access and cloud identity systems, with the accounts, roles and secrets they hold.",
+  "terms": {
+    "estate": "identity",
+    "unit": "directory",
+    "units": "directories"
+  },
+  "types": {
+    "human_identity": "People accounts",
+    "service_account": "Service accounts and workload identities",
+    "privileged_account": "Administrator and other privileged accounts",
+    "group": "Groups and role assignments",
+    "application": "Applications onboarded for sign-in",
+    "secret": "Passwords, keys and certificates held in a vault"
+  },
+  "expected": {
+    "directory": [
+      "human_identity",
+      "service_account",
+      "privileged_account",
+      "group"
+    ],
+    "identity_provider": [
+      "human_identity",
+      "privileged_account",
+      "application",
+      "group"
+    ],
+    "privileged_access": [
+      "privileged_account",
+      "service_account",
+      "secret"
+    ],
+    "cloud_iam": [
+      "service_account",
+      "privileged_account",
+      "group",
+      "application"
+    ]
+  }
+}

@@ -1,0 +1,184 @@
+{
+  "use_cases": {
+    "authn": "Strong authentication",
+    "privilege": "Privileged access",
+    "lifecycle": "Joiners, movers and leavers",
+    "detect": "Detection and response"
+  },
+  "modules": [
+    {
+      "id": "mfa_enforcement",
+      "name": "Enforced multi-factor sign-in",
+      "category": "protect",
+      "since": "2025.1",
+      "providers": [
+        "directory",
+        "identity_provider",
+        "cloud_iam"
+      ],
+      "requires_any": [
+        "human_identity"
+      ],
+      "on_connect": true,
+      "use_case": "authn",
+      "csf": [
+        "protect"
+      ]
+    },
+    {
+      "id": "single_sign_on",
+      "name": "Applications behind single sign-on",
+      "category": "protect",
+      "since": "2025.1",
+      "providers": [
+        "identity_provider"
+      ],
+      "requires_any": [
+        "application"
+      ],
+      "on_connect": false,
+      "use_case": "authn",
+      "csf": [
+        "protect"
+      ]
+    },
+    {
+      "id": "privileged_vaulting",
+      "name": "Privileged credentials held in a vault",
+      "category": "protect",
+      "since": "2025.2",
+      "providers": [
+        "privileged_access",
+        "directory"
+      ],
+      "requires_any": [
+        "privileged_account",
+        "secret"
+      ],
+      "on_connect": false,
+      "use_case": "privilege",
+      "csf": [
+        "protect"
+      ]
+    },
+    {
+      "id": "just_in_time_access",
+      "name": "Time-limited privileged access",
+      "category": "protect",
+      "since": "2025.3",
+      "providers": [
+        "privileged_access",
+        "cloud_iam"
+      ],
+      "requires_any": [
+        "privileged_account"
+      ],
+      "on_connect": false,
+      "use_case": "privilege",
+      "csf": [
+        "protect"
+      ]
+    },
+    {
+      "id": "access_reviews",
+      "name": "Regular access reviews with a named reviewer",
+      "category": "identify",
+      "since": "2025.2",
+      "providers": [
+        "directory",
+        "identity_provider",
+        "privileged_access",
+        "cloud_iam"
+      ],
+      "requires_any": [
+        "group",
+        "privileged_account"
+      ],
+      "on_connect": false,
+      "use_case": "lifecycle",
+      "csf": [
+        "identify"
+      ]
+    },
+    {
+      "id": "lifecycle_automation",
+      "name": "Automatic removal of access when someone leaves",
+      "category": "protect",
+      "since": "2025.3",
+      "providers": [
+        "directory",
+        "identity_provider"
+      ],
+      "requires_any": [
+        "human_identity"
+      ],
+      "on_connect": false,
+      "use_case": "lifecycle",
+      "csf": [
+        "protect"
+      ]
+    },
+    {
+      "id": "service_account_governance",
+      "name": "Owners and rotation for service accounts",
+      "category": "identify",
+      "since": "2026.1",
+      "providers": [
+        "directory",
+        "privileged_access",
+        "cloud_iam"
+      ],
+      "requires_any": [
+        "service_account"
+      ],
+      "on_connect": false,
+      "use_case": "privilege",
+      "csf": [
+        "identify",
+        "protect"
+      ]
+    },
+    {
+      "id": "identity_threat_detection",
+      "name": "Detection of identity attacks",
+      "category": "detect",
+      "since": "2025.3",
+      "providers": [
+        "directory",
+        "identity_provider",
+        "privileged_access",
+        "cloud_iam"
+      ],
+      "requires_any": [
+        "human_identity",
+        "privileged_account"
+      ],
+      "on_connect": false,
+      "use_case": "detect",
+      "csf": [
+        "detect"
+      ]
+    },
+    {
+      "id": "automated_response",
+      "name": "Automatic response (disable account, force sign-out)",
+      "category": "respond",
+      "since": "2026.2",
+      "providers": [
+        "directory",
+        "identity_provider",
+        "privileged_access",
+        "cloud_iam"
+      ],
+      "requires_any": [
+        "human_identity",
+        "service_account"
+      ],
+      "on_connect": false,
+      "use_case": "detect",
+      "csf": [
+        "respond"
+      ]
+    }
+  ]
+}

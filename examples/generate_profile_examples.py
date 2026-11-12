@@ -22,6 +22,12 @@ CUSTOMERS = {
     "ai": {"dir": "orbit-ai", "name": "Orbit AI (mock)", "arr": 260000, "seed": 4102, "count": 16, "weights": [8, 4, 6, 3],
            "owners": ["ml-platform", "data-science", "product-ai", "security-ops", "developer-experience"],
            "entitlements": "unit,licensed,used\nmonitored_endpoints,60,24\nred_team_runs,40,6\n"},
+    "identity": {"dir": "harbor-identity", "name": "Harbor Identity (mock)", "arr": 210000, "seed": 4103, "count": 14, "weights": [8, 5, 3, 4],
+                 "owners": ["it-service-desk", "iam-team", "security-ops", "cloud-platform", "hr-systems"],
+                 "entitlements": "unit,licensed,used\nmanaged_identities,20000,13500\nvaulted_secrets,5000,900\n"},
+    "siem": {"dir": "lantern-siem", "name": "Lantern SIEM (mock)", "arr": 340000, "seed": 4104, "count": 18, "weights": [8, 6, 4, 2],
+             "owners": ["soc-tier1", "detection-engineering", "cloud-platform", "network-ops", "security-ops"],
+             "entitlements": "unit,licensed,used\ningest_gb_per_day,800,520\nautomation_runs,2000,150\n"},
 }
 
 

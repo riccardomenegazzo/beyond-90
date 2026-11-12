@@ -1,0 +1,154 @@
+{
+  "use_cases": {
+    "collect": "Collection",
+    "detect": "Detection",
+    "investigate": "Investigation",
+    "respond": "Response"
+  },
+  "modules": [
+    {
+      "id": "source_onboarding",
+      "name": "Expected log sources onboarded",
+      "category": "identify",
+      "since": "2025.1",
+      "providers": [
+        "cloud",
+        "on_premises",
+        "saas",
+        "managed_service"
+      ],
+      "requires_any": [],
+      "on_connect": true,
+      "use_case": "collect",
+      "csf": [
+        "identify"
+      ]
+    },
+    {
+      "id": "parsing_and_normalisation",
+      "name": "Logs parsed into a common format",
+      "category": "identify",
+      "since": "2025.1",
+      "providers": [
+        "cloud",
+        "on_premises",
+        "saas"
+      ],
+      "requires_any": [],
+      "on_connect": false,
+      "use_case": "collect",
+      "csf": [
+        "identify"
+      ]
+    },
+    {
+      "id": "detection_content",
+      "name": "Detection content enabled for each source",
+      "category": "detect",
+      "since": "2025.2",
+      "providers": [
+        "cloud",
+        "on_premises",
+        "saas"
+      ],
+      "requires_any": [
+        "detection_rule"
+      ],
+      "on_connect": false,
+      "use_case": "detect",
+      "csf": [
+        "detect"
+      ]
+    },
+    {
+      "id": "enrichment",
+      "name": "Threat and asset enrichment",
+      "category": "detect",
+      "since": "2025.3",
+      "providers": [
+        "cloud",
+        "on_premises",
+        "saas"
+      ],
+      "requires_any": [],
+      "on_connect": false,
+      "use_case": "investigate",
+      "csf": [
+        "detect"
+      ]
+    },
+    {
+      "id": "retention_tiers",
+      "name": "Retention that matches the policy",
+      "category": "protect",
+      "since": "2025.2",
+      "providers": [
+        "cloud",
+        "on_premises",
+        "saas",
+        "managed_service"
+      ],
+      "requires_any": [],
+      "on_connect": false,
+      "use_case": "collect",
+      "csf": [
+        "protect"
+      ]
+    },
+    {
+      "id": "case_management",
+      "name": "Alerts become cases with an owner",
+      "category": "respond",
+      "since": "2025.3",
+      "providers": [
+        "cloud",
+        "on_premises",
+        "saas",
+        "managed_service"
+      ],
+      "requires_any": [],
+      "on_connect": false,
+      "use_case": "respond",
+      "csf": [
+        "respond"
+      ]
+    },
+    {
+      "id": "automated_playbooks",
+      "name": "Automated response playbooks",
+      "category": "respond",
+      "since": "2026.1",
+      "providers": [
+        "cloud",
+        "on_premises",
+        "saas"
+      ],
+      "requires_any": [
+        "detection_rule"
+      ],
+      "on_connect": false,
+      "use_case": "respond",
+      "csf": [
+        "respond"
+      ]
+    },
+    {
+      "id": "health_monitoring",
+      "name": "Alerts when a source stops sending",
+      "category": "detect",
+      "since": "2026.1",
+      "providers": [
+        "cloud",
+        "on_premises",
+        "saas",
+        "managed_service"
+      ],
+      "requires_any": [],
+      "on_connect": false,
+      "use_case": "collect",
+      "csf": [
+        "detect"
+      ]
+    }
+  ]
+}

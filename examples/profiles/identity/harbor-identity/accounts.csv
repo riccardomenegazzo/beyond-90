@@ -1,0 +1,15 @@
+id,provider,sources,connected,owner,last_spend,status,in_plan,created_at
+identity-01,identity_provider,billing;org;sso,true,security-ops,8000,active,true,2025-08-10
+identity-02,identity_provider,billing;org;sso,true,hr-systems,6100,active,true,2026-05-11
+identity-03,cloud_iam,billing;org,true,hr-systems,3800,active,true,2025-06-30
+identity-04,identity_provider,billing;org;sso,false,cloud-platform,1800,active,true,2025-11-17
+identity-05,directory,billing;org;sso,true,iam-team,4500,active,true,2025-11-07
+identity-06,privileged_access,billing;org;sso,false,security-ops,7700,active,true,2026-02-27
+identity-07,directory,billing;org;sso,true,cloud-platform,6100,active,true,2026-07-09
+identity-08,cloud_iam,billing;org,true,security-ops,900,active,true,2024-12-09
+identity-09,cloud_iam,billing;org;sso,false,hr-systems,5200,active,true,2026-03-31
+identity-10,directory,billing;org;sso,true,security-ops,4200,active,false,2024-11-30
+identity-11,privileged_access,billing;org;sso,true,iam-team,1400,active,true,2026-09-26
+identity-12,directory,billing;org,true,security-ops,7100,active,true,2025-01-06
+identity-13,cloud_iam,billing;org,true,iam-team,2500,active,true,2026-08-30
+identity-14,directory,billing;org;sso,true,it-service-desk,7900,active,true,2026-03-14

@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.56.0
+
+- **Two more profiles: identity and SIEM.** `--profile identity` scores directories, identity providers, privileged access and cloud identity on sign-in strength, single sign-on, vaulting, just-in-time access, access reviews, lifecycle, service accounts and identity threat detection. `--profile siem` scores environments on log source onboarding, parsing, detection content, enrichment, retention, case handling, playbooks and source health. Both had been listed "on paper" and are now shipped, with an invented example customer each (Harbor Identity, Lantern SIEM).
+
 ## 0.55.0
 
 - **A warning before private material leaves.** The QBR draft ends with a section for the account manager only (renewal readiness, the trust reading, ratings of people). When a text with any of that is copied or downloaded, the page now says so: in the status line at full names, and at the top of the preview when pseudonyms are on. It warns and does not block, because you may be sending it to yourself.

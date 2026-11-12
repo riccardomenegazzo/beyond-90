@@ -1,0 +1,6 @@
+id,name,has_assets,active_users,sso,role_scoped,last_access_review
+soc-tier1,Soc Tier1,true,3,true,true,2026-09-08
+detection-engineering,Detection Engineering,true,0,true,false,2026-08-26
+cloud-platform,Cloud Platform,true,6,false,true,2026-09-11
+network-ops,Network Ops,true,5,true,true,2026-10-09
+security-ops,Security Ops,true,5,true,true,2026-09-04

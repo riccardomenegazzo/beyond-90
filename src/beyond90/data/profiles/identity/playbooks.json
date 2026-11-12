@@ -1,0 +1,14 @@
+{
+  "playbooks": {
+    "l1_connect_account": {
+      "title": "Bring the unmanaged directories under the platform",
+      "why": "The directory exists and people sign in through it, but the platform does not read it, so nothing in it is checked.",
+      "steps": [
+        "Find the owner of each directory and the account that can grant read access.",
+        "Connect it with a read-only service account and the least privilege the platform documents.",
+        "Confirm the first sync lists accounts, groups and privileged roles."
+      ],
+      "success": "Every directory in scope is connected and syncing."
+    }
+  }
+}

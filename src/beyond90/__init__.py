@@ -1,3 +1,3 @@
 """Beyond 90: an adoption engine for Technical Account Managers."""
 
-__version__ = "0.55.0"
+__version__ = "0.56.0"

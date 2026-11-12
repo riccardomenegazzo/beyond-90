@@ -130,7 +130,7 @@ def _load_gen(name):
     return mod
 
 
-@pytest.mark.parametrize("profile,folder", [("saas", "acme-saas"), ("ai", "orbit-ai")])
+@pytest.mark.parametrize("profile,folder", [("saas", "acme-saas"), ("ai", "orbit-ai"), ("identity", "harbor-identity"), ("siem", "lantern-siem")])
 def test_the_committed_profile_examples_are_what_their_generator_writes(tmp_path, profile, folder):
     mod = _load_gen("gen_profiles")
     mod.build(profile, tmp_path)
@@ -140,10 +140,10 @@ def test_the_committed_profile_examples_are_what_their_generator_writes(tmp_path
     assert [n for n in names if (tmp_path / n).read_text() != (committed / n).read_text()] == [], "run examples/generate_profile_examples.py and commit"
 
 
-@pytest.mark.parametrize("profile,folder", [("saas", "acme-saas"), ("ai", "orbit-ai")])
+@pytest.mark.parametrize("profile,folder", [("saas", "acme-saas"), ("ai", "orbit-ai"), ("identity", "harbor-identity"), ("siem", "lantern-siem")])
 def test_the_extra_profile_examples_score_with_their_own_words(profile, folder):
     path = ROOT / "examples" / "profiles" / profile / folder
     d, _ = load_customer(path)
     sc = compute_score(d, Catalogue.for_directory(path))
     assert sc.provenance["profile"] == profile
-    assert sc.terms["units"] == {"saas": "tenants", "ai": "environments"}[profile]
+    assert sc.terms["units"] == {"saas": "tenants", "ai": "environments", "identity": "directories", "siem": "environments"}[profile]

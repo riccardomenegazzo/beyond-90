@@ -1,0 +1,6 @@
+id,name,has_assets,active_users,sso,role_scoped,last_access_review
+it-service-desk,It Service Desk,true,5,false,true,2026-07-17
+iam-team,Iam Team,true,3,true,true,2026-01-30
+security-ops,Security Ops,true,5,true,true,2026-10-14
+cloud-platform,Cloud Platform,true,6,true,true,2026-09-05
+hr-systems,Hr Systems,true,6,true,true,2026-03-13

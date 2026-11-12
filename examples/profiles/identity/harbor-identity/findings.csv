@@ -1,0 +1,41 @@
+id,account_id,severity,exposure,opened_at,closed_at,owner,decision,decision_reason,expiry,previous_severity,severity_changed_at,verified_at,reopened,closed_by
+x-001,identity-01,medium,internal,2026-08-18,2026-08-26,,,,,,,,,assisted
+x-002,identity-13,high,internet,2026-07-30,,iam-team,fix,,,,,,,
+x-003,identity-11,critical,internal,2026-10-02,,cloud-platform,fix,,,,,,,
+x-004,identity-14,low,internal,2026-08-30,2026-09-19,it-service-desk,fix,,,,,,,automated
+x-005,identity-05,high,internal,2026-08-14,,,,,,,,,,
+x-006,identity-07,low,internet,2026-07-19,,it-service-desk,fix,,,,,,,
+x-007,identity-08,medium,internet,2026-10-16,,iam-team,fix,,,,,,,
+x-008,identity-05,low,internet,2026-07-03,2026-07-21,hr-systems,fix,,,,,,,automated
+x-009,identity-12,high,internet,2026-07-14,2026-07-24,,,,,,,,,manual
+x-010,identity-03,high,internet,2026-07-11,2026-07-20,security-ops,fix,,,,,,,assisted
+x-011,identity-07,medium,internal,2026-08-22,,cloud-platform,fix,,,,,,,
+x-012,identity-10,low,internet,2026-09-02,2026-09-11,it-service-desk,fix,,,,,,,manual
+x-013,identity-12,low,internet,2026-10-21,,,,,,,,,,
+x-014,identity-07,high,internet,2026-08-19,,,,,,,,,,
+x-015,identity-08,low,internet,2026-08-20,,hr-systems,fix,,,,,,,
+x-016,identity-10,low,internet,2026-08-26,,security-ops,accepted_risk,business process depends on it,2026-12-05,,,,,
+x-017,identity-12,low,internet,2026-10-15,,,,,,,,,,
+x-018,identity-11,medium,internal,2026-10-05,,it-service-desk,fix,,,,,,,
+x-019,identity-10,low,internal,2026-08-28,,,,,,,,,,
+x-020,identity-10,high,internet,2026-07-17,2026-08-11,iam-team,,,,,,,,assisted
+x-021,identity-10,low,internet,2026-09-18,2026-10-15,security-ops,accepted_risk,business process depends on it,2027-02-19,,,,,assisted
+x-022,identity-02,medium,internet,2026-09-06,2026-09-27,security-ops,fix,,,,,,,manual
+x-023,identity-13,medium,internet,2026-07-08,,cloud-platform,fix,,,,,,,
+x-024,identity-11,low,internal,2026-10-19,,hr-systems,accepted_risk,business process depends on it,2026-12-30,,,,,
+x-025,identity-03,low,internal,2026-10-14,,cloud-platform,,,,,,,,
+x-026,identity-07,high,internet,2026-08-01,,it-service-desk,,,,,,,,
+x-027,identity-07,critical,internet,2026-07-18,2026-08-04,,,,,,,,,assisted
+x-028,identity-10,high,internet,2026-10-07,,iam-team,accepted_risk,business process depends on it,2027-01-04,,,,,
+x-029,identity-05,low,internal,2026-07-24,2026-08-17,,,,,,,,,automated
+x-030,identity-05,high,internal,2026-08-19,,it-service-desk,fix,,,,,,,
+x-031,identity-02,critical,internet,2026-10-04,,cloud-platform,fix,,,,,,,
+x-032,identity-03,medium,internet,2026-08-01,2026-08-30,,,,,,,,,assisted
+x-033,identity-08,low,internet,2026-08-03,2026-08-26,it-service-desk,accepted_risk,business process depends on it,2027-01-11,,,,,manual
+x-034,identity-10,high,internet,2026-10-23,,security-ops,,,,,,,,
+x-035,identity-01,low,internal,2026-10-25,,,,,,,,,,
+x-036,identity-08,medium,internet,2026-10-28,,,,,,,,,,
+x-037,identity-08,low,internet,2026-07-11,,,,,,,,,,
+x-038,identity-11,high,internet,2026-09-03,2026-09-05,cloud-platform,accepted_risk,business process depends on it,2027-01-31,,,,,automated
+x-039,identity-12,medium,internal,2026-07-15,,security-ops,accepted_risk,business process depends on it,2027-02-15,,,,,
+x-040,identity-13,high,internet,2026-08-24,,security-ops,accepted_risk,business process depends on it,2027-02-04,,,,,
