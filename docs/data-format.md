@@ -139,3 +139,7 @@ Live connectors are not part of 0.2. They need a real tenant to verify and will 
 ## Catalogues
 
 `src/beyond90/data/` holds `resource_types.json`, `modules.json` and `playbooks.json`. In `modules.json`, `on_connect` marks the modules that switch on by themselves when an account is connected (agentless ones); the planner uses it. In `playbooks.json`, `effort` gives `base` and `per_unit` hours; the planner uses it too. Point `--catalogue-dir` at a copy to change the expected resource types, add modules (with a `since` version) or rewrite playbooks. A module released after `baseline_ceiling` is reported as new headroom, not as a regression.
+
+## Separators, encodings and dates
+
+Files are UTF-8, UTF-16 or Windows-1252, and the separator may be a comma, a semicolon or a tab (it is chosen from the header line, and the loader tells you when it is not a comma). In a semicolon file a decimal comma is accepted for numbers; list several sources with commas. Dates are always `YYYY-MM-DD`: a day-first date is refused with a hint rather than guessed.

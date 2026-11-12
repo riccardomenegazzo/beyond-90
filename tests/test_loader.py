@@ -110,3 +110,37 @@ def test_an_unknown_account_source_is_named(tmp_path):
     with pytest.raises(DataError) as exc:
         load_customer(tmp_path)
     assert any("rumour is not one of billing;org;sso;manual;plan;platform" in e for e in exc.value.errors)
+
+
+def test_a_semicolon_separated_file_is_read_and_said(tmp_path):
+    d, warnings = load_customer(write(tmp_path, accounts="id;provider;sources;connected;last_spend\na1;aws;billing,org;true;1234,5\na2;azure;billing;false;80\n"))
+    assert [a.id for a in d.accounts] == ["a1", "a2"] and d.accounts[0].sources == ("billing", "org")
+    assert d.accounts[0].last_spend == 1234.5                  # a decimal comma in a ';' file
+    assert any("accounts.csv" in w and "';'" in w for w in warnings)
+
+
+def test_a_tab_separated_file_is_read(tmp_path):
+    d, warnings = load_customer(write(tmp_path, accounts="id\tprovider\tsources\tconnected\na1\taws\tbilling\ttrue\n"))
+    assert len(d.accounts) == 1 and any("a tab" in w for w in warnings)
+
+
+def test_a_comma_file_is_untouched_and_a_decimal_comma_is_not_guessed(tmp_path):
+    _, warnings = load_customer(write(tmp_path))
+    assert warnings == []
+    sub = tmp_path / "x"
+    sub.mkdir()
+    with pytest.raises(DataError) as e:
+        load_customer(write(sub, accounts='id,provider,sources,connected,last_spend\na1,aws,billing,true,"1234,5"\n'))
+    assert "expected a number" in str(e.value)
+
+
+def test_a_semicolon_file_with_a_stray_separator_is_refused_not_truncated(tmp_path):
+    with pytest.raises(DataError) as e:
+        load_customer(write(tmp_path, accounts="id;provider;sources;connected\na1;aws;billing;org;true\n"))
+    assert "more values than columns" in str(e.value)
+
+
+def test_a_day_first_date_gets_a_hint_not_a_guess(tmp_path):
+    with pytest.raises(DataError) as e:
+        load_customer(write(tmp_path, toml='[customer]\nname = "T"\nas_of = 2026-10-31\n', accounts=ACCOUNTS, findings="id,account_id,severity,opened_at\nf1,a1,high,31/10/2026\n"))
+    assert "save the dates as YYYY-MM-DD" in str(e.value)

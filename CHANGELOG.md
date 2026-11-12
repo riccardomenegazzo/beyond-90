@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.58.0
+
+- **Spreadsheet exports in other locales.** Files separated by `;` or a tab (what many spreadsheet programs write where the comma is the decimal mark) are now read, and the loader says which separator it used. In a `;` file a decimal comma such as `1234,5` is read as a number. A row with more values than columns is refused instead of silently cut. A date written day-first (`31/10/2026`) still is not guessed, because it is ambiguous, but the message now says to save dates as `YYYY-MM-DD`. The account importer reads such files too.
+
 ## 0.57.0
 
 - **Today flags promises you owe.** When a promise to the customer is past its date, Today puts it at the top of "Keep an eye on", with a button to the promises ledger. It is the thing an account manager forgets first and the customer remembers longest.

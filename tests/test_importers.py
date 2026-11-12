@@ -177,3 +177,9 @@ def test_cli_import_needs_an_initialised_directory_and_a_good_file(tmp_path, cap
     bad.write_text("{oops")
     assert main(["import", "aws-org", str(bad), "--into", d]) == 1
     assert "not valid JSON" in capsys.readouterr().err
+
+
+def test_the_csv_importer_reads_a_semicolon_export():
+    from beyond90.importers import parse_csv
+    recs = parse_csv("account;owner\na1;ops\na2;dev\n", source="billing", id_column="account", owner_column="owner", provider="aws")
+    assert [r.id for r in recs] == ["a1", "a2"]

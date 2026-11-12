@@ -88,6 +88,7 @@ class _Ctx:
         self.errors = errors
         self.line = 0
         self.adjusted = 0
+        self.decimal_comma = False   # set when the file uses ';' as its separator, as spreadsheets do where the comma is the decimal mark
 
     def err(self, message: str) -> None:
         self.errors.append(f"{self.filename}:{self.line}: {message}")
@@ -110,13 +111,16 @@ class _Ctx:
         try:
             return date.fromisoformat(raw)
         except ValueError:
-            self.err(f"{key}: expected YYYY-MM-DD, got {raw!r}")
+            hint = " (day/month/year is ambiguous: save the dates as YYYY-MM-DD)" if re.fullmatch(r"\d{1,2}[/.\-]\d{1,2}[/.\-]\d{2,4}", raw) else ""
+            self.err(f"{key}: expected YYYY-MM-DD, got {raw!r}{hint}")
             return None
 
     def number(self, row: dict[str, Any], key: str, default: float = 0.0, minimum: Optional[float] = 0.0) -> float:
         raw = (row.get(key) or "").strip()
         if raw == "":
             return default
+        if self.decimal_comma and re.fullmatch(r"-?\d+,\d+", raw):
+            raw = raw.replace(",", ".")
         try:
             value = float(raw)
         except ValueError:
@@ -185,6 +189,14 @@ def _decode(path: Path) -> tuple[str, str]:
     return text, note
 
 
+def sniff_delimiter(text: str) -> str:
+    """Spreadsheet programs write ';' or a tab instead of ',' in many locales. Decide from the header line alone."""
+    first = next((ln for ln in text.splitlines() if ln.strip()), "")
+    counts = {d: first.count(d) for d in (",", ";", "\t")}
+    best = max(counts, key=lambda d: counts[d])
+    return best if counts[best] > 0 and counts[best] > counts[","] else ","
+
+
 def _read_csv(
     path: Path,
     required_columns: tuple[str, ...],
@@ -202,8 +214,12 @@ def _read_csv(
         return []
     if note and notes is not None:
         notes.append(note)
-    reader = csv.DictReader(io.StringIO(text, newline=""))
+    delim = sniff_delimiter(text)
+    if delim != "," and notes is not None:
+        notes.append(f"{path.name}: read with {'a tab' if delim == chr(9) else repr(delim)} as the separator, as some spreadsheet programs write it.")
+    reader = csv.DictReader(io.StringIO(text, newline=""), delimiter=delim)
     ctx = _Ctx(path.name, errors)
+    ctx.decimal_comma = delim == ";"
     try:
         header = [h.strip() for h in (reader.fieldnames or [])]
         missing = [c for c in required_columns if c not in header]
@@ -212,6 +228,9 @@ def _read_csv(
             return []
         for row in reader:
             ctx.line = reader.line_num
+            if delim != "," and row.get(None):
+                ctx.err(f"more values than columns. This file is separated by {'a tab' if delim == chr(9) else repr(delim)}, so a cell that lists several values (sources) must use commas, or be quoted")
+                continue
             clean = {(k or "").strip(): (v if isinstance(v, str) else "") for k, v in row.items()}
             if not any(v.strip() for v in clean.values()):
                 continue

@@ -152,7 +152,8 @@ def parse_csv(
         raise ImportFormatError(f"csv: source must be one of {', '.join(SOURCES)}")
     if not provider and not provider_column and not infer_provider:
         raise ImportFormatError("csv: give --provider (aws, azure, gcp, ...) or --provider-column")
-    reader = csv.DictReader(io.StringIO(text))
+    from .loader import sniff_delimiter
+    reader = csv.DictReader(io.StringIO(text), delimiter=sniff_delimiter(text))
     header = reader.fieldnames or []
     for col in (id_column, provider_column, owner_column, spend_column, status_column):
         if col and col not in header:
