@@ -117,6 +117,9 @@ def main(site: str) -> int:
         check("Yield" in page.inner_text("#kpis") and "Maturity level" in page.inner_text("#kpis"), "demo produces a Yield tile and a maturity level")
         # the native dashboard
         check(page.locator("#view .todayhero").count() == 1 and "72." in page.inner_text("#view .todayhero") and page.locator("#view .opp").count() == 3, "the first screen gives the score, one sentence and three things to do")
+        check(page.locator("#view .tour li").count() == 3, "the first screen offers a first minute in three steps")
+        page.get_by_role("button", name="Got it, hide this").click()
+        check(page.locator("#view .tour").count() == 0 and page.evaluate("localStorage.getItem('beyond90.tour')") == "1", "the first minute can be dismissed and stays dismissed")
         check("short of its" in page.inner_text("#view .tline") and page.locator("#view .bigbtn").count() == 3, "the first screen says how far from the target and offers three next steps")
         page.click("[data-tab=overview]")
         check(page.locator("#view .gauge").count() == 1 and "72." in (page.text_content("#view .gauge") or ""), "overview draws the Yield gauge")

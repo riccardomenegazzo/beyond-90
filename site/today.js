@@ -25,3 +25,15 @@ export function headline({ customer, yield: y, target, stages, openActions }) {
   const third = openActions === 0 ? " Nothing is waiting to be done." : "";
   return first + second + third;
 }
+
+// The first minute: three things to do with what is on screen, in order. Plain data, so it can be tested.
+export function firstMinute(openActions) {
+  const steps = [
+    { id: "read", text: "Read the sentence at the top. It says where the customer stands and what moves it most.", to: null },
+    openActions > 0
+      ? { id: "act", text: `Open the first of your ${openActions} actions and copy it as a ticket.`, to: "actions", cta: "Open actions" }
+      : { id: "act", text: "Nothing is waiting to be done. Look at the full picture instead.", to: "overview", cta: "Open overview" },
+    { id: "call", text: "Before the next call, open Prepare the call. It lists what to say and what to ask.", to: "prep", cta: "Prepare the call" },
+  ];
+  return steps;
+}

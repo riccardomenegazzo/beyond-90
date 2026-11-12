@@ -10,7 +10,7 @@ import * as A from "./asks.js";
 import * as SLA from "./sla.js";
 import * as SC from "./scorecard.js";
 import { connections } from "./graph.js";
-import { headline } from "./today.js";
+import { headline, firstMinute } from "./today.js";
 import { accountsFirst, accountsAnswer, whyAccount, findingsFirst, findingsAnswer, whyFinding } from "./triage.js";
 import { gauge, waterfall, lineChart, contributions, timeline, shareBar, funnel, STAGE, STAGE_NAME } from "./charts.js";
 
@@ -30,6 +30,11 @@ export function todayView({ result, dash, score, go }) {
   const top = dash.actions.slice(0, 3);
   const watch = flags[0];
   const big = (label, hint, to) => h("button", { class: "bigbtn", type: "button", onclick: () => go(to) }, h("b", { text: label }), h("small", { text: hint }));
+  const seen = (() => { try { return localStorage.getItem("beyond90.tour") === "1"; } catch { return false; } })();
+  const tour = seen ? null : h("section", { class: "card tour", "aria-label": "Your first minute" },
+    h("header", { class: "cardhead" }, h("h2", { text: "Your first minute" })),
+    h("ol", { class: "tourlist" }, firstMinute(dash.actions.length).map((st) => h("li", {}, h("span", { text: st.text }), st.to ? h("button", { class: "btn small", type: "button", text: st.cta, onclick: () => go(st.to) }) : null))),
+    h("button", { class: "btn small", type: "button", text: "Got it, hide this", onclick: (e) => { try { localStorage.setItem("beyond90.tour", "1"); } catch { /* storage may be off */ } e.target.closest(".tour").remove(); } }));
   return h("div", { class: "today" },
     h("section", { class: "card todayhero" },
       h("div", { class: "todayscore" }, h("span", { class: "tnum", text: pct(score.yield) }), h("span", { class: "tcap", text: "Yield" })),
@@ -41,6 +46,7 @@ export function todayView({ result, dash, score, go }) {
     card("Keep an eye on", watch ? h("div", { class: "flags" }, h("p", { class: watch.kind }, h("b", { text: watch.title }), watch.text ? ` ${watch.text}` : ""),
       watch.go ? h("button", { class: "btn small", type: "button", text: watch.cta || "Open", onclick: () => go(watch.go) }) : null,
       flags.length > 1 ? h("p", { class: "note", text: `${flags.length - 1} more on the overview.` }) : null) : h("p", { class: "note", text: "Nothing stands out." })),
+    tour,
     h("div", { class: "bigrow" }, big("Prepare the call", "What to say and ask", "prep"), big("One-page summary", "To send or print", "onepager"), big("The full picture", "Overview, with every chart", "overview")));
 }
 

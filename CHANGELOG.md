@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.50.0
+
+- **A first minute on Today.** Until you hide it, Today shows three steps: read the sentence at the top, open the first action, prepare the next call, each with a button. "Got it, hide this" keeps it hidden on this browser only (one flag in local storage, nothing sent anywhere).
+
 ## 0.49.0
 
 - **Three more checks on the input data.** The "how far to trust this number" panel now also flags findings dated after the data (every age is wrong for them), owner values that are placeholders such as "tbd" or "n/a" (they count as owned and flatter L4), and accounts marked not connected that still show active capabilities or inventoried assets (one of the files is stale). Each says what to check. They change the confidence, never the score.

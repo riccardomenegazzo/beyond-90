@@ -24,3 +24,13 @@ test("above target, without data, and with nothing to do", () => {
   assert.match(headline({ customer: "Acme", yield: 0.8, target: 0.9, stages: {}, openActions: 0 }), /Nothing is waiting/);
   assert.match(headline({ customer: "Acme", yield: 0.8, target: 0, stages }), /90% target/);
 });
+
+import { firstMinute } from "../today.js";
+test("the first minute has three steps and points at actions only when there are some", () => {
+  const a = firstMinute(4), b = firstMinute(0);
+  assert.equal(a.length, 3);
+  assert.equal(a[1].to, "actions");
+  assert.match(a[1].text, /4 actions/);
+  assert.equal(b[1].to, "overview");
+  assert.ok(a.every((s) => s.id && s.text));
+});

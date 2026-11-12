@@ -549,3 +549,9 @@ h1,h2,h3,.tnum,.kpi b,.ws-title,.stat b,.stat .v{font-family:var(--display);lett
 .firstlist{list-style:none;margin:0;padding:0;display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
 .firstlist li{background:var(--card,#fff);border:1px solid var(--line,#d8dee6);border-left:4px solid var(--neg);border-radius:10px;padding:12px 14px;overflow-wrap:anywhere}
 .firstlist small{color:var(--muted)}
+
+/* The first minute, on Today until dismissed */
+.tour{border-left:4px solid var(--accent)}
+.tourlist{margin:6px 0 12px;padding-left:22px;display:grid;gap:10px}
+.tourlist li{padding-left:4px}
+.tourlist .btn{margin-left:8px}
