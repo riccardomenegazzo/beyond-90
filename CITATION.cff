@@ -1,0 +1,9 @@
+cff-version: 1.2.0
+message: "If you use Beyond 90, please cite it as below."
+title: "Beyond 90"
+type: software
+license: Apache-2.0
+repository-code: "https://github.com/riccardomenegazzo/beyond-90"
+authors:
+  - family-names: Menegazzo
+    given-names: Riccardo

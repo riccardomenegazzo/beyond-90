@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.51.0
+
+- **For account managers.** Two short documents: [the first 90 days with a new customer](docs/first-90-days.md), a plan to put in front of a customer, and [showing Beyond 90 in five minutes](docs/demo-5-minutes.md), a script for explaining the project out loud. A `CITATION.cff` names the author so the repository can be cited.
+
 ## 0.50.0
 
 - **A first minute on Today.** Until you hide it, Today shows three steps: read the sentence at the top, open the first action, prepare the next call, each with a button. "Got it, hide this" keeps it hidden on this browser only (one flag in local storage, nothing sent anywhere).
