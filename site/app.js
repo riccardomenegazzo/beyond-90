@@ -59,7 +59,7 @@ async function boot() {
 function refreshRun() {
   const have = state.mode === "book" ? Object.keys(state.groups).length : Object.keys(state.files).length;
   $("run").disabled = state.running || !(state.engine && state.engine.version && have);
-  $("demo-book").disabled = $("demo-endpoint").disabled = !(state.engine && state.engine.version);
+  $("demo-book").disabled = $("demo-endpoint").disabled = $("demo-saas").disabled = $("demo-ai").disabled = !(state.engine && state.engine.version);
 }
 
 // A new build is installed in the background and offered, never forced: "Update now" switches every tab to it at once.
@@ -192,6 +192,14 @@ async function loadDemo() {
   state.files = await (await fetch("./demo.json")).json();
   renderLoaded();
   say("Example loaded: Northwind, a made-up customer.");
+}
+
+async function loadDemoProfile(key, label) {
+  say("Loading the example…");
+  state.mode = "single"; state.groups = {};
+  state.files = await (await fetch(`./demo-${key}.json`)).json();
+  renderLoaded();
+  say(`Example loaded: ${label}.`);
 }
 
 async function loadDemoEndpoint() {
@@ -943,6 +951,8 @@ paintRoles();
 $("try-now").addEventListener("click", async () => { $("try-now").disabled = true; try { await loadDemo(); await run(); } finally { $("try-now").disabled = false; } });
 $("demo-book").addEventListener("click", loadDemoBook);
 $("demo-endpoint").addEventListener("click", loadDemoEndpoint);
+$("demo-saas").addEventListener("click", () => loadDemoProfile("saas", "a made-up SaaS security customer"));
+$("demo-ai").addEventListener("click", () => loadDemoProfile("ai", "a made-up AI security customer"));
 $("run").addEventListener("click", () => run());
 $("cancel").addEventListener("click", cancel);
 $("copy").addEventListener("click", copy);

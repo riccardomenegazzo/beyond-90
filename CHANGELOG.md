@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.53.0
+
+- **Demo customers for SaaS and AI.** Two invented customers, Acme SaaS and Orbit AI, with a demo button each on the start page, so every shipped profile can be tried without writing a file. A test checks that the committed files are exactly what the generator writes.
+
 ## 0.52.0
 
 - **A README you can read in a minute.** A short "In one minute" section now opens the page: what it is for, how to try it, how to run it, and what it is not. The longer text follows unchanged.

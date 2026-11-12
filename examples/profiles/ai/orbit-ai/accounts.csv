@@ -1,0 +1,17 @@
+id,provider,sources,connected,owner,last_spend,status,in_plan,created_at
+ai-01,agents,billing;org,true,product-ai,3900,active,true,2026-01-20
+ai-02,hosted_models,billing;org,true,data-science,3200,active,false,2026-04-25
+ai-03,hosted_models,billing,false,security-ops,1900,active,true,2025-03-05
+ai-04,agents,billing;org;sso,true,developer-experience,3200,active,true,2025-08-22
+ai-05,hosted_models,billing;org;sso,true,data-science,5900,active,true,2026-09-24
+ai-06,hosted_models,billing;org;sso,true,ml-platform,300,active,false,2026-08-06
+ai-07,agents,billing;org;sso,true,data-science,4100,active,true,2025-01-16
+ai-08,hosted_models,billing;org;sso,true,developer-experience,2300,active,true,2025-03-08
+ai-09,hosted_models,billing;sso,true,developer-experience,4600,active,true,2025-06-29
+ai-10,self_hosted_models,billing;org,false,security-ops,5500,active,true,2026-09-25
+ai-11,agents,billing;sso,true,developer-experience,3100,active,true,2026-06-06
+ai-12,self_hosted_models,billing;org;sso,false,security-ops,7200,active,true,2025-06-21
+ai-13,agents,billing;org,true,ml-platform,2300,active,true,2025-10-27
+ai-14,self_hosted_models,billing;org;sso,true,security-ops,6900,active,true,2025-10-08
+ai-15,hosted_models,billing;org;sso,true,data-science,7900,active,true,2026-08-10
+ai-16,self_hosted_models,billing;org;sso,true,security-ops,6000,active,false,2025-10-13

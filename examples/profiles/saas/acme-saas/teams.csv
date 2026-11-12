@@ -1,0 +1,6 @@
+id,name,has_assets,active_users,sso,role_scoped,last_access_review
+it-service-desk,It Service Desk,true,2,false,true,2026-06-08
+sales-ops,Sales Ops,true,0,false,false,2026-05-30
+people-ops,People Ops,true,3,false,true,2026-01-19
+security-ops,Security Ops,true,2,false,true,2026-06-16
+engineering-platform,Engineering Platform,true,0,false,false,2026-03-30

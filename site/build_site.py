@@ -29,6 +29,7 @@ DISPLAY = ROOT / "site" / "npm" / "node_modules" / "@fontsource-variable" / "bri
 DISPLAY_FILES = {f"files/bricolage-grotesque-{s}-wght-normal.woff2": f"display-{s}.woff2" for s in ("latin", "latin-ext")} | {"LICENSE": "OFL-display.txt"}
 DEMO = ROOT / "examples" / "portfolio" / "northwind"
 DEMO_ENDPOINT = ROOT / "examples" / "profiles" / "endpoint" / "acme-endpoint"
+DEMO_PROFILES = {"saas": ROOT / "examples" / "profiles" / "saas" / "acme-saas", "ai": ROOT / "examples" / "profiles" / "ai" / "orbit-ai"}
 DEMO_PREVIOUS = ROOT / "examples" / "history" / "northwind-2026-09"
 
 
@@ -61,6 +62,9 @@ def build(out: Path, pyodide: Path, feed: Optional[Path] = None, font: Path = FO
     (out / "demo-book.json").write_text(json.dumps(book, ensure_ascii=False), encoding="utf-8")
     ep = {p.name: p.read_text(encoding="utf-8") for p in sorted(DEMO_ENDPOINT.iterdir()) if p.suffix in (".csv", ".toml")}
     (out / "demo-endpoint.json").write_text(json.dumps(ep, ensure_ascii=False), encoding="utf-8")
+    for key, folder in DEMO_PROFILES.items():
+        extra = {p.name: p.read_text(encoding="utf-8") for p in sorted(folder.iterdir()) if p.suffix in (".csv", ".toml")}
+        (out / f"demo-{key}.json").write_text(json.dumps(extra, ensure_ascii=False), encoding="utf-8")
     shutil.copy(ROOT / "examples" / "threats.json", out / "demo-advisories.json")
     (out / "fonts").mkdir()
     for src, name in FONT_FILES.items():

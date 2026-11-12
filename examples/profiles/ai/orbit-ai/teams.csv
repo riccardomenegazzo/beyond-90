@@ -1,0 +1,6 @@
+id,name,has_assets,active_users,sso,role_scoped,last_access_review
+ml-platform,Ml Platform,true,1,false,true,2026-05-07
+data-science,Data Science,true,3,false,true,2026-07-16
+product-ai,Product Ai,true,3,false,true,2026-06-16
+security-ops,Security Ops,true,1,true,true,2026-10-03
+developer-experience,Developer Experience,true,0,false,false,2026-04-18

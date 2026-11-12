@@ -1,0 +1,41 @@
+id,account_id,severity,exposure,opened_at,closed_at,owner,decision,decision_reason,expiry,previous_severity,severity_changed_at,verified_at,reopened,closed_by
+x-001,saas-01,medium,internal,2026-10-26,,it-service-desk,accepted_risk,business process depends on it,2026-12-14,,,,,
+x-002,saas-12,low,internet,2026-07-30,2026-07-31,,,,,,,,,automated
+x-003,saas-05,low,internet,2026-07-23,,sales-ops,accepted_risk,business process depends on it,2026-12-01,,,,,
+x-004,saas-01,medium,internal,2026-08-21,2026-08-29,engineering-platform,accepted_risk,business process depends on it,2026-11-29,,,,,manual
+x-005,saas-05,critical,internet,2026-09-10,,engineering-platform,,,,,,,,
+x-006,saas-01,high,internet,2026-10-30,,people-ops,fix,,,,,,,
+x-007,saas-03,low,internet,2026-10-19,,people-ops,accepted_risk,business process depends on it,2026-12-11,,,,,
+x-008,saas-01,high,internal,2026-10-26,,people-ops,,,,,,,,
+x-009,saas-11,medium,internet,2026-08-04,2026-08-13,,,,,,,,,assisted
+x-010,saas-04,high,internal,2026-07-16,,security-ops,,,,,,,,
+x-011,saas-07,low,internet,2026-10-03,,security-ops,accepted_risk,business process depends on it,2027-01-14,,,,,
+x-012,saas-18,high,internet,2026-07-13,2026-07-28,engineering-platform,fix,,,,,,,manual
+x-013,saas-19,medium,internal,2026-09-10,,security-ops,fix,,,,,,,
+x-014,saas-17,high,internal,2026-10-09,,engineering-platform,fix,,,,,,,
+x-015,saas-16,medium,internet,2026-10-04,,it-service-desk,,,,,,,,
+x-016,saas-16,low,internal,2026-09-19,2026-09-21,,,,,,,,,automated
+x-017,saas-08,low,internal,2026-09-15,2026-09-19,sales-ops,fix,,,,,,,assisted
+x-018,saas-14,critical,internal,2026-07-08,,engineering-platform,fix,,,,,,,
+x-019,saas-01,low,internal,2026-10-27,,people-ops,accepted_risk,business process depends on it,2026-12-12,,,,,
+x-020,saas-12,medium,internet,2026-10-06,,,,,,,,,,
+x-021,saas-08,low,internal,2026-09-15,,it-service-desk,accepted_risk,business process depends on it,2027-01-10,,,,,
+x-022,saas-12,high,internet,2026-10-03,,,,,,,,,,
+x-023,saas-05,low,internal,2026-09-27,,it-service-desk,accepted_risk,business process depends on it,2026-11-25,,,,,
+x-024,saas-16,high,internet,2026-07-13,,sales-ops,accepted_risk,business process depends on it,2026-11-20,,,,,
+x-025,saas-03,high,internal,2026-09-03,2026-09-29,sales-ops,fix,,,,,,,assisted
+x-026,saas-17,medium,internet,2026-07-28,2026-08-11,sales-ops,accepted_risk,business process depends on it,2027-02-05,,,,,automated
+x-027,saas-14,medium,internet,2026-08-16,2026-08-18,,,,,,,,,manual
+x-028,saas-07,high,internal,2026-09-23,2026-10-01,engineering-platform,fix,,,,,,,automated
+x-029,saas-11,medium,internal,2026-08-04,2026-08-19,engineering-platform,fix,,,,,,,manual
+x-030,saas-09,medium,internal,2026-09-30,2026-10-23,sales-ops,accepted_risk,business process depends on it,2026-12-04,,,,,assisted
+x-031,saas-05,low,internet,2026-09-23,,,,,,,,,,
+x-032,saas-18,low,internet,2026-10-24,,sales-ops,fix,,,,,,,
+x-033,saas-19,medium,internet,2026-09-04,2026-09-29,it-service-desk,fix,,,,,,,manual
+x-034,saas-08,medium,internal,2026-07-21,2026-07-23,,,,,,,,,assisted
+x-035,saas-01,medium,internal,2026-10-09,,people-ops,fix,,,,,,,
+x-036,saas-04,high,internal,2026-10-14,,,,,,,,,,
+x-037,saas-08,high,internet,2026-07-30,2026-08-21,it-service-desk,accepted_risk,business process depends on it,2027-01-28,,,,,assisted
+x-038,saas-04,low,internet,2026-07-25,2026-07-30,engineering-platform,accepted_risk,business process depends on it,2026-11-29,,,,,assisted
+x-039,saas-12,high,internet,2026-08-25,,security-ops,accepted_risk,business process depends on it,2026-12-25,,,,,
+x-040,saas-17,medium,internet,2026-07-20,2026-08-05,security-ops,accepted_risk,business process depends on it,2027-02-23,,,,,assisted
