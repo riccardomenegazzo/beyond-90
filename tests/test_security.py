@@ -130,3 +130,42 @@ def test_the_engine_never_opens_a_network_connection_outside_the_connectors():
         if re.search(r"^\s*(import|from)\s+(socket|urllib\.request|http\.client|requests|ssl)\b", text, re.M):
             offenders.append(f.name)
     assert not offenders, f"network imports outside connect/: {offenders}"
+
+
+SHIPPED_JS = sorted(p for p in SITE.glob("*.js"))
+# The two deliberate probes: they ask a third-party host for a file and must FAIL, which proves the page cannot reach out.
+OFFLINE_PROBES = {"app.js", "worker.js"}
+
+
+def test_the_site_has_no_way_to_send_data_out():
+    banned = re.compile(r"XMLHttpRequest|WebSocket|sendBeacon|EventSource|RTCPeerConnection")
+    assert [p.name for p in SHIPPED_JS if banned.search(p.read_text(encoding="utf-8"))] == []
+
+
+def test_the_share_sheet_is_used_once_and_only_for_the_encrypted_workspace():
+    # navigator.share hands a file to the device's own share sheet after a click. It is allowed for the sealed workspace and nothing else.
+    uses = [(p.name, p.read_text(encoding="utf-8")) for p in SHIPPED_JS if "navigator.share(" in p.read_text(encoding="utf-8")]
+    assert [n for n, _ in uses] == ["app.js"]
+    text = uses[0][1]
+    assert text.count("navigator.share(") == 1
+    before = text[:text.index("navigator.share(")]
+    assert before.rfind("sealExport(") > before.rfind("async function ")
+
+
+def test_every_fetch_in_the_site_reads_a_file_from_the_site_itself():
+    bad = []
+    for p in SHIPPED_JS:
+        for m in re.finditer(r"\bfetch\(\s*([`\"'])(.*?)\1", p.read_text(encoding="utf-8")):
+            target = m.group(2)
+            if target.startswith(("./", "/", "${")):
+                continue
+            if p.name in OFFLINE_PROBES and target == "https://example.com/beyond90-probe":
+                continue
+            bad.append((p.name, target))
+    assert bad == []
+
+
+def test_fetch_is_never_given_a_body():
+    # A fetch that sends something (a body or a non-GET method) would be a way out for data, even to the same origin.
+    bad = [p.name for p in SHIPPED_JS if re.search(r"\bfetch\([^)]*\b(body|method)\s*:", p.read_text(encoding="utf-8"))]
+    assert bad == []

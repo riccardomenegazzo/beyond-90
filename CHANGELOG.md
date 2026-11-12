@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.54.0
+
+- **Three tests that stop the page from sending data out.** The build now fails if any script of the page uses a channel that could carry data away (XMLHttpRequest, WebSocket, beacons, event streams, peer connections), if a `fetch` points anywhere but a file of the site itself (apart from the two offline probes, which are meant to fail), or if a `fetch` is given a body or a method. The device's share sheet is allowed once, for the encrypted workspace only. The CSP already forbade these; now the code is checked too.
+
 ## 0.53.0
 
 - **Demo customers for SaaS and AI.** Two invented customers, Acme SaaS and Orbit AI, with a demo button each on the start page, so every shipped profile can be tried without writing a file. A test checks that the committed files are exactly what the generator writes.
