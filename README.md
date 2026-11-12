@@ -4,6 +4,18 @@
 
 **An adoption score that cannot be flattered, a roadmap that tells you the dip before it happens, and an honest answer to "did the customer improve, or did the bar move?"**
 
+## In one minute
+
+A customer says "we are at 90%". Usually that means 90% of the accounts someone remembered to list. Beyond 90 checks the whole path from account to fix, with independent counts, and tells you what to do next.
+
+- **What it gives you:** one honest score (Yield), the three actions that move it most, a prepared call, and a quarterly review a security lead will read.
+- **Try it:** open the [live page](https://riccardomenegazzo.github.io/beyond-90/) and press the demo button. The customer is invented, and nothing leaves your browser.
+- **Use it:** clone the repository, run `pip install .`, then `beyond90 score examples/portfolio/northwind`. For your own customer, start with `beyond90 init acme`.
+- **Who it is for:** technical account managers, solutions architects and sales engineers. It is not tied to one vendor.
+- **What it is not:** an independent audit. The security review was done by the author. See [Honest limits](#honest-limits).
+
+The rest of this page goes deeper.
+
 Most adoption reporting stops at "90% of accounts connected" (or sites, tenants, organizations: whatever your product connects). That number leaves out units nobody planned for, asset types the product never inventoried, controls that are switched off and findings nobody owns. Beyond 90 measures the whole pipeline against independent denominators, turns every gap into an action, and then goes further than a dashboard can.
 
 **It shows what waiting costs, and where the gap matters.** It scores the same estate on future dates with only what is already dated (secrets, accepted risks, triage windows, deadlines), so every drop has a date and an exact size, and exports them to a calendar. Next to Yield, it weighs coverage by spend and exposure: 90% of accounts connected can still mean a fifth of the spend unwatched. See [docs/outlook.md](docs/outlook.md).

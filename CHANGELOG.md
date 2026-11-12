@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.52.0
+
+- **A README you can read in a minute.** A short "In one minute" section now opens the page: what it is for, how to try it, how to run it, and what it is not. The longer text follows unchanged.
+
 ## 0.51.0
 
 - **For account managers.** Two short documents: [the first 90 days with a new customer](docs/first-90-days.md), a plan to put in front of a customer, and [showing Beyond 90 in five minutes](docs/demo-5-minutes.md), a script for explaining the project out loud. A `CITATION.cff` names the author so the repository can be cited.
