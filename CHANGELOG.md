@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.48.0
+
+- **Accounts and Findings open with the answer.** Each view now starts with one sentence ("3 of 12 accounts are not connected", "2 of 10 findings past triage need a person") and the three to look at first, with the reason for each. The tables, filters and CSV export stay below, unchanged.
+
 ## 0.47.0
 
 - **Two new profiles: SaaS and AI.** `--profile saas` scores tenants of business applications (mail and office suites, CRM, collaboration, code hosting) on strong sign-in, privileged roles, third-party app governance, sharing controls, data loss prevention, drift, session anomalies, token hygiene and automated response. `--profile ai` scores AI environments (hosted and self-run models, agents, coding assistants) on inventory, guardrails, prompt logging, data leak prevention, tool scoping, key management, model supply chain and adversarial testing. Both are vendor-neutral and checked by the same consistency test as the others.

@@ -11,6 +11,7 @@ import * as SLA from "./sla.js";
 import * as SC from "./scorecard.js";
 import { connections } from "./graph.js";
 import { headline } from "./today.js";
+import { accountsFirst, accountsAnswer, whyAccount, findingsFirst, findingsAnswer, whyFinding } from "./triage.js";
 import { gauge, waterfall, lineChart, contributions, timeline, shareBar, funnel, STAGE, STAGE_NAME } from "./charts.js";
 
 const card = (title, body, { sub = "", cls = "", actions = null } = {}) =>
@@ -188,7 +189,11 @@ export function accountsView({ dash, score }) {
   const apply = () => t.setFilter((r) => (!prov.size || prov.has(r.provider)) && (!flt.size || [...flt].every((f) => (f === "gaps" ? r.issues > 0 : f === "unconnected" ? !r.connected : f === "critical" ? r.open_critical > 0 : f === "unowned" ? !r.owner : true))) &&
     (!q || (r.id + " " + r.owner + " " + r.provider).toLowerCase().includes(q)));
   const conn = rows.filter((r) => r.connected).length;
+  const ans = accountsAnswer(rows, score.terms), first = accountsFirst(rows);
   return h("div", {},
+    h("section", { class: "card bdhero" }, h("p", { class: "bdlead", role: "status", text: ans.lead }), h("p", { class: "bdnoise", text: ans.detail })),
+    first.length ? h("section", { class: "worklist", "aria-label": "Look at these first" }, h("h3", { class: "sect", text: "Look at these first" }),
+      h("ul", { class: "firstlist" }, first.map((r) => h("li", {}, h("b", { text: r.id }), h("span", { text: ` (${r.provider}${r.owner ? `, ${r.owner}` : ", no owner"})` }), h("small", { class: "block", text: whyAccount(r) }))))) : null,
     h("div", { class: "kpiline" }, stat(String(A.total), `${score.terms.units} in scope`), stat(String(conn), "connected", "good"), stat(String(A.total - conn), "not connected", A.total - conn ? "bad" : ""), stat(String(rows.filter((r) => r.issues).length), "with at least one gap")),
     h("div", { class: "toolbar" }, searchBox(`Search ${score.terms.units} or owner`, (v) => { q = v; apply(); }),
       chipFilter("Provider", A.providers, (s) => { prov = s; apply(); }),
@@ -216,7 +221,11 @@ export function findingsView({ dash, score }) {
   ];
   const t = dataTable({ columns: cols, rows, pageSize: 40, label: "Open findings", empty: "No finding matches." });
   const apply = () => t.setFilter((r) => (!sev.size || sev.has(r.severity)) && (!st.size || st.has(r.state)) && (!q || (r.id + " " + r.account + " " + r.owner).toLowerCase().includes(q)));
+  const ans = findingsAnswer(F), first = findingsFirst(rows);
   return h("div", {},
+    h("section", { class: "card bdhero" }, h("p", { class: "bdlead", role: "status", text: ans.lead }), h("p", { class: "bdnoise", text: ans.detail })),
+    first.length ? h("section", { class: "worklist", "aria-label": "Look at these first" }, h("h3", { class: "sect", text: "Look at these first" }),
+      h("ul", { class: "firstlist" }, first.map((r) => h("li", {}, h("b", { text: r.id }), h("span", { text: ` (${r.account})` }), h("small", { class: "block", text: whyFinding(r) }))))) : null,
     card("Open findings past triage", shareBar(Object.keys(label).filter((k) => S[k]).map((k) => ({ label: label[k], value: S[k], color: color[k] }))), { sub: "L4 counts a finding as good when it has an owner and a decision; an accepted risk also needs an expiry that has not passed." }),
     h("ul", { class: "legend" }, Object.keys(label).filter((k) => S[k]).map((k) => h("li", {}, h("i", { style: `background:${color[k]}` }), `${label[k]}: ${S[k]}`))),
     h("div", { class: "toolbar" }, searchBox("Search finding, account or owner", (v) => { q = v; apply(); }),
