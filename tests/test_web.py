@@ -76,6 +76,8 @@ def test_site_build_is_reproducible_and_has_no_third_party_urls(tmp_path):
     assert {"index.html", "app.js", "style.css", "demo.json", "beyond90.zip", ".nojekyll"} <= {p.name for p in a.iterdir()}
     import re
     assert (a / "sw.js").read_text() == (b / "sw.js").read_text() and "beyond90-" in (a / "sw.js").read_text()
+    page = (a / "index.html").read_text()
+    assert "<!--HERO-PREVIEW-->" not in page and page.count('class="hp-bars"') == 1 and "What really works" in page
     allowed = ("github.com/riccardomenegazzo", "example.com/beyond90-probe", "www.w3.org/2000/svg")   # links, the self-check that proves nothing can leave, the SVG namespace
     for name in ("index.html", "app.js", "engine.js", "store.js", "workspace-core.js", "worker.js", "sw.js", "guide.js", "views.js", "ui.js"):
         urls = re.findall(r"https?://[^\s\"')`]+", (a / name).read_text())
@@ -200,3 +202,23 @@ def test_book_carries_a_slim_burndown_per_customer() -> None:
     for b in r["burndown"].values():
         assert {"open_critical", "open_high", "past_sla_total", "unowned_urgent", "zero_critical", "oldest_urgent_days", "sla_is_default"} <= set(b)
         assert b["open_critical"] >= 0 and b["sla_is_default"] is True
+
+
+def test_the_start_page_preview_is_what_the_engine_says(monkeypatch):
+    import json
+    import sys
+    from pathlib import Path
+
+    from beyond90.web import analyze_files
+
+    root = Path(__file__).resolve().parents[1]
+    monkeypatch.syspath_prepend(str(root / "site"))
+    import build_site
+
+    demo = {p.name: p.read_text() for p in sorted(build_site.DEMO.iterdir()) if p.suffix in (".csv", ".toml")}
+    sc = json.loads(analyze_files(demo)["score_json"])
+    html = build_site.hero_preview(demo)
+    assert f"{sc['yield'] * 100:.1f}%" in html and f"{sc['naive'] * 100:.0f}%" in html
+    assert html.count("<li") == 4 and html.count('class="weak"') == 1
+    assert "<script" not in html and "javascript:" not in html
+    assert sys.modules["build_site"] is build_site

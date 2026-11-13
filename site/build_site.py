@@ -33,6 +33,32 @@ DEMO_PROFILES = {"saas": ROOT / "examples" / "profiles" / "saas" / "acme-saas", 
 DEMO_PREVIOUS = ROOT / "examples" / "history" / "northwind-2026-09"
 
 
+def hero_preview(files: dict) -> str:
+    """The start page's picture of the idea, computed by the engine from the example data at build time, so it cannot drift."""
+    import html
+
+    sys.path.insert(0, str(ROOT / "src"))
+    from beyond90.web import analyze_files
+
+    r = analyze_files(files)
+    sc = json.loads(r["score_json"])
+    labels = {"L1": "Connected", "L2": "Seen", "L3": "Switched on", "L4": "Decided"}
+    stages = [(k, sc["stages"][k]["value"]) for k in ("L1", "L2", "L3", "L4") if sc["stages"].get(k, {}).get("value") is not None]
+    low = min(v for _, v in stages)
+    weak = ' class="weak"'
+    bars = "".join(
+        f'<li{weak if v == low else ""}><span class="hp-id">{k}</span><span class="hp-l">{labels[k]}</span>'
+        f'<span class="hp-t" aria-hidden="true"><i style="width:{v * 100:.1f}%"></i></span><b>{v * 100:.1f}%</b></li>'
+        for k, v in stages)
+    naive, real = sc["naive"], sc["yield"]
+    return (f'<figure class="hero-preview" aria-label="What Beyond 90 shows, on the example customer">'
+            f'<p class="hp-k">{html.escape(r["customer"])}, an invented customer</p>'
+            f'<div class="hp-pair"><div class="hp-old"><span>The usual number</span><b>{naive * 100:.0f}%</b></div>'
+            f'<div class="hp-new"><span>What really works</span><b>{real * 100:.1f}%</b></div></div>'
+            f'<ul class="hp-bars">{bars}</ul>'
+            f'<figcaption class="hp-note">Four stages, multiplied. The {(naive - real) * 100:.0f} points between the two numbers are where the next win is.</figcaption></figure>')
+
+
 def build(out: Path, pyodide: Path, feed: Optional[Path] = None, font: Path = FONT, display: Path = DISPLAY) -> None:
     if out.exists():
         shutil.rmtree(out)
@@ -48,6 +74,8 @@ def build(out: Path, pyodide: Path, feed: Optional[Path] = None, font: Path = FO
                 z.writestr(info, p.read_bytes())
     demo = {p.name: p.read_text(encoding="utf-8") for p in sorted(DEMO.iterdir()) if p.suffix in (".csv", ".toml")}
     (out / "demo.json").write_text(json.dumps(demo, ensure_ascii=False), encoding="utf-8")
+    page = (out / "index.html").read_text(encoding="utf-8")
+    (out / "index.html").write_text(page.replace("<!--HERO-PREVIEW-->", hero_preview(demo)), encoding="utf-8")
     prev = {p.name: p.read_text(encoding="utf-8") for p in sorted(DEMO_PREVIOUS.iterdir()) if p.suffix in (".csv", ".toml")}
     (out / "demo-previous.json").write_text(json.dumps(prev, ensure_ascii=False), encoding="utf-8")
     dest = out / "pyodide"

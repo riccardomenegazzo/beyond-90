@@ -152,6 +152,7 @@ function uniqueKey(key, taken) {
 const fromInput = (list) => [...list].map((file) => ({ file, path: file.webkitRelativePath || file.name }));
 
 function renderLoaded() {
+  document.body.classList.toggle("has-files", state.mode === "book" ? Object.keys(state.groups || {}).length > 0 : Object.keys(state.files || {}).length > 0);
   const ul = $("loaded");
   ul.replaceChildren();
   const labels = state.mode === "book"

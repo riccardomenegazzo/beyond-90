@@ -2,6 +2,11 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.62.0
+
+- **The start page shows the idea before the first click.** Next to the headline, a dark card shows the example customer: the usual number struck through, what really works beside it, and the four stages as bars with the weakest marked. The figures are computed by the engine from the example data when the site is built, and a test checks that they match, so the picture cannot drift from the product.
+- **No empty run bar.** The "Analyse" bar at the bottom of the start page now appears only once there are files to analyse, instead of covering the example cards.
+
 ## 0.61.0
 
 - **Keyboard shortcuts.** `g` then a letter jumps (`t` Today, `o` Overview, `a` Actions, `f` Findings, `c` Accounts, `b` Risk burn-down, `p` Prep a call, `m` Promises, `v` Proof of value, `w` This week); `[` and `]` step through the menu; `/` searches; `?` shows the list, also reachable from the bottom of the menu. Keys typed into a field are left alone.

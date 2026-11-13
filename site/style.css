@@ -687,3 +687,32 @@ kbd{display:inline-block;min-width:22px;padding:2px 7px;border:1px solid var(--l
 .keys-open:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .rail kbd{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.2);color:var(--ink)}
 @media (max-width:900px){.keys-open{display:none}}
+
+/* ================================================================ the start page shows the idea before the first click (0.62) */
+@media (min-width:1200px){
+  .start-head{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,400px);grid-template-rows:auto auto auto 1fr;column-gap:56px;align-items:start}
+  .start-head > :not(.hero-preview){grid-column:1}
+  .start-head .hero-preview{grid-column:2;grid-row:1 / span 4}
+}
+.hero-preview{background:var(--navy);color:#eef3f8;border-radius:22px;padding:22px 24px 20px;box-shadow:0 30px 60px -30px rgba(7,17,28,.7);margin:8px 0 18px}
+.hp-k{margin:0 0 14px;color:#9fb2c7;font-size:13px}
+.hp-pair{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}
+.hp-pair > div{display:flex;flex-direction:column;gap:2px}
+.hp-pair span{font-size:12.5px;color:#c5d2e1}
+.hp-pair b{font-family:var(--display);font-size:40px;line-height:1.05;letter-spacing:-.03em}
+.hp-old b{color:#9fb2c7;text-decoration:line-through;text-decoration-thickness:3px;text-decoration-color:rgba(252,165,165,.85)}
+.hp-new b{color:#5eead4}
+.hp-bars{list-style:none;margin:0;padding:0;display:grid;gap:9px}
+.hp-bars li{display:grid;grid-template-columns:24px 92px minmax(0,1fr) 52px;align-items:center;gap:8px;font-size:13px}
+.hp-id{font-weight:800;color:#9fb2c7}
+.hp-l{color:#c5d2e1}
+.hp-t{height:7px;border-radius:4px;background:rgba(255,255,255,.12);overflow:hidden}
+.hp-t i{display:block;height:100%;border-radius:4px;background:#5eead4}
+.hp-bars b{text-align:right;font-variant-numeric:tabular-nums}
+.hp-bars li.weak .hp-t i{background:#fbbf24}
+.hp-bars li.weak :is(.hp-id,b){color:#fbbf24}
+.hp-note{margin:16px 0 0;font-size:13.5px;color:#c5d2e1;line-height:1.45}
+@media (max-width:640px){.hp-pair b{font-size:32px}.hp-bars li{grid-template-columns:22px 80px minmax(0,1fr) 46px}}
+/* nothing to analyse yet: the run bar waits until there are files */
+body:not(.has-files) .runbar{display:none}
+.hero-preview{margin-inline:0}
