@@ -12,6 +12,8 @@ Every release on GitHub carries `beyond90-local-<version>.zip` (about 7 MB), lis
 
 `start.py` uses the standard library only. It listens on this computer alone (127.0.0.1), hands out the files in `./site` read-only, and never receives customer data: the page reads your files inside the browser, exactly as on the public site, and keeps them in that browser. To check the files, compare the zip with the release's `SHA256SUMS`, then the files inside with `site/SHA256SUMS`.
 
+To publish a release (maintainers): push a tag `vX.Y.Z` that matches the package version, or create the release with that new tag in GitHub's Releases page; either way the Release workflow builds the files, signs their provenance and attaches them.
+
 From a clone instead: `npm ci --ignore-scripts --prefix site/npm`, `python3 site/build_site.py --out _site --pyodide site/npm/node_modules/pyodide`, then `python3 scripts/local_bundle.py _site beyond90-local.zip` or `beyond90 app --site _site`.
 
 ## Install it as an app
