@@ -2,6 +2,11 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.61.0
+
+- **Keyboard shortcuts.** `g` then a letter jumps (`t` Today, `o` Overview, `a` Actions, `f` Findings, `c` Accounts, `b` Risk burn-down, `p` Prep a call, `m` Promises, `v` Proof of value, `w` This week); `[` and `]` step through the menu; `/` searches; `?` shows the list, also reachable from the bottom of the menu. Keys typed into a field are left alone.
+- **Every view gets to the point.** The five number tiles now show only on Overview, Changes and Value receipt; elsewhere the menu's pulse carries them, and the content starts about 200 pixels higher. The view header is one block with "Pin to menu" on the right.
+
 ## 0.60.0
 
 - **A new menu.** The side menu opens with the customer's pulse: Yield and the four stages as bars, the weakest one marked; a click goes to Today. Views with something waiting carry a live count (actions open, findings that need a person, critical findings, accounts not connected, connectors stuck, promises overdue), red when someone is needed now. Groups fold and the menu remembers which. Any view can be pinned to the top with "Pin to menu" (up to six).

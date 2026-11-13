@@ -666,3 +666,24 @@ body[data-view=today] .pinbtn{display:none}
   body.has-work .tour-offer{order:3;width:100%;padding:6px 10px;font-size:13px;min-height:36px}
   body.has-work .work-tools .btn,body.has-work .work-tools select{min-height:36px;font-size:13.5px}
 }
+
+/* every view gets straight to its content: the five numbers live in the menu's pulse, and stay in full only where they are the point */
+body[data-view]:not([data-view=overview]):not([data-view=changes]):not([data-view=value]) #kpis{display:none}
+.viewhead{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:16px;align-items:end;margin:22px 0 18px}
+.viewhead h2{grid-column:1;margin:0}
+.viewhead #view-tip{grid-column:1;max-width:72ch;margin:6px 0 0}
+.viewhead .pinbtn{grid-column:2;grid-row:1 / span 2;align-self:center}
+.viewhead #docactions{grid-column:1 / -1;margin-top:10px}
+.tour-offer{border-style:dashed;background:none;font-weight:600}
+@media (max-width:640px){.viewhead{grid-template-columns:1fr}.viewhead .pinbtn{grid-column:1;grid-row:auto;justify-self:start;margin-top:10px}}
+.keysdlg{border:0;border-radius:18px;padding:24px 26px;max-width:460px;width:calc(100% - 32px);background:var(--surface);color:var(--ink);box-shadow:0 30px 60px -20px rgba(0,0,0,.45)}
+.keysdlg::backdrop{background:rgba(7,17,28,.55)}
+.keylist{display:grid;grid-template-columns:auto 1fr;gap:8px 16px;margin:14px 0 18px;align-items:center}
+.keylist dt{white-space:nowrap;color:var(--muted);font-size:13px}
+.keylist dd{margin:0}
+kbd{display:inline-block;min-width:22px;padding:2px 7px;border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;background:var(--sunk);color:var(--ink);font:600 12.5px/1.4 var(--mono,ui-monospace,monospace);text-align:center}
+.keys-open{display:flex;align-items:center;gap:8px;margin:18px 12px 0;border:0;background:none;padding:6px 0;color:var(--muted);font:inherit;font-size:13px;cursor:pointer}
+.keys-open:hover{color:var(--ink)}
+.keys-open:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.rail kbd{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.2);color:var(--ink)}
+@media (max-width:900px){.keys-open{display:none}}

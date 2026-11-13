@@ -19,6 +19,7 @@ import { createPrivacy } from "./privacy.js";
 import { h as el_, s as svg_, saveBlob, copyText, setExitGate, csvCell, icon, initTips, info } from "./ui.js";
 import { CUSTOMER_NAV, BOOK_NAV, FAQ, GLOSSARY, TOUR } from "./guide.js";
 import { navBadges, stageBars, togglePin, pinnedViews } from "./nav.js";
+import * as KEYS from "./keys.js";
 
 // Another site could frame this page and steer clicks on it; the app only runs as the top-level page.
 if (window.top !== window.self) throw new Error("Beyond 90 runs only as a top-level page, never inside another site's frame.");
@@ -1001,6 +1002,7 @@ paintRoles();
 $("try-now").addEventListener("click", async () => { $("try-now").disabled = true; try { await loadDemo(); await run(); } finally { $("try-now").disabled = false; } });
 $("demo-book").addEventListener("click", loadDemoBook);
 $("demo-endpoint").addEventListener("click", loadDemoEndpoint);
+$("keys-open").addEventListener("click", () => showKeys());
 $("pin-view").addEventListener("click", () => { writeList("beyond90.pins", togglePin(readList("beyond90.pins"), state.tab)); renderNav(navGroups, navTitle); markTab(); });
 for (const b of document.querySelectorAll("#mobilebar [data-go]")) b.addEventListener("click", () => { if (tabDefs.some((t) => t.id === b.dataset.go)) selectTab(b.dataset.go); else { document.body.classList.add("menu-open"); $("m-menu").setAttribute("aria-expanded", "true"); } });
 $("m-menu").addEventListener("click", () => { const open = document.body.classList.toggle("menu-open"); $("m-menu").setAttribute("aria-expanded", String(open)); });
@@ -1257,8 +1259,32 @@ document.addEventListener("keydown", (e) => {
   const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName || "") || pal.el.open;
   if (!typing && !e.ctrlKey && !e.metaKey && !e.altKey && /^[1-9]$/.test(e.key) && (hasResult() || state.book)) {
     const t = tabDefs[Number(e.key) - 1]; if (t) selectTab(t.id);
+    return;
   }
+  if (typing || KEYS.typing(e.target) || document.querySelector("dialog[open]")) { keyPending = false; return; }
+  const d = KEYS.decide(e.key, { pending: keyPending, mods: e.ctrlKey || e.metaKey || e.altKey });
+  keyPending = d.pending;
+  const a = d.action;
+  if (!a) return;
+  if (a.help) { e.preventDefault(); showKeys(); return; }
+  if (a.search) { e.preventDefault(); openPalette(); return; }
+  if (!(hasResult() || state.book)) return;
+  const ids = [...document.querySelectorAll("#tabs [data-tab]")].map((b) => b.dataset.tab);
+  const to = a.go ? (tabDefs.some((t) => t.id === a.go) ? a.go : null) : KEYS.stepView(ids, state.tab, a.step);
+  if (to) { e.preventDefault(); selectTab(to); }
 });
+let keyPending = false;
+function showKeys() {
+  let dlg = $("keys-help");
+  if (!dlg) {
+    dlg = el_("dialog", { id: "keys-help", class: "keysdlg", "aria-labelledby": "keys-title" },
+      el_("h2", { id: "keys-title", text: "Keyboard shortcuts" }),
+      el_("dl", { class: "keylist" }, KEYS.LIST.flatMap(([k, what]) => [el_("dt", {}, ...k.split(" ").map((w) => ["then", "and", "or"].includes(w) ? el_("span", { text: ` ${w} ` }) : el_("kbd", { text: w }))), el_("dd", { text: what })])),
+      el_("button", { class: "btn", type: "button", text: "Close", onclick: () => dlg.close() }));
+    document.body.append(dlg);
+  }
+  dlg.showModal();
+}
 
 // ---------- recent customers: one click back to where you were
 function renderRecent() {

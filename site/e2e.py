@@ -352,6 +352,15 @@ def main(site: str) -> int:
         check(grp.get_attribute("aria-expanded") == "false" and page.evaluate("JSON.parse(localStorage.getItem('beyond90.navclosed') || '[]').length") == 1, "a group of the menu folds and the menu remembers it")
         grp.click()
         check(grp.get_attribute("aria-expanded") == "true", "and opens again")
+        page.click("#tabs [data-tab=today]")
+        page.locator("body").press("g")
+        page.locator("body").press("a")
+        check(page.get_attribute("#tabs [data-tab=actions]", "aria-current") is not None, "g then a jumps to Actions")
+        page.locator("body").press("]")
+        check(page.get_attribute("#tabs [data-tab=actions]", "aria-current") is None, "] steps to the next view in the menu")
+        page.locator("body").press("?")
+        check(page.locator("#keys-help[open] kbd").count() >= 10, "? lists the keyboard shortcuts")
+        page.keyboard.press("Escape")
 
         # what renewals taught: record outcomes, see them, remove one
         page.click("[data-tab=renewal]")
