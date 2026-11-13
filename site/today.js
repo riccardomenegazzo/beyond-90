@@ -51,3 +51,13 @@ export function chainText(bars, total) {
   if (!bars || !bars.length) return "";
   return `${bars.map((b) => p(b.value)).join(" × ")} = ${p(total)}`;
 }
+
+/**
+ * What the actions marked done this session add up to. Effects overlap, so the sum is an upper estimate: the next data
+ * load gives the true figure. Returns {n, points, projected} with projected capped at 100%.
+ */
+export function doneSummary(actions, doneIds, yieldNow) {
+  const done = (actions || []).filter((a) => doneIds && doneIds.has(a.id));
+  const points = done.reduce((s, a) => s + (Number(a.effect) || 0), 0);
+  return { n: done.length, points, projected: Math.min(1, (Number(yieldNow) || 0) + points / 100) };
+}

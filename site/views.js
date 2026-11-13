@@ -10,7 +10,7 @@ import * as A from "./asks.js";
 import * as SLA from "./sla.js";
 import * as SC from "./scorecard.js";
 import { connections } from "./graph.js";
-import { headline, firstMinute, rankActions, chainText } from "./today.js";
+import { headline, firstMinute, rankActions, chainText, doneSummary } from "./today.js";
 import { stageBars } from "./nav.js";
 import { accountsFirst, accountsAnswer, whyAccount, findingsFirst, findingsAnswer, whyFinding } from "./triage.js";
 import { gauge, waterfall, lineChart, contributions, timeline, shareBar, funnel, STAGE, STAGE_NAME } from "./charts.js";
@@ -26,7 +26,7 @@ function csvButton(name, columns, getRows) {
 }
 
 // ------------------------------------------------------------------ today: the screen to open first
-export function todayView({ result, dash, score, go, history = [] }) {
+export function todayView({ result, dash, score, go, history = [], done = new Set(), markDone = () => {} }) {
   const flags = attention({ result, dash, score });
   const big = (label, hint, to) => h("button", { class: "bigbtn", type: "button", onclick: () => go(to) }, h("b", { text: label }), h("small", { text: hint }));
   const seen = (() => { try { return localStorage.getItem("beyond90.tour") === "1"; } catch { return false; } })();
@@ -63,10 +63,15 @@ export function todayView({ result, dash, score, go, history = [] }) {
   // do these first, with a switch between the biggest effect and the quickest wins
   let mode = (() => { try { return localStorage.getItem("beyond90.rank") === "quick" ? "quick" : "effect"; } catch { return "effect"; } })();
   const list = h("div", { class: "opps" });
-  const paint = () => list.replaceChildren(...(dash.actions.length ? rankActions(dash.actions, mode).map((a) => h("button", { type: "button", class: "opp", onclick: () => go("actions", { open: a.id }) },
-    h("span", { class: "stagepip", style: `border-color:${STAGE[a.leak] || "var(--accent)"}`, text: a.leak }),
-    h("span", { class: "opp-t" }, h("b", { text: a.title }), h("small", { text: `${a.owner}, due ${a.due}, about ${a.hours.toFixed(1)} h` })),
-    h("span", { class: "opp-e", text: "+" + a.effect.toFixed(1) + " pts" }))) : [h("p", { class: "note", text: "Nothing is waiting to be done." })]));
+  const left = dash.actions.filter((a) => !done.has(a.id));
+  const doneBtn = (a, isDone) => h("button", { type: "button", class: "donebtn", "aria-pressed": String(isDone), "aria-label": `${isDone ? "Undo done" : "Mark done"}: ${a.title}`,
+    text: isDone ? "Undo" : "Mark done", onclick: () => markDone(a.id, !isDone) });
+  const paint = () => list.replaceChildren(...(left.length ? rankActions(left, mode).map((a) => h("div", { class: "opprow" },
+    h("button", { type: "button", class: "opp", onclick: () => go("actions", { open: a.id }) },
+      h("span", { class: "stagepip", style: `border-color:${STAGE[a.leak] || "var(--accent)"}`, text: a.leak }),
+      h("span", { class: "opp-t" }, h("b", { text: a.title }), h("small", { text: `${a.owner}, due ${a.due}, about ${a.hours.toFixed(1)} h` })),
+      h("span", { class: "opp-e", text: "+" + a.effect.toFixed(1) + " pts" })),
+    doneBtn(a, false))) : [h("p", { class: "note", text: dash.actions.length ? "Every action is marked done. Load the next data to see the real figure." : "Nothing is waiting to be done." })]));
   const seg = h("div", { class: "seg", role: "group", "aria-label": "Rank the actions by" }, [["effect", "Biggest effect"], ["quick", "Quickest wins"]].map(([id, label]) =>
     h("button", { type: "button", "aria-pressed": String(mode === id), dataset: { rank: id }, text: label, onclick: (e) => {
       mode = id; try { localStorage.setItem("beyond90.rank", id); } catch { /* not kept */ }
@@ -74,7 +79,12 @@ export function todayView({ result, dash, score, go, history = [] }) {
       paint();
     } })));
   paint();
-  const todo = card("Do these first", h("div", {}, list, dash.actions.length > 3 ? h("button", { class: "linkbtn", type: "button", text: `See all ${dash.actions.length} actions`, onclick: () => go("actions") }) : null), { cls: "todocard", actions: seg });
+  const sum = doneSummary(dash.actions, done, score.yield);
+  const progress = sum.n ? h("div", { class: "doneprog", role: "status" },
+    h("p", {}, h("b", { text: `${sum.n} done this session: up to +${sum.points.toFixed(1)} pts, about ${pct(sum.projected)}` })),
+    h("p", { class: "note", text: "Effects overlap, so this is an upper estimate. It is kept only while this tab is open; load the next data to see the real figure." }),
+    h("ul", { class: "donelist" }, dash.actions.filter((a) => done.has(a.id)).map((a) => h("li", {}, h("s", { text: a.title }), doneBtn(a, true))))) : null;
+  const todo = card("Do these first", h("div", {}, progress, list, left.length > 3 ? h("button", { class: "linkbtn", type: "button", text: `See all ${left.length} open actions`, onclick: () => go("actions") }) : null), { cls: "todocard", actions: seg });
 
   // keep an eye on: up to three, each with its door
   const watch = card("Keep an eye on", flags.length ? h("ul", { class: "watch" }, flags.slice(0, 3).map((f) => h("li", { class: f.kind },

@@ -127,6 +127,14 @@ def main(site: str) -> int:
         check(page.locator("#view .todocard .opp").count() == 3, "still three of them")
         page.click("#view .seg [data-rank=effect]")
         check(page.inner_text("#view .todocard .opp b >> nth=0") == first_effect, "and back to the biggest effect")
+        before = int(page.inner_text("#tabs [data-tab=actions] .nbadge [aria-hidden]"))
+        page.click("#view .todocard .opprow .donebtn >> nth=0")
+        check("1 done this session" in page.inner_text("#view .doneprog") and "up to +" in page.inner_text("#view .doneprog"), "marking an action done shows what it adds, as an estimate")
+        check(int(page.inner_text("#tabs [data-tab=actions] .nbadge [aria-hidden]")) == before - 1 and page.locator("#view .todocard .opp").count() == 3 and page.inner_text("#view .todocard .opp b >> nth=0") != first_effect, "the count drops and the next action moves up")
+        stored = page.evaluate("JSON.stringify(Object.assign({}, localStorage)) + JSON.stringify(Object.assign({}, sessionStorage))")
+        check("l4_assign_owners" not in stored and "bu-retail" not in stored, "an action marked done is not written to the browser's storage")
+        page.click("#view .donelist .donebtn")
+        check(page.locator("#view .doneprog").count() == 0 and page.inner_text("#view .todocard .opp b >> nth=0") == first_effect, "and it can be undone")
         check(1 <= page.locator("#view .watch li:not(.more)").count() <= 3, "Keep an eye on lists up to three things, each with its door")
         check("short of its" in page.inner_text("#view .tline") and page.locator("#view .bigbtn").count() == 4, "the first screen says how far from the target and offers four doors to the next step")
         page.click("[data-tab=overview]")
@@ -889,7 +897,7 @@ def main(site: str) -> int:
         mp.click("#mobilebar [data-go=actions]")
         check(mp.get_attribute("#mobilebar [data-go=actions]", "aria-current") is not None and "Actions" in mp.inner_text("#res-title"), "the app bar opens a view in one tap")
         wide = {}
-        for tab in ("overview", "connections", "accounts", "findings", "actions", "prep", "execqbr"):
+        for tab in ("today", "overview", "connections", "accounts", "findings", "actions", "prep", "execqbr"):
             mp.click("#m-menu")
             mp.locator(f"#tabs [data-tab={tab}]").click()
             check(not mp.locator("#rail").is_visible(), f"choosing {tab} from the menu closes it")

@@ -2,6 +2,11 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.63.0
+
+- **Mark an action done from Today.** Each of the first actions has a "Mark done" button. The next one moves up, the count in the menu drops, and a line says what the done ones add: "up to +6.5 pts, about 79.1%", named as an upper estimate because effects overlap. Undo is one click. The marks live only in this tab's memory: action ids carry the customer's team names, and nothing about a customer is written outside the protected store, so the next data load is what records the work.
+- A test now checks Today, too, for anything wider than a phone screen.
+
 ## 0.62.0
 
 - **The start page shows the idea before the first click.** Next to the headline, a dark card shows the example customer: the usual number struck through, what really works beside it, and the four stages as bars with the weakest marked. The figures are computed by the engine from the example data when the site is built, and a test checks that they match, so the picture cannot drift from the product.

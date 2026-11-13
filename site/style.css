@@ -716,3 +716,18 @@ kbd{display:inline-block;min-width:22px;padding:2px 7px;border:1px solid var(--l
 /* nothing to analyse yet: the run bar waits until there are files */
 body:not(.has-files) .runbar{display:none}
 .hero-preview{margin-inline:0}
+
+/* marking an action done on Today (0.63): an estimate for this session, never stored */
+.opprow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:stretch}
+.donebtn{border:1px solid var(--line);background:var(--surface);color:var(--ink2);border-radius:12px;padding:0 14px;font:inherit;font-size:13px;font-weight:600;cursor:pointer;min-height:44px}
+.donebtn:hover{border-color:var(--accent);color:var(--accent-text)}
+.donebtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.doneprog{margin:0 0 12px;padding:12px 14px;border-radius:12px;background:color-mix(in srgb,var(--accent) 10%,var(--surface));border:1px solid color-mix(in srgb,var(--accent) 35%,var(--line))}
+.doneprog p{margin:0}
+.doneprog .note{margin-top:4px}
+.donelist{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:6px}
+.donelist li{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:14px}
+.donelist .donebtn{min-height:32px;padding:0 10px}
+@media (max-width:560px){.opprow{grid-template-columns:1fr}.opprow .donebtn{min-height:38px}}
+.opprow > .opp{min-width:0}
+@media (max-width:560px){.opprow{grid-template-columns:minmax(0,1fr)}}

@@ -410,11 +410,22 @@ let navGroups = [], navTitle = "";
 function savedRole() { try { const r = localStorage.getItem("beyond90.role"); return isRole(r) ? r : "core"; } catch { return "core"; } }
 const readList = (key) => { try { const v = JSON.parse(localStorage.getItem(key) || "[]"); return Array.isArray(v) ? v.filter((x) => typeof x === "string") : []; } catch { return []; } };
 const writeList = (key, list) => { try { localStorage.setItem(key, JSON.stringify(list)); } catch { /* the choice just does not persist */ } };
+// Actions marked done live in this tab's memory only: their ids name the customer's teams, and nothing about a customer
+// is written outside the protected store. The next data load is what records the work.
+const doneByData = new Map();
+function doneFor(r) { const k = r && r.input_hash; if (!k) return new Set(); if (!doneByData.has(k)) doneByData.set(k, new Set()); return doneByData.get(k); }
+function markDone(id, on) {
+  const set = doneFor(state.result);
+  if (on) set.add(id); else set.delete(id);
+  renderNav(navGroups, navTitle); markTab();
+  renderView(current());
+}
 function navSignals() {
   if (state.book || !state.result) return { badges: {}, bars: [] };
   const r = state.result;
   if (state.parsedFor !== r) { state.parsed = JSON.parse(r.score_json); state.parsedFor = r; }
-  return { badges: navBadges({ score: state.parsed, dash: r.dashboard }), bars: stageBars(state.parsed) };
+  const left = r.dashboard.actions.filter((a) => !doneFor(r).has(a.id));
+  return { badges: navBadges({ score: state.parsed, dash: { ...r.dashboard, actions: left } }), bars: stageBars(state.parsed) };
 }
 function pulseCard(bars) {
   const r = state.result;
@@ -513,7 +524,7 @@ function context() {
   if (state.book) return { book: state.book, povs: state.povs, savePov, removePov, today: todayIso(), advisories: state.advisories, openCustomer: (key, tab = "prep") => { state.mode = "single"; state.files = { ...state.groups[key] }; state.book = null; state.tab = tab; renderLoaded(); run(); } };
   const r = state.result;
   if (r && state.parsedFor !== r) { state.parsed = JSON.parse(r.score_json); state.parsedFor = r; }
-  return { result: r, dash: r.dashboard, score: state.parsed, engine: state.engine, files: state.files, options: options(), advisories: state.advisories, logTouch, go: (tab, extra) => selectTab(tab, extra),
+  return { result: r, dash: r.dashboard, score: state.parsed, done: doneFor(r), markDone, engine: state.engine, files: state.files, options: options(), advisories: state.advisories, logTouch, go: (tab, extra) => selectTab(tab, extra),
     povs: state.povs, savePov, removePov, setSla, asks: state.asks, addAsk, setAskStatus, removeAsk,
     commitments: state.commitments, addCommitment, setCommitmentStatus, removeCommitment, keepFromCall, today: todayIso(),
     history: state.saved.filter((x) => x.customer === r.customer).map((x) => ({ as_of: x.as_of, yield: state.yields.get(x.id) })).filter((x) => typeof x.yield === "number"),

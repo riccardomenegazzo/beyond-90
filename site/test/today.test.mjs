@@ -46,3 +46,15 @@ test("the chain writes the multiplication out", () => {
   assert.equal(chainText([{ value: 0.9 }, { value: 0.5 }], 0.45), "90% × 50% = 45%");
   assert.equal(chainText([], 0), "");
 });
+
+import { doneSummary } from "../today.js";
+test("done actions add up to an upper estimate, capped at 100%", () => {
+  const acts = [{ id: "a", effect: 4 }, { id: "b", effect: 2.5 }, { id: "c", effect: 1 }];
+  const s = doneSummary(acts, new Set(["a", "b"]), 0.726);
+  assert.equal(s.n, 2);
+  assert.equal(s.points, 6.5);
+  assert.ok(Math.abs(s.projected - 0.791) < 1e-9);
+  assert.equal(doneSummary(acts, new Set(["a", "b", "c"]), 0.99).projected, 1);
+  assert.equal(doneSummary(acts, new Set(), 0.5).n, 0);
+  assert.equal(doneSummary(undefined, undefined, 0.5).n, 0);
+});
