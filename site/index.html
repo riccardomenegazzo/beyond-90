@@ -23,8 +23,9 @@
     <span>Beyond 90</span>
   </a>
   <div class="context" id="context" aria-live="polite"><span class="context-empty">No customer open</span></div>
+  <span class="share-flag" id="share-flag" hidden></span>
   <div class="top-actions">
-    <button class="search-btn" id="open-palette" type="button" aria-haspopup="dialog" data-tip="Find any view, action or answer. Shortcut: Ctrl K, or Cmd K on a Mac."><span>Search or jump to…</span><kbd>Ctrl K</kbd></button>
+    <button class="search-btn" id="open-palette" type="button" aria-haspopup="dialog" aria-label="Search or jump to a view" data-tip="Find any view, action or answer. Shortcut: Ctrl K, or Cmd K on a Mac."><span>Search or jump to…</span><kbd>Ctrl K</kbd></button>
     <span class="engine" id="version" data-tip="The analysis engine runs inside this tab. Nothing is sent anywhere.">Starting the engine…</span>
     <span class="update-bar" id="update-bar" role="status" hidden>New version ready <button class="btn small primary" id="update-now" type="button" data-tip="Switch to the latest version. Your saved work stays; an analysis that is open runs again from Start.">Update now</button></span>
     <span class="engine" id="offline" hidden data-tip="Everything this page needs is stored on this device, so it keeps working without a connection.">Works offline</span>
@@ -39,6 +40,7 @@
     <button class="place-btn" type="button" data-place="start" data-tip="Choose a customer or your whole book, and start an analysis.">Start</button>
     <button class="place-btn" type="button" data-place="saved" data-tip="Every analysis you kept, protection with a passphrase, and moving your work between devices.">Saved</button>
     <button class="place-btn" type="button" data-place="help" data-tip="Questions and answers, what each term means, and a short tour.">Help</button>
+    <div class="sheet-tools" id="sheet-tools" aria-label="Settings"></div>
     <div class="workspace" id="workspace" hidden>
       <p class="ws-title" id="ws-title"></p>
       <div id="pulse-host"></div>

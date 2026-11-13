@@ -26,12 +26,20 @@ export function createPrivacy({ state, store, $, say, unlockVaultUi, today, save
     if (result && result.identifiers_by_customer) Object.assign(state.idsBy, result.identifiers_by_customer);
   }
 
+  // On a phone the selector lives in the menu sheet, so the top bar shows a small flag whenever names are not shown.
+  function paintShareFlag(level) {
+    const f = $("share-flag");
+    if (!f) return;
+    f.hidden = level === "full";
+    f.textContent = level === "pseudonym" ? "Aliases on" : level === "people" ? "People hidden" : "";
+  }
   function setLevel(level) {
     if (!LEVELS.includes(level)) return;
     state.share = level;
     try { localStorage.setItem(LEVEL_KEY, level); } catch { /* ignore */ }
     $("share-level").value = level;
     $("share-level").dataset.level = level;
+    paintShareFlag(level);
     render();
   }
 
@@ -167,6 +175,7 @@ export function createPrivacy({ state, store, $, say, unlockVaultUi, today, save
 
   $("share-level").value = state.share;
   $("share-level").dataset.level = state.share;
+  paintShareFlag(state.share);
   $("share-level").addEventListener("change", (e) => setLevel(e.target.value));
   return { gate, learn, render, setLevel, onRefresh };
 }

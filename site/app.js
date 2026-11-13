@@ -1015,6 +1015,16 @@ $("try-now").addEventListener("click", async () => { $("try-now").disabled = tru
 $("demo-book").addEventListener("click", loadDemoBook);
 $("demo-endpoint").addEventListener("click", loadDemoEndpoint);
 $("keys-open").addEventListener("click", () => showKeys());
+// Phone with a customer open: the sharing level and the theme move from the crowded top bar into the menu sheet.
+const phone = window.matchMedia("(max-width: 900px)");
+function placeTools() {
+  const pick = document.querySelector(".share-pick"), theme = $("theme"), inSheet = phone.matches && document.body.classList.contains("has-work");
+  const host = inSheet ? $("sheet-tools") : document.querySelector(".top-actions");
+  if (pick.parentElement !== host) { host.append(pick, theme); }
+}
+phone.addEventListener("change", placeTools);
+new MutationObserver(placeTools).observe(document.body, { attributes: true, attributeFilter: ["class"] });
+placeTools();
 $("pin-view").addEventListener("click", () => { writeList("beyond90.pins", togglePin(readList("beyond90.pins"), state.tab)); renderNav(navGroups, navTitle); markTab(); });
 for (const b of document.querySelectorAll("#mobilebar [data-go]")) b.addEventListener("click", () => { if (tabDefs.some((t) => t.id === b.dataset.go)) selectTab(b.dataset.go); else { document.body.classList.add("menu-open"); $("m-menu").setAttribute("aria-expanded", "true"); } });
 $("m-menu").addEventListener("click", () => { const open = document.body.classList.toggle("menu-open"); $("m-menu").setAttribute("aria-expanded", String(open)); });

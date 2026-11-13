@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.65.0
+
+- **A phone top bar with room to breathe.** With a customer open, the top bar on a phone holds only the customer's whole name with the date of the data under it, and a search button. The names selector and the light/dark switch moved into the menu sheet. Whenever names are hidden or replaced by aliases, a small flag in the top bar says so, so what leaves the page is always visible. The search button keeps its spoken name.
+
 ## 0.64.0
 
 - **Run it on your own computer, without the public site.** Every release now carries `beyond90-local-<version>.zip`: the built app plus a `start.py` that needs only Python 3.9 or newer. Unzip, run `python3 start.py`, and the browser opens `http://localhost:8090`, served by your own computer, read-only, reachable from that computer alone. No npm, no Docker, no account; customer files are read inside the browser as before. The zip is reproducible, listed in the release checksums and covered by its signed provenance; tests build it twice, start it, fetch the page and check that writes are refused. The public site offers the same file under `download/`.
