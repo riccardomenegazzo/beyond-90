@@ -37,3 +37,17 @@ export function firstMinute(openActions) {
   ];
   return steps;
 }
+
+/** Rank actions two ways: by the biggest effect (the engine's order) or by points per hour (quick wins). */
+export function rankActions(actions, mode = "effect", n = 3) {
+  const list = (actions || []).slice();
+  if (mode === "quick") list.sort((a, b) => (b.effect / Math.max(b.hours || 0, 0.25)) - (a.effect / Math.max(a.hours || 0, 0.25)) || b.effect - a.effect);
+  return list.slice(0, n);
+}
+
+/** The multiplication behind Yield, written out: "90% × 97% × 93% × 89% = 73%". */
+export function chainText(bars, total) {
+  const p = (v) => `${Math.round(v * 100)}%`;
+  if (!bars || !bars.length) return "";
+  return `${bars.map((b) => p(b.value)).join(" × ")} = ${p(total)}`;
+}

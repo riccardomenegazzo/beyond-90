@@ -18,6 +18,7 @@ import * as V from "./views.js";
 import { createPrivacy } from "./privacy.js";
 import { h as el_, s as svg_, saveBlob, copyText, setExitGate, csvCell, icon, initTips, info } from "./ui.js";
 import { CUSTOMER_NAV, BOOK_NAV, FAQ, GLOSSARY, TOUR } from "./guide.js";
+import { navBadges, stageBars, togglePin, pinnedViews } from "./nav.js";
 
 // Another site could frame this page and steer clicks on it; the app only runs as the top-level page.
 if (window.top !== window.self) throw new Error("Beyond 90 runs only as a top-level page, never inside another site's frame.");
@@ -405,18 +406,63 @@ function setStep(n) {
 
 let navGroups = [], navTitle = "";
 function savedRole() { try { const r = localStorage.getItem("beyond90.role"); return isRole(r) ? r : "core"; } catch { return "core"; } }
+const readList = (key) => { try { const v = JSON.parse(localStorage.getItem(key) || "[]"); return Array.isArray(v) ? v.filter((x) => typeof x === "string") : []; } catch { return []; } };
+const writeList = (key, list) => { try { localStorage.setItem(key, JSON.stringify(list)); } catch { /* the choice just does not persist */ } };
+function navSignals() {
+  if (state.book || !state.result) return { badges: {}, bars: [] };
+  const r = state.result;
+  if (state.parsedFor !== r) { state.parsed = JSON.parse(r.score_json); state.parsedFor = r; }
+  return { badges: navBadges({ score: state.parsed, dash: r.dashboard }), bars: stageBars(state.parsed) };
+}
+function pulseCard(bars) {
+  const r = state.result;
+  if (!r || state.book) return null;
+  return el_("button", { type: "button", class: "pulse", "aria-label": `Yield ${pct(r.yield)}. Open Today`, onclick: () => selectTab("today") },
+    el_("span", { class: "pulse-top" }, ring(r.yield, 40), el_("span", {}, el_("b", { class: "pulse-v", text: pct(r.yield) }), el_("small", { text: "Yield, the four stages multiplied" }))),
+    el_("span", { class: "pulse-bars" }, bars.map((b) => el_("span", { class: "pbar" + (b.weakest ? " weak" : ""), title: `${b.id} ${b.label}: ${pct(b.value)}` },
+      el_("i", { style: `width:${Math.max(4, Math.round(b.value * 100))}%` }), el_("em", { text: b.id })))));
+}
 function renderNav(groups, title) {
   navGroups = groups; navTitle = title;
   tabDefs = groups.flatMap((g) => g.views.map((v) => ({ ...v, ...VIEWS[v.id], group: g.question })));   // every view stays reachable, whatever the role
   $("workspace").hidden = false;
+  document.body.classList.add("has-work");
   $("ws-title").textContent = title;
   paintRoles();
+  const { badges, bars } = navSignals();
+  const closed = new Set(readList("beyond90.navclosed"));
   const { main, more } = groups === BOOK_NAV ? { main: groups, more: [] } : shape(groups, savedRole());
-  const btn = (v) => el_("button", { type: "button", dataset: { tab: v.id }, "data-tip": v.tip, onclick: () => selectTab(v.id) }, icon(v.icon), el_("span", { text: v.label }));
-  const grp = (g, i, p) => el_("div", { class: "navgroup", role: "group", "aria-labelledby": `grp-${p}${i}` }, el_("p", { class: "grp", id: `grp-${p}${i}`, text: g.question }), g.views.map(btn));
-  const kids = main.map((g, i) => grp(g, i, "m"));
+  const badge = (id) => badges[id] ? el_("span", { class: "nbadge t-" + badges[id].tone, title: badges[id].label }, el_("span", { "aria-hidden": "true", text: badges[id].n > 99 ? "99+" : String(badges[id].n) }), el_("span", { class: "sr", text: `, ${badges[id].n} waiting` })) : null;
+  const label = (v) => [icon(v.icon), el_("span", { class: "nlabel", text: v.label }), badge(v.id)];
+  const btn = (v) => el_("button", { type: "button", dataset: { tab: v.id }, "data-tip": v.tip, onclick: () => selectTab(v.id) }, ...label(v));
+  const grp = (g, i, p) => {
+    const key = g.question, holdsCurrent = g.views.some((v) => v.id === state.tab), isOpen = holdsCurrent || !closed.has(key);
+    const sum = g.views.reduce((n, v) => n + (badges[v.id] && badges[v.id].tone !== "info" ? badges[v.id].n : 0), 0);
+    const head = el_("button", { type: "button", class: "grp", id: `grp-${p}${i}`, "aria-expanded": String(isOpen), onclick: (e) => {
+      const now = new Set(readList("beyond90.navclosed")), open = e.currentTarget.getAttribute("aria-expanded") === "true";
+      if (open) now.add(key); else now.delete(key);
+      writeList("beyond90.navclosed", [...now]);
+      e.currentTarget.setAttribute("aria-expanded", String(!open));
+      e.currentTarget.parentElement.classList.toggle("shut", open);
+    } }, el_("span", { text: g.question }), !isOpen && sum ? el_("span", { class: "nbadge t-warn", text: String(sum) }) : null, el_("span", { class: "chev", "aria-hidden": "true" }));
+    return el_("div", { class: "navgroup" + (isOpen ? "" : " shut"), role: "group", "aria-labelledby": `grp-${p}${i}` }, head, el_("div", { class: "navitems" }, g.views.map(btn)));
+  };
+  const pins = pinnedViews(readList("beyond90.pins"), groups);
+  const kids = [];
+  if (pins.length) kids.push(el_("div", { class: "navgroup pins", role: "group", "aria-label": "Pinned" }, el_("p", { class: "grp-static", text: "Pinned" }),
+    el_("div", { class: "navitems" }, pins.map((v) => el_("button", { type: "button", dataset: { pin: v.id }, onclick: () => selectTab(v.id) }, ...label(v))))));
+  kids.push(...main.map((g, i) => grp(g, i, "m")));
   if (more.length) kids.push(el_("details", { class: "navmore", open: more.some((g) => g.views.some((v) => v.id === state.tab)) }, el_("summary", { text: "More views" }), more.map((g, i) => grp(g, i, "x"))));
   $("tabs").replaceChildren(...kids);
+  $("pulse-host").replaceChildren(...[pulseCard(bars)].filter(Boolean));
+  paintPin();
+}
+function paintPin() {
+  const b = $("pin-view");
+  if (!b) return;
+  const on = readList("beyond90.pins").includes(state.tab);
+  b.setAttribute("aria-pressed", String(on));
+  b.textContent = on ? "Pinned" : "Pin to menu";
 }
 function setRole(id) {
   try { localStorage.setItem("beyond90.role", id); } catch { /* the choice just does not persist */ }
@@ -430,7 +476,7 @@ function paintRoles() {
     host.replaceChildren(...(id === "hero-roles" ? [el_("span", { class: "fine", text: "I work as" })] : []), ...ROLE_IDS.map((r) => el_("button", { type: "button", class: "chip-btn", dataset: { role: r }, "aria-pressed": String(r === now), title: ROLES[r].hint, text: id === "hero-roles" ? (r === "core" ? "Not sure yet" : r === "all" ? "Show everything" : ROLES[r].label) : ROLES[r].short, onclick: () => setRole(r) })));
   }
 }
-function markTab() { for (const b of document.querySelectorAll("#tabs button")) b.toggleAttribute("aria-current", b.dataset.tab === state.tab); }
+function markTab() { for (const b of document.querySelectorAll("#tabs [data-tab], #tabs [data-pin], #mobilebar [data-go]")) b.toggleAttribute("aria-current", (b.dataset.tab || b.dataset.pin || b.dataset.go) === state.tab); }
 
 const current = () => tabDefs.find((t) => t.id === state.tab) || tabDefs[0];
 const payload = () => (state.mode === "book" || state.book ? state.book : state.result);
@@ -441,7 +487,9 @@ function selectTab(name, extra) {
   state.focus = extra && extra.open;
   const t = current();
   showPlace("work");
-  for (const b of document.querySelectorAll("#tabs button")) b.toggleAttribute("aria-current", b.dataset.tab === t.id);
+  markTab();
+  paintPin();
+  document.body.classList.remove("menu-open");
   $("res-title").textContent = t.label;
   $("view-tip").textContent = t.tip;
   $("view").hidden = t.kind !== "view";
@@ -953,6 +1001,11 @@ paintRoles();
 $("try-now").addEventListener("click", async () => { $("try-now").disabled = true; try { await loadDemo(); await run(); } finally { $("try-now").disabled = false; } });
 $("demo-book").addEventListener("click", loadDemoBook);
 $("demo-endpoint").addEventListener("click", loadDemoEndpoint);
+$("pin-view").addEventListener("click", () => { writeList("beyond90.pins", togglePin(readList("beyond90.pins"), state.tab)); renderNav(navGroups, navTitle); markTab(); });
+for (const b of document.querySelectorAll("#mobilebar [data-go]")) b.addEventListener("click", () => { if (tabDefs.some((t) => t.id === b.dataset.go)) selectTab(b.dataset.go); else { document.body.classList.add("menu-open"); $("m-menu").setAttribute("aria-expanded", "true"); } });
+$("m-menu").addEventListener("click", () => { const open = document.body.classList.toggle("menu-open"); $("m-menu").setAttribute("aria-expanded", String(open)); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && document.body.classList.contains("menu-open")) { document.body.classList.remove("menu-open"); $("m-menu").setAttribute("aria-expanded", "false"); $("m-menu").focus(); } });
+for (const b of document.querySelectorAll(".rail [data-place]")) b.addEventListener("click", () => { document.body.classList.remove("menu-open"); $("m-menu").setAttribute("aria-expanded", "false"); });
 $("demo-saas").addEventListener("click", () => loadDemoProfile("saas", "a made-up SaaS security customer"));
 $("demo-ai").addEventListener("click", () => loadDemoProfile("ai", "a made-up AI security customer"));
 $("run").addEventListener("click", () => run());

@@ -41,9 +41,16 @@
     <button class="place-btn" type="button" data-place="help" data-tip="Questions and answers, what each term means, and a short tour.">Help</button>
     <div class="workspace" id="workspace" hidden>
       <p class="ws-title" id="ws-title"></p>
+      <div id="pulse-host"></div>
       <div class="rolepick" id="role-pick" role="group" aria-label="Show the views for my role"></div>
       <div class="tabs" id="tabs"></div>
     </div>
+  </nav>
+  <nav class="mobilebar" id="mobilebar" aria-label="Quick">
+    <button type="button" data-go="today"><span class="mb-ico mb-today" aria-hidden="true"></span>Today</button>
+    <button type="button" data-go="actions"><span class="mb-ico mb-act" aria-hidden="true"></span>Actions</button>
+    <button type="button" data-go="prep"><span class="mb-ico mb-call" aria-hidden="true"></span>Call</button>
+    <button type="button" id="m-menu" aria-controls="rail" aria-expanded="false"><span class="mb-ico mb-menu" aria-hidden="true"></span>Menu</button>
   </nav>
 
   <main id="main" tabindex="-1">
@@ -134,6 +141,7 @@
       <div class="viewhead">
         <h2 id="res-title"></h2>
         <p id="view-tip"></p>
+        <button class="pinbtn" id="pin-view" type="button" aria-pressed="false" data-tip="Keep this view at the top of the menu.">Pin to menu</button>
         <div class="actions" id="docactions">
           <button class="btn quiet" id="copy" type="button">Copy</button>
           <button class="btn quiet" id="download" type="button">Download</button>

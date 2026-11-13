@@ -2,6 +2,12 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.60.0
+
+- **A new menu.** The side menu opens with the customer's pulse: Yield and the four stages as bars, the weakest one marked; a click goes to Today. Views with something waiting carry a live count (actions open, findings that need a person, critical findings, accounts not connected, connectors stuck, promises overdue), red when someone is needed now. Groups fold and the menu remembers which. Any view can be pinned to the top with "Pin to menu" (up to six).
+- **A phone that feels like an app.** With a customer open, the bottom bar is Today, Actions, Call and Menu; the full menu opens as a sheet and closes when you choose. The two rows that used to sit on top of every phone screen are gone, and the work header shrinks to one row.
+- **Today as a dashboard.** On a wide screen, two columns: the number and its trend over saved snapshots, next to "Where it leaks" (the four stages as bars, the multiplication written out, what is lost in 90 days if nothing is done); then the actions, with a switch between the biggest effect and the quickest wins (kept on this browser), next to up to three things to keep an eye on, each with its button.
+
 ## 0.59.0
 
 - **A worked case.** [docs/case-northwind.md](docs/case-northwind.md) follows the example customer from "we are at 92%" to a plan: what the four stages show, what to say, the three actions, the questions to expect. The figures are the ones in the example data.

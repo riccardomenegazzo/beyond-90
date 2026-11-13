@@ -10,7 +10,8 @@ import * as A from "./asks.js";
 import * as SLA from "./sla.js";
 import * as SC from "./scorecard.js";
 import { connections } from "./graph.js";
-import { headline, firstMinute } from "./today.js";
+import { headline, firstMinute, rankActions, chainText } from "./today.js";
+import { stageBars } from "./nav.js";
 import { accountsFirst, accountsAnswer, whyAccount, findingsFirst, findingsAnswer, whyFinding } from "./triage.js";
 import { gauge, waterfall, lineChart, contributions, timeline, shareBar, funnel, STAGE, STAGE_NAME } from "./charts.js";
 
@@ -25,29 +26,68 @@ function csvButton(name, columns, getRows) {
 }
 
 // ------------------------------------------------------------------ today: the screen to open first
-export function todayView({ result, dash, score, go }) {
+export function todayView({ result, dash, score, go, history = [] }) {
   const flags = attention({ result, dash, score });
-  const top = dash.actions.slice(0, 3);
-  const watch = flags[0];
   const big = (label, hint, to) => h("button", { class: "bigbtn", type: "button", onclick: () => go(to) }, h("b", { text: label }), h("small", { text: hint }));
   const seen = (() => { try { return localStorage.getItem("beyond90.tour") === "1"; } catch { return false; } })();
   const tour = seen ? null : h("section", { class: "card tour", "aria-label": "Your first minute" },
     h("header", { class: "cardhead" }, h("h2", { text: "Your first minute" })),
     h("ol", { class: "tourlist" }, firstMinute(dash.actions.length).map((st) => h("li", {}, h("span", { text: st.text }), st.to ? h("button", { class: "btn small", type: "button", text: st.cta, onclick: () => go(st.to) }) : null))),
     h("button", { class: "btn small", type: "button", text: "Got it, hide this", onclick: (e) => { try { localStorage.setItem("beyond90.tour", "1"); } catch { /* storage may be off */ } e.target.closest(".tour").remove(); } }));
+
+  // the hero: the number, the sentence, and the trend when there are saved snapshots
+  const pts_ = history.slice().sort((a, b) => a.as_of.localeCompare(b.as_of)).slice(-8);
+  const trend = pts_.length >= 2 ? (() => {
+    const W = 160, H = 40, lo = Math.min(...pts_.map((x) => x.yield)) - 0.02, hi = Math.max(...pts_.map((x) => x.yield)) + 0.02;
+    const xy = pts_.map((x, i) => [Math.round((i / (pts_.length - 1)) * W), Math.round(H - ((x.yield - lo) / Math.max(hi - lo, 0.01)) * H)]);
+    const delta = pts_.at(-1).yield - pts_[0].yield;
+    return h("div", { class: "trend" }, h("svg", { viewBox: `0 0 ${W} ${H}`, width: W, height: H, role: "img", "aria-label": `Yield over ${pts_.length} snapshots` }, h("polyline", { points: xy.map((p) => p.join(",")).join(" "), fill: "none", stroke: "#5eead4", "stroke-width": 2.5, "stroke-linejoin": "round", "stroke-linecap": "round" })),
+      h("small", { text: `${delta >= 0 ? "+" : ""}${(delta * 100).toFixed(1)} pts over ${pts_.length} snapshots` }));
+  })() : null;
+  const hero = h("section", { class: "card todayhero" },
+    h("div", { class: "todayscore" }, h("span", { class: "tnum", text: pct(score.yield) }), h("span", { class: "tcap", text: "Yield" }), trend),
+    h("p", { class: "tline", text: headline({ customer: result.customer, yield: score.yield, target: score.target && score.target.value, stages: score.stages, openActions: dash.actions.length }) }));
+
+  // where it leaks: the four stages as bars, the weakest one marked, the multiplication written out
+  const bars = stageBars(score);
+  const o = dash.outlook || {};
+  const leak = card("Where it leaks", h("div", {},
+    h("ul", { class: "stagebars" }, bars.map((b) => h("li", { class: b.weakest ? "weak" : "" },
+      h("span", { class: "sb-id", text: b.id }), h("span", { class: "sb-l", text: b.label }),
+      h("span", { class: "sb-track", "aria-hidden": "true" }, h("i", { style: `width:${Math.max(2, b.value * 100).toFixed(1)}%` })),
+      h("b", { class: "sb-v", text: pct(b.value) })))),
+    h("p", { class: "chain", text: chainText(bars, score.yield) }),
+    o.loss_points > 0.05 ? h("p", { class: "note", text: `If nothing is done, Yield loses about ${o.loss_points.toFixed(1)} points in ${o.horizon_days} days.` }) : null),
+    { cls: "leakcard", actions: h("button", { class: "btn small", type: "button", text: "Full picture", onclick: () => go("overview") }) });
+
+  // do these first, with a switch between the biggest effect and the quickest wins
+  let mode = (() => { try { return localStorage.getItem("beyond90.rank") === "quick" ? "quick" : "effect"; } catch { return "effect"; } })();
+  const list = h("div", { class: "opps" });
+  const paint = () => list.replaceChildren(...(dash.actions.length ? rankActions(dash.actions, mode).map((a) => h("button", { type: "button", class: "opp", onclick: () => go("actions", { open: a.id }) },
+    h("span", { class: "stagepip", style: `border-color:${STAGE[a.leak] || "var(--accent)"}`, text: a.leak }),
+    h("span", { class: "opp-t" }, h("b", { text: a.title }), h("small", { text: `${a.owner}, due ${a.due}, about ${a.hours.toFixed(1)} h` })),
+    h("span", { class: "opp-e", text: "+" + a.effect.toFixed(1) + " pts" }))) : [h("p", { class: "note", text: "Nothing is waiting to be done." })]));
+  const seg = h("div", { class: "seg", role: "group", "aria-label": "Rank the actions by" }, [["effect", "Biggest effect"], ["quick", "Quickest wins"]].map(([id, label]) =>
+    h("button", { type: "button", "aria-pressed": String(mode === id), dataset: { rank: id }, text: label, onclick: (e) => {
+      mode = id; try { localStorage.setItem("beyond90.rank", id); } catch { /* not kept */ }
+      for (const b of e.currentTarget.parentElement.children) b.setAttribute("aria-pressed", String(b.dataset.rank === id));
+      paint();
+    } })));
+  paint();
+  const todo = card("Do these first", h("div", {}, list, dash.actions.length > 3 ? h("button", { class: "linkbtn", type: "button", text: `See all ${dash.actions.length} actions`, onclick: () => go("actions") }) : null), { cls: "todocard", actions: seg });
+
+  // keep an eye on: up to three, each with its door
+  const watch = card("Keep an eye on", flags.length ? h("ul", { class: "watch" }, flags.slice(0, 3).map((f) => h("li", { class: f.kind },
+    h("span", { class: "w-t" }, h("b", { text: f.title }), f.text ? h("small", { text: f.text }) : null),
+    f.go ? h("button", { class: "btn small", type: "button", text: f.cta || "Open", onclick: () => go(f.go) }) : null)),
+    flags.length > 3 ? h("li", { class: "more" }, h("button", { class: "linkbtn", type: "button", text: `${flags.length - 3} more on the overview`, onclick: () => go("overview") })) : null)
+    : h("p", { class: "note", text: "Nothing stands out." }), { cls: "watchcard" });
+
   return h("div", { class: "today" },
-    h("section", { class: "card todayhero" },
-      h("div", { class: "todayscore" }, h("span", { class: "tnum", text: pct(score.yield) }), h("span", { class: "tcap", text: "Yield" })),
-      h("p", { class: "tline", text: headline({ customer: result.customer, yield: score.yield, target: score.target && score.target.value, stages: score.stages, openActions: dash.actions.length }) })),
-    card("Do these first", top.length ? h("div", { class: "opps" }, top.map((a) => h("button", { type: "button", class: "opp", onclick: () => go("actions", { open: a.id }) },
-      h("span", { class: "stagepip", style: `border-color:${STAGE[a.leak] || "var(--accent)"}`, text: a.leak }),
-      h("span", { class: "opp-t" }, h("b", { text: a.title }), h("small", { text: `${a.owner}, due ${a.due}` })),
-      h("span", { class: "opp-e", text: "+" + a.effect.toFixed(1) + " pts" })))) : h("p", { class: "note", text: "Nothing is waiting to be done." })),
-    card("Keep an eye on", watch ? h("div", { class: "flags" }, h("p", { class: watch.kind }, h("b", { text: watch.title }), watch.text ? ` ${watch.text}` : ""),
-      watch.go ? h("button", { class: "btn small", type: "button", text: watch.cta || "Open", onclick: () => go(watch.go) }) : null,
-      flags.length > 1 ? h("p", { class: "note", text: `${flags.length - 1} more on the overview.` }) : null) : h("p", { class: "note", text: "Nothing stands out." })),
-    tour,
-    h("div", { class: "bigrow" }, big("Prepare the call", "What to say and ask", "prep"), big("One-page summary", "To send or print", "onepager"), big("The full picture", "Overview, with every chart", "overview")));
+    h("div", { class: "t-hero" }, hero), h("div", { class: "t-leak" }, leak),
+    tour ? h("div", { class: "t-wide" }, tour) : null,
+    h("div", { class: "t-todo" }, todo), h("div", { class: "t-watch" }, watch),
+    h("div", { class: "t-wide bigrow" }, big("Prepare the call", "What to say and ask", "prep"), big("Proof of value", "Criteria, sessions, result", "pov"), big("One-page summary", "To send or print", "onepager"), big("Risk burn-down", "Is risk going away?", "burndown")));
 }
 
 // ------------------------------------------------------------------ overview

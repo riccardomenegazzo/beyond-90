@@ -34,3 +34,15 @@ test("the first minute has three steps and points at actions only when there are
   assert.equal(b[1].to, "overview");
   assert.ok(a.every((s) => s.id && s.text));
 });
+
+import { rankActions, chainText } from "../today.js";
+test("quick wins rank by points per hour, effect ranks as the engine does", () => {
+  const acts = [{ id: "big", effect: 4, hours: 10 }, { id: "quick", effect: 1, hours: 0.5 }, { id: "mid", effect: 2, hours: 2 }];
+  assert.deepEqual(rankActions(acts, "effect").map((a) => a.id), ["big", "quick", "mid"]);
+  assert.deepEqual(rankActions(acts, "quick").map((a) => a.id), ["quick", "mid", "big"]);
+  assert.deepEqual(rankActions(undefined), []);
+});
+test("the chain writes the multiplication out", () => {
+  assert.equal(chainText([{ value: 0.9 }, { value: 0.5 }], 0.45), "90% × 50% = 45%");
+  assert.equal(chainText([], 0), "");
+});
