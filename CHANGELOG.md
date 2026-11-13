@@ -2,6 +2,11 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.64.0
+
+- **Run it on your own computer, without the public site.** Every release now carries `beyond90-local-<version>.zip`: the built app plus a `start.py` that needs only Python 3.9 or newer. Unzip, run `python3 start.py`, and the browser opens `http://localhost:8090`, served by your own computer, read-only, reachable from that computer alone. No npm, no Docker, no account; customer files are read inside the browser as before. The zip is reproducible, listed in the release checksums and covered by its signed provenance; tests build it twice, start it, fetch the page and check that writes are refused. The public site offers the same file under `download/`.
+- The self-hosting guide no longer says `pip install beyond90`: the package is not on PyPI, so it says to install from a clone.
+
 ## 0.63.0
 
 - **Mark an action done from Today.** Each of the first actions has a "Mark done" button. The next one moves up, the count in the menu drops, and a line says what the done ones add: "up to +6.5 pts, about 79.1%", named as an upper estimate because effects overlap. Undo is one click. The marks live only in this tab's memory: action ids carry the customer's team names, and nothing about a customer is written outside the protected store, so the next data load is what records the work.

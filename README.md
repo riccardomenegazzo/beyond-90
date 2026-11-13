@@ -10,7 +10,8 @@ A customer says "we are at 90%". Usually that means 90% of the accounts someone 
 
 - **What it gives you:** one honest score (Yield), the three actions that move it most, a prepared call, and a quarterly review a security lead will read.
 - **Try it:** open the [live page](https://riccardomenegazzo.github.io/beyond-90/) and press the demo button. The customer is invented, and nothing leaves your browser.
-- **Use it:** clone the repository, run `pip install .`, then `beyond90 score examples/portfolio/northwind`. For your own customer, start with `beyond90 init acme`.
+- **Run it on your computer:** download `beyond90-local-<version>.zip` from [Releases](https://github.com/riccardomenegazzo/beyond-90/releases), unzip, run `python3 start.py`. Only Python is needed, and nothing depends on the public site. [Details](docs/self-hosting.md).
+- **Use it from the command line:** clone the repository, run `pip install .`, then `beyond90 score examples/portfolio/northwind`. For your own customer, start with `beyond90 init acme`.
 - **Who it is for:** technical account managers, solutions architects and sales engineers. It is not tied to one vendor.
 - **What it is not:** an independent audit. The security review was done by the author. See [Honest limits](#honest-limits).
 

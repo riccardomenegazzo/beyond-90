@@ -2,6 +2,18 @@
 
 Beyond 90 is one set of static files: the page, its engine compiled to WebAssembly, and the data it ships with. The public site is one way to reach them. These are the others, for teams that cannot use a public address or want the app inside their own network. In every case the data never reaches the server: it only hands out files, and the page talks to nothing else.
 
+## On your own computer, without the public site
+
+Every release on GitHub carries `beyond90-local-<version>.zip` (about 7 MB), listed in the release's `SHA256SUMS` and covered by its signed build provenance. It needs only Python 3.9 or newer: no npm, no Docker, no account, and nothing from the public site.
+
+1. Download `beyond90-local-<version>.zip` from the repository's [Releases](https://github.com/riccardomenegazzo/beyond-90/releases) page and unzip it.
+2. Inside the folder run `python3 start.py` (on Windows `py start.py`, or double-click it).
+3. The browser opens `http://localhost:8090`. Use `--port 9000` if 8090 is taken, `--no-browser` to open it yourself.
+
+`start.py` uses the standard library only. It listens on this computer alone (127.0.0.1), hands out the files in `./site` read-only, and never receives customer data: the page reads your files inside the browser, exactly as on the public site, and keeps them in that browser. To check the files, compare the zip with the release's `SHA256SUMS`, then the files inside with `site/SHA256SUMS`.
+
+From a clone instead: `npm ci --ignore-scripts --prefix site/npm`, `python3 site/build_site.py --out _site --pyodide site/npm/node_modules/pyodide`, then `python3 scripts/local_bundle.py _site beyond90-local.zip` or `beyond90 app --site _site`.
+
 ## Install it as an app
 
 On a phone, a tablet or a computer, the site installs like an app: its own icon, its own window, offline. Chrome and Edge show an install icon in the address bar (or Help, "Install the app"); on Android it is in the browser menu; on iPhone and iPad, Safari's Share button, "Add to Home Screen". Firefox on a computer cannot install web apps: use the [extension](extension.md).
@@ -10,7 +22,7 @@ On a phone, a tablet or a computer, the site installs like an app: its own icon,
 
 ## On your own machine: `beyond90 app`
 
-Every build publishes `download/beyond90-site.zip`, listed in the signed `SHA256SUMS` like every other file. With the package installed (`pip install beyond90`, no dependencies):
+Every build of the public site also publishes `download/beyond90-site.zip`, listed in the signed `SHA256SUMS` like every other file. With the package installed from a clone (`pip install .`, no dependencies):
 
 ```bash
 beyond90 app --site beyond90-site.zip           # http://localhost:8090, this machine only
