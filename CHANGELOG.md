@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.66.0
+
+- **End to end: the same chain on one unit.** Yield multiplies four ratios measured on different units (accounts, asset type pairs, capability pairs, findings), so it is a product of completion rates, not the share of accounts that make it all the way. The score now also counts that share: an account passes when it is connected, every expected asset type is seen, every relevant capability is on, and none of its findings past triage lacks an owner or a decision. Each other account is counted once, at the first stage where it stops. On the example customer: Yield 72.6%, end to end 29 of 121 (24%), the others stopping first at L1 12, L2 29, L3 42, L4 9. It is in `beyond90 score`, in the JSON score as `end_to_end`, and as a bar under "Where it leaks" on Today. [docs/why-multiply.md](docs/why-multiply.md) explains both numbers and their limits.
+
 ## 0.65.0
 
 - **A phone top bar with room to breathe.** With a customer open, the top bar on a phone holds only the customer's whole name with the date of the data under it, and a search button. The names selector and the light/dark switch moved into the menu sheet. Whenever names are hidden or replaced by aliases, a small flag in the top bar says so, so what leaves the page is always visible. The search button keeps its spoken name.

@@ -68,6 +68,7 @@ class Score:
     terms: dict[str, Any] = field(default_factory=dict[str, Any])
     rubric: dict[str, Any] = field(default_factory=dict[str, Any])
     views: dict[str, Any] = field(default_factory=dict[str, Any])
+    end_to_end: dict[str, Any] = field(default_factory=dict[str, Any])
 
     def to_dict(self) -> dict[str, Any]:
         d = asdict(self)
@@ -248,6 +249,53 @@ def compute_reach(data: CustomerData) -> Optional[dict[str, Any]]:
     }
 
 
+def compute_end_to_end(data: CustomerData, cat: Catalogue, ceiling: str) -> dict[str, Any]:
+    """The same chain on one unit: the share of accounts that pass every stage, and where each other one first stops.
+
+    Yield multiplies four ratios measured on different units (accounts, account and asset type pairs, account and module
+    pairs, findings), so it is not the share of accounts that make it all the way. This is: an account passes when it is
+    connected, every expected asset type is inventoried, every relevant module is on, and none of its findings past triage
+    lacks an owner or a decision. A stage with no data is not measured and stops nobody; `measured` says which ones were.
+    """
+    universe = sorted(_active_accounts(data), key=lambda a: a.id)
+    measured = ["L1"] + (["L2"] if data.inventory else []) + (["L3"] if data.activations else []) + ["L4"]
+    covered = {(r.account_id, r.resource_type) for r in data.inventory if r.inventoried}
+    present: dict[str, set[str]] = {}
+    for r in data.inventory:
+        if r.inventoried and r.count > 0:
+            present.setdefault(r.account_id, set()).add(r.resource_type)
+    active = {(x.account_id, x.module_id) for x in data.activations if x.active}
+    modules = [(m, set(m.requires_any), set(m.providers)) for m in cat.modules_at(ceiling)]
+    bad_findings: set[str] = {f.account_id for f in _triaged(data) if classify_finding(f, data.as_of) != "ok"}
+    first: dict[str, list[str]] = {"L1": [], "L2": [], "L3": [], "L4": []}
+    through = 0
+    for a in universe:
+        if not a.connected:
+            first["L1"].append(a.id)
+            continue
+        if "L2" in measured and any((a.id, t) not in covered for t in cat.expected_types(a.provider)):
+            first["L2"].append(a.id)
+            continue
+        if "L3" in measured:
+            have = present.get(a.id, set())
+            if any(a.provider in prov and (not req or have & req) and (a.id, m.id) not in active for m, req, prov in modules):
+                first["L3"].append(a.id)
+                continue
+        if a.id in bad_findings:
+            first["L4"].append(a.id)
+            continue
+        through += 1
+    total = len(universe)
+    return {
+        "total": total,
+        "through": through,
+        "value": through / total if total else None,
+        "measured": measured,
+        "first_break": {k: len(v) for k, v in first.items()},
+        "examples": {k: v[:5] for k, v in first.items() if v},
+    }
+
+
 def compute_naive(data: CustomerData) -> Optional[float]:
     plan = [a for a in data.accounts if a.in_plan]
     if not plan:
@@ -395,6 +443,7 @@ def compute_score(data: CustomerData, cat: Optional[Catalogue] = None, ceiling: 
         terms=dict(cat.terms),
         provenance=build_provenance(data.inputs, cat.digest, ceiling, baseline, data.schema_version, cat.profile) if data.inputs else {},
     )
+    score.end_to_end = compute_end_to_end(data, cat, ceiling)
     score.rubric = compute_rubric(score, data, cat.rubric)
     score.views = adoption_views(score, cat)
     return score

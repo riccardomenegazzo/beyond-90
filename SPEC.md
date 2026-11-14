@@ -1,4 +1,4 @@
-# Beyond 90: specification v0.65
+# Beyond 90: specification v0.66
 
 An adoption engine for Technical Account Managers. It measures how much of a customer's cloud estate is really covered and operated through a security platform, and turns every gap into an action. The bar keeps moving: when a customer grows or the product ships something, the denominators grow with it.
 
@@ -36,6 +36,8 @@ Stages are sequential, so a leak upstream hides what is downstream. Missing data
 **L4.** Over open findings older than `triage_window_days`: `findings with an owner and a valid decision / findings past triage`. A decision is `fix`, `accepted_risk`, `exception` or `false_positive`. An accepted risk needs a future expiry; one with no expiry, or an expired one, counts as a leak. Accepting a risk consciously is not a leak; ignoring it without review is.
 
 ## 4. Reported next to Yield
+
+**End to end** (`scoring.compute_end_to_end`): the share of active accounts that pass every measured stage on one unit, the account: connected, every expected resource type inventoried, every relevant module active, no finding past the triage window classified other than `ok`. Each failing account is counted once at its first broken stage (`first_break`). A stage with no input file is not measured (`measured`). Yield is a product of conditional completion rates on different units; this is the strict, no partial credit count. See docs/why-multiply.md.
 
 **Naive (legacy) score.** `connected / accounts flagged in_plan`. Shown beside Yield; the gap is the story.
 

@@ -750,3 +750,14 @@ body:not(.has-files) .runbar{display:none}
   .sheet-tools .share-pick select option{color:#111;background:#fff}
   .sheet-tools .icon-btn{flex:none;color:var(--ink);border-color:var(--line);background:rgba(255,255,255,.06)}
 }
+
+/* the end-to-end chain on Today (0.66): one bar, those through first, then where the others stop */
+.e2e{margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
+.e2e-lead{margin:0 0 10px;font-size:14.5px}
+.e2e-lead span{color:var(--ink2)}
+.e2e-bar{display:flex;height:14px;border-radius:7px;overflow:hidden;gap:2px;background:var(--sunk)}
+.e2e-bar i{display:block;height:100%;min-width:3px}
+.e2e-bar .seg-through,.e2e-key .seg-through{background:var(--ink)}
+.e2e-key{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--ink2)}
+.e2e-key li{display:flex;align-items:center;gap:6px}
+.e2e-key .sw{width:10px;height:10px;border-radius:3px;display:inline-block}

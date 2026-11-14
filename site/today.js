@@ -61,3 +61,12 @@ export function doneSummary(actions, doneIds, yieldNow) {
   const points = done.reduce((s, a) => s + (Number(a.effect) || 0), 0);
   return { n: done.length, points, projected: Math.min(1, (Number(yieldNow) || 0) + points / 100) };
 }
+
+/** The end-to-end chain as segments of one bar: those that pass every stage, then where the others first stop. */
+export function funnelSegments(e) {
+  if (!e || !e.total) return [];
+  const names = { L1: "stop at connected", L2: "stop at seen", L3: "stop at switched on", L4: "stop at decided" };
+  const segs = [{ id: "through", label: "pass every stage", n: e.through }]
+    .concat(["L1", "L2", "L3", "L4"].map((k) => ({ id: k, label: names[k], n: (e.first_break || {})[k] || 0 })));
+  return segs.filter((s) => s.n > 0).map((s) => ({ ...s, share: s.n / e.total }));
+}

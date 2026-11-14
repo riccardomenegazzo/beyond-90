@@ -59,6 +59,8 @@ Most adoption reporting stops at "90% of accounts connected" (or sites, tenants,
 
 ## What is different
 
+Yield multiplies four stages, so a gap anywhere caps the whole. Next to it, an end-to-end count says how many accounts pass every stage with no partial credit: on the example, Yield is 72.6% and 29 of 121 accounts are fully through. [Why both](docs/why-multiply.md).
+
 **1. It simulates the plan, and shows the J-curve.** Connecting an account makes Yield *fall* first: the new account enters L2 and L3 with nothing covered. Beyond 90 applies every action to a copy of the estate, with the ramp real connections need, and projects Yield week by week for the hours you actually have. You can tell the customer about the dip before it happens instead of explaining it afterwards.
 
 ![Roadmap with the J-curve](docs/img/report-roadmap.png)

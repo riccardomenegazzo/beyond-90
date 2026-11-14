@@ -88,6 +88,11 @@ def render_text(score: Score, actions: list[Action], top: int = 8) -> str:
         lines.append(f"  {sid} {st.name:<12} {pct(st.value):>7}   ({st.numerator:g}/{st.denominator:g})" + ("" if st.has_data else "   no data"))
     if score.reach:
         lines.append(f"  Reach {'':<8} {pct(score.reach['value']):>7}   ({score.reach['teams']} teams)")
+    e = score.end_to_end
+    if e and e.get("total"):
+        stops = ", ".join(f"{k} {v}" for k, v in e["first_break"].items() if v)
+        units = (score.terms or {}).get("units", "accounts")
+        lines.append(f"\nEnd to end: {e['through']} of {e['total']} {units} pass every stage ({pct(e['value'])})" + (f"; the others stop first at {stops}" if stops else ""))
     t = score.target
     nxt = f", next checkpoint {pct(t['next_checkpoint'], 0)}" if t["next_checkpoint"] else ""
     lines.append(f"\nTarget {pct(t['value'])} ({t['mode']}){nxt}")

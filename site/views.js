@@ -10,7 +10,7 @@ import * as A from "./asks.js";
 import * as SLA from "./sla.js";
 import * as SC from "./scorecard.js";
 import { connections } from "./graph.js";
-import { headline, firstMinute, rankActions, chainText, doneSummary } from "./today.js";
+import { headline, firstMinute, rankActions, chainText, doneSummary, funnelSegments } from "./today.js";
 import { stageBars } from "./nav.js";
 import { accountsFirst, accountsAnswer, whyAccount, findingsFirst, findingsAnswer, whyFinding } from "./triage.js";
 import { gauge, waterfall, lineChart, contributions, timeline, shareBar, funnel, STAGE, STAGE_NAME } from "./charts.js";
@@ -57,6 +57,16 @@ export function todayView({ result, dash, score, go, history = [], done = new Se
       h("span", { class: "sb-track", "aria-hidden": "true" }, h("i", { style: `width:${Math.max(2, b.value * 100).toFixed(1)}%` })),
       h("b", { class: "sb-v", text: pct(b.value) })))),
     h("p", { class: "chain", text: chainText(bars, score.yield) }),
+    (() => {
+      const e = score.end_to_end, segs = funnelSegments(e);
+      if (!segs.length) return null;
+      const units = (score.terms && score.terms.units) || "accounts";
+      return h("div", { class: "e2e" },
+        h("p", { class: "e2e-lead" }, h("b", { text: `${e.through} of ${e.total} ${units}` }), h("span", { text: " pass every stage. Yield gives partial credit; this does not." })),
+        h("div", { class: "e2e-bar", role: "img", "aria-label": segs.map((x) => `${x.n} ${x.label}`).join(", ") },
+          segs.map((x) => h("i", { class: "seg-" + x.id, style: `width:${(x.share * 100).toFixed(2)}%${x.id === "through" ? "" : `;background:${STAGE[x.id]}`}`, title: `${x.n} ${x.label}` }))),
+        h("ul", { class: "e2e-key" }, segs.map((x) => h("li", {}, h("span", { class: "sw seg-" + x.id, style: x.id === "through" ? "" : `background:${STAGE[x.id]}` }), h("span", { text: `${x.n} ${x.label}` })))));
+    })(),
     o.loss_points > 0.05 ? h("p", { class: "note", text: `If nothing is done, Yield loses about ${o.loss_points.toFixed(1)} points in ${o.horizon_days} days.` }) : null),
     { cls: "leakcard", actions: h("button", { class: "btn small", type: "button", text: "Full picture", onclick: () => go("overview") }) });
 

@@ -58,3 +58,12 @@ test("done actions add up to an upper estimate, capped at 100%", () => {
   assert.equal(doneSummary(acts, new Set(), 0.5).n, 0);
   assert.equal(doneSummary(undefined, undefined, 0.5).n, 0);
 });
+
+import { funnelSegments } from "../today.js";
+test("the end-to-end bar: those through, then first stops, empty ones dropped", () => {
+  const s = funnelSegments({ total: 121, through: 29, first_break: { L1: 12, L2: 29, L3: 42, L4: 9 } });
+  assert.deepEqual(s.map((x) => x.id), ["through", "L1", "L2", "L3", "L4"]);
+  assert.ok(Math.abs(s.reduce((a, x) => a + x.share, 0) - 1) < 1e-9);
+  assert.deepEqual(funnelSegments({ total: 2, through: 2, first_break: { L1: 0 } }).map((x) => x.id), ["through"]);
+  assert.deepEqual(funnelSegments(null), []);
+});
