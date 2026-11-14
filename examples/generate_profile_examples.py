@@ -28,6 +28,14 @@ CUSTOMERS = {
     "siem": {"dir": "lantern-siem", "name": "Lantern SIEM (mock)", "arr": 340000, "seed": 4104, "count": 18, "weights": [8, 6, 4, 2],
              "owners": ["soc-tier1", "detection-engineering", "cloud-platform", "network-ops", "security-ops"],
              "entitlements": "unit,licensed,used\ningest_gb_per_day,800,520\nautomation_runs,2000,150\n"},
+    "hci": {"dir": "granite-hci", "name": "Granite Manufacturing (mock)", "arr": 190000, "seed": 4105, "count": 12, "weights": [6, 4, 2, 3],
+            "connect": 0.92, "seen": 0.96, "on": 0.78, "own": 0.88, "decide": 0.92,
+            "owners": ["datacenter-ops", "plant-it", "infra-platform", "security-ops", "backup-team"],
+            "entitlements": "unit,licensed,used\nnodes,48,41\ndr_protected_vms,600,210\n"},
+    "object-storage": {"dir": "meridian-storage", "name": "Meridian Health (mock)", "arr": 120000, "seed": 4106, "count": 10, "weights": [3, 2, 5, 3],
+                       "connect": 0.92, "seen": 0.96, "on": 0.72, "own": 0.88, "decide": 0.92,
+                       "owners": ["backup-team", "data-platform", "imaging-it", "security-ops", "archive-office"],
+                       "entitlements": "unit,licensed,used\ncapacity_tb,800,430\nlocked_tb,400,95\n"},
 }
 
 
@@ -43,7 +51,7 @@ def build(profile: str, out: Path) -> None:
     for i in range(c["count"]):
         provider = r.choices(platforms, weights=c["weights"])[0]
         sources = ["billing"] + (["org"] if r.random() < 0.85 else []) + (["sso"] if r.random() < 0.7 else [])
-        units.append({"id": f"{profile}-{i + 1:02d}", "provider": provider, "sources": ";".join(sources), "connected": r.random() < 0.7,
+        units.append({"id": f"{profile}-{i + 1:02d}", "provider": provider, "sources": ";".join(sources), "connected": r.random() < c.get("connect", 0.7),
                       "owner": r.choice(owners), "spend": r.randint(2, 80) * 100, "created": (AS_OF - timedelta(days=r.randint(5, 700))).isoformat()})
     rows = ["id,provider,sources,connected,owner,last_spend,status,in_plan,created_at"]
     for u in units:
@@ -55,7 +63,7 @@ def build(profile: str, out: Path) -> None:
         if not u["connected"]:
             continue
         for t in types["expected"][u["provider"]]:
-            if r.random() < 0.85:
+            if r.random() < c.get("seen", 0.85):
                 inv.append(f"{u['id']},{t},{r.randint(2, 300)},true")
             elif r.random() < 0.5:
                 inv.append(f"{u['id']},{t},{r.randint(2, 60)},false")
@@ -67,7 +75,7 @@ def build(profile: str, out: Path) -> None:
             continue
         for m in mods:
             if u["provider"] in m["providers"]:
-                base = 0.95 if m.get("on_connect") else 0.5
+                base = 0.95 if m.get("on_connect") else c.get("on", 0.5)
                 act.append(f"{u['id']},{m['id']},{str(r.random() < base).lower()}")
     (out / "activations.csv").write_text("\n".join(act) + "\n")
 
@@ -78,8 +86,8 @@ def build(profile: str, out: Path) -> None:
         opened = AS_OF - timedelta(days=r.randint(1, 120))
         sev = r.choices(["critical", "high", "medium", "low"], weights=[2, 5, 8, 6])[0]
         closed = opened + timedelta(days=r.randint(1, 30)) if r.random() < 0.55 and opened + timedelta(days=30) < AS_OF else None
-        owner = r.choice(owners) if r.random() < 0.65 else ""
-        decision = r.choice(["fix", "fix", "accepted_risk"]) if owner and r.random() < 0.8 else ""
+        owner = r.choice(owners) if r.random() < c.get("own", 0.65) else ""
+        decision = r.choice(["fix", "fix", "accepted_risk"]) if owner and r.random() < c.get("decide", 0.8) else ""
         expiry = (AS_OF + timedelta(days=r.randint(20, 120))).isoformat() if decision == "accepted_risk" else ""
         reason = "business process depends on it" if decision == "accepted_risk" else ""
         by = r.choice(["manual", "assisted", "automated"]) if closed else ""

@@ -1,0 +1,14 @@
+{
+  "playbooks": {
+    "l1_connect_account": {
+      "title": "Bring the storage tenants nobody watches into the console",
+      "why": "Applications and backups write to the tenant, but nobody sees its usage, settings or access, so a wrong setting stays wrong.",
+      "steps": [
+        "List every tenant and endpoint the applications and backup jobs write to.",
+        "Connect each one with a read-only administrative key.",
+        "Confirm buckets, keys and usage show for each tenant."
+      ],
+      "success": "Every tenant in scope reports its buckets, keys and usage."
+    }
+  }
+}

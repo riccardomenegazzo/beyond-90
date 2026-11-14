@@ -1,0 +1,184 @@
+{
+  "use_cases": {
+    "resilience": "Recover from failure and ransomware",
+    "operations": "Run it with less effort",
+    "security": "Secure the platform",
+    "cost": "Use the capacity already paid for"
+  },
+  "modules": [
+    {
+      "id": "health_monitoring",
+      "name": "Health monitoring and alerting",
+      "category": "cloud",
+      "since": "2025.1",
+      "providers": [
+        "on_premises",
+        "remote_office",
+        "hybrid_cloud",
+        "edge"
+      ],
+      "requires_any": [],
+      "on_connect": true,
+      "use_case": "operations",
+      "csf": [
+        "identify",
+        "detect"
+      ]
+    },
+    {
+      "id": "snapshot_schedules",
+      "name": "Scheduled snapshots with retention",
+      "category": "cloud",
+      "since": "2025.1",
+      "providers": [
+        "on_premises",
+        "remote_office",
+        "hybrid_cloud",
+        "edge"
+      ],
+      "requires_any": [
+        "vm"
+      ],
+      "on_connect": false,
+      "use_case": "resilience",
+      "csf": [
+        "protect",
+        "recover"
+      ]
+    },
+    {
+      "id": "replication_dr",
+      "name": "Replication with a tested recovery plan",
+      "category": "cloud",
+      "since": "2025.2",
+      "providers": [
+        "on_premises",
+        "remote_office",
+        "hybrid_cloud"
+      ],
+      "requires_any": [
+        "vm"
+      ],
+      "on_connect": false,
+      "use_case": "resilience",
+      "csf": [
+        "recover"
+      ]
+    },
+    {
+      "id": "immutable_snapshots",
+      "name": "Immutable snapshots against ransomware",
+      "category": "defend",
+      "since": "2025.3",
+      "providers": [
+        "on_premises",
+        "remote_office",
+        "hybrid_cloud",
+        "edge"
+      ],
+      "requires_any": [
+        "vm",
+        "file_share"
+      ],
+      "on_connect": false,
+      "use_case": "resilience",
+      "csf": [
+        "protect",
+        "recover"
+      ]
+    },
+    {
+      "id": "microsegmentation",
+      "name": "Network microsegmentation between workloads",
+      "category": "defend",
+      "since": "2025.2",
+      "providers": [
+        "on_premises",
+        "hybrid_cloud"
+      ],
+      "requires_any": [
+        "network_segment"
+      ],
+      "on_connect": false,
+      "use_case": "security",
+      "csf": [
+        "protect"
+      ]
+    },
+    {
+      "id": "encryption_at_rest",
+      "name": "Encryption at rest with an external key manager",
+      "category": "defend",
+      "since": "2025.2",
+      "providers": [
+        "on_premises",
+        "remote_office",
+        "edge"
+      ],
+      "requires_any": [
+        "volume_group",
+        "host"
+      ],
+      "on_connect": false,
+      "use_case": "security",
+      "csf": [
+        "protect"
+      ]
+    },
+    {
+      "id": "lifecycle_upgrades",
+      "name": "Automated firmware and software upgrades",
+      "category": "cloud",
+      "since": "2025.1",
+      "providers": [
+        "on_premises",
+        "remote_office",
+        "edge"
+      ],
+      "requires_any": [
+        "host"
+      ],
+      "on_connect": false,
+      "use_case": "operations",
+      "csf": [
+        "protect"
+      ]
+    },
+    {
+      "id": "capacity_runway",
+      "name": "Capacity planning and runway forecasts",
+      "category": "cloud",
+      "since": "2025.3",
+      "providers": [
+        "on_premises",
+        "remote_office",
+        "hybrid_cloud",
+        "edge"
+      ],
+      "requires_any": [],
+      "on_connect": false,
+      "use_case": "cost",
+      "csf": [
+        "identify"
+      ]
+    },
+    {
+      "id": "self_service",
+      "name": "Self-service provisioning with quotas",
+      "category": "cloud",
+      "since": "2026.1",
+      "providers": [
+        "on_premises",
+        "hybrid_cloud"
+      ],
+      "requires_any": [
+        "vm"
+      ],
+      "on_connect": false,
+      "use_case": "operations",
+      "csf": [
+        "identify"
+      ]
+    }
+  ]
+}

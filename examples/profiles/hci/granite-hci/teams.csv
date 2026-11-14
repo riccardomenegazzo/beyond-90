@@ -1,0 +1,6 @@
+id,name,has_assets,active_users,sso,role_scoped,last_access_review
+datacenter-ops,Datacenter Ops,true,2,false,false,2026-07-07
+plant-it,Plant It,true,2,true,true,2026-10-19
+infra-platform,Infra Platform,true,2,false,true,2026-04-12
+security-ops,Security Ops,true,5,true,true,2026-07-21
+backup-team,Backup Team,true,0,true,false,2026-08-10

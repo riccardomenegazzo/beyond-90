@@ -1,0 +1,204 @@
+{
+  "use_cases": {
+    "resilience": "Recover from loss and ransomware",
+    "sovereignty": "Keep data where it must stay",
+    "security": "Control who reaches the data",
+    "cost": "Pay only for what is kept"
+  },
+  "modules": [
+    {
+      "id": "usage_metering",
+      "name": "Usage and capacity metering",
+      "category": "cloud",
+      "since": "2025.1",
+      "providers": [
+        "public_region",
+        "on_premises_gateway",
+        "backup_repository",
+        "geo_distributed"
+      ],
+      "requires_any": [],
+      "on_connect": true,
+      "use_case": "cost",
+      "csf": [
+        "identify"
+      ]
+    },
+    {
+      "id": "versioning",
+      "name": "Object versioning",
+      "category": "cloud",
+      "since": "2025.1",
+      "providers": [
+        "public_region",
+        "on_premises_gateway",
+        "backup_repository",
+        "geo_distributed"
+      ],
+      "requires_any": [
+        "bucket"
+      ],
+      "on_connect": false,
+      "use_case": "resilience",
+      "csf": [
+        "protect",
+        "recover"
+      ]
+    },
+    {
+      "id": "object_lock",
+      "name": "Object lock (immutability, write once read many)",
+      "category": "defend",
+      "since": "2025.2",
+      "providers": [
+        "public_region",
+        "on_premises_gateway",
+        "backup_repository",
+        "geo_distributed"
+      ],
+      "requires_any": [
+        "bucket"
+      ],
+      "on_connect": false,
+      "use_case": "resilience",
+      "csf": [
+        "protect",
+        "recover"
+      ]
+    },
+    {
+      "id": "geo_replication",
+      "name": "Replication across sites or regions",
+      "category": "cloud",
+      "since": "2025.2",
+      "providers": [
+        "public_region",
+        "geo_distributed",
+        "on_premises_gateway"
+      ],
+      "requires_any": [
+        "bucket"
+      ],
+      "on_connect": false,
+      "use_case": "resilience",
+      "csf": [
+        "recover"
+      ]
+    },
+    {
+      "id": "data_residency",
+      "name": "Placement policies that keep data in chosen countries",
+      "category": "cloud",
+      "since": "2025.3",
+      "providers": [
+        "public_region",
+        "geo_distributed"
+      ],
+      "requires_any": [
+        "bucket"
+      ],
+      "on_connect": false,
+      "use_case": "sovereignty",
+      "csf": [
+        "protect"
+      ]
+    },
+    {
+      "id": "customer_managed_keys",
+      "name": "Encryption with customer-managed keys",
+      "category": "defend",
+      "since": "2025.2",
+      "providers": [
+        "public_region",
+        "on_premises_gateway",
+        "backup_repository",
+        "geo_distributed"
+      ],
+      "requires_any": [
+        "bucket"
+      ],
+      "on_connect": false,
+      "use_case": "security",
+      "csf": [
+        "protect"
+      ]
+    },
+    {
+      "id": "scoped_keys",
+      "name": "Scoped access keys with rotation",
+      "category": "defend",
+      "since": "2025.3",
+      "providers": [
+        "public_region",
+        "on_premises_gateway",
+        "backup_repository",
+        "geo_distributed"
+      ],
+      "requires_any": [
+        "access_key"
+      ],
+      "on_connect": false,
+      "use_case": "security",
+      "csf": [
+        "protect"
+      ]
+    },
+    {
+      "id": "access_logging",
+      "name": "Access logging with alerts on unusual reads and deletes",
+      "category": "defend",
+      "since": "2025.3",
+      "providers": [
+        "public_region",
+        "on_premises_gateway",
+        "backup_repository",
+        "geo_distributed"
+      ],
+      "requires_any": [
+        "bucket"
+      ],
+      "on_connect": false,
+      "use_case": "security",
+      "csf": [
+        "detect"
+      ]
+    },
+    {
+      "id": "lifecycle_tiering",
+      "name": "Lifecycle expiry and tiering",
+      "category": "cloud",
+      "since": "2025.2",
+      "providers": [
+        "public_region",
+        "geo_distributed",
+        "backup_repository"
+      ],
+      "requires_any": [
+        "lifecycle_rule",
+        "bucket"
+      ],
+      "on_connect": false,
+      "use_case": "cost",
+      "csf": [
+        "identify"
+      ]
+    },
+    {
+      "id": "restore_testing",
+      "name": "Regular restore tests from backup buckets",
+      "category": "cloud",
+      "since": "2026.1",
+      "providers": [
+        "backup_repository"
+      ],
+      "requires_any": [
+        "backup_target"
+      ],
+      "on_connect": false,
+      "use_case": "resilience",
+      "csf": [
+        "recover"
+      ]
+    }
+  ]
+}

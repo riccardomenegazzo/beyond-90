@@ -26,7 +26,7 @@ from playwright.sync_api import sync_playwright
 
 # Controls live in places (Start, Saved, Help); the test opens the place before using one, as a person would.
 PLACE_OF = {
-    **dict.fromkeys(("open-starter", "open-mapper", "map-file", "map-body", "map-check", "map-use", "map-cancel", "map-notes", "demo", "demo-book", "demo-endpoint", "demo-saas", "demo-ai", "latest-adv", "demo-adv", "clear-adv", "adv-status", "run", "cancel",
+    **dict.fromkeys(("open-starter", "open-mapper", "map-file", "map-body", "map-check", "map-use", "map-cancel", "map-notes", "demo", "demo-book", "demo-endpoint", "demo-saas", "demo-ai", "demo-identity", "demo-siem", "demo-hci", "demo-objstore", "latest-adv", "demo-adv", "clear-adv", "adv-status", "run", "cancel",
                      "weeks", "hours", "real", "quarter", "bookhours", "weighting", "loaded", "status"), "start"),
     **dict.fromkeys(("demo-prev", "export", "forget", "vault-on", "vault-unlock", "vault-lock", "vault-off", "vault-state",
                      "vault-warn", "ws-status", "history-body", "device-qr", "send-work", "history-empty", "hist-table", "trend", "autosave", "personal", "privacy-body", "restore-in", "restore-out", "restore-note", "erase-result"), "saved"),
@@ -598,12 +598,20 @@ def main(site: str) -> int:
         page.click("[data-tab=qbr]")
         qbr = page.inner_text("#doc")
         check("site(s)" in qbr and "cloud" not in qbr.lower(), "and reads in its own words (sites, not cloud accounts)")
-        for demo_id, who in (("demo-saas", "Acme SaaS"), ("demo-ai", "Orbit AI")):
+        for demo_id, who in (("demo-saas", "Acme SaaS"), ("demo-ai", "Orbit AI"), ("demo-hci", "Granite Manufacturing"), ("demo-objstore", "Meridian Health")):
             page.click(f"#{demo_id}")
             page.wait_for_selector("#loaded li:has-text('customer.toml')")
             run_and_wait()
             page.wait_for_selector("#results:not([hidden])")
             check(who in page.inner_text("#context"), f"the {who} demo runs with its own profile")
+        page.click("[data-tab=pov]")
+        page.get_by_role("button", name="Create the plan").click()
+        page.wait_for_selector("#view .suggest li")
+        check("object lock" in page.inner_text("#view .suggest").lower(), "a proof of value for object storage suggests that product's own tests (object lock)")
+        n_sug = page.locator("#view .suggest li").count()
+        page.locator("#view .suggest button").first.click()
+        page.wait_for_selector("#view .promises li:has-text('cannot be deleted or overwritten')")
+        check(page.locator("#view .suggest li").count() == n_sug - 1, "and one click adds a suggested test to the success criteria, and takes it off the suggestions")
 
         # a whole book: several customers, one budget of hours
         page.click("#demo-book")

@@ -1,0 +1,37 @@
+{
+  "version": "2026.4",
+  "description": "Hyperconverged infrastructure and private cloud: clusters that run virtual machines, storage and networking together, with protection, recovery and lifecycle to adopt.",
+  "terms": {
+    "estate": "private cloud",
+    "unit": "cluster",
+    "units": "clusters"
+  },
+  "types": {
+    "host": "Physical nodes in the cluster",
+    "vm": "Virtual machines",
+    "volume_group": "Volume groups and virtual disks",
+    "file_share": "File shares served by the cluster",
+    "kubernetes_cluster": "Kubernetes clusters running on the platform",
+    "network_segment": "Virtual networks and segments"
+  },
+  "expected": {
+    "on_premises": [
+      "host",
+      "vm",
+      "volume_group",
+      "network_segment"
+    ],
+    "remote_office": [
+      "host",
+      "vm"
+    ],
+    "hybrid_cloud": [
+      "vm",
+      "network_segment"
+    ],
+    "edge": [
+      "host",
+      "vm"
+    ]
+  }
+}

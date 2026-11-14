@@ -1,0 +1,28 @@
+{
+  "criteria": [
+    {
+      "text": "An object under object lock cannot be deleted or overwritten, even with administrator credentials, until its retention ends",
+      "how": "Write a test object with a retention date, then try to delete it as the bucket owner and as an administrator."
+    },
+    {
+      "text": "A backup job writes to the bucket and a full restore of a test system completes within the agreed time",
+      "how": "Run the customer's own backup software against the bucket and time a restore of one system."
+    },
+    {
+      "text": "Losing one site or node leaves every object readable, with no manual step",
+      "how": "Take one site or node offline during reads and check that every object still returns."
+    },
+    {
+      "text": "Data stays in the countries the policy names, and the placement can be shown to an auditor",
+      "how": "Write objects under a residency policy and export where each copy lives."
+    },
+    {
+      "text": "The customer's existing S3 tools and applications work unchanged against the endpoint",
+      "how": "Point two real applications and one command-line tool at the endpoint and run their normal jobs."
+    },
+    {
+      "text": "The monthly cost for the customer's real volume and access pattern is known before signature, egress and requests included",
+      "how": "Replay a month of the customer's usage figures through the price list and agree the total with finance."
+    }
+  ]
+}

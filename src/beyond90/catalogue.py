@@ -95,6 +95,7 @@ class Catalogue:
         description: str = "",
         rubric: Optional[dict[str, Any]] = None,
         use_cases: Optional[dict[str, str]] = None,
+        pov_criteria: Optional[list[dict[str, str]]] = None,
     ) -> None:
         self.resource_types = resource_types
         self.expected = expected
@@ -106,6 +107,7 @@ class Catalogue:
         self.terms = {**DEFAULT_TERMS, **(terms or {})}
         self.description = description
         self.use_cases = use_cases or {}
+        self.pov_criteria = pov_criteria or []   # suggested proof of value criteria for this kind of product (pov.json)
         self.rubric = rubric or {"levels": ["bronze", "silver", "gold"], "checks": []}
 
     @classmethod
@@ -144,6 +146,8 @@ class Catalogue:
         rubric_file = base / "rubric.json" if (base / "rubric.json").exists() else DATA_DIR / "rubric.json"
         digest = hashlib.sha256(name.encode() + b"".join(normalize(f.read_bytes()) for f in [*files, *pb_files, rubric_file])).hexdigest()
         rubric = json.loads(rubric_file.read_text(encoding="utf-8"))
+        pov_file = base / "pov.json"   # never inherited from the base: another kind of product proves other things
+        pov = [{"text": str(c["text"]), "how": str(c.get("how", ""))} for c in json.loads(pov_file.read_text(encoding="utf-8"))["criteria"]] if pov_file.exists() else []
         validate_rubric(rubric)
         rt = json.loads(files[0].read_text(encoding="utf-8"))
         mods = json.loads(files[1].read_text(encoding="utf-8"))
@@ -196,7 +200,7 @@ class Catalogue:
             unknown = [t for t in types if t not in rt["types"]]
             if unknown:
                 raise ValueError(f"catalogue: provider {provider} expects undefined types {unknown}")
-        return cls(rt["types"], rt["expected"], modules, playbooks, rt["version"], digest, name if directory else profile, rt.get("terms"), rt.get("description", ""), rubric, mods.get("use_cases", {}))
+        return cls(rt["types"], rt["expected"], modules, playbooks, rt["version"], digest, name if directory else profile, rt.get("terms"), rt.get("description", ""), rubric, mods.get("use_cases", {}), pov)
 
     def expected_types(self, provider: str) -> list[str]:
         return list(self.expected.get(provider, []))

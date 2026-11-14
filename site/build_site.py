@@ -29,7 +29,9 @@ DISPLAY = ROOT / "site" / "npm" / "node_modules" / "@fontsource-variable" / "bri
 DISPLAY_FILES = {f"files/bricolage-grotesque-{s}-wght-normal.woff2": f"display-{s}.woff2" for s in ("latin", "latin-ext")} | {"LICENSE": "OFL-display.txt"}
 DEMO = ROOT / "examples" / "portfolio" / "northwind"
 DEMO_ENDPOINT = ROOT / "examples" / "profiles" / "endpoint" / "acme-endpoint"
-DEMO_PROFILES = {"saas": ROOT / "examples" / "profiles" / "saas" / "acme-saas", "ai": ROOT / "examples" / "profiles" / "ai" / "orbit-ai"}
+DEMO_PROFILES = {key: ROOT / "examples" / "profiles" / key / folder for key, folder in (
+    ("saas", "acme-saas"), ("ai", "orbit-ai"), ("identity", "harbor-identity"), ("siem", "lantern-siem"),
+    ("hci", "granite-hci"), ("object-storage", "meridian-storage"))}
 DEMO_PREVIOUS = ROOT / "examples" / "history" / "northwind-2026-09"
 
 

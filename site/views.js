@@ -1293,7 +1293,8 @@ export function asksView({ result, asks, today, addAsk, setAskStatus, removeAsk 
 
 // ------------------------------------------------------------------ proof of value
 let povPick = "";
-export function povView({ result, book, povs, today, savePov, removePov }) {
+export function povView({ result, book, povs, today, savePov, removePov, dash }) {
+  const suggested = (dash && Array.isArray(dash.pov_criteria)) ? dash.pov_criteria : [];
   const customers = book ? book.customers.map((r) => r.customer) : [result.customer];
   const say = h("p", { class: "note", role: "status" });
   const act = (fn) => async () => { try { await fn(); say.textContent = ""; } catch (e) { say.textContent = e.message; } };
@@ -1332,6 +1333,14 @@ export function povView({ result, book, povs, today, savePov, removePov }) {
       card("Success criteria", h("ul", { class: "promises" }, crit), { sub: "Agree these with the sponsor before you start. Mark each one when you have seen it, and write what you saw." }),
       card("Add a criterion", h("div", { class: "formgrid" }, h("label", { class: "wide2" }, "Criterion", nc), h("label", { class: "wide2" }, "How we will know", nt),
         h("button", { class: "btn small", type: "button", text: "Add criterion", onclick: edit((q) => P.addCriterion(q, { text: nc.value, target: nt.value }, today)) }))),
+      (() => {
+        const have = new Set(p.criteria.map((c) => c.text.trim().toLowerCase()));
+        const left = suggested.filter((c) => !have.has(c.text.trim().toLowerCase()));
+        return left.length ? card("Suggested for this kind of product", h("ul", { class: "suggest" }, left.map((c) => h("li", {},
+          h("span", {}, h("b", { text: c.text }), c.how ? h("small", { class: "block", text: `How: ${c.how}` }) : null),
+          h("button", { class: "btn small", type: "button", text: "Add", "aria-label": `Add criterion: ${c.text}`, onclick: edit((q) => P.addCriterion(q, { text: c.text, target: c.how }, today)) })))),
+        { sub: "Typical tests for this kind of product, written so a sponsor can sign them off. Add the ones that fit, then edit them to the customer's numbers." }) : null;
+      })(),
       qualCard(p, edit, today),
       card("Ready to start?", h("ul", { class: "plain" }, ready)),
       card("Working sessions", h("div", {}, p.sessions.length ? h("ul", { class: "plain" }, p.sessions.map((s) => h("li", { text: `${s.on}: ${s.topic}${s.who ? ` (${s.who})` : ""}` }))) : h("p", { class: "note", text: "No sessions yet." }),

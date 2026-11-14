@@ -116,6 +116,7 @@ def build(data: CustomerData, score: Score, cat: Catalogue, plan: Plan, extras: 
     return {
         "plan": plan_data(plan),
         "accounts": accounts_table(data, score, cat),
+        "pov_criteria": cat.pov_criteria,
         "findings": findings_table(data),
         "actions": acts,
         "attribution": attribution_data(extras.get("attribution")),

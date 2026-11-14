@@ -1,0 +1,10 @@
+[customer]
+name = "Meridian Health (mock)"
+tier = "enterprise"
+arr = 120000
+as_of = 2026-10-31
+profile = "object-storage"
+
+[settings]
+ceiling_version = "2026.4"
+baseline_ceiling = "2026.1"

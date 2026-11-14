@@ -1,0 +1,6 @@
+id,name,has_assets,active_users,sso,role_scoped,last_access_review
+backup-team,Backup Team,true,4,false,false,2026-04-22
+data-platform,Data Platform,true,1,true,false,2026-05-19
+imaging-it,Imaging It,true,2,true,false,2026-03-19
+security-ops,Security Ops,true,2,false,true,2026-07-14
+archive-office,Archive Office,true,0,true,false,2026-01-05

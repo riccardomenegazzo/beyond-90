@@ -1,0 +1,41 @@
+id,account_id,severity,exposure,opened_at,closed_at,owner,decision,decision_reason,expiry,previous_severity,severity_changed_at,verified_at,reopened,closed_by
+x-001,hci-02,medium,internal,2026-09-11,2026-10-07,plant-it,fix,,,,,,,manual
+x-002,hci-11,low,internet,2026-10-07,,backup-team,accepted_risk,business process depends on it,2026-12-22,,,,,
+x-003,hci-03,high,internal,2026-10-18,,infra-platform,accepted_risk,business process depends on it,2026-12-29,,,,,
+x-004,hci-04,medium,internet,2026-08-05,2026-08-19,infra-platform,fix,,,,,,,automated
+x-005,hci-07,low,internal,2026-08-03,2026-08-12,,,,,,,,,manual
+x-006,hci-12,medium,internal,2026-07-09,2026-07-23,datacenter-ops,fix,,,,,,,assisted
+x-007,hci-10,low,internet,2026-09-15,,infra-platform,fix,,,,,,,
+x-008,hci-09,medium,internet,2026-08-23,2026-09-02,,,,,,,,,manual
+x-009,hci-02,medium,internet,2026-09-01,,plant-it,accepted_risk,business process depends on it,2027-02-06,,,,,
+x-010,hci-03,high,internal,2026-10-18,,backup-team,accepted_risk,business process depends on it,2027-01-29,,,,,
+x-011,hci-03,low,internal,2026-09-09,2026-09-25,infra-platform,fix,,,,,,,manual
+x-012,hci-12,low,internal,2026-07-30,2026-08-15,,,,,,,,,manual
+x-013,hci-04,low,internal,2026-10-03,,,,,,,,,,
+x-014,hci-05,medium,internal,2026-09-28,,security-ops,fix,,,,,,,
+x-015,hci-11,medium,internet,2026-07-11,,,,,,,,,,
+x-016,hci-10,critical,internet,2026-07-16,,security-ops,accepted_risk,business process depends on it,2027-01-21,,,,,
+x-017,hci-05,medium,internal,2026-10-01,,infra-platform,accepted_risk,business process depends on it,2027-01-18,,,,,
+x-018,hci-12,low,internal,2026-07-24,,backup-team,accepted_risk,business process depends on it,2027-02-14,,,,,
+x-019,hci-02,critical,internal,2026-07-20,2026-08-17,plant-it,,,,,,,,automated
+x-020,hci-09,medium,internal,2026-10-10,,security-ops,fix,,,,,,,
+x-021,hci-12,medium,internal,2026-10-16,,datacenter-ops,accepted_risk,business process depends on it,2026-11-21,,,,,
+x-022,hci-03,medium,internet,2026-09-20,2026-09-30,backup-team,accepted_risk,business process depends on it,2027-02-03,,,,,automated
+x-023,hci-03,medium,internet,2026-07-20,2026-08-05,security-ops,fix,,,,,,,automated
+x-024,hci-11,high,internet,2026-07-26,2026-08-18,plant-it,accepted_risk,business process depends on it,2027-02-11,,,,,manual
+x-025,hci-04,high,internet,2026-08-28,,backup-team,fix,,,,,,,
+x-026,hci-12,medium,internet,2026-10-22,,plant-it,fix,,,,,,,
+x-027,hci-12,medium,internal,2026-10-09,,infra-platform,fix,,,,,,,
+x-028,hci-03,medium,internal,2026-08-17,,,,,,,,,,
+x-029,hci-07,low,internal,2026-07-22,2026-08-18,backup-team,accepted_risk,business process depends on it,2026-11-28,,,,,assisted
+x-030,hci-10,medium,internal,2026-07-22,,plant-it,fix,,,,,,,
+x-031,hci-07,medium,internet,2026-07-29,2026-08-21,datacenter-ops,fix,,,,,,,assisted
+x-032,hci-12,high,internet,2026-07-30,,backup-team,accepted_risk,business process depends on it,2027-02-23,,,,,
+x-033,hci-04,medium,internet,2026-09-11,,security-ops,fix,,,,,,,
+x-034,hci-12,high,internet,2026-09-27,2026-10-27,plant-it,fix,,,,,,,manual
+x-035,hci-04,medium,internet,2026-07-31,,datacenter-ops,fix,,,,,,,
+x-036,hci-04,medium,internet,2026-10-30,,datacenter-ops,,,,,,,,
+x-037,hci-12,critical,internal,2026-10-09,,plant-it,fix,,,,,,,
+x-038,hci-12,medium,internal,2026-07-06,,infra-platform,fix,,,,,,,
+x-039,hci-09,low,internal,2026-08-14,,backup-team,accepted_risk,business process depends on it,2026-12-09,,,,,
+x-040,hci-12,critical,internal,2026-07-12,,infra-platform,fix,,,,,,,

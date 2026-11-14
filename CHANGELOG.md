@@ -2,6 +2,12 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.69.0
+
+- **Two infrastructure profiles: hyperconverged and object storage.** `--profile hci` measures clusters (on premises, remote office, hybrid, edge) on health monitoring, snapshot schedules, replication with a tested recovery plan, immutable snapshots, microsegmentation, encryption at rest, automated upgrades, capacity runway and self-service. `--profile object-storage` measures S3-compatible storage tenants on metering, versioning, object lock, replication, data residency, customer-managed keys, scoped keys, access logging, lifecycle tiering and restore testing. Each has an invented example customer: Granite Manufacturing (Yield 57.5% against a claimed 80%) and Meridian Health (58.4% against 87.5%, with object lock missing on five tenants among the first actions).
+- **Suggested proof of value criteria.** A profile can ship tests a sponsor can sign off for that kind of product, each with how to check it ("an object under lock cannot be deleted, even with administrator credentials, until its retention ends"; "a host fails and its virtual machines restart elsewhere with no manual step"). The Proof of value view lists the ones not yet in the plan, with an Add button each. Shipped for cloud security, hyperconverged and object storage.
+- **Every kind of product one click away.** The start page keeps three large example cards and adds a compact row for the six other kinds: SaaS, AI, identity, SIEM, hyperconverged and object storage.
+
 ## 0.68.0
 
 - **How many accounts each action finishes.** Effect in points gives partial credit and can hide what an action completes. For the first 25 actions the engine now applies the action's own operations to a copy of the data, as the what-if does, and counts the accounts that pass every stage afterwards and did not before. On the example customer, connecting three accounts adds 2 points and finishes none (a newly connected account still has every other stage to do), while switching remediation automation on adds 2.1 points and finishes 9. Today shows it under each action and gains a third ranking, "Most finished"; the Actions table has a column for it. `beyond90.unlocks` holds the calculation.

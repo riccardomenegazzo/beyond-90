@@ -62,7 +62,8 @@ async function boot() {
 function refreshRun() {
   const have = state.mode === "book" ? Object.keys(state.groups).length : Object.keys(state.files).length;
   $("run").disabled = state.running || !(state.engine && state.engine.version && have);
-  $("demo-book").disabled = $("demo-endpoint").disabled = $("demo-saas").disabled = $("demo-ai").disabled = !(state.engine && state.engine.version);
+  $("demo-book").disabled = $("demo-endpoint").disabled = !(state.engine && state.engine.version);
+  for (const b of document.querySelectorAll("[data-demo]")) b.disabled = !(state.engine && state.engine.version);
 }
 
 // A new build is installed in the background and offered, never forced: "Update now" switches every tab to it at once.
@@ -201,6 +202,7 @@ async function loadDemo() {
 async function loadDemoProfile(key, label) {
   say("Loading the example…");
   state.mode = "single"; state.groups = {};
+  if (!/^[a-z-]+$/.test(key)) return;
   state.files = await (await fetch(`./demo-${key}.json`)).json();
   renderLoaded();
   say(`Example loaded: ${label}.`);
@@ -1030,8 +1032,7 @@ for (const b of document.querySelectorAll("#mobilebar [data-go]")) b.addEventLis
 $("m-menu").addEventListener("click", () => { const open = document.body.classList.toggle("menu-open"); $("m-menu").setAttribute("aria-expanded", String(open)); });
 document.addEventListener("keydown", (e) => { if (e.key === "Escape" && document.body.classList.contains("menu-open")) { document.body.classList.remove("menu-open"); $("m-menu").setAttribute("aria-expanded", "false"); $("m-menu").focus(); } });
 for (const b of document.querySelectorAll(".rail [data-place]")) b.addEventListener("click", () => { document.body.classList.remove("menu-open"); $("m-menu").setAttribute("aria-expanded", "false"); });
-$("demo-saas").addEventListener("click", () => loadDemoProfile("saas", "a made-up SaaS security customer"));
-$("demo-ai").addEventListener("click", () => loadDemoProfile("ai", "a made-up AI security customer"));
+for (const b of document.querySelectorAll("[data-demo]")) b.addEventListener("click", () => loadDemoProfile(b.dataset.demo, `a made-up ${b.textContent.trim()} customer`));
 $("run").addEventListener("click", () => run());
 $("cancel").addEventListener("click", cancel);
 $("copy").addEventListener("click", copy);

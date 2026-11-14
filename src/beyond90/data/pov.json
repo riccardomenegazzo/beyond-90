@@ -1,0 +1,24 @@
+{
+  "criteria": [
+    {
+      "text": "Every cloud account in scope is connected and inventoried within the first week, including ones the platform team did not list",
+      "how": "Compare the platform's account list with the bill and the identity provider at the end of week one."
+    },
+    {
+      "text": "The top ten risks the tool reports are confirmed by the customer's own team as real and previously unknown or unprioritised",
+      "how": "Review the ten together and mark each confirmed, known already, or wrong."
+    },
+    {
+      "text": "A critical finding reaches the owning team's ticket queue with an owner and a due date, with no manual copy",
+      "how": "Trigger one test finding and follow it to the ticket."
+    },
+    {
+      "text": "An exposed resource is fixed and the tool shows it closed within a day",
+      "how": "Fix one real finding and check when it disappears."
+    },
+    {
+      "text": "The security lead can answer \"what is exposed to the internet right now?\" in under five minutes",
+      "how": "Ask the question live and time it."
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "criteria": [
+    {
+      "text": "A virtual machine is restored from an immutable snapshot after a simulated ransomware encryption",
+      "how": "Encrypt a test VM's disk, try to delete its snapshots as an administrator, then restore it and time the restore."
+    },
+    {
+      "text": "A planned failover to the secondary site meets the agreed recovery time and recovery point",
+      "how": "Run the recovery plan on a test application and record the time to service and the data lost."
+    },
+    {
+      "text": "A host fails and its virtual machines restart elsewhere with no manual step",
+      "how": "Power off one node during a load test and watch the workloads move."
+    },
+    {
+      "text": "A full software and firmware upgrade completes on a running cluster with no workload downtime",
+      "how": "Upgrade a cluster carrying a test workload and check that it never stops serving."
+    },
+    {
+      "text": "A new virtual machine is provisioned by an application team through self-service within its quota",
+      "how": "Have one team request and receive a VM without opening a ticket."
+    },
+    {
+      "text": "The capacity forecast names the month the cluster runs out of storage, and the team agrees with it",
+      "how": "Compare the forecast with the team's own estimate and growth plan."
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "version": "2026.4",
+  "description": "S3-compatible object storage: tenants that keep buckets for applications, backups and archives, with immutability, replication, encryption and access to adopt.",
+  "terms": {
+    "estate": "storage",
+    "unit": "tenant",
+    "units": "tenants"
+  },
+  "types": {
+    "bucket": "Buckets",
+    "access_key": "Access keys and service users",
+    "lifecycle_rule": "Lifecycle, expiry and retention rules",
+    "gateway": "S3 gateways and on-site endpoints",
+    "backup_target": "Backup jobs writing to object storage"
+  },
+  "expected": {
+    "public_region": [
+      "bucket",
+      "access_key",
+      "lifecycle_rule"
+    ],
+    "on_premises_gateway": [
+      "bucket",
+      "access_key",
+      "gateway"
+    ],
+    "backup_repository": [
+      "bucket",
+      "access_key",
+      "backup_target"
+    ],
+    "geo_distributed": [
+      "bucket",
+      "access_key",
+      "lifecycle_rule"
+    ]
+  }
+}

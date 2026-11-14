@@ -1,0 +1,14 @@
+{
+  "playbooks": {
+    "l1_connect_account": {
+      "title": "Bring the clusters nobody manages centrally under the console",
+      "why": "The cluster runs production, but the central console does not see it, so its health, protection and upgrades go unchecked.",
+      "steps": [
+        "Find who runs each cluster, including remote offices and edge sites.",
+        "Register the cluster with the central console using a read-only service account.",
+        "Confirm the cluster reports hosts, virtual machines and alerts."
+      ],
+      "success": "Every cluster in scope reports to the central console."
+    }
+  }
+}

@@ -1,0 +1,41 @@
+id,account_id,severity,exposure,opened_at,closed_at,owner,decision,decision_reason,expiry,previous_severity,severity_changed_at,verified_at,reopened,closed_by
+x-001,object-storage-05,low,internal,2026-08-20,2026-08-25,backup-team,fix,,,,,,,manual
+x-002,object-storage-06,low,internal,2026-08-12,,security-ops,,,,,,,,
+x-003,object-storage-09,low,internal,2026-08-16,2026-08-24,imaging-it,fix,,,,,,,assisted
+x-004,object-storage-09,low,internal,2026-09-16,,archive-office,accepted_risk,business process depends on it,2027-01-18,,,,,
+x-005,object-storage-03,critical,internet,2026-09-29,2026-10-07,backup-team,,,,,,,,manual
+x-006,object-storage-01,low,internal,2026-08-29,2026-08-30,security-ops,fix,,,,,,,assisted
+x-007,object-storage-04,low,internal,2026-09-02,2026-09-09,backup-team,fix,,,,,,,assisted
+x-008,object-storage-03,high,internal,2026-08-20,2026-09-06,imaging-it,fix,,,,,,,automated
+x-009,object-storage-04,high,internal,2026-08-23,,archive-office,fix,,,,,,,
+x-010,object-storage-08,medium,internal,2026-07-09,,archive-office,accepted_risk,business process depends on it,2027-01-14,,,,,
+x-011,object-storage-04,low,internet,2026-07-04,,archive-office,accepted_risk,business process depends on it,2027-02-03,,,,,
+x-012,object-storage-07,low,internet,2026-10-02,,data-platform,fix,,,,,,,
+x-013,object-storage-09,low,internet,2026-09-21,2026-10-10,backup-team,fix,,,,,,,manual
+x-014,object-storage-09,critical,internet,2026-07-13,2026-07-15,security-ops,accepted_risk,business process depends on it,2027-01-31,,,,,automated
+x-015,object-storage-05,medium,internal,2026-07-31,,backup-team,accepted_risk,business process depends on it,2027-02-16,,,,,
+x-016,object-storage-09,high,internet,2026-09-18,,backup-team,accepted_risk,business process depends on it,2026-12-14,,,,,
+x-017,object-storage-06,critical,internal,2026-07-20,,archive-office,fix,,,,,,,
+x-018,object-storage-09,medium,internet,2026-08-19,,archive-office,fix,,,,,,,
+x-019,object-storage-05,high,internal,2026-08-23,2026-09-21,archive-office,fix,,,,,,,manual
+x-020,object-storage-03,critical,internet,2026-08-25,2026-08-29,imaging-it,fix,,,,,,,assisted
+x-021,object-storage-03,high,internet,2026-07-24,2026-08-18,imaging-it,fix,,,,,,,assisted
+x-022,object-storage-08,high,internet,2026-09-23,2026-10-18,imaging-it,fix,,,,,,,automated
+x-023,object-storage-06,low,internal,2026-07-11,,data-platform,accepted_risk,business process depends on it,2027-02-07,,,,,
+x-024,object-storage-07,medium,internal,2026-07-17,2026-08-09,backup-team,fix,,,,,,,automated
+x-025,object-storage-07,high,internet,2026-09-08,,imaging-it,fix,,,,,,,
+x-026,object-storage-03,critical,internal,2026-10-06,,archive-office,accepted_risk,business process depends on it,2027-01-11,,,,,
+x-027,object-storage-01,high,internet,2026-09-14,,backup-team,fix,,,,,,,
+x-028,object-storage-04,medium,internal,2026-09-27,2026-10-16,backup-team,fix,,,,,,,manual
+x-029,object-storage-09,medium,internal,2026-08-19,2026-08-29,data-platform,fix,,,,,,,automated
+x-030,object-storage-01,medium,internal,2026-08-04,,imaging-it,fix,,,,,,,
+x-031,object-storage-08,medium,internet,2026-09-05,2026-09-20,archive-office,fix,,,,,,,manual
+x-032,object-storage-03,low,internal,2026-07-04,2026-07-09,,,,,,,,,assisted
+x-033,object-storage-09,low,internal,2026-09-13,2026-10-05,,,,,,,,,automated
+x-034,object-storage-10,low,internet,2026-09-23,2026-10-14,data-platform,accepted_risk,business process depends on it,2026-12-26,,,,,assisted
+x-035,object-storage-10,medium,internal,2026-08-31,2026-09-23,backup-team,fix,,,,,,,manual
+x-036,object-storage-03,medium,internet,2026-10-02,,backup-team,fix,,,,,,,
+x-037,object-storage-10,low,internal,2026-09-28,2026-10-14,backup-team,fix,,,,,,,assisted
+x-038,object-storage-08,low,internet,2026-07-05,2026-08-03,imaging-it,,,,,,,,automated
+x-039,object-storage-01,low,internal,2026-09-05,2026-09-27,archive-office,fix,,,,,,,assisted
+x-040,object-storage-01,medium,internet,2026-07-05,,data-platform,fix,,,,,,,

@@ -16,6 +16,6 @@ Keep to one story: a customer who says "we are at 90%" and is not.
 
 ## If they ask
 
-- *Is it only for one vendor?* No. The profiles cover cloud, endpoint, SaaS, AI, identity and SIEM, and you can write your own.
+- *Is it only for one vendor?* No. The profiles cover cloud, endpoint, SaaS, AI, identity, SIEM, hyperconverged infrastructure and object storage, and you can write your own.
 - *Where does the data go?* Nowhere. It stays in the browser and can be erased per customer.
 - *Why did you build it?* Because adoption reports flatter. I wanted one that could not.

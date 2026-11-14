@@ -1,0 +1,11 @@
+id,provider,sources,connected,owner,last_spend,status,in_plan,created_at
+object-storage-01,on_premises_gateway,billing;org;sso,true,security-ops,3400,active,true,2025-11-22
+object-storage-02,on_premises_gateway,billing;org,false,security-ops,4800,active,true,2025-06-25
+object-storage-03,on_premises_gateway,billing;org;sso,true,data-platform,1600,active,true,2025-05-24
+object-storage-04,public_region,billing;org;sso,true,security-ops,5100,active,true,2026-05-08
+object-storage-05,backup_repository,billing;org,true,imaging-it,7600,active,true,2025-09-29
+object-storage-06,geo_distributed,billing;org;sso,true,data-platform,3800,active,true,2025-02-05
+object-storage-07,backup_repository,billing;org;sso,true,data-platform,4700,active,false,2025-06-30
+object-storage-08,geo_distributed,billing;org;sso,true,archive-office,4000,active,false,2026-04-30
+object-storage-09,geo_distributed,billing;org;sso,true,archive-office,2600,active,true,2025-12-08
+object-storage-10,public_region,billing;org,true,imaging-it,4100,active,true,2026-02-12
