@@ -65,7 +65,8 @@ export function todayView({ result, dash, score, go, history = [], done = new Se
         h("p", { class: "e2e-lead" }, h("b", { text: `${e.through} of ${e.total} ${units}` }), h("span", { text: " pass every stage. Yield gives partial credit; this does not." })),
         h("div", { class: "e2e-bar", role: "img", "aria-label": segs.map((x) => `${x.n} ${x.label}`).join(", ") },
           segs.map((x) => h("i", { class: "seg-" + x.id, style: `width:${(x.share * 100).toFixed(2)}%${x.id === "through" ? "" : `;background:${STAGE[x.id]}`}`, title: `${x.n} ${x.label}` }))),
-        h("ul", { class: "e2e-key" }, segs.map((x) => h("li", {}, h("span", { class: "sw seg-" + x.id, style: x.id === "through" ? "" : `background:${STAGE[x.id]}` }), h("span", { text: `${x.n} ${x.label}` })))));
+        h("ul", { class: "e2e-key" }, segs.map((x) => h("li", {}, h("button", { type: "button", class: "e2e-go", dataset: { stop: x.id }, "aria-label": `${x.n} ${x.label}: show them in ${units}`, onclick: () => go("accounts", { open: "stop:" + x.id }) },
+          h("span", { class: "sw seg-" + x.id, style: x.id === "through" ? "" : `background:${STAGE[x.id]}` }), h("span", { text: `${x.n} ${x.label}` }))))));
     })(),
     o.loss_points > 0.05 ? h("p", { class: "note", text: `If nothing is done, Yield loses about ${o.loss_points.toFixed(1)} points in ${o.horizon_days} days.` }) : null),
     { cls: "leakcard", actions: h("button", { class: "btn small", type: "button", text: "Full picture", onclick: () => go("overview") }) });
@@ -235,9 +236,10 @@ export function actionsView({ dash, score, focus }) {
 const ticket = (a, score) => [`[${score.customer}] ${a.title}`, "", a.detail, "", `Stage: ${a.leak}  ·  Effect: +${a.effect.toFixed(1)} pts  ·  Effort: ${a.hours.toFixed(1)} h  ·  Owner: ${a.owner}  ·  Due: ${a.due}`, "", ...(a.steps.length ? ["Steps:", ...a.steps.map((s, i) => `${i + 1}. ${s}`), ""] : []), a.success ? `Done when: ${a.success}` : ""].join("\n").trim();
 
 // ------------------------------------------------------------------ accounts
-export function accountsView({ dash, score }) {
+const STOP_LABEL = { L1: "connected", L2: "seen", L3: "switched on", L4: "decided" };
+export function accountsView({ dash, score, focus }) {
   const A = dash.accounts, unit = cap(score.terms.unit), rows = A.rows;
-  let q = "", prov = new Set(), flt = new Set();
+  let q = "", prov = new Set(), flt = new Set(), stop = new Set();
   const cols = [
     { key: "id", label: unit, render: (r) => h("b", { text: r.id }) },
     { key: "provider", label: "Provider" },
@@ -245,6 +247,7 @@ export function accountsView({ dash, score }) {
     { key: "spend", label: "Spend", num: true, render: (r) => num(r.spend) },
     { key: "connected", label: "State", sort: (r) => (r.connected ? 1 : 0), render: (r) => chip(r.connected ? "connected" : "not connected", r.connected ? "good" : "bad") },
     { key: "issues", label: "Gaps", num: true, render: (r) => (r.issues ? chip(String(r.issues), r.issues > 3 ? "bad" : "warn") : chip("0", "good")) },
+    { key: "stop", label: "Stops at", sort: (r) => (r.stop ? Number(r.stop[1]) : 9), render: (r) => (r.stop ? chip(`${r.stop} ${STOP_LABEL[r.stop]}`, r.stop === "L1" ? "bad" : "warn") : chip("passes all", "good")) },
     { key: "open_findings", label: "Open findings", num: true, render: (r) => (r.open_critical ? `${r.open_findings} (${r.open_critical} critical)` : String(r.open_findings)) },
   ];
   const t = dataTable({ columns: cols, rows, pageSize: 40, label: "Accounts", empty: `No ${score.terms.unit} matches.`,
@@ -254,19 +257,23 @@ export function accountsView({ dash, score }) {
       r.missing_types.length ? h("p", {}, h("b", { text: "Not inventoried: " }), r.missing_types.join(", ")) : null,
       r.inactive_modules.length ? h("p", {}, h("b", { text: "Capabilities off: " }), r.inactive_modules.join(", ")) : null,
       !r.issues ? h("p", { class: "dim", text: "Nothing missing." }) : null) });
-  const apply = () => t.setFilter((r) => (!prov.size || prov.has(r.provider)) && (!flt.size || [...flt].every((f) => (f === "gaps" ? r.issues > 0 : f === "unconnected" ? !r.connected : f === "critical" ? r.open_critical > 0 : f === "unowned" ? !r.owner : true))) &&
+  const apply = () => t.setFilter((r) => (!stop.size || stop.has(r.stop || "through")) && (!prov.size || prov.has(r.provider)) && (!flt.size || [...flt].every((f) => (f === "gaps" ? r.issues > 0 : f === "unconnected" ? !r.connected : f === "critical" ? r.open_critical > 0 : f === "unowned" ? !r.owner : true))) &&
     (!q || (r.id + " " + r.owner + " " + r.provider).toLowerCase().includes(q)));
   const conn = rows.filter((r) => r.connected).length;
   const ans = accountsAnswer(rows, score.terms), first = accountsFirst(rows);
+  const stopPick = chipFilter("Stops at", [{ label: "passes all", value: "through" }, ...["L1", "L2", "L3", "L4"].map((k) => ({ label: `${k} ${STOP_LABEL[k]}`, value: k }))], (s) => { stop = s; apply(); });
+  const preset = typeof focus === "string" && focus.startsWith("stop:") ? focus.slice(5) : "";
+  if (preset) { const b = [...stopPick.querySelectorAll("button")].find((x) => x.textContent.startsWith(preset === "through" ? "passes" : preset + " ")); if (b) queueMicrotask(() => b.click()); }
   return h("div", {},
     h("section", { class: "card bdhero" }, h("p", { class: "bdlead", role: "status", text: ans.lead }), h("p", { class: "bdnoise", text: ans.detail })),
     first.length ? h("section", { class: "worklist", "aria-label": "Look at these first" }, h("h3", { class: "sect", text: "Look at these first" }),
       h("ul", { class: "firstlist" }, first.map((r) => h("li", {}, h("b", { text: r.id }), h("span", { text: ` (${r.provider}${r.owner ? `, ${r.owner}` : ", no owner"})` }), h("small", { class: "block", text: whyAccount(r) }))))) : null,
     h("div", { class: "kpiline" }, stat(String(A.total), `${score.terms.units} in scope`), stat(String(conn), "connected", "good"), stat(String(A.total - conn), "not connected", A.total - conn ? "bad" : ""), stat(String(rows.filter((r) => r.issues).length), "with at least one gap")),
     h("div", { class: "toolbar" }, searchBox(`Search ${score.terms.units} or owner`, (v) => { q = v; apply(); }),
+      stopPick,
       chipFilter("Provider", A.providers, (s) => { prov = s; apply(); }),
       chipFilter("Show", [{ label: "with gaps", value: "gaps" }, { label: "not connected", value: "unconnected" }, { label: "critical findings", value: "critical" }, { label: "no owner", value: "unowned" }], (s) => { flt = s; apply(); }),
-      csvButton("beyond90-accounts.csv", [{ key: "id", label: "id" }, { key: "provider", label: "provider" }, { key: "owner", label: "owner" }, { key: "spend", label: "last_spend" }, { key: "connected", label: "connected" }, { key: "issues", label: "gaps" }, { key: "missing_types", label: "not_inventoried", csv: (r) => r.missing_types.join(";") }, { key: "inactive_modules", label: "capabilities_off", csv: (r) => r.inactive_modules.join(";") }, { key: "open_findings", label: "open_findings" }], () => t.rows())),
+      csvButton("beyond90-accounts.csv", [{ key: "id", label: "id" }, { key: "stop", label: "stops_at" }, { key: "provider", label: "provider" }, { key: "owner", label: "owner" }, { key: "spend", label: "last_spend" }, { key: "connected", label: "connected" }, { key: "issues", label: "gaps" }, { key: "missing_types", label: "not_inventoried", csv: (r) => r.missing_types.join(";") }, { key: "inactive_modules", label: "capabilities_off", csv: (r) => r.inactive_modules.join(";") }, { key: "open_findings", label: "open_findings" }], () => t.rows())),
     A.truncated ? h("p", { class: "note", text: `Showing the ${rows.length} with the most gaps of ${A.total}.` }) : null,
     t.el);
 }

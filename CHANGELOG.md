@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.67.0
+
+- **From the end-to-end bar to the accounts behind it.** Each item under the bar on Today is a button: "42 stop at switched on" opens Accounts filtered to exactly those 42. Accounts has a new "Stops at" column (the first stage where each account stops, or "passes all"), a matching filter, and the column in the CSV export. The engine's per-account check is now one function, `scoring.account_stops`, used by both the score and the table.
+
 ## 0.66.0
 
 - **End to end: the same chain on one unit.** Yield multiplies four ratios measured on different units (accounts, asset type pairs, capability pairs, findings), so it is a product of completion rates, not the share of accounts that make it all the way. The score now also counts that share: an account passes when it is connected, every expected asset type is seen, every relevant capability is on, and none of its findings past triage lacks an owner or a decision. Each other account is counted once, at the first stage where it stops. On the example customer: Yield 72.6%, end to end 29 of 121 (24%), the others stopping first at L1 12, L2 29, L3 42, L4 9. It is in `beyond90 score`, in the JSON score as `end_to_end`, and as a bar under "Where it leaks" on Today. [docs/why-multiply.md](docs/why-multiply.md) explains both numbers and their limits.

@@ -121,6 +121,12 @@ def main(site: str) -> int:
         page.get_by_role("button", name="Got it, hide this").click()
         check(page.locator("#view .tour").count() == 0 and page.evaluate("localStorage.getItem('beyond90.tour')") == "1", "the first minute can be dismissed and stays dismissed")
         check("29 of 121 accounts" in page.inner_text("#view .e2e-lead") and page.locator("#view .e2e-bar i").count() == 5, "Today shows how many accounts pass every stage, and where the others stop")
+        page.click("#view .e2e-go[data-stop=L3]")
+        page.wait_for_selector("#view .chipfilter[aria-label='Stops at'] button[aria-pressed=true]")
+        stops = page.eval_on_selector_all("#view table tbody tr", "els => els.map(e => e.textContent.includes('L3 switched on') ? 'L3' : e.textContent.slice(0, 40))")
+        check(page.get_attribute("#tabs [data-tab=accounts]", "aria-current") is not None and stops and all(x.startswith("L3") for x in stops) and len(stops) >= 20,
+              f"a segment of the end-to-end bar opens Accounts filtered to the accounts that stop there ({len(stops)} rows)")
+        page.click("#tabs [data-tab=today]")
         check(page.locator("#view .stagebars li").count() == 4 and page.locator("#view .stagebars li.weak").count() == 1 and "×" in page.inner_text("#view .chain"), "Today shows where it leaks: four stages, the weakest marked, the multiplication written out")
         first_effect = page.inner_text("#view .todocard .opp b >> nth=0")
         page.click("#view .seg [data-rank=quick]")

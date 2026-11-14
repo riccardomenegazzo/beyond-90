@@ -16,7 +16,7 @@ from typing import Any, Optional
 from .catalogue import Catalogue
 from .models import CustomerData
 from .planner import Plan
-from .scoring import Score, classify_finding
+from .scoring import Score, account_stops, classify_finding
 
 ACCOUNT_CAP = 3000
 FINDING_CAP = 3000
@@ -59,6 +59,7 @@ def accounts_table(data: CustomerData, score: Score, cat: Catalogue) -> dict[str
     for f in data.findings:
         if f.closed_at is None:
             open_by.setdefault(f.account_id, []).append(f)
+    stops, _ = account_stops(data, cat, score.ceiling_version)
     rows: list[dict[str, Any]] = []
     for a in data.accounts:
         if a.status != "active":
@@ -70,6 +71,7 @@ def accounts_table(data: CustomerData, score: Score, cat: Catalogue) -> dict[str
             "missing_types": sorted(missing.get(a.id, [])), "inactive_modules": sorted(off.get(a.id, [])),
             "open_findings": len(fs), "open_critical": sum(1 for f in fs if f.severity == "critical"),
             "issues": (0 if a.connected else 1) + len(missing.get(a.id, [])) + len(off.get(a.id, [])),
+            "stop": stops.get(a.id) or "",
         })
     rows.sort(key=lambda r: (-r["issues"], -r["spend"], r["id"]))
     return {"rows": rows[:ACCOUNT_CAP], "total": len(rows), "truncated": len(rows) > ACCOUNT_CAP,
