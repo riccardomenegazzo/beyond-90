@@ -38,10 +38,11 @@ export function firstMinute(openActions) {
   return steps;
 }
 
-/** Rank actions two ways: by the biggest effect (the engine's order) or by points per hour (quick wins). */
+/** Rank actions three ways: by the biggest effect (the engine's order), points per hour (quick wins), or accounts brought all the way through (finish). */
 export function rankActions(actions, mode = "effect", n = 3) {
   const list = (actions || []).slice();
   if (mode === "quick") list.sort((a, b) => (b.effect / Math.max(b.hours || 0, 0.25)) - (a.effect / Math.max(a.hours || 0, 0.25)) || b.effect - a.effect);
+  if (mode === "finish") list.sort((a, b) => (b.unlocks || 0) - (a.unlocks || 0) || b.effect - a.effect);
   return list.slice(0, n);
 }
 

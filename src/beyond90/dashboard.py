@@ -106,9 +106,13 @@ def attribution_data(a: Any) -> Optional[dict[str, Any]]:
 
 
 def build(data: CustomerData, score: Score, cat: Catalogue, plan: Plan, extras: dict[str, Any], actions: Iterable[Any]) -> dict[str, Any]:
+    from .unlocks import unlocks
+
+    actions = list(actions)
+    gain = unlocks(data, cat, score.ceiling_version, actions)
     acts = [{"id": a.id, "leak": a.leak, "title": a.title, "detail": a.detail, "effect": a.effect_points, "hours": a.effort_hours,
              "owner": a.owner, "due": str(a.due), "steps": list(a.steps), "success": a.success, "question": a.question,
-             "commit": a.we_commit, "expansion": a.cross_sell} for a in actions]
+             "commit": a.we_commit, "expansion": a.cross_sell, "unlocks": gain.get(a.id)} for a in actions]
     return {
         "plan": plan_data(plan),
         "accounts": accounts_table(data, score, cat),

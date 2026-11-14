@@ -132,6 +132,8 @@ def main(site: str) -> int:
         page.click("#view .seg [data-rank=quick]")
         check(page.get_attribute("#view .seg [data-rank=quick]", "aria-pressed") == "true" and page.evaluate("localStorage.getItem('beyond90.rank')") == "quick", "the actions on Today can be ranked by quickest wins, and the choice is kept")
         check(page.locator("#view .todocard .opp").count() == 3, "still three of them")
+        page.click("#view .seg [data-rank=finish]")
+        check("finishes 9 accounts" in page.inner_text("#view .todocard .opp >> nth=0"), "ranked by accounts finished, the first action says how many it brings all the way through")
         page.click("#view .seg [data-rank=effect]")
         check(page.inner_text("#view .todocard .opp b >> nth=0") == first_effect, "and back to the biggest effect")
         before = int(page.inner_text("#tabs [data-tab=actions] .nbadge [aria-hidden]"))

@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.68.0
+
+- **How many accounts each action finishes.** Effect in points gives partial credit and can hide what an action completes. For the first 25 actions the engine now applies the action's own operations to a copy of the data, as the what-if does, and counts the accounts that pass every stage afterwards and did not before. On the example customer, connecting three accounts adds 2 points and finishes none (a newly connected account still has every other stage to do), while switching remediation automation on adds 2.1 points and finishes 9. Today shows it under each action and gains a third ranking, "Most finished"; the Actions table has a column for it. `beyond90.unlocks` holds the calculation.
+
 ## 0.67.0
 
 - **From the end-to-end bar to the accounts behind it.** Each item under the bar on Today is a button: "42 stop at switched on" opens Accounts filtered to exactly those 42. Accounts has a new "Stops at" column (the first stage where each account stops, or "passes all"), a matching filter, and the column in the CSV export. The engine's per-account check is now one function, `scoring.account_stops`, used by both the score and the table.

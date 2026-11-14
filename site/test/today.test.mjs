@@ -67,3 +67,8 @@ test("the end-to-end bar: those through, then first stops, empty ones dropped", 
   assert.deepEqual(funnelSegments({ total: 2, through: 2, first_break: { L1: 0 } }).map((x) => x.id), ["through"]);
   assert.deepEqual(funnelSegments(null), []);
 });
+
+test("ranking by accounts finished puts the action that completes the most first", () => {
+  const acts = [{ id: "pts", effect: 4, hours: 1, unlocks: 0 }, { id: "fin", effect: 1, hours: 9, unlocks: 9 }, { id: "mid", effect: 2, hours: 2, unlocks: 3 }];
+  assert.deepEqual(rankActions(acts, "finish").map((a) => a.id), ["fin", "mid", "pts"]);
+});

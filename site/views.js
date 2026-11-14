@@ -72,7 +72,7 @@ export function todayView({ result, dash, score, go, history = [], done = new Se
     { cls: "leakcard", actions: h("button", { class: "btn small", type: "button", text: "Full picture", onclick: () => go("overview") }) });
 
   // do these first, with a switch between the biggest effect and the quickest wins
-  let mode = (() => { try { return localStorage.getItem("beyond90.rank") === "quick" ? "quick" : "effect"; } catch { return "effect"; } })();
+  let mode = (() => { try { const m = localStorage.getItem("beyond90.rank"); return m === "quick" || m === "finish" ? m : "effect"; } catch { return "effect"; } })();
   const list = h("div", { class: "opps" });
   const left = dash.actions.filter((a) => !done.has(a.id));
   const doneBtn = (a, isDone) => h("button", { type: "button", class: "donebtn", "aria-pressed": String(isDone), "aria-label": `${isDone ? "Undo done" : "Mark done"}: ${a.title}`,
@@ -80,10 +80,10 @@ export function todayView({ result, dash, score, go, history = [], done = new Se
   const paint = () => list.replaceChildren(...(left.length ? rankActions(left, mode).map((a) => h("div", { class: "opprow" },
     h("button", { type: "button", class: "opp", onclick: () => go("actions", { open: a.id }) },
       h("span", { class: "stagepip", style: `border-color:${STAGE[a.leak] || "var(--accent)"}`, text: a.leak }),
-      h("span", { class: "opp-t" }, h("b", { text: a.title }), h("small", { text: `${a.owner}, due ${a.due}, about ${a.hours.toFixed(1)} h` })),
+      h("span", { class: "opp-t" }, h("b", { text: a.title }), h("small", { text: `${a.owner}, due ${a.due}, about ${a.hours.toFixed(1)} h` + (a.unlocks ? `, finishes ${a.unlocks} ${a.unlocks === 1 ? score.terms.unit : score.terms.units}` : "") })),
       h("span", { class: "opp-e", text: "+" + a.effect.toFixed(1) + " pts" })),
     doneBtn(a, false))) : [h("p", { class: "note", text: dash.actions.length ? "Every action is marked done. Load the next data to see the real figure." : "Nothing is waiting to be done." })]));
-  const seg = h("div", { class: "seg", role: "group", "aria-label": "Rank the actions by" }, [["effect", "Biggest effect"], ["quick", "Quickest wins"]].map(([id, label]) =>
+  const seg = h("div", { class: "seg", role: "group", "aria-label": "Rank the actions by" }, [["effect", "Biggest effect"], ["quick", "Quickest wins"], ["finish", "Most finished"]].map(([id, label]) =>
     h("button", { type: "button", "aria-pressed": String(mode === id), dataset: { rank: id }, text: label, onclick: (e) => {
       mode = id; try { localStorage.setItem("beyond90.rank", id); } catch { /* not kept */ }
       for (const b of e.currentTarget.parentElement.children) b.setAttribute("aria-pressed", String(b.dataset.rank === id));
@@ -200,6 +200,7 @@ export function actionsView({ dash, score, focus }) {
     { key: "leak", label: "Stage", render: (r) => h("span", { class: "stagepip", style: `border-color:${STAGE[r.leak] || "var(--accent)"}`, text: r.leak }) },
     { key: "title", label: "Action", render: (r) => h("span", {}, h("b", { text: r.title }), h("small", { class: "block", text: r.detail })) },
     { key: "effect", label: "Effect", num: true, render: (r) => "+" + r.effect.toFixed(1) + " pts" },
+    { key: "unlocks", label: `${cap(score.terms.units)} finished`, num: true, sort: (r) => r.unlocks ?? -1, render: (r) => (r.unlocks == null ? h("span", { class: "dim", text: "—" }) : String(r.unlocks)) },
     { key: "hours", label: "Hours", num: true, render: (r) => r.hours.toFixed(1) },
     { key: "owner", label: "Owner" },
     { key: "due", label: "Due" },

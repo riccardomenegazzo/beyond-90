@@ -38,6 +38,10 @@ Both are true. Yield says most of the work is done. End to end says few accounts
 
 A stage with no data (no inventory file, no activations file) is not measured and stops nobody; the result lists which stages were measured.
 
+## What each action finishes
+
+For the first 25 actions, the engine applies the action's operations to a copy of the data and counts the accounts that pass every stage afterwards and did not before. Connecting accounts usually finishes none, because a new account still has the other three stages to do; switching a capability on where it is the last gap can finish many. Today can rank actions by it ("Most finished").
+
 ## Where to look
 
 - `beyond90 score <customer>` prints both.
