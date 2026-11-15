@@ -1,0 +1,44 @@
+{
+  "questions": [
+    {
+      "stage": "value",
+      "q": "Which AI use cases are in production, and which ones worry you most?",
+      "why": "Starts from real use, not from the AI policy."
+    },
+    {
+      "stage": "L1",
+      "q": "How would you find out about a team using a new model or AI service?",
+      "why": "Unapproved AI use is the norm before inventory exists."
+    },
+    {
+      "stage": "L2",
+      "q": "Do you know which agents can call tools, and what those tools can change?",
+      "why": "An agent is as dangerous as the permissions of its tools."
+    },
+    {
+      "stage": "L3",
+      "q": "Are prompts and responses logged anywhere you could investigate?",
+      "why": "Without logs, an AI incident cannot be reconstructed."
+    },
+    {
+      "stage": "L3",
+      "q": "What stops sensitive data from being pasted into a prompt or indexed for retrieval?",
+      "why": "Data leaves through prompts and vector stores, not only through files."
+    },
+    {
+      "stage": "L3",
+      "q": "Who owns the keys to model providers, and when were they last rotated?",
+      "why": "Shared, long-lived keys are the usual weak point."
+    },
+    {
+      "stage": "L4",
+      "q": "Has anyone tried to break your models or agents on purpose?",
+      "why": "Adversarial testing finds what guardrails miss."
+    },
+    {
+      "stage": "value",
+      "q": "Which regulation or customer question about AI do you need to answer this year?",
+      "why": "Gives the work a deadline and a sponsor."
+    }
+  ]
+}

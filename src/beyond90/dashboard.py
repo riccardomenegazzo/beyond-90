@@ -14,6 +14,7 @@ from datetime import date
 from typing import Any, Optional
 
 from .catalogue import Catalogue
+from .discovery import ordered as discovery_ordered
 from .models import CustomerData
 from .planner import Plan
 from .scoring import Score, account_stops, classify_finding
@@ -117,6 +118,7 @@ def build(data: CustomerData, score: Score, cat: Catalogue, plan: Plan, extras: 
         "plan": plan_data(plan),
         "accounts": accounts_table(data, score, cat),
         "pov_criteria": cat.pov_criteria,
+        "discovery": discovery_ordered(cat, score),
         "findings": findings_table(data),
         "actions": acts,
         "attribution": attribution_data(extras.get("attribution")),

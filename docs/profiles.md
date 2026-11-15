@@ -78,3 +78,7 @@ For any product, describe the API or export in `beyond90.toml` (see [automation.
 ## Suggested proof of value criteria
 
 A profile may ship `pov.json`: `{"criteria": [{"text": "...", "how": "..."}]}`, up to 200 characters each. They are tests a sponsor can sign off for that kind of product (for object storage: an object under lock cannot be deleted even by an administrator). The Proof of value view lists the ones not yet in the plan, each with an Add button. A profile does not inherit the base profile's criteria, because another kind of product proves other things. Shipped for `cnapp`, `hci` and `object-storage`.
+
+## Discovery questions
+
+A profile may ship `discovery.json`: `{"questions": [{"stage": "value|L1|L2|L3|L4", "q": "...?", "why": "..."}]}`. Prep a call and `beyond90 discovery` list them business value first, then from the customer's weakest stage to the strongest. Not inherited from the base profile. Shipped for `cnapp`, `hci`, `object-storage`, `saas` and `ai`.

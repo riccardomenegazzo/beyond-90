@@ -176,6 +176,7 @@ def main(site: str) -> int:
         page.wait_for_timeout(2500)
         check(page.inner_text("#view .kpiline") != before, "the what-if slider recomputes the plan in the worker")
         page.click("[data-tab=prep]")
+        check(page.locator("#view .disco li").count() == 8 and "weakest" in page.inner_text("#view .disco li >> nth=2"), "the call prep lists discovery questions, the customer's weakest stage right after business value")
         check(page.locator("#view .agitem").count() >= 4 and "since the last touch" in page.inner_text("#view"), "the call prep has an agenda and the rhythm")
         page.fill("#view input[aria-label=Summary]", "Agreed the owner for the critical findings")
         page.fill("#view input[aria-label='Next step']", "Send the owner list")

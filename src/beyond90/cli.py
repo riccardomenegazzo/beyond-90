@@ -244,6 +244,26 @@ def cmd_plan(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_discovery(args: argparse.Namespace) -> int:
+    from .discovery import ordered
+
+    cat, _data, _warnings, score, _actions, _history, _previous = _prepare(args)
+    qs = ordered(cat, score)
+    if not qs:
+        print(f"No discovery questions ship with the {cat.profile} profile. A profile adds them in discovery.json.", file=sys.stderr)
+        return 1
+    if args.format == "json":
+        _emit(json.dumps(qs, indent=2, ensure_ascii=False) + "\n", args.out)
+        return 0
+    lines = [f"# Questions for {score.customer}", ""]
+    for i, x in enumerate(qs, 1):
+        tag = "value" if x["stage"] == "value" else f"{x['stage']}" + (", weakest stage" if x["focus"] else "")
+        lines.append(f"{i}. {x['q']}")
+        lines.append(f"   ({tag}) {x['why']}")
+    _emit("\n".join(lines) + "\n", args.out)
+    return 0
+
+
 def cmd_explain(args: argparse.Namespace) -> int:
     cat = _catalogue(args)
     data, _ = load_customer(args.directory, cat, require_accounts=True)
@@ -821,6 +841,12 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--out")
     sp.set_defaults(func=cmd_plan)
 
+    sp = sub.add_parser("discovery", help="questions to ask the customer, weakest stage first")
+    common(sp, store=True, ceiling=False)
+    sp.add_argument("--format", choices=["text", "json"], default="text")
+    sp.add_argument("--out")
+    sp.set_defaults(func=cmd_discovery)
+
     sp = sub.add_parser("explain", help="attribute the change in Yield: what the customer did and what the bar did")
     common(sp, store=True, ceiling=False)
     sp.add_argument("--since", help="an older data directory of the same customer")
@@ -1041,7 +1067,7 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("config")
     sp.add_argument("--at", default="05:17", help="time of day in UTC, HH:MM")
     sp.add_argument("--every", choices=["hour", "day", "week"], default="day")
-    sp.add_argument("--install-from", default="beyond90", help='pip requirement for the workflow, e.g. "beyond90 @ git+https://github.com/OWNER/beyond-90@v0.69.0"')
+    sp.add_argument("--install-from", default="beyond90", help='pip requirement for the workflow, e.g. "beyond90 @ git+https://github.com/OWNER/beyond-90@v0.70.0"')
     sp.add_argument("--out")
     sp.set_defaults(func=cmd_schedule)
 

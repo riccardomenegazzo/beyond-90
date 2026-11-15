@@ -157,3 +157,13 @@ def test_suggested_pov_criteria_fit_the_form(profile):
     assert len({c["text"] for c in cat.pov_criteria}) == len(cat.pov_criteria)
     if profile in ("cnapp", "hci", "object-storage"):
         assert len(cat.pov_criteria) >= 5
+
+
+@pytest.mark.parametrize("profile", available_profiles())
+def test_discovery_questions_are_short_tied_to_a_stage_and_unique(profile):
+    cat = Catalogue.load(profile=profile)
+    for x in cat.discovery:
+        assert x["stage"] in ("value", "L1", "L2", "L3", "L4") and 15 <= len(x["q"]) <= 220 and x["q"].endswith("?") and len(x["why"]) <= 200
+    assert len({x["q"] for x in cat.discovery}) == len(cat.discovery)
+    if profile in ("cnapp", "hci", "object-storage", "saas", "ai"):
+        assert len(cat.discovery) >= 8 and any(x["stage"] == "value" for x in cat.discovery)

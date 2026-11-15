@@ -1,0 +1,44 @@
+{
+  "questions": [
+    {
+      "stage": "value",
+      "q": "What would have to be true in six months for you to call this a success?",
+      "why": "Sets the criteria before the tool sets them for you."
+    },
+    {
+      "stage": "value",
+      "q": "What happened last time a cloud risk reached production, and who found it?",
+      "why": "A real incident is the strongest reason to change, and shows who cares."
+    },
+    {
+      "stage": "L1",
+      "q": "Where does your full list of cloud accounts live: the bill, the organisation, or someone's spreadsheet?",
+      "why": "Coverage measured against the platform's own list is always perfect."
+    },
+    {
+      "stage": "L1",
+      "q": "Who creates new accounts, and how long until security hears about one?",
+      "why": "Accounts made outside the process are the ones nobody connects."
+    },
+    {
+      "stage": "L2",
+      "q": "Are there accounts that are connected but where you rarely see anything?",
+      "why": "Connected without inventory looks covered and is not."
+    },
+    {
+      "stage": "L3",
+      "q": "Which capabilities did you buy that nobody has switched on yet, and what stopped them?",
+      "why": "The answer is usually a person or an approval, not the technology."
+    },
+    {
+      "stage": "L4",
+      "q": "When the tool finds something critical, who gets it and how do they know it is theirs?",
+      "why": "Findings without an owner are where risk stays open."
+    },
+    {
+      "stage": "L4",
+      "q": "How do you accept a risk today, and does that acceptance ever expire?",
+      "why": "Acceptances without an end date quietly become permanent."
+    }
+  ]
+}

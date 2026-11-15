@@ -1,0 +1,44 @@
+{
+  "questions": [
+    {
+      "stage": "value",
+      "q": "What data would hurt most if it were encrypted or deleted tomorrow?",
+      "why": "Points straight at the buckets that need immutability first."
+    },
+    {
+      "stage": "value",
+      "q": "What do you pay today per terabyte, including egress and requests?",
+      "why": "Request and egress fees are where storage bills surprise people."
+    },
+    {
+      "stage": "L1",
+      "q": "Which applications and backup jobs write to object storage, and where?",
+      "why": "Unknown writers mean unknown tenants and keys."
+    },
+    {
+      "stage": "L2",
+      "q": "Do you know how many access keys exist, who owns them and when they were last used?",
+      "why": "Old keys with broad rights are the easiest way in."
+    },
+    {
+      "stage": "L3",
+      "q": "Are your backup copies under object lock, and for how long?",
+      "why": "Backups an administrator can delete do not survive ransomware."
+    },
+    {
+      "stage": "L3",
+      "q": "Must any data stay in a given country, and can you prove where it is?",
+      "why": "Residency is often a legal requirement before it is a technical one."
+    },
+    {
+      "stage": "L3",
+      "q": "When did you last restore from these backups, and how long did it take?",
+      "why": "The restore is the only test that counts."
+    },
+    {
+      "stage": "L4",
+      "q": "Who is alerted when someone reads or deletes far more than usual?",
+      "why": "Mass reads and deletes are the first signs of theft or ransomware."
+    }
+  ]
+}

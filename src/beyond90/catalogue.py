@@ -96,6 +96,7 @@ class Catalogue:
         rubric: Optional[dict[str, Any]] = None,
         use_cases: Optional[dict[str, str]] = None,
         pov_criteria: Optional[list[dict[str, str]]] = None,
+        discovery: Optional[list[dict[str, str]]] = None,
     ) -> None:
         self.resource_types = resource_types
         self.expected = expected
@@ -107,7 +108,8 @@ class Catalogue:
         self.terms = {**DEFAULT_TERMS, **(terms or {})}
         self.description = description
         self.use_cases = use_cases or {}
-        self.pov_criteria = pov_criteria or []   # suggested proof of value criteria for this kind of product (pov.json)
+        self.pov_criteria = pov_criteria or []
+        self.discovery = discovery or []          # questions to ask the customer, each tied to a stage (discovery.json)   # suggested proof of value criteria for this kind of product (pov.json)
         self.rubric = rubric or {"levels": ["bronze", "silver", "gold"], "checks": []}
 
     @classmethod
@@ -148,6 +150,10 @@ class Catalogue:
         rubric = json.loads(rubric_file.read_text(encoding="utf-8"))
         pov_file = base / "pov.json"   # never inherited from the base: another kind of product proves other things
         pov = [{"text": str(c["text"]), "how": str(c.get("how", ""))} for c in json.loads(pov_file.read_text(encoding="utf-8"))["criteria"]] if pov_file.exists() else []
+        disc_file = base / "discovery.json"   # never inherited either: another product has other questions
+        discovery = [{"stage": str(x["stage"]), "q": str(x["q"]), "why": str(x.get("why", ""))} for x in json.loads(disc_file.read_text(encoding="utf-8"))["questions"]] if disc_file.exists() else []
+        if any(x["stage"] not in ("value", "L1", "L2", "L3", "L4") for x in discovery):
+            raise ValueError(f"catalogue: {disc_file}: each question's stage is value, L1, L2, L3 or L4")
         validate_rubric(rubric)
         rt = json.loads(files[0].read_text(encoding="utf-8"))
         mods = json.loads(files[1].read_text(encoding="utf-8"))
@@ -200,7 +206,7 @@ class Catalogue:
             unknown = [t for t in types if t not in rt["types"]]
             if unknown:
                 raise ValueError(f"catalogue: provider {provider} expects undefined types {unknown}")
-        return cls(rt["types"], rt["expected"], modules, playbooks, rt["version"], digest, name if directory else profile, rt.get("terms"), rt.get("description", ""), rubric, mods.get("use_cases", {}), pov)
+        return cls(rt["types"], rt["expected"], modules, playbooks, rt["version"], digest, name if directory else profile, rt.get("terms"), rt.get("description", ""), rubric, mods.get("use_cases", {}), pov, discovery)
 
     def expected_types(self, provider: str) -> list[str]:
         return list(self.expected.get(provider, []))

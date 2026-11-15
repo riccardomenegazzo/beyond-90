@@ -777,3 +777,11 @@ body:not(.has-files) .runbar{display:none}
 .kindchip:hover:not(:disabled){border-color:var(--accent);color:var(--accent-text)}
 .kindchip:disabled{opacity:.55;cursor:default}
 .kindchip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.disco{margin:0 0 12px;padding-left:22px;display:grid;gap:10px}
+.disco li{padding-left:4px}
+.disco li > *{vertical-align:top}
+.disco li{display:list-item}
+.disco-q{display:inline-flex;flex-direction:column;gap:2px;max-width:calc(100% - 150px);margin-right:10px}
+.disco-q small{color:var(--ink2);font-size:13.5px}
+.disco li.focus .disco-q b{color:var(--ink)}
+@media (max-width:640px){.disco-q{max-width:100%;display:flex}}

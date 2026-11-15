@@ -1,0 +1,44 @@
+{
+  "questions": [
+    {
+      "stage": "value",
+      "q": "What does an hour of downtime cost on your most important application?",
+      "why": "Turns recovery features into money the sponsor recognises."
+    },
+    {
+      "stage": "value",
+      "q": "When did you last restore a whole system, not a file, and how long did it take?",
+      "why": "Untested recovery is the usual gap behind a confident answer."
+    },
+    {
+      "stage": "L1",
+      "q": "How many clusters run outside the main data centre: plants, branches, edge sites?",
+      "why": "Remote clusters are the ones the central console does not see."
+    },
+    {
+      "stage": "L2",
+      "q": "Do you know which virtual machines have no owner and what they run?",
+      "why": "Unowned machines are skipped by protection and patching."
+    },
+    {
+      "stage": "L3",
+      "q": "Which workloads have snapshots, and could an administrator account delete them?",
+      "why": "Snapshots an attacker can delete are not ransomware protection."
+    },
+    {
+      "stage": "L3",
+      "q": "Is there a second site, and has failover to it been run end to end?",
+      "why": "Replication without a tested recovery plan is a hope."
+    },
+    {
+      "stage": "L3",
+      "q": "How far behind on upgrades are you, and what makes upgrading hard?",
+      "why": "Lifecycle debt is a security risk and the most common hidden effort."
+    },
+    {
+      "stage": "L4",
+      "q": "When the platform raises an alert at night, who acts on it?",
+      "why": "Alerts without an owner turn into noise, then into outages."
+    }
+  ]
+}

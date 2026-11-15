@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.70.0
+
+- **Discovery questions, weakest stage first.** A profile can ship questions to ask the customer, each tied to business value or to a stage and with the reason to ask it ("Are your backup copies under object lock, and for how long? Backups an administrator can delete do not survive ransomware."). Prep a call lists them in the order that matters for this customer: business value first, then the stage where the customer loses most, marked "weakest", then the others. One button copies them as a plain list. `beyond90 discovery <customer>` prints the same list (`--format json` too). Shipped for cloud security, hyperconverged, object storage, SaaS and AI; a profile adds its own in `discovery.json`.
+
 ## 0.69.0
 
 - **Two infrastructure profiles: hyperconverged and object storage.** `--profile hci` measures clusters (on premises, remote office, hybrid, edge) on health monitoring, snapshot schedules, replication with a tested recovery plan, immutable snapshots, microsegmentation, encryption at rest, automated upgrades, capacity runway and self-service. `--profile object-storage` measures S3-compatible storage tenants on metering, versioning, object lock, replication, data residency, customer-managed keys, scoped keys, access logging, lifecycle tiering and restore testing. Each has an invented example customer: Granite Manufacturing (Yield 57.5% against a claimed 80%) and Meridian Health (58.4% against 87.5%, with object lock missing on five tenants among the first actions).

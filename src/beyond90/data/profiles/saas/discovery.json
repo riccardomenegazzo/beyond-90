@@ -1,0 +1,44 @@
+{
+  "questions": [
+    {
+      "stage": "value",
+      "q": "Which business applications hold the data you would least like to see leaked?",
+      "why": "Ranks tenants by what is at stake, not by size."
+    },
+    {
+      "stage": "L1",
+      "q": "How many SaaS tenants do you have, including ones teams bought on a card?",
+      "why": "Shadow tenants are the ones with no one watching."
+    },
+    {
+      "stage": "L2",
+      "q": "Do you know which third-party apps can read your mail or files today?",
+      "why": "OAuth grants are a common, quiet path to data."
+    },
+    {
+      "stage": "L3",
+      "q": "Is strong sign-in enforced for everyone, admins included, with no exceptions list?",
+      "why": "Exceptions lists tend to grow and are where accounts get taken."
+    },
+    {
+      "stage": "L3",
+      "q": "How do you find files shared with anyone who has the link?",
+      "why": "Public links are the most frequent SaaS data leak."
+    },
+    {
+      "stage": "L3",
+      "q": "Who reviews admin roles, and how often?",
+      "why": "Standing admin rights outlive the people and projects that needed them."
+    },
+    {
+      "stage": "L4",
+      "q": "When a risky setting is found, which team owns the fix?",
+      "why": "SaaS settings often belong to the business, not to IT."
+    },
+    {
+      "stage": "value",
+      "q": "What would a clean audit of these tenants mean for you this year?",
+      "why": "Ties posture work to a date the sponsor already cares about."
+    }
+  ]
+}
