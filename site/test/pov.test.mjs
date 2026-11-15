@@ -127,3 +127,14 @@ test("the mutual plan dates every step from the window and marks what is done or
   assert.match(md, /\| 2026-12-31 \| Decision by the sponsor \| Meridian \| open \|/);
   assert.match(md, /proposals to agree with the sponsor/);
 });
+
+import { setWindow } from "../pov.js";
+test("the window can be set or moved after the plan is made, and stays valid", () => {
+  const p = makePov({ customer: "Meridian", createdOn: "2026-11-15", nonce: "abcdef" });
+  const q = setWindow(p, "2026-12-01", "2026-12-21", "2026-11-16");
+  assert.equal(q.start, "2026-12-01");
+  assert.equal(q.updated_on, "2026-11-16");
+  assert.equal(setWindow(q, "", "", "2026-11-16").start, "");
+  assert.throws(() => setWindow(p, "2026-12-21", "2026-12-01", "2026-11-16"), /end cannot be before/);
+  assert.throws(() => setWindow(p, "01/12/2026", "", "2026-11-16"), /as a date/);
+});

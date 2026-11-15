@@ -792,3 +792,4 @@ body:not(.has-files) .runbar{display:none}
 .mp-w small{color:var(--ink2)}
 .mplan li.st-done .mp-w b{color:var(--ink2);font-weight:600}
 @media (max-width:560px){.mplan li{grid-template-columns:1fr auto}.mp-d{grid-column:1 / -1}}
+.winform{margin:0 0 14px;gap:10px 16px}

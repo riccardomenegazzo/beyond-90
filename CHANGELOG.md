@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.72.0
+
+- **Set or move a proof of value's window at any time.** The mutual plan card now carries the start and end dates, so a plan made without a window can get one later, and a window that slips can be moved; every step of the mutual plan is re-dated at once. An end before the start, or a date that is not a date, is refused with a plain message.
+
 ## 0.71.0
 
 - **A mutual plan to signature.** A proof of value with a window now shows both sides' steps from criteria sign-off to signature, each dated from the window: sign-off a week before the start, access and people ready, kick-off, a mid-point check, the last test session with evidence for every criterion, the readout, the sponsor's decision and the commercial, legal and security review. Each step reads done (when the plan records it: sign-off date, readiness ticked, sessions held, every criterion tried), late or open. The dates after the readout are proposals to agree with the sponsor, and the copied plan says so. One button copies it as a Markdown table.

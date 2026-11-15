@@ -108,6 +108,15 @@ export function edit(p, patch, today) {
   return next;
 }
 
+/** Set or move the window. Either date may be empty; when both are set the end cannot come before the start. */
+export function setWindow(p, start, end, today) {
+  const st = start || "", en = end || "";
+  if (st && !isDate(st)) throw new Error("Give the start as a date, or leave it empty.");
+  if (en && !isDate(en)) throw new Error("Give the end as a date, or leave it empty.");
+  if (st && en && en < st) throw new Error("The end cannot be before the start.");
+  return edit(p, { start: st, end: en }, today);
+}
+
 export function setCriterion(p, id, { status, evidence }, today) {
   if (!p.criteria.some((c) => c.id === id)) throw new Error("There is no such criterion.");
   return edit(p, { criteria: p.criteria.map((c) => (c.id === id ? { ...c, ...(status ? { status } : {}), ...(evidence != null ? { evidence: text(evidence, 300) } : {}) } : c)) }, today);

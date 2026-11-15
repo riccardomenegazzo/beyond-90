@@ -1359,9 +1359,13 @@ export function povView({ result, book, povs, today, savePov, removePov, dash })
       card("Ready to start?", h("ul", { class: "plain" }, ready)),
       (() => {
         const steps = P.mutualPlan(p, today);
-        if (!steps) return card("Mutual plan to signature", h("p", { class: "note", text: "Set the start and end of the window above, and the plan from sign-off to signature is dated for you." }));
+        const ws = h("input", { type: "date", value: p.start || "", "aria-label": "Window start" }), we = h("input", { type: "date", value: p.end || "", "aria-label": "Window end" });
+        const windowForm = h("div", { class: "row left winform" }, h("label", { class: "inline" }, "Start ", ws), h("label", { class: "inline" }, "End ", we),
+          h("button", { class: "btn small", type: "button", text: p.start || p.end ? "Move the window" : "Set the window", onclick: edit((q) => P.setWindow(q, ws.value, we.value, today)) }));
+        if (!steps) return card("Mutual plan to signature", h("div", {}, h("p", { class: "note", text: "Set the start and end of the window, and the plan from sign-off to signature is dated for you." }), windowForm));
         const WHO = { customer: p.customer, us: "Us", both: "Both" };
         return card("Mutual plan to signature", h("div", {},
+          windowForm,
           h("ol", { class: "mplan" }, steps.map((s) => h("li", { class: "st-" + s.state },
             h("span", { class: "mp-d", text: s.due }), h("span", { class: "mp-w" }, h("b", { text: s.what }), h("small", { text: WHO[s.who] })),
             chip(s.state, s.state === "done" ? "good" : s.state === "late" ? "bad" : "")))),
