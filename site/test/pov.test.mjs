@@ -110,3 +110,20 @@ test("plans kept before the new fields still validate; bad new fields do not", (
   assert.ok(!validPov({ ...old, problem: "x".repeat(301) }));
   assert.match(planMarkdown(edit(old, { problem: "Blind spots" }, "2026-11-02")), /## The problem/);
 });
+
+import { mutualPlan, mutualPlanMarkdown } from "../pov.js";
+test("the mutual plan dates every step from the window and marks what is done or late", () => {
+  let p = makePov({ customer: "Meridian", start: "2026-12-01", end: "2026-12-21", createdOn: "2026-11-15", nonce: "abcdef" });
+  assert.equal(mutualPlan({ ...p, start: "" }, "2026-11-20"), null);
+  const s = mutualPlan(p, "2026-11-28");
+  assert.equal(s.length, 8);
+  assert.deepEqual(s.map((x) => x.due).slice(0, 4), ["2026-11-24", "2026-11-29", "2026-12-01", "2026-12-11"]);
+  assert.equal(s[0].state, "late");                         // sign-off was due on the 24th and is not recorded
+  assert.equal(s[1].state, "open");
+  p = { ...p, signed_off_on: "2026-11-23" };
+  assert.equal(mutualPlan(p, "2026-11-28")[0].state, "done");
+  const md = mutualPlanMarkdown(p, "2026-11-28");
+  assert.match(md, /^# Mutual plan: Meridian/);
+  assert.match(md, /\| 2026-12-31 \| Decision by the sponsor \| Meridian \| open \|/);
+  assert.match(md, /proposals to agree with the sponsor/);
+});

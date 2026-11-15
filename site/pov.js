@@ -204,3 +204,37 @@ export function valueReport(p, today) {
     "- A criterion marked met is the evaluator's judgement, recorded with what they saw. It is not an independent measurement.", "");
   return lines.join("\n");
 }
+
+const shift = (iso, days) => { const d = new Date(`${iso}T00:00:00Z`); d.setUTCDate(d.getUTCDate() + days); return d.toISOString().slice(0, 10); };
+
+/**
+ * The mutual plan from criteria to signature: who does what by when, on both sides, dated from the window.
+ * Each step is done (when the plan records it), late (past its date) or open. Returns null without a window.
+ * The dates after the readout are proposals to agree with the sponsor, and the copy says so.
+ */
+export function mutualPlan(p, today) {
+  if (!isDate(p.start) || !isDate(p.end)) return null;
+  const allReady = p.readiness.length > 0 && p.readiness.every((r) => r.done);
+  const pr = progress(p);
+  const mid = shift(p.start, Math.floor((Date.parse(p.end) - Date.parse(p.start)) / 86400000 / 2));
+  const steps = [
+    { who: "customer", what: "Sponsor signs off the success criteria", due: shift(p.start, -7), done: !!p.signed_off_on },
+    { who: "customer", what: "Access, environment and people ready", due: shift(p.start, -2), done: allReady },
+    { who: "both", what: "Kick-off: criteria, schedule and contacts confirmed", due: p.start, done: p.sessions.some((s) => s.on <= p.start) || p.stage !== "planned" },
+    { who: "both", what: "Mid-point check against each criterion", due: mid, done: p.sessions.some((s) => s.on >= mid) },
+    { who: "us", what: "Last test session; evidence written for every criterion", due: p.end, done: pr.total > 0 && pr.open === 0 },
+    { who: "us", what: "Readout to the sponsor: criteria met, evidence, open points", due: shift(p.end, 3), done: p.stage === "done" },
+    { who: "customer", what: "Decision by the sponsor", due: shift(p.end, 10), done: false },
+    { who: "customer", what: "Commercial, legal and security review", due: shift(p.end, 24), done: false },
+  ];
+  return steps.map((s) => ({ ...s, state: s.done ? "done" : (today && s.due < today ? "late" : "open") }));
+}
+
+export function mutualPlanMarkdown(p, today) {
+  const steps = mutualPlan(p, today);
+  if (!steps) return "";
+  const who = { customer: p.customer, us: "Us", both: "Both" };
+  return [`# Mutual plan: ${p.customer}`, "", `Proof of value window: ${p.start} to ${p.end}. Dates after the readout are proposals to agree with the sponsor.`, "",
+    "| By | Step | Who | State |", "| --- | --- | --- | --- |",
+    ...steps.map((s) => `| ${s.due} | ${s.what} | ${who[s.who]} | ${s.state} |`), ""].join("\n");
+}

@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.71.0
+
+- **A mutual plan to signature.** A proof of value with a window now shows both sides' steps from criteria sign-off to signature, each dated from the window: sign-off a week before the start, access and people ready, kick-off, a mid-point check, the last test session with evidence for every criterion, the readout, the sponsor's decision and the commercial, legal and security review. Each step reads done (when the plan records it: sign-off date, readiness ticked, sessions held, every criterion tried), late or open. The dates after the readout are proposals to agree with the sponsor, and the copied plan says so. One button copies it as a Markdown table.
+
 ## 0.70.0
 
 - **Discovery questions, weakest stage first.** A profile can ship questions to ask the customer, each tied to business value or to a stage and with the reason to ask it ("Are your backup copies under object lock, and for how long? Backups an administrator can delete do not survive ransomware."). Prep a call lists them in the order that matters for this customer: business value first, then the stage where the customer loses most, marked "weakest", then the others. One button copies them as a plain list. `beyond90 discovery <customer>` prints the same list (`--format json` too). Shipped for cloud security, hyperconverged, object storage, SaaS and AI; a profile adds its own in `discovery.json`.

@@ -1357,6 +1357,17 @@ export function povView({ result, book, povs, today, savePov, removePov, dash })
       })(),
       qualCard(p, edit, today),
       card("Ready to start?", h("ul", { class: "plain" }, ready)),
+      (() => {
+        const steps = P.mutualPlan(p, today);
+        if (!steps) return card("Mutual plan to signature", h("p", { class: "note", text: "Set the start and end of the window above, and the plan from sign-off to signature is dated for you." }));
+        const WHO = { customer: p.customer, us: "Us", both: "Both" };
+        return card("Mutual plan to signature", h("div", {},
+          h("ol", { class: "mplan" }, steps.map((s) => h("li", { class: "st-" + s.state },
+            h("span", { class: "mp-d", text: s.due }), h("span", { class: "mp-w" }, h("b", { text: s.what }), h("small", { text: WHO[s.who] })),
+            chip(s.state, s.state === "done" ? "good" : s.state === "late" ? "bad" : "")))),
+          h("div", { class: "row left" }, h("button", { class: "btn small", type: "button", text: "Copy the mutual plan", onclick: (e) => copyText(P.mutualPlanMarkdown(p, today)).then((ok) => { e.target.textContent = ok ? "Copied" : "Not copied"; }) }))),
+        { sub: "Both sides' steps from sign-off to signature, dated from the window. Dates after the readout are proposals: agree them with the sponsor." });
+      })(),
       card("Working sessions", h("div", {}, p.sessions.length ? h("ul", { class: "plain" }, p.sessions.map((s) => h("li", { text: `${s.on}: ${s.topic}${s.who ? ` (${s.who})` : ""}` }))) : h("p", { class: "note", text: "No sessions yet." }),
         h("div", { class: "formgrid" }, h("label", {}, "Date", sd), h("label", { class: "wide2" }, "Topic", st2), h("button", { class: "btn small", type: "button", text: "Add session", onclick: edit((q) => P.addSession(q, { on: sd.value, topic: st2.value }, today)) })))),
       card("Summary and stage", h("div", {}, h("label", {}, "Stage ", stage), summ,
