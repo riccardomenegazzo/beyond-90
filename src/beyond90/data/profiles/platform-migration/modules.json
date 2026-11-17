@@ -1,0 +1,190 @@
+{
+  "use_cases": {
+    "plan": "Know what moves, and in what order",
+    "move": "Move without surprises",
+    "run": "Run the new platform as well as the old one",
+    "exit": "Switch the old platform off"
+  },
+  "modules": [
+    {
+      "id": "discovery_inventory",
+      "name": "Every virtual machine discovered, with its owner",
+      "category": "cloud",
+      "since": "2025.1",
+      "providers": [
+        "primary_dc",
+        "secondary_dc",
+        "branch",
+        "cloud"
+      ],
+      "requires_any": [],
+      "on_connect": true,
+      "use_case": "plan",
+      "csf": [
+        "identify"
+      ]
+    },
+    {
+      "id": "dependency_mapping",
+      "name": "Dependencies mapped into application groups",
+      "category": "cloud",
+      "since": "2025.1",
+      "providers": [
+        "primary_dc",
+        "secondary_dc",
+        "branch"
+      ],
+      "requires_any": [
+        "source_vm",
+        "app_group"
+      ],
+      "on_connect": false,
+      "use_case": "plan",
+      "csf": [
+        "identify"
+      ]
+    },
+    {
+      "id": "wave_planning",
+      "name": "Waves planned with dates, owners and freeze windows",
+      "category": "cloud",
+      "since": "2025.1",
+      "providers": [
+        "primary_dc",
+        "secondary_dc",
+        "branch",
+        "cloud"
+      ],
+      "requires_any": [
+        "wave",
+        "app_group"
+      ],
+      "on_connect": false,
+      "use_case": "plan",
+      "csf": [
+        "identify"
+      ]
+    },
+    {
+      "id": "test_migration",
+      "name": "Test migration of each group before its cutover",
+      "category": "cloud",
+      "since": "2025.2",
+      "providers": [
+        "primary_dc",
+        "secondary_dc",
+        "branch",
+        "cloud"
+      ],
+      "requires_any": [
+        "source_vm",
+        "target_cluster"
+      ],
+      "on_connect": false,
+      "use_case": "move",
+      "csf": [
+        "protect"
+      ]
+    },
+    {
+      "id": "automated_cutover",
+      "name": "Automated cutover with drivers, addresses and settings carried over",
+      "category": "cloud",
+      "since": "2025.2",
+      "providers": [
+        "primary_dc",
+        "secondary_dc",
+        "branch",
+        "cloud"
+      ],
+      "requires_any": [
+        "runbook",
+        "target_cluster"
+      ],
+      "on_connect": false,
+      "use_case": "move",
+      "csf": [
+        "protect"
+      ]
+    },
+    {
+      "id": "rollback_ready",
+      "name": "A tested rollback for every wave",
+      "category": "defend",
+      "since": "2025.2",
+      "providers": [
+        "primary_dc",
+        "secondary_dc",
+        "branch",
+        "cloud"
+      ],
+      "requires_any": [
+        "runbook"
+      ],
+      "on_connect": false,
+      "use_case": "move",
+      "csf": [
+        "recover"
+      ]
+    },
+    {
+      "id": "backup_carried_over",
+      "name": "Backup and recovery working on the new platform before cutover",
+      "category": "defend",
+      "since": "2025.3",
+      "providers": [
+        "primary_dc",
+        "secondary_dc",
+        "branch",
+        "cloud"
+      ],
+      "requires_any": [
+        "target_cluster"
+      ],
+      "on_connect": false,
+      "use_case": "run",
+      "csf": [
+        "recover"
+      ]
+    },
+    {
+      "id": "monitoring_carried_over",
+      "name": "Monitoring and alerts working on the new platform",
+      "category": "cloud",
+      "since": "2025.3",
+      "providers": [
+        "primary_dc",
+        "secondary_dc",
+        "branch",
+        "cloud"
+      ],
+      "requires_any": [
+        "target_cluster"
+      ],
+      "on_connect": false,
+      "use_case": "run",
+      "csf": [
+        "detect"
+      ]
+    },
+    {
+      "id": "old_platform_off",
+      "name": "The old platform switched off and its licences ended",
+      "category": "cloud",
+      "since": "2026.1",
+      "providers": [
+        "primary_dc",
+        "secondary_dc",
+        "branch"
+      ],
+      "requires_any": [
+        "wave"
+      ],
+      "on_connect": false,
+      "use_case": "exit",
+      "csf": [
+        "identify"
+      ]
+    }
+  ]
+}

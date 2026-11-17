@@ -28,7 +28,7 @@ from .words import n_of
 # The lines a portfolio is drawn from. A customer's estate is compared with the family most of its lines belong to.
 FAMILIES: dict[str, list[str]] = {
     # The order is also the map's: the first line sits in the middle, the others go round it so that linked lines are near.
-    "infrastructure": ["hci", "dbaas", "dr-backup", "object-storage", "file-storage", "kubernetes-platform"],
+    "infrastructure": ["hci", "dbaas", "dr-backup", "object-storage", "file-storage", "kubernetes-platform", "platform-migration"],
     "security": ["cnapp", "identity", "saas", "siem", "endpoint", "ai"],
 }
 
@@ -36,7 +36,7 @@ LABELS: dict[str, str] = {
     "hci": "Platform (hyperconverged)", "dbaas": "Databases as a service", "file-storage": "File storage",
     "object-storage": "Object storage", "kubernetes-platform": "Kubernetes platform", "dr-backup": "Disaster recovery and backup",
     "cnapp": "Cloud security", "identity": "Identity security", "saas": "SaaS security", "siem": "Security monitoring",
-    "endpoint": "Endpoint protection", "ai": "AI security",
+    "endpoint": "Endpoint protection", "ai": "AI security", "platform-migration": "Platform migration",
 }
 
 # (from, to, why): once the first line runs, the second follows. Read as "because <from> is in place, <why>".
@@ -51,6 +51,9 @@ LINKS: list[tuple[str, str, str]] = [
     ("kubernetes-platform", "dr-backup", "stateful workloads need their volumes in the recovery plan"),
     ("kubernetes-platform", "object-storage", "workload backups and application data need an S3 target"),
     ("dr-backup", "object-storage", "immutable copies need a target that an administrator cannot delete from"),
+    ("platform-migration", "hci", "migrated workloads need a platform that is ready to run them, protected and monitored, before the first wave"),
+    ("platform-migration", "dr-backup", "recovery must work on the new platform before the old one is switched off"),
+    ("hci", "platform-migration", "machines still on the old platform keep its licences and its risks alive"),
     ("cnapp", "identity", "cloud findings keep leading back to identities nobody governs"),
     ("cnapp", "siem", "cloud detections need somewhere to be correlated and answered"),
     ("identity", "saas", "the same identities sign in to business applications nobody reviews"),

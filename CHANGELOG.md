@@ -2,6 +2,12 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.85.0
+
+- **New kind of product: moving off a virtualisation platform** (`platform-migration`). Sites whose virtual machines move to a new platform in waves: discovery with owners, dependency mapping, wave planning, test migration, automated cutover, a tested rollback for every wave, backup and monitoring working on the new platform before the first production wave, and the old platform switched off. Vendor-neutral.
+- Ready for a sale like the others: five proof-of-value criteria (a representative group migrated within its window, a rollback against the clock, restores on the new platform, alerts reaching the same people, a dependency map confirmed by its owner), eight discovery questions each with the condition it tests and a first step, and an invented example customer, Vantage Insurance, from the start page.
+- In the infrastructure family for the discovery workshop and the estate: a migration leads to the platform and to recovery ("recovery must work on the new platform before the old one is switched off"), and a platform in place leads to migrating what is still on the old one.
+
 ## 0.84.0
 
 - **Customer readout.** A page for the customer, from the discovery workshop: "Yes, this is possible", what would need to be true, where they are today and the first step for each, how each step would be proven, what we heard and what to settle at the next meeting. In the customer's language (no scores, no stage codes), with what is at stake in their own words. Download it to send or print, or show it on screen; it has no scripts, loads nothing, and everything typed is escaped.

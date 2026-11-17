@@ -1,0 +1,60 @@
+{
+  "questions": [
+    {
+      "stage": "value",
+      "q": "When does the current platform's contract or support end, and what happens if you are still on it then?",
+      "why": "The date sets the pace of everything else.",
+      "need": "The deadline is known, and the plan finishes before it with margin",
+      "how": "Put the end date and the cost of overrunning it in the plan"
+    },
+    {
+      "stage": "value",
+      "q": "What would a failed migration weekend cost, and who would feel it first?",
+      "why": "Turns risk into a number the business can weigh.",
+      "need": "The cost of a failed cutover is known, and the plan is shaped around it",
+      "how": "Agree with the business which applications cannot be down, and for how long"
+    },
+    {
+      "stage": "L1",
+      "q": "How many virtual machines are there, at which sites, and how many have no clear owner?",
+      "why": "Machines without owners cannot be scheduled or tested.",
+      "need": "Every virtual machine is known, with an owner",
+      "how": "Run discovery at every site and assign owners"
+    },
+    {
+      "stage": "L2",
+      "q": "Do you know what each application depends on: databases, file shares, licences, hard-coded addresses?",
+      "why": "Hidden dependencies are what break a cutover.",
+      "need": "Every application's dependencies are mapped and confirmed by its owner",
+      "how": "Map dependencies from traffic, then review them with each owner"
+    },
+    {
+      "stage": "L3",
+      "q": "Have you migrated anything yet, even in test, and what went wrong?",
+      "why": "A first test finds the problems cheaply.",
+      "need": "A test migration of a representative group has run and its findings are closed",
+      "how": "Migrate one representative group in a test window"
+    },
+    {
+      "stage": "L3",
+      "q": "If a cutover fails at 3 a.m., how do you go back, and has anyone tried it?",
+      "why": "Rollback is the safety net for every wave.",
+      "need": "Every wave has a rollback that has been tested",
+      "how": "Write and rehearse the rollback for the first wave"
+    },
+    {
+      "stage": "L3",
+      "q": "Will backup, monitoring and security tools work on the new platform on day one?",
+      "why": "The platform moves; the tools around it must too.",
+      "need": "Backup, monitoring and security run on the new platform before the first production wave",
+      "how": "List every tool that touches the platform and test each on the new one"
+    },
+    {
+      "stage": "L4",
+      "q": "Who decides that a wave is done and the old machines can be switched off?",
+      "why": "Without an owner, the old platform never goes away.",
+      "need": "Each wave has an owner who signs it off, and the old machines are switched off on schedule",
+      "how": "Name a wave owner and agree what done means"
+    }
+  ]
+}

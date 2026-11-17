@@ -1,0 +1,38 @@
+{
+  "version": "2026.4",
+  "description": "Moving off a virtualisation platform: sites whose virtual machines move to a new platform in planned waves, with dependencies mapped, rollback ready, backup and monitoring carried over and the old platform switched off.",
+  "terms": {
+    "estate": "migration",
+    "unit": "site",
+    "units": "sites"
+  },
+  "types": {
+    "source_vm": "Virtual machines on the platform being left",
+    "app_group": "Applications grouped with what they depend on",
+    "wave": "Migration waves with a date and an owner",
+    "runbook": "Cutover and rollback runbooks",
+    "target_cluster": "Clusters on the new platform ready to receive"
+  },
+  "expected": {
+    "primary_dc": [
+      "source_vm",
+      "app_group",
+      "wave",
+      "runbook",
+      "target_cluster"
+    ],
+    "secondary_dc": [
+      "source_vm",
+      "wave",
+      "target_cluster"
+    ],
+    "branch": [
+      "source_vm",
+      "wave"
+    ],
+    "cloud": [
+      "target_cluster",
+      "wave"
+    ]
+  }
+}

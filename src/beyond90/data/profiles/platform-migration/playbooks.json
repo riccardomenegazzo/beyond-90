@@ -1,0 +1,14 @@
+{
+  "playbooks": {
+    "l1_connect_account": {
+      "title": "Bring the sites nobody has inventoried into the migration plan",
+      "why": "Virtual machines run at these sites, but the migration plan does not see them, so they will be found late, at the worst moment.",
+      "steps": [
+        "List sites from the virtualisation console, the network and the asset register, branches included.",
+        "Run discovery at each site with a read-only account.",
+        "Confirm each site's machines, owners and size show in the plan."
+      ],
+      "success": "Every site in scope has its machines inventoried with owners."
+    }
+  }
+}

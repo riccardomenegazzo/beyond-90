@@ -1,0 +1,41 @@
+id,account_id,severity,exposure,opened_at,closed_at,owner,decision,decision_reason,expiry,previous_severity,severity_changed_at,verified_at,reopened,closed_by
+x-001,platform-migration-08,low,internal,2026-10-28,,security-ops,accepted_risk,business process depends on it,2027-02-16,,,,,
+x-002,platform-migration-09,medium,internet,2026-10-28,,app-owners,fix,,,,,,,
+x-003,platform-migration-02,high,internal,2026-07-29,,security-ops,fix,,,,,,,
+x-004,platform-migration-03,low,internet,2026-10-04,,app-owners,accepted_risk,business process depends on it,2027-02-24,,,,,
+x-005,platform-migration-09,low,internet,2026-07-03,,network-team,fix,,,,,,,
+x-006,platform-migration-05,medium,internal,2026-10-13,,app-owners,fix,,,,,,,
+x-007,platform-migration-02,low,internet,2026-10-21,,app-owners,fix,,,,,,,
+x-008,platform-migration-07,medium,internal,2026-07-24,,backup-team,,,,,,,,
+x-009,platform-migration-06,high,internal,2026-09-30,2026-10-24,network-team,fix,,,,,,,assisted
+x-010,platform-migration-09,medium,internal,2026-08-17,2026-08-21,security-ops,fix,,,,,,,manual
+x-011,platform-migration-06,high,internal,2026-08-23,,infra-ops,fix,,,,,,,
+x-012,platform-migration-05,high,internet,2026-08-23,2026-09-16,network-team,fix,,,,,,,automated
+x-013,platform-migration-07,medium,internal,2026-10-02,,,,,,,,,,
+x-014,platform-migration-03,low,internet,2026-10-14,,network-team,fix,,,,,,,
+x-015,platform-migration-08,low,internet,2026-09-12,2026-10-12,backup-team,,,,,,,,assisted
+x-016,platform-migration-03,medium,internet,2026-07-16,2026-07-28,network-team,accepted_risk,business process depends on it,2026-11-26,,,,,manual
+x-017,platform-migration-07,medium,internet,2026-08-03,2026-08-22,network-team,accepted_risk,business process depends on it,2026-12-27,,,,,manual
+x-018,platform-migration-09,low,internal,2026-09-10,2026-10-03,network-team,accepted_risk,business process depends on it,2026-12-22,,,,,automated
+x-019,platform-migration-03,medium,internal,2026-07-30,,network-team,fix,,,,,,,
+x-020,platform-migration-08,high,internet,2026-10-09,,backup-team,accepted_risk,business process depends on it,2026-12-06,,,,,
+x-021,platform-migration-05,medium,internet,2026-09-17,2026-09-26,network-team,fix,,,,,,,manual
+x-022,platform-migration-02,medium,internet,2026-07-14,2026-07-15,infra-ops,,,,,,,,assisted
+x-023,platform-migration-06,high,internal,2026-08-12,,security-ops,accepted_risk,business process depends on it,2027-01-24,,,,,
+x-024,platform-migration-06,high,internet,2026-08-20,2026-08-21,infra-ops,fix,,,,,,,automated
+x-025,platform-migration-02,critical,internet,2026-10-10,,infra-ops,fix,,,,,,,
+x-026,platform-migration-09,medium,internet,2026-09-04,,infra-ops,fix,,,,,,,
+x-027,platform-migration-05,high,internet,2026-07-08,2026-07-21,infra-ops,fix,,,,,,,automated
+x-028,platform-migration-06,low,internet,2026-10-01,,app-owners,fix,,,,,,,
+x-029,platform-migration-05,low,internal,2026-10-18,,infra-ops,fix,,,,,,,
+x-030,platform-migration-03,low,internet,2026-08-06,,,,,,,,,,
+x-031,platform-migration-09,medium,internal,2026-08-12,2026-09-02,,,,,,,,,manual
+x-032,platform-migration-09,high,internal,2026-07-13,,infra-ops,fix,,,,,,,
+x-033,platform-migration-07,low,internal,2026-07-07,,network-team,accepted_risk,business process depends on it,2026-12-05,,,,,
+x-034,platform-migration-08,high,internet,2026-10-02,,security-ops,fix,,,,,,,
+x-035,platform-migration-05,low,internal,2026-09-09,2026-09-29,infra-ops,accepted_risk,business process depends on it,2027-02-27,,,,,assisted
+x-036,platform-migration-06,high,internal,2026-10-19,,infra-ops,fix,,,,,,,
+x-037,platform-migration-02,medium,internet,2026-10-07,,backup-team,accepted_risk,business process depends on it,2027-01-30,,,,,
+x-038,platform-migration-03,critical,internet,2026-10-28,,backup-team,fix,,,,,,,
+x-039,platform-migration-08,medium,internal,2026-10-20,,,,,,,,,,
+x-040,platform-migration-06,low,internal,2026-09-05,2026-09-29,backup-team,fix,,,,,,,assisted

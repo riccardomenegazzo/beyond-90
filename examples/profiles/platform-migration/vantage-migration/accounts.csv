@@ -1,0 +1,10 @@
+id,provider,sources,connected,owner,last_spend,status,in_plan,created_at
+platform-migration-01,branch,billing;org,false,backup-team,3200,active,false,2025-05-30
+platform-migration-02,secondary_dc,billing;org;sso,true,infra-ops,1300,active,true,2026-04-25
+platform-migration-03,primary_dc,billing;org;sso,true,infra-ops,1300,active,false,2026-05-05
+platform-migration-04,primary_dc,billing;org;sso,false,app-owners,7500,active,false,2026-03-30
+platform-migration-05,secondary_dc,billing;org,true,app-owners,4600,active,true,2025-06-27
+platform-migration-06,secondary_dc,billing;org,true,network-team,5800,active,true,2026-09-24
+platform-migration-07,primary_dc,billing;org,true,backup-team,7600,active,true,2025-11-26
+platform-migration-08,primary_dc,billing;org;sso,true,backup-team,6800,active,false,2025-03-08
+platform-migration-09,primary_dc,billing;org,true,security-ops,400,active,true,2025-03-20

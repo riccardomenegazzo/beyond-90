@@ -34,7 +34,7 @@ def test_estate_yield_is_weighted_by_arr() -> None:
 def test_whitespace_is_the_rest_of_the_family_led_by_what_runs() -> None:
     e = estate.analyze_estate_dir(HALDEN)
     white = [w["profile"] for w in e["whitespace"]]
-    assert set(white) == {"kubernetes-platform", "object-storage"}
+    assert set(white) == {"kubernetes-platform", "object-storage", "platform-migration"}
     for w in e["whitespace"]:
         assert w["reasons"], "each missing line follows from something in place"
         assert w["opener"] and w["opener"]["stage"] == "value"

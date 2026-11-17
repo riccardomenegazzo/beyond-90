@@ -1,0 +1,24 @@
+{
+  "criteria": [
+    {
+      "text": "A representative application group is migrated and back in service within its agreed window, with no change for its users",
+      "how": "Pick a group with a database and a front end, migrate it in a test window, and time it end to end."
+    },
+    {
+      "text": "A rollback to the old platform completes within the agreed time after a failed cutover",
+      "how": "Fail a test cutover on purpose and roll back, with the clock running."
+    },
+    {
+      "text": "Backups and restores work on the new platform before the first production wave",
+      "how": "Back up a migrated machine on the new platform and restore it."
+    },
+    {
+      "text": "Monitoring and alerts on the new platform reach the same people as before",
+      "how": "Trigger a test alert on a migrated machine and check who receives it."
+    },
+    {
+      "text": "The dependency map shows every connection of a sample application, confirmed by its owner",
+      "how": "Review one application's map with its owner and look for anything missing."
+    }
+  ]
+}
