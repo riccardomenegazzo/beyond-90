@@ -1,0 +1,24 @@
+{
+  "criteria": [
+    {
+      "text": "A cluster is upgraded to the next Kubernetes version while a test application keeps serving",
+      "how": "Upgrade a cluster carrying a load test and watch for errors."
+    },
+    {
+      "text": "A namespace with a stateful application is restored to another cluster after being deleted",
+      "how": "Delete a test namespace with its volume, then restore it elsewhere."
+    },
+    {
+      "text": "A deployment that breaks the policy (unapproved image, privileged pod) is refused, with a clear message",
+      "how": "Try to deploy one and read the refusal."
+    },
+    {
+      "text": "A new cluster is created from a template and ready for a team in under an hour",
+      "how": "Create one through the platform and hand it to a team."
+    },
+    {
+      "text": "Each team sees what its namespaces use and cost for the month",
+      "how": "Show the cost view to two team leads."
+    }
+  ]
+}

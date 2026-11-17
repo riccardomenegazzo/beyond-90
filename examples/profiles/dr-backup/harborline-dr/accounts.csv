@@ -1,0 +1,12 @@
+id,provider,sources,connected,owner,last_spend,status,in_plan,created_at
+dr-backup-01,branch,billing;org;sso,true,backup-team,5300,active,true,2025-03-28
+dr-backup-02,branch,billing;org,true,security-ops,7400,active,false,2026-03-09
+dr-backup-03,secondary_site,billing;org;sso,true,backup-team,5700,active,true,2025-01-24
+dr-backup-04,primary_site,billing;sso,true,security-ops,3900,active,true,2025-02-23
+dr-backup-05,branch,billing;org,true,security-ops,2700,active,true,2026-10-09
+dr-backup-06,cloud_site,billing;org,true,store-it,4700,active,true,2025-10-05
+dr-backup-07,branch,billing,true,security-ops,6900,active,false,2025-07-30
+dr-backup-08,primary_site,billing;sso,true,erp-team,5200,active,true,2025-02-04
+dr-backup-09,branch,billing;org;sso,true,store-it,6100,active,true,2026-04-26
+dr-backup-10,primary_site,billing;org;sso,false,erp-team,2400,active,true,2025-03-19
+dr-backup-11,branch,billing;org;sso,true,store-it,4700,active,true,2026-09-01

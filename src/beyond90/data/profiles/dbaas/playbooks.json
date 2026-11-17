@@ -1,0 +1,14 @@
+{
+  "playbooks": {
+    "l1_connect_account": {
+      "title": "Register the databases still managed by hand",
+      "why": "These databases run production, but the platform does not know them, so their backups, patches and copies are done by hand or not at all.",
+      "steps": [
+        "List the database servers from the infrastructure inventory and compare with the platform's list.",
+        "Register each one with a service account that has the documented rights.",
+        "Confirm the platform shows its version, size and backup state."
+      ],
+      "success": "Every database in scope is registered and reports its backup state."
+    }
+  }
+}

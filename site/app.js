@@ -482,7 +482,9 @@ function pulseCard(bars) {
 function renderNav(groups, title) {
   navGroups = groups; navTitle = title;
   // "Accounts" reads "Clusters" or "Tenants" when that is what the customer's profile counts
-  const units = !state.book && state.result ? (JSON.parse(state.result.score_json).terms || {}).units : "";
+  // A profile may give a shorter "menu" word when its units are long ("Databases" for "database environments")
+  const terms = !state.book && state.result ? JSON.parse(state.result.score_json).terms || {} : {};
+  const units = terms.menu || terms.units || "";
   const named = (v) => (v.id === "accounts" && units && units !== "accounts" ? { ...v, label: units[0].toUpperCase() + units.slice(1) } : v);
   if (units && units !== "accounts") groups = groups.map((g) => ({ ...g, views: g.views.map(named) }));
   tabDefs = groups.flatMap((g) => g.views.map((v) => ({ ...v, ...VIEWS[v.id], group: g.question })));   // every view stays reachable, whatever the role

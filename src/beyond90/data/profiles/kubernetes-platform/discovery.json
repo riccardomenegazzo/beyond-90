@@ -1,0 +1,44 @@
+{
+  "questions": [
+    {
+      "stage": "value",
+      "q": "How long does a team wait today for a new environment to run its application?",
+      "why": "Platform speed is the main reason teams adopt it."
+    },
+    {
+      "stage": "value",
+      "q": "Who is responsible for a cluster's upgrades today, and how far behind are they?",
+      "why": "Upgrade debt is the most common hidden risk."
+    },
+    {
+      "stage": "L1",
+      "q": "How many clusters exist, including the ones teams created themselves?",
+      "why": "Unmanaged clusters escape every rule."
+    },
+    {
+      "stage": "L2",
+      "q": "Which workloads keep data in volumes, and is that data backed up?",
+      "why": "Stateful workloads are the ones that lose data."
+    },
+    {
+      "stage": "L3",
+      "q": "What stops a team from deploying an unapproved image or a privileged pod?",
+      "why": "Policy at admission is where security becomes routine."
+    },
+    {
+      "stage": "L3",
+      "q": "Are changes made through Git, or by hand on the cluster?",
+      "why": "Hand changes are the source of drift and outages."
+    },
+    {
+      "stage": "L3",
+      "q": "Could each team tell you what its workloads cost last month?",
+      "why": "Cost visibility changes behaviour more than budgets."
+    },
+    {
+      "stage": "L4",
+      "q": "When a node or a workload fails at night, who knows first?",
+      "why": "Observability without an owner is a dashboard nobody reads."
+    }
+  ]
+}

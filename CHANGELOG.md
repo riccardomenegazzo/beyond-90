@@ -2,6 +2,13 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.80.0
+
+- **Four new kinds of product, for infrastructure portfolios.** `dbaas` (database platform as a service: provisioning, patching, point-in-time recovery, masked clones), `file-storage` (scale-out file storage: snapshots, ransomware detection, audit, permission review, tiering), `kubernetes-platform` (managed clusters: upgrades, workload backup, admission policy, cost per team) and `dr-backup` (recovery objectives, tested failover, immutable and isolated copies). With `hci` and `object-storage`, a presales or account team covering a whole infrastructure portfolio can run every line on the same method. All vendor-neutral.
+- **Each one ships ready for a sale.** Five proof-of-value criteria with how to test each, eight discovery questions tied to a stage, a playbook for the first stage and an invented example customer you can open from the start page (Aurora Clinics, Northgate Partners, Pixel Forge, Harborline Retail).
+- `beyond90 validate` counts in the profile's own words ("14 database environments", "11 sites").
+- A profile can give a shorter word for the side menu (`"menu": "Databases"`) when its units are long.
+
 ## 0.79.0
 
 - **See an action's effect before you take it.** On Today, pointing at an action (or moving to it with the keyboard) shows where Yield would land next to the number ("72.6% → 76.6%"), and the stage it works on grows in place with its new value. The stage rises so the four stages still multiply to the new Yield. The other actions dim while you look.

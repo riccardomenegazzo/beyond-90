@@ -1,0 +1,10 @@
+[customer]
+name = "Harborline Retail (mock)"
+tier = "enterprise"
+arr = 140000
+as_of = 2026-10-31
+profile = "dr-backup"
+
+[settings]
+ceiling_version = "2026.4"
+baseline_ceiling = "2026.1"

@@ -1,0 +1,6 @@
+id,name,has_assets,active_users,sso,role_scoped,last_access_review
+platform-team,Platform Team,true,4,false,false,2026-02-16
+payments-dev,Payments Dev,true,4,true,false,2026-05-04
+games-backend,Games Backend,true,1,false,false,2026-02-25
+data-eng,Data Eng,true,3,false,false,2026-06-10
+security-ops,Security Ops,true,5,false,false,2026-01-09

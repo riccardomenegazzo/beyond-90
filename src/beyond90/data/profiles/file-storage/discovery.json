@@ -1,0 +1,44 @@
+{
+  "questions": [
+    {
+      "stage": "value",
+      "q": "What would a day without the shared drives cost the business?",
+      "why": "Gives a price to downtime and to recovery."
+    },
+    {
+      "stage": "value",
+      "q": "Have you been hit by ransomware, or come close, and how did you recover?",
+      "why": "A near miss is the strongest reason to act."
+    },
+    {
+      "stage": "L1",
+      "q": "How many file servers do you have, including branches and old ones nobody turned off?",
+      "why": "Forgotten file servers keep data nobody protects."
+    },
+    {
+      "stage": "L2",
+      "q": "Do you know which shares hold sensitive data, and who owns each one?",
+      "why": "Ownership decides who approves permissions and retention."
+    },
+    {
+      "stage": "L3",
+      "q": "Can a user restore yesterday's version of a file without calling IT?",
+      "why": "Self-service restore removes a large share of tickets."
+    },
+    {
+      "stage": "L3",
+      "q": "Would you notice if one account started encrypting thousands of files right now?",
+      "why": "Detection time decides how much is lost."
+    },
+    {
+      "stage": "L3",
+      "q": "Who can open the shares marked for everyone, and does anyone check?",
+      "why": "Over-broad permissions are where data walks out."
+    },
+    {
+      "stage": "L4",
+      "q": "When an alert fires on a file server, who looks at it and how fast?",
+      "why": "Detection without an owner does not stop anything."
+    }
+  ]
+}

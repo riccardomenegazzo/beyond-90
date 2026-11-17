@@ -1,0 +1,14 @@
+{
+  "playbooks": {
+    "l1_connect_account": {
+      "title": "Bring the clusters run by hand under fleet management",
+      "why": "Teams run these clusters, but they are not managed centrally, so their upgrades, backups and policies depend on each team.",
+      "steps": [
+        "List clusters from teams, cloud accounts and edge sites.",
+        "Attach each one to the fleet manager with a scoped service account.",
+        "Confirm version, node pools and workloads show for each."
+      ],
+      "success": "Every cluster in scope is managed centrally and reports its version."
+    }
+  }
+}

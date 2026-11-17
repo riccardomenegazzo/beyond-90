@@ -1,0 +1,44 @@
+{
+  "questions": [
+    {
+      "stage": "value",
+      "q": "How long does a team wait today for a copy of production, and who makes it?",
+      "why": "Copy time is usually the most visible pain and the easiest win."
+    },
+    {
+      "stage": "value",
+      "q": "When did you last restore a database to a precise point in time, and how long did it take?",
+      "why": "Untested point-in-time recovery is the usual hidden gap."
+    },
+    {
+      "stage": "L1",
+      "q": "How many databases are there, and how many does nobody own clearly?",
+      "why": "Databases outside any list are the ones that miss backups and patches."
+    },
+    {
+      "stage": "L2",
+      "q": "Which versions are you running, and how far are they from the supported ones?",
+      "why": "Version spread is effort and risk; it sizes the patching work."
+    },
+    {
+      "stage": "L3",
+      "q": "Which production databases have no point-in-time backup today?",
+      "why": "The answer is the first list of the plan."
+    },
+    {
+      "stage": "L3",
+      "q": "How are test copies masked, if at all?",
+      "why": "Unmasked copies of production are a common data leak."
+    },
+    {
+      "stage": "L3",
+      "q": "Which databases must survive a server failure without anyone acting?",
+      "why": "Separates what needs a cluster from what does not."
+    },
+    {
+      "stage": "L4",
+      "q": "Who is woken up when a backup fails, and how quickly do they know?",
+      "why": "A failed backup nobody sees is no backup."
+    }
+  ]
+}

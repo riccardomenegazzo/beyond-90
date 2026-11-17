@@ -1,0 +1,41 @@
+id,account_id,severity,exposure,opened_at,closed_at,owner,decision,decision_reason,expiry,previous_severity,severity_changed_at,verified_at,reopened,closed_by
+x-001,kubernetes-platform-10,medium,internal,2026-09-25,,platform-team,fix,,,,,,,
+x-002,kubernetes-platform-02,medium,internal,2026-10-17,,platform-team,accepted_risk,business process depends on it,2026-12-18,,,,,
+x-003,kubernetes-platform-08,high,internal,2026-08-04,2026-08-19,games-backend,fix,,,,,,,manual
+x-004,kubernetes-platform-07,medium,internal,2026-07-17,2026-08-08,data-eng,accepted_risk,business process depends on it,2026-12-25,,,,,assisted
+x-005,kubernetes-platform-03,low,internal,2026-10-14,,data-eng,fix,,,,,,,
+x-006,kubernetes-platform-13,medium,internet,2026-07-13,2026-08-08,payments-dev,fix,,,,,,,assisted
+x-007,kubernetes-platform-05,low,internet,2026-09-10,,platform-team,fix,,,,,,,
+x-008,kubernetes-platform-01,low,internet,2026-09-04,,security-ops,fix,,,,,,,
+x-009,kubernetes-platform-11,medium,internal,2026-10-14,,payments-dev,accepted_risk,business process depends on it,2027-01-25,,,,,
+x-010,kubernetes-platform-09,low,internal,2026-09-07,2026-09-22,games-backend,accepted_risk,business process depends on it,2026-12-10,,,,,manual
+x-011,kubernetes-platform-09,low,internal,2026-08-11,,security-ops,accepted_risk,business process depends on it,2027-01-05,,,,,
+x-012,kubernetes-platform-07,medium,internet,2026-10-19,,security-ops,fix,,,,,,,
+x-013,kubernetes-platform-05,critical,internet,2026-10-24,,data-eng,fix,,,,,,,
+x-014,kubernetes-platform-02,medium,internal,2026-10-09,,,,,,,,,,
+x-015,kubernetes-platform-06,critical,internal,2026-10-21,,games-backend,fix,,,,,,,
+x-016,kubernetes-platform-05,low,internal,2026-07-18,2026-07-22,platform-team,fix,,,,,,,manual
+x-017,kubernetes-platform-03,medium,internet,2026-10-12,,games-backend,accepted_risk,business process depends on it,2027-01-17,,,,,
+x-018,kubernetes-platform-06,low,internet,2026-09-16,2026-09-29,payments-dev,fix,,,,,,,manual
+x-019,kubernetes-platform-10,low,internal,2026-08-24,2026-09-06,payments-dev,fix,,,,,,,automated
+x-020,kubernetes-platform-08,medium,internal,2026-10-03,,games-backend,fix,,,,,,,
+x-021,kubernetes-platform-07,critical,internal,2026-07-18,2026-07-25,data-eng,accepted_risk,business process depends on it,2027-02-08,,,,,assisted
+x-022,kubernetes-platform-10,medium,internet,2026-09-24,2026-09-28,payments-dev,fix,,,,,,,manual
+x-023,kubernetes-platform-07,critical,internet,2026-09-14,2026-09-29,games-backend,,,,,,,,manual
+x-024,kubernetes-platform-08,low,internet,2026-07-08,2026-07-31,data-eng,fix,,,,,,,assisted
+x-025,kubernetes-platform-09,high,internet,2026-09-04,2026-09-12,security-ops,fix,,,,,,,manual
+x-026,kubernetes-platform-11,medium,internal,2026-08-28,2026-09-23,platform-team,accepted_risk,business process depends on it,2026-11-21,,,,,automated
+x-027,kubernetes-platform-02,low,internal,2026-10-29,,data-eng,fix,,,,,,,
+x-028,kubernetes-platform-06,high,internet,2026-09-29,,payments-dev,,,,,,,,
+x-029,kubernetes-platform-01,medium,internet,2026-07-30,2026-08-26,payments-dev,fix,,,,,,,assisted
+x-030,kubernetes-platform-09,medium,internal,2026-08-06,,platform-team,fix,,,,,,,
+x-031,kubernetes-platform-03,medium,internal,2026-10-22,,games-backend,accepted_risk,business process depends on it,2026-11-24,,,,,
+x-032,kubernetes-platform-08,low,internet,2026-10-22,,games-backend,accepted_risk,business process depends on it,2027-02-21,,,,,
+x-033,kubernetes-platform-03,medium,internet,2026-10-02,,games-backend,accepted_risk,business process depends on it,2027-01-31,,,,,
+x-034,kubernetes-platform-06,low,internet,2026-07-12,,platform-team,accepted_risk,business process depends on it,2026-12-19,,,,,
+x-035,kubernetes-platform-07,medium,internet,2026-08-09,,,,,,,,,,
+x-036,kubernetes-platform-08,critical,internal,2026-10-12,,games-backend,,,,,,,,
+x-037,kubernetes-platform-11,low,internal,2026-08-29,2026-09-28,platform-team,fix,,,,,,,manual
+x-038,kubernetes-platform-02,low,internal,2026-09-28,2026-10-04,data-eng,fix,,,,,,,manual
+x-039,kubernetes-platform-08,medium,internet,2026-07-19,,data-eng,fix,,,,,,,
+x-040,kubernetes-platform-08,medium,internet,2026-10-21,,security-ops,fix,,,,,,,

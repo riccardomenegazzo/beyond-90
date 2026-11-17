@@ -1,0 +1,36 @@
+{
+  "version": "2026.4",
+  "description": "Disaster recovery and backup: sites whose workloads must be copied, recoverable within agreed times, and tested before they are needed.",
+  "terms": {
+    "estate": "recovery",
+    "unit": "site",
+    "units": "sites"
+  },
+  "types": {
+    "protected_vm": "Virtual machines under protection",
+    "recovery_plan": "Recovery plans with an order and a network map",
+    "replication_target": "Replication targets",
+    "backup_job": "Backup jobs",
+    "immutable_copy": "Copies that cannot be changed or deleted"
+  },
+  "expected": {
+    "primary_site": [
+      "protected_vm",
+      "recovery_plan",
+      "replication_target",
+      "backup_job"
+    ],
+    "secondary_site": [
+      "replication_target",
+      "recovery_plan"
+    ],
+    "branch": [
+      "protected_vm",
+      "backup_job"
+    ],
+    "cloud_site": [
+      "replication_target",
+      "immutable_copy"
+    ]
+  }
+}

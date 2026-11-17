@@ -1,0 +1,179 @@
+{
+  "use_cases": {
+    "ops": "Run databases with less effort",
+    "resilience": "Recover any database to any point",
+    "dev": "Give teams copies fast and safely",
+    "security": "Patch and protect"
+  },
+  "modules": [
+    {
+      "id": "fleet_inventory",
+      "name": "Every database registered with the platform",
+      "category": "cloud",
+      "since": "2025.1",
+      "providers": [
+        "on_premises",
+        "hybrid_cloud",
+        "remote_office"
+      ],
+      "requires_any": [],
+      "on_connect": true,
+      "use_case": "ops",
+      "csf": [
+        "identify"
+      ]
+    },
+    {
+      "id": "automated_provisioning",
+      "name": "Self-service provisioning from approved profiles",
+      "category": "cloud",
+      "since": "2025.1",
+      "providers": [
+        "on_premises",
+        "hybrid_cloud",
+        "remote_office"
+      ],
+      "requires_any": [
+        "database_instance",
+        "database_cluster"
+      ],
+      "on_connect": false,
+      "use_case": "ops",
+      "csf": [
+        "protect"
+      ]
+    },
+    {
+      "id": "fleet_patching",
+      "name": "Patching the fleet to approved versions",
+      "category": "defend",
+      "since": "2025.2",
+      "providers": [
+        "on_premises",
+        "hybrid_cloud",
+        "remote_office"
+      ],
+      "requires_any": [
+        "software_profile",
+        "database_instance"
+      ],
+      "on_connect": false,
+      "use_case": "security",
+      "csf": [
+        "protect"
+      ]
+    },
+    {
+      "id": "point_in_time_recovery",
+      "name": "Point-in-time recovery for every production database",
+      "category": "cloud",
+      "since": "2025.1",
+      "providers": [
+        "on_premises",
+        "hybrid_cloud",
+        "remote_office"
+      ],
+      "requires_any": [
+        "backup_policy"
+      ],
+      "on_connect": false,
+      "use_case": "resilience",
+      "csf": [
+        "recover"
+      ]
+    },
+    {
+      "id": "high_availability",
+      "name": "High availability for databases that need it",
+      "category": "cloud",
+      "since": "2025.2",
+      "providers": [
+        "on_premises",
+        "hybrid_cloud"
+      ],
+      "requires_any": [
+        "database_cluster"
+      ],
+      "on_connect": false,
+      "use_case": "resilience",
+      "csf": [
+        "recover"
+      ]
+    },
+    {
+      "id": "copy_data_management",
+      "name": "Masked clones for test and development",
+      "category": "cloud",
+      "since": "2025.3",
+      "providers": [
+        "on_premises",
+        "hybrid_cloud",
+        "remote_office"
+      ],
+      "requires_any": [
+        "clone",
+        "database_instance"
+      ],
+      "on_connect": false,
+      "use_case": "dev",
+      "csf": [
+        "protect"
+      ]
+    },
+    {
+      "id": "cross_site_replication",
+      "name": "Replication of database backups to a second site",
+      "category": "cloud",
+      "since": "2025.3",
+      "providers": [
+        "on_premises",
+        "hybrid_cloud"
+      ],
+      "requires_any": [
+        "backup_policy"
+      ],
+      "on_connect": false,
+      "use_case": "resilience",
+      "csf": [
+        "recover"
+      ]
+    },
+    {
+      "id": "access_control",
+      "name": "Role-based access to the platform and its databases",
+      "category": "defend",
+      "since": "2025.2",
+      "providers": [
+        "on_premises",
+        "hybrid_cloud",
+        "remote_office"
+      ],
+      "requires_any": [],
+      "on_connect": false,
+      "use_case": "security",
+      "csf": [
+        "protect"
+      ]
+    },
+    {
+      "id": "monitoring_alerts",
+      "name": "Monitoring and alerts on every database",
+      "category": "cloud",
+      "since": "2026.1",
+      "providers": [
+        "on_premises",
+        "hybrid_cloud",
+        "remote_office"
+      ],
+      "requires_any": [
+        "database_instance",
+        "database_cluster"
+      ],
+      "on_connect": false,
+      "use_case": "ops",
+      "csf": [
+        "detect"
+      ]
+    }
+  ]
+}

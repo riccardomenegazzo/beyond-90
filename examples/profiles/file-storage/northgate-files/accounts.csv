@@ -1,0 +1,10 @@
+id,provider,sources,connected,owner,last_spend,status,in_plan,created_at
+file-storage-01,remote_office,billing,false,it-service-desk,4800,active,true,2025-08-20
+file-storage-02,on_premises,billing;org;sso,true,records-office,5800,active,false,2026-07-28
+file-storage-03,on_premises,billing;org;sso,true,security-ops,400,active,true,2026-02-27
+file-storage-04,on_premises,billing;org;sso,true,security-ops,1100,active,false,2026-05-13
+file-storage-05,on_premises,billing;org;sso,true,it-service-desk,5700,active,true,2026-10-20
+file-storage-06,on_premises,billing;org;sso,true,records-office,800,active,true,2026-08-01
+file-storage-07,remote_office,billing;org;sso,true,security-ops,6800,active,true,2025-05-24
+file-storage-08,hybrid_cloud,billing;org;sso,true,branch-it,5600,active,true,2025-04-16
+file-storage-09,remote_office,billing;org;sso,true,security-ops,7200,active,true,2025-02-19

@@ -1,0 +1,24 @@
+{
+  "criteria": [
+    {
+      "text": "A production database is restored to a point in time five minutes before a simulated error, within the agreed time",
+      "how": "Drop a table on a copy of production, restore to the minute before, and time it end to end."
+    },
+    {
+      "text": "A masked copy of a production database is delivered to a development team in under an hour, with no DBA ticket",
+      "how": "Have one team request a clone through self-service and check that sensitive columns are masked."
+    },
+    {
+      "text": "The whole fleet moves to an approved patch level in one maintenance window, with a tested rollback",
+      "how": "Patch a group of test databases together, then roll one back."
+    },
+    {
+      "text": "A new database is provisioned from an approved profile in minutes, with backup already on",
+      "how": "Request one, then check its backup policy without touching it."
+    },
+    {
+      "text": "A database server failure leaves the clustered database available with no manual step",
+      "how": "Stop the primary node during a test load and watch the service continue."
+    }
+  ]
+}

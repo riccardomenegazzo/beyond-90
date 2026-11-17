@@ -163,7 +163,7 @@ def cmd_validate(args: argparse.Namespace) -> int:
     cat = _catalogue(args)
     data, warnings = load_customer(args.directory, cat)
     print(
-        f"OK: {data.name}, as of {data.as_of}: {len(data.accounts)} accounts, {len(data.inventory)} inventory rows, "
+        f"OK: {data.name}, as of {data.as_of}: {n_of(len(data.accounts), cat.terms['unit'], cat.terms['units'])}, {n_of(len(data.inventory), 'inventory row')}, "
         f"{len(data.activations)} activations, {len(data.findings)} findings, {len(data.teams)} teams, {len(data.entitlements)} entitlements."
     )
     for w in warnings:
@@ -1068,7 +1068,7 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("config")
     sp.add_argument("--at", default="05:17", help="time of day in UTC, HH:MM")
     sp.add_argument("--every", choices=["hour", "day", "week"], default="day")
-    sp.add_argument("--install-from", default="beyond90", help='pip requirement for the workflow, e.g. "beyond90 @ git+https://github.com/OWNER/beyond-90@v0.79.0"')
+    sp.add_argument("--install-from", default="beyond90", help='pip requirement for the workflow, e.g. "beyond90 @ git+https://github.com/OWNER/beyond-90@v0.80.0"')
     sp.add_argument("--out")
     sp.set_defaults(func=cmd_schedule)
 

@@ -1,0 +1,33 @@
+{
+  "version": "2026.4",
+  "description": "Database platform as a service: database environments whose provisioning, patching, backup, cloning and recovery are run by a platform instead of by hand.",
+  "terms": {
+    "estate": "database",
+    "unit": "database environment",
+    "units": "database environments",
+    "menu": "Databases"
+  },
+  "types": {
+    "database_instance": "Database instances (single node)",
+    "database_cluster": "Clustered databases with high availability",
+    "clone": "Copies of production for test and development",
+    "backup_policy": "Point-in-time backup policies",
+    "software_profile": "Approved database versions and patch levels"
+  },
+  "expected": {
+    "on_premises": [
+      "database_instance",
+      "database_cluster",
+      "backup_policy",
+      "software_profile"
+    ],
+    "hybrid_cloud": [
+      "database_instance",
+      "backup_policy"
+    ],
+    "remote_office": [
+      "database_instance",
+      "backup_policy"
+    ]
+  }
+}

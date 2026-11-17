@@ -1,0 +1,14 @@
+{
+  "playbooks": {
+    "l1_connect_account": {
+      "title": "Bring unprotected sites into the recovery plan",
+      "why": "Workloads run at this site, but nothing copies them or plans their recovery, so a failure there means rebuilding by hand.",
+      "steps": [
+        "List the sites and the workloads at each, including branches.",
+        "Classify each workload with its recovery point and recovery time.",
+        "Connect the site to the protection platform and start the first copies."
+      ],
+      "success": "Every site in scope has its workloads classified and copied."
+    }
+  }
+}

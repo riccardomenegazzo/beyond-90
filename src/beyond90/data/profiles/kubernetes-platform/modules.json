@@ -1,0 +1,192 @@
+{
+  "use_cases": {
+    "ops": "Run clusters with less effort",
+    "resilience": "Recover workloads and data",
+    "governance": "Keep teams within the rules",
+    "cost": "Know what each team uses"
+  },
+  "modules": [
+    {
+      "id": "fleet_management",
+      "name": "Every cluster managed from one place",
+      "category": "cloud",
+      "since": "2025.1",
+      "providers": [
+        "on_premises",
+        "hybrid_cloud",
+        "edge",
+        "public_cloud"
+      ],
+      "requires_any": [],
+      "on_connect": true,
+      "use_case": "ops",
+      "csf": [
+        "identify"
+      ]
+    },
+    {
+      "id": "lifecycle_upgrades",
+      "name": "Rolling Kubernetes upgrades with no downtime",
+      "category": "cloud",
+      "since": "2025.1",
+      "providers": [
+        "on_premises",
+        "hybrid_cloud",
+        "edge",
+        "public_cloud"
+      ],
+      "requires_any": [
+        "node_pool"
+      ],
+      "on_connect": false,
+      "use_case": "ops",
+      "csf": [
+        "protect"
+      ]
+    },
+    {
+      "id": "autoscaling",
+      "name": "Node and workload autoscaling",
+      "category": "cloud",
+      "since": "2025.2",
+      "providers": [
+        "on_premises",
+        "hybrid_cloud",
+        "edge",
+        "public_cloud"
+      ],
+      "requires_any": [
+        "node_pool",
+        "workload"
+      ],
+      "on_connect": false,
+      "use_case": "cost",
+      "csf": [
+        "identify"
+      ]
+    },
+    {
+      "id": "workload_backup",
+      "name": "Backup and restore of workloads and volumes",
+      "category": "cloud",
+      "since": "2025.2",
+      "providers": [
+        "on_premises",
+        "hybrid_cloud",
+        "edge",
+        "public_cloud"
+      ],
+      "requires_any": [
+        "persistent_volume",
+        "workload"
+      ],
+      "on_connect": false,
+      "use_case": "resilience",
+      "csf": [
+        "recover"
+      ]
+    },
+    {
+      "id": "admission_policy",
+      "name": "Admission policies (approved images, limits, no privileged pods)",
+      "category": "defend",
+      "since": "2025.2",
+      "providers": [
+        "on_premises",
+        "hybrid_cloud",
+        "edge",
+        "public_cloud"
+      ],
+      "requires_any": [
+        "namespace",
+        "workload"
+      ],
+      "on_connect": false,
+      "use_case": "governance",
+      "csf": [
+        "protect"
+      ]
+    },
+    {
+      "id": "observability",
+      "name": "Metrics, logs and traces for every cluster",
+      "category": "cloud",
+      "since": "2025.1",
+      "providers": [
+        "on_premises",
+        "hybrid_cloud",
+        "edge",
+        "public_cloud"
+      ],
+      "requires_any": [
+        "workload"
+      ],
+      "on_connect": false,
+      "use_case": "ops",
+      "csf": [
+        "detect"
+      ]
+    },
+    {
+      "id": "gitops",
+      "name": "Changes delivered through Git, not by hand",
+      "category": "cloud",
+      "since": "2025.3",
+      "providers": [
+        "on_premises",
+        "hybrid_cloud",
+        "edge",
+        "public_cloud"
+      ],
+      "requires_any": [
+        "namespace",
+        "workload"
+      ],
+      "on_connect": false,
+      "use_case": "governance",
+      "csf": [
+        "protect"
+      ]
+    },
+    {
+      "id": "secrets_management",
+      "name": "Secrets from a vault, not in manifests",
+      "category": "defend",
+      "since": "2025.3",
+      "providers": [
+        "on_premises",
+        "hybrid_cloud",
+        "edge",
+        "public_cloud"
+      ],
+      "requires_any": [
+        "workload"
+      ],
+      "on_connect": false,
+      "use_case": "governance",
+      "csf": [
+        "protect"
+      ]
+    },
+    {
+      "id": "cost_visibility",
+      "name": "Cost and usage per team and namespace",
+      "category": "cloud",
+      "since": "2026.1",
+      "providers": [
+        "on_premises",
+        "hybrid_cloud",
+        "edge",
+        "public_cloud"
+      ],
+      "requires_any": [
+        "namespace"
+      ],
+      "on_connect": false,
+      "use_case": "cost",
+      "csf": [
+        "identify"
+      ]
+    }
+  ]
+}

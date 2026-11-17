@@ -26,7 +26,7 @@ from playwright.sync_api import sync_playwright
 
 # Controls live in places (Start, Saved, Help); the test opens the place before using one, as a person would.
 PLACE_OF = {
-    **dict.fromkeys(("open-starter", "open-mapper", "map-file", "map-body", "map-check", "map-use", "map-cancel", "map-notes", "demo", "demo-book", "demo-endpoint", "demo-saas", "demo-ai", "demo-identity", "demo-siem", "demo-hci", "demo-objstore", "latest-adv", "demo-adv", "clear-adv", "adv-status", "run", "cancel",
+    **dict.fromkeys(("open-starter", "open-mapper", "map-file", "map-body", "map-check", "map-use", "map-cancel", "map-notes", "demo", "demo-book", "demo-endpoint", "demo-saas", "demo-ai", "demo-identity", "demo-siem", "demo-hci", "demo-objstore", "demo-dbaas", "demo-files", "demo-k8s", "demo-dr", "latest-adv", "demo-adv", "clear-adv", "adv-status", "run", "cancel",
                      "weeks", "hours", "real", "quarter", "bookhours", "weighting", "loaded", "status"), "start"),
     **dict.fromkeys(("demo-prev", "export", "forget", "vault-on", "vault-unlock", "vault-lock", "vault-off", "vault-state",
                      "vault-warn", "ws-status", "history-body", "device-qr", "send-work", "history-empty", "hist-table", "trend", "autosave", "personal", "privacy-body", "restore-in", "restore-out", "restore-note", "erase-result"), "saved"),
@@ -633,7 +633,7 @@ def main(site: str) -> int:
         page.click("[data-tab=qbr]")
         qbr = page.inner_text("#doc")
         check(" site" in qbr and "cloud" not in qbr.lower(), "and reads in its own words (sites, not cloud accounts)")
-        for demo_id, who in (("demo-saas", "Acme SaaS"), ("demo-ai", "Orbit AI"), ("demo-hci", "Granite Manufacturing"), ("demo-objstore", "Meridian Health")):
+        for demo_id, who in (("demo-saas", "Acme SaaS"), ("demo-ai", "Orbit AI"), ("demo-hci", "Granite Manufacturing"), ("demo-dr", "Harborline Retail"), ("demo-objstore", "Meridian Health")):
             page.click(f"#{demo_id}")
             page.wait_for_selector("#loaded li:has-text('customer.toml')")
             run_and_wait()

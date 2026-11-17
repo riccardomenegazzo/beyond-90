@@ -1,0 +1,187 @@
+{
+  "use_cases": {
+    "resilience": "Recover files and survive ransomware",
+    "governance": "Know who touches what",
+    "ops": "Run it with less effort",
+    "cost": "Keep only what is needed"
+  },
+  "modules": [
+    {
+      "id": "server_monitoring",
+      "name": "Health and capacity monitoring",
+      "category": "cloud",
+      "since": "2025.1",
+      "providers": [
+        "on_premises",
+        "remote_office",
+        "hybrid_cloud"
+      ],
+      "requires_any": [],
+      "on_connect": true,
+      "use_case": "ops",
+      "csf": [
+        "identify"
+      ]
+    },
+    {
+      "id": "scheduled_snapshots",
+      "name": "Scheduled snapshots on every share",
+      "category": "cloud",
+      "since": "2025.1",
+      "providers": [
+        "on_premises",
+        "remote_office",
+        "hybrid_cloud"
+      ],
+      "requires_any": [
+        "snapshot_policy",
+        "smb_share",
+        "nfs_export"
+      ],
+      "on_connect": false,
+      "use_case": "resilience",
+      "csf": [
+        "protect",
+        "recover"
+      ]
+    },
+    {
+      "id": "self_service_restore",
+      "name": "Self-service restore of previous versions",
+      "category": "cloud",
+      "since": "2025.1",
+      "providers": [
+        "on_premises",
+        "remote_office",
+        "hybrid_cloud"
+      ],
+      "requires_any": [
+        "smb_share",
+        "home_share"
+      ],
+      "on_connect": false,
+      "use_case": "resilience",
+      "csf": [
+        "recover"
+      ]
+    },
+    {
+      "id": "ransomware_detection",
+      "name": "Detection of mass encryption or deletion, with automatic blocking",
+      "category": "defend",
+      "since": "2025.3",
+      "providers": [
+        "on_premises",
+        "remote_office",
+        "hybrid_cloud"
+      ],
+      "requires_any": [
+        "smb_share",
+        "nfs_export"
+      ],
+      "on_connect": false,
+      "use_case": "resilience",
+      "csf": [
+        "detect",
+        "respond"
+      ]
+    },
+    {
+      "id": "file_audit",
+      "name": "Audit of who read, changed or deleted what",
+      "category": "defend",
+      "since": "2025.2",
+      "providers": [
+        "on_premises",
+        "remote_office",
+        "hybrid_cloud"
+      ],
+      "requires_any": [
+        "smb_share",
+        "nfs_export"
+      ],
+      "on_connect": false,
+      "use_case": "governance",
+      "csf": [
+        "detect"
+      ]
+    },
+    {
+      "id": "permission_review",
+      "name": "Review of over-broad permissions on shares",
+      "category": "defend",
+      "since": "2025.3",
+      "providers": [
+        "on_premises",
+        "remote_office",
+        "hybrid_cloud"
+      ],
+      "requires_any": [
+        "smb_share"
+      ],
+      "on_connect": false,
+      "use_case": "governance",
+      "csf": [
+        "identify"
+      ]
+    },
+    {
+      "id": "quotas",
+      "name": "Quotas on users and shares",
+      "category": "cloud",
+      "since": "2025.1",
+      "providers": [
+        "on_premises",
+        "remote_office",
+        "hybrid_cloud"
+      ],
+      "requires_any": [
+        "quota",
+        "home_share"
+      ],
+      "on_connect": false,
+      "use_case": "cost",
+      "csf": [
+        "identify"
+      ]
+    },
+    {
+      "id": "tiering",
+      "name": "Tiering of cold data to cheaper storage",
+      "category": "cloud",
+      "since": "2025.3",
+      "providers": [
+        "on_premises",
+        "hybrid_cloud"
+      ],
+      "requires_any": [
+        "smb_share",
+        "nfs_export"
+      ],
+      "on_connect": false,
+      "use_case": "cost",
+      "csf": [
+        "identify"
+      ]
+    },
+    {
+      "id": "site_replication",
+      "name": "Replication of shares to a second site",
+      "category": "cloud",
+      "since": "2026.1",
+      "providers": [
+        "on_premises",
+        "hybrid_cloud"
+      ],
+      "requires_any": [
+        "smb_share",
+        "nfs_export"
+      ],
+      "on_connect": false,
+      "use_case": "resilience",
+      "csf": [
+        "recover"
+      ]
+    }
+  ]
+}

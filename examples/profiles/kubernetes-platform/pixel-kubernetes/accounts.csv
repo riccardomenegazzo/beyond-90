@@ -1,0 +1,14 @@
+id,provider,sources,connected,owner,last_spend,status,in_plan,created_at
+kubernetes-platform-01,on_premises,billing,true,games-backend,6700,active,true,2025-03-06
+kubernetes-platform-02,hybrid_cloud,billing;org,true,data-eng,5000,active,true,2026-08-07
+kubernetes-platform-03,on_premises,billing;org;sso,true,data-eng,3100,active,true,2026-05-08
+kubernetes-platform-04,on_premises,billing;org,false,data-eng,7400,active,true,2025-02-15
+kubernetes-platform-05,hybrid_cloud,billing;org,true,payments-dev,6200,active,false,2025-07-17
+kubernetes-platform-06,public_cloud,billing;org;sso,true,security-ops,7900,active,true,2025-04-05
+kubernetes-platform-07,on_premises,billing;org;sso,true,data-eng,6000,active,true,2026-03-15
+kubernetes-platform-08,hybrid_cloud,billing;org;sso,true,data-eng,500,active,true,2025-06-10
+kubernetes-platform-09,public_cloud,billing;sso,true,games-backend,4200,active,true,2026-04-27
+kubernetes-platform-10,on_premises,billing;sso,true,games-backend,6700,active,true,2026-04-11
+kubernetes-platform-11,public_cloud,billing;org;sso,true,data-eng,2300,active,true,2026-01-07
+kubernetes-platform-12,hybrid_cloud,billing;org,false,games-backend,5100,active,true,2025-05-14
+kubernetes-platform-13,on_premises,billing;org;sso,true,data-eng,4100,active,true,2026-03-30

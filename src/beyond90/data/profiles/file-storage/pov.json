@@ -1,0 +1,24 @@
+{
+  "criteria": [
+    {
+      "text": "A simulated ransomware encryption on a test share is detected and the client blocked within minutes, and the files are restored",
+      "how": "Run a safe encryption simulator against a test share and time detection, blocking and restore."
+    },
+    {
+      "text": "A user restores yesterday's version of a file without opening a ticket",
+      "how": "Ask one user to restore a file through previous versions."
+    },
+    {
+      "text": "The audit answers who deleted a given folder and when, in under five minutes",
+      "how": "Delete a test folder, then find the user and time in the audit."
+    },
+    {
+      "text": "Shares open to everyone are listed with their owners, and the list is agreed with the business",
+      "how": "Run the permission review on two departments and review it with them."
+    },
+    {
+      "text": "Cold data moves to cheaper storage with no change for users, and the saving is shown",
+      "how": "Tier one share and open its old files from a client."
+    }
+  ]
+}

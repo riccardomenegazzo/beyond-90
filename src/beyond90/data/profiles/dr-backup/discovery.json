@@ -1,0 +1,44 @@
+{
+  "questions": [
+    {
+      "stage": "value",
+      "q": "What would one day without your main site cost, and has anyone put a number on it?",
+      "why": "Turns recovery objectives into a business decision."
+    },
+    {
+      "stage": "value",
+      "q": "When was the last full recovery test, and what went wrong in it?",
+      "why": "Tests always find something; no test means it is still hidden."
+    },
+    {
+      "stage": "L1",
+      "q": "Which sites and branches have no copy of their workloads anywhere?",
+      "why": "Unprotected sites are the first gap to close."
+    },
+    {
+      "stage": "L2",
+      "q": "Has every workload been given a recovery point and a recovery time, agreed with the business?",
+      "why": "Without objectives, nothing can be checked or prioritised."
+    },
+    {
+      "stage": "L3",
+      "q": "Could an administrator account delete your backups today?",
+      "why": "If yes, ransomware can too."
+    },
+    {
+      "stage": "L3",
+      "q": "Does the recovery plan include the network: addresses, DNS, firewall rules?",
+      "why": "Most failed recoveries fail on the network, not on the data."
+    },
+    {
+      "stage": "L3",
+      "q": "Who can start a failover, and do they have the runbook at night?",
+      "why": "Recovery depends on people as much as on copies."
+    },
+    {
+      "stage": "L4",
+      "q": "When a replication falls behind, who is told and what do they do?",
+      "why": "A silent missed recovery point is discovered on the worst day."
+    }
+  ]
+}

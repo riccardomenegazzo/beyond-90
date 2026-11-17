@@ -1,0 +1,39 @@
+{
+  "version": "2026.4",
+  "description": "Managed Kubernetes platform: clusters run for application teams, with lifecycle, backup, policy, observability and cost to adopt.",
+  "terms": {
+    "estate": "container platform",
+    "unit": "cluster",
+    "units": "clusters"
+  },
+  "types": {
+    "node_pool": "Node pools",
+    "namespace": "Namespaces given to teams",
+    "workload": "Deployments and stateful workloads",
+    "persistent_volume": "Persistent volumes",
+    "ingress": "Ingress and load balancers"
+  },
+  "expected": {
+    "on_premises": [
+      "node_pool",
+      "namespace",
+      "workload",
+      "persistent_volume"
+    ],
+    "hybrid_cloud": [
+      "node_pool",
+      "namespace",
+      "workload"
+    ],
+    "edge": [
+      "node_pool",
+      "workload"
+    ],
+    "public_cloud": [
+      "node_pool",
+      "namespace",
+      "workload",
+      "ingress"
+    ]
+  }
+}

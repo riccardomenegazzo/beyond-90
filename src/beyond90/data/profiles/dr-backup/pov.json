@@ -1,0 +1,24 @@
+{
+  "criteria": [
+    {
+      "text": "A test failover of a business application meets the agreed recovery time and point, without touching production",
+      "how": "Run the recovery plan in test mode and record time to service and data lost."
+    },
+    {
+      "text": "After a simulated ransomware attack, systems are restored from an immutable copy that the attacker's admin account could not delete",
+      "how": "Try to delete the copies with an administrator account, then restore from them."
+    },
+    {
+      "text": "A missed recovery point raises an alert to a named owner within minutes",
+      "how": "Pause replication for one VM and watch who is told."
+    },
+    {
+      "text": "A failback to the primary site completes in the order of the plan, with no manual network change",
+      "how": "Fail back the test application and check its addresses and order."
+    },
+    {
+      "text": "The recovery test produces a report an auditor accepts as evidence",
+      "how": "Show the report to the customer's audit or compliance contact."
+    }
+  ]
+}

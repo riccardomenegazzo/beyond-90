@@ -1,0 +1,15 @@
+id,provider,sources,connected,owner,last_spend,status,in_plan,created_at
+dbaas-01,on_premises,billing;org;sso,false,data-platform,5800,active,true,2026-10-21
+dbaas-02,on_premises,billing;org;sso,true,clinical-apps,5200,active,true,2025-05-30
+dbaas-03,hybrid_cloud,billing;org;sso,true,security-ops,6500,active,true,2025-08-10
+dbaas-04,on_premises,billing;sso,false,data-platform,4200,active,true,2026-09-11
+dbaas-05,on_premises,billing;org;sso,true,clinical-apps,6800,active,true,2026-04-03
+dbaas-06,hybrid_cloud,billing;org;sso,true,dev-tools,1300,active,true,2025-02-21
+dbaas-07,on_premises,billing;org;sso,true,security-ops,1600,active,true,2025-12-24
+dbaas-08,on_premises,billing;org,false,security-ops,2400,active,true,2026-02-17
+dbaas-09,on_premises,billing;org;sso,true,clinical-apps,6700,active,true,2025-06-13
+dbaas-10,remote_office,billing;sso,true,security-ops,500,active,false,2025-04-27
+dbaas-11,hybrid_cloud,billing;sso,true,security-ops,7600,active,true,2026-01-19
+dbaas-12,on_premises,billing;org,true,dba-team,2500,active,true,2026-01-17
+dbaas-13,remote_office,billing;org,true,dba-team,5100,active,true,2025-04-28
+dbaas-14,on_premises,billing;org,true,security-ops,5900,active,true,2025-07-05

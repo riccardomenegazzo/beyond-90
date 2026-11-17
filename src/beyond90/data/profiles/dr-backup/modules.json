@@ -1,0 +1,184 @@
+{
+  "use_cases": {
+    "recovery": "Recover within the agreed times",
+    "ransomware": "Survive ransomware",
+    "proof": "Prove it to auditors",
+    "ops": "Run it with less effort"
+  },
+  "modules": [
+    {
+      "id": "protection_inventory",
+      "name": "Every workload classified with its recovery objectives",
+      "category": "cloud",
+      "since": "2025.1",
+      "providers": [
+        "primary_site",
+        "secondary_site",
+        "branch",
+        "cloud_site"
+      ],
+      "requires_any": [],
+      "on_connect": true,
+      "use_case": "proof",
+      "csf": [
+        "identify"
+      ]
+    },
+    {
+      "id": "replication_rpo",
+      "name": "Replication that meets the agreed recovery point",
+      "category": "cloud",
+      "since": "2025.1",
+      "providers": [
+        "primary_site",
+        "branch",
+        "cloud_site"
+      ],
+      "requires_any": [
+        "protected_vm",
+        "replication_target"
+      ],
+      "on_connect": false,
+      "use_case": "recovery",
+      "csf": [
+        "recover"
+      ]
+    },
+    {
+      "id": "recovery_plans",
+      "name": "Recovery plans with boot order and network mapping",
+      "category": "cloud",
+      "since": "2025.1",
+      "providers": [
+        "primary_site",
+        "secondary_site"
+      ],
+      "requires_any": [
+        "recovery_plan"
+      ],
+      "on_connect": false,
+      "use_case": "recovery",
+      "csf": [
+        "recover"
+      ]
+    },
+    {
+      "id": "regular_test_failover",
+      "name": "Test failovers run on a schedule, without disruption",
+      "category": "cloud",
+      "since": "2025.2",
+      "providers": [
+        "primary_site",
+        "secondary_site",
+        "cloud_site"
+      ],
+      "requires_any": [
+        "recovery_plan"
+      ],
+      "on_connect": false,
+      "use_case": "proof",
+      "csf": [
+        "recover"
+      ]
+    },
+    {
+      "id": "immutable_backups",
+      "name": "Immutable copies that an administrator cannot delete",
+      "category": "defend",
+      "since": "2025.2",
+      "providers": [
+        "primary_site",
+        "secondary_site",
+        "branch",
+        "cloud_site"
+      ],
+      "requires_any": [
+        "immutable_copy",
+        "backup_job"
+      ],
+      "on_connect": false,
+      "use_case": "ransomware",
+      "csf": [
+        "protect",
+        "recover"
+      ]
+    },
+    {
+      "id": "isolated_copy",
+      "name": "An isolated copy outside the production network",
+      "category": "defend",
+      "since": "2025.3",
+      "providers": [
+        "cloud_site",
+        "secondary_site"
+      ],
+      "requires_any": [
+        "immutable_copy",
+        "replication_target"
+      ],
+      "on_connect": false,
+      "use_case": "ransomware",
+      "csf": [
+        "protect"
+      ]
+    },
+    {
+      "id": "orchestrated_failover",
+      "name": "One-click orchestrated failover and failback",
+      "category": "cloud",
+      "since": "2025.3",
+      "providers": [
+        "primary_site",
+        "secondary_site"
+      ],
+      "requires_any": [
+        "recovery_plan"
+      ],
+      "on_connect": false,
+      "use_case": "recovery",
+      "csf": [
+        "respond"
+      ]
+    },
+    {
+      "id": "rpo_alerts",
+      "name": "Alerts when a recovery point objective is missed",
+      "category": "cloud",
+      "since": "2025.2",
+      "providers": [
+        "primary_site",
+        "secondary_site",
+        "branch",
+        "cloud_site"
+      ],
+      "requires_any": [
+        "protected_vm"
+      ],
+      "on_connect": false,
+      "use_case": "ops",
+      "csf": [
+        "detect"
+      ]
+    },
+    {
+      "id": "recovery_reports",
+      "name": "Recovery test reports for auditors",
+      "category": "cloud",
+      "since": "2026.1",
+      "providers": [
+        "primary_site",
+        "secondary_site",
+        "branch",
+        "cloud_site"
+      ],
+      "requires_any": [
+        "recovery_plan"
+      ],
+      "on_connect": false,
+      "use_case": "proof",
+      "csf": [
+        "identify"
+      ]
+    }
+  ]
+}

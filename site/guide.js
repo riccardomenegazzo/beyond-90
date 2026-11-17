@@ -70,7 +70,7 @@ export const BOOK_NAV = [
 export const FAQ = [
   { group: "Getting started", items: [
     { q: "What does Beyond 90 do, in one sentence?",
-      a: "It reads what a security customer really uses, shows where their coverage leaks, and tells you what to do and what to say next, for one customer or your whole book." },
+      a: "It reads what a customer really uses, from cloud security to databases and disaster recovery, shows where their coverage leaks, and tells you what to do and what to say next, for one customer or your whole book." },
     { q: "What do I need to start?",
       a: "A folder with the customer's files: customer.toml and accounts.csv at least, plus inventory, activations and findings if you have them. Not ready yet? Open one of the examples on Start and look around; nothing you do there touches real data.",
       link: { place: "start", text: "Go to Start" } },

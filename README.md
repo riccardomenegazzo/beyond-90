@@ -30,7 +30,7 @@ Nobody lied. Each team reported its own step. [Why multiply, and why both number
 - **Shows what waiting costs:** every drop already dated in the data (secrets, accepted risks, deadlines), and what the work of a quarter was worth.
 - **Writes for the customer:** a CISO one-pager, an executive QBR and slides, a status page, all through a preview that can swap names for aliases.
 - **Works across a book of customers:** this week's priorities, shared patterns, and one budget of hours where it gains most.
-- **Fits the product you support:** profiles for cloud security, endpoint, SaaS, AI, identity, SIEM, hyperconverged infrastructure and object storage, or your own in JSON.
+- **Fits the product you support:** profiles for cloud security, endpoint, SaaS, AI, identity, SIEM, hyperconverged infrastructure, object storage, databases, file storage, Kubernetes platforms and disaster recovery, or your own in JSON.
 - **Installs as an app** on a phone or a computer, works offline, and accepts files shared from mail.
 
 | | |

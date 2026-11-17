@@ -36,6 +36,22 @@ CUSTOMERS = {
                        "connect": 0.92, "seen": 0.96, "on": 0.72, "own": 0.88, "decide": 0.92,
                        "owners": ["backup-team", "data-platform", "imaging-it", "security-ops", "archive-office"],
                        "entitlements": "unit,licensed,used\ncapacity_tb,800,430\nlocked_tb,400,95\n"},
+    "dbaas": {"dir": "aurora-dbaas", "name": "Aurora Clinics (mock)", "arr": 150000, "seed": 4107, "count": 14, "weights": [7, 3, 3],
+              "connect": 0.9, "seen": 0.95, "on": 0.84, "own": 0.88, "decide": 0.92,
+              "owners": ["dba-team", "clinical-apps", "data-platform", "security-ops", "dev-tools"],
+              "entitlements": "unit,licensed,used\ndatabases,120,74\nclones,300,40\n"},
+    "file-storage": {"dir": "northgate-files", "name": "Northgate Partners (mock)", "arr": 95000, "seed": 4108, "count": 9, "weights": [5, 4, 2],
+                     "connect": 0.9, "seen": 0.95, "on": 0.84, "own": 0.88, "decide": 0.92,
+                     "owners": ["it-service-desk", "records-office", "finance-it", "security-ops", "branch-it"],
+                     "entitlements": "unit,licensed,used\ncapacity_tb,200,140\naudited_tb,200,35\n"},
+    "kubernetes-platform": {"dir": "pixel-kubernetes", "name": "Pixel Forge (mock)", "arr": 170000, "seed": 4109, "count": 13, "weights": [4, 3, 2, 4],
+                            "connect": 0.9, "seen": 0.95, "on": 0.84, "own": 0.88, "decide": 0.92,
+                            "owners": ["platform-team", "payments-dev", "games-backend", "data-eng", "security-ops"],
+                            "entitlements": "unit,licensed,used\nmanaged_nodes,400,260\nbacked_up_namespaces,120,30\n"},
+    "dr-backup": {"dir": "harborline-dr", "name": "Harborline Retail (mock)", "arr": 140000, "seed": 4110, "count": 11, "weights": [3, 2, 6, 2],
+                  "connect": 0.9, "seen": 0.95, "on": 0.84, "own": 0.88, "decide": 0.92,
+                  "owners": ["infra-ops", "store-it", "backup-team", "security-ops", "erp-team"],
+                  "entitlements": "unit,licensed,used\nprotected_vms,900,520\nimmutable_tb,150,30\n"},
 }
 
 

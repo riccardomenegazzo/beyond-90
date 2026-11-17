@@ -1,0 +1,14 @@
+{
+  "playbooks": {
+    "l1_connect_account": {
+      "title": "Bring the file servers nobody watches under the console",
+      "why": "Departments keep their files on these servers, but the console does not see them, so their snapshots, permissions and capacity go unchecked.",
+      "steps": [
+        "List file servers from the network and the directory, including branch offices.",
+        "Register each one with the console using the documented service account.",
+        "Confirm shares, snapshot schedules and capacity show for each."
+      ],
+      "success": "Every file server in scope reports its shares and snapshots."
+    }
+  }
+}

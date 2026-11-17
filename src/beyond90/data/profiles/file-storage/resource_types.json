@@ -1,0 +1,33 @@
+{
+  "version": "2026.4",
+  "description": "Scale-out file storage: file servers that hold departmental and application shares, with snapshots, ransomware detection, audit and quotas to adopt.",
+  "terms": {
+    "estate": "file",
+    "unit": "file server",
+    "units": "file servers"
+  },
+  "types": {
+    "smb_share": "Windows (SMB) shares",
+    "nfs_export": "NFS exports",
+    "snapshot_policy": "Snapshot schedules",
+    "quota": "Quotas on users and shares",
+    "home_share": "Users' home directories"
+  },
+  "expected": {
+    "on_premises": [
+      "smb_share",
+      "nfs_export",
+      "snapshot_policy",
+      "quota"
+    ],
+    "remote_office": [
+      "smb_share",
+      "snapshot_policy"
+    ],
+    "hybrid_cloud": [
+      "smb_share",
+      "nfs_export",
+      "snapshot_policy"
+    ]
+  }
+}
