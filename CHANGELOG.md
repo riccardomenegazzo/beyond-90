@@ -2,6 +2,11 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.88.0
+
+- **The journey becomes a mutual plan.** Each condition can be given who makes it true (us, the customer, or together) and by when. Owners and dates show in the customer readout ("Who, by when") and in the meeting summary, and survive a changed answer or figure. When presenting, they show as text.
+- The README, the app and the extension now describe the project from discovery to renewal, for infrastructure as well as security.
+
 ## 0.87.0
 
 - **A filled-in example workshop**, from the start page: an invented logistics company leaving its virtualisation platform, worried about recovery, with answers, notes and figures. It opens on the journey, so the method can be shown in thirty seconds.

@@ -967,3 +967,8 @@ body.presenting main{max-width:1180px;margin:0 auto;padding:36px 40px;font-size:
 body.presenting .jstep h2{font-size:23px}
 body.presenting .jconds li b{font-size:17px}
 .jfig small{display:block;font-size:12.5px;color:#c5d2e1;margin-top:2px}
+.jplan{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:4px}
+.jplan select,.jplan input{font-size:13px;padding:4px 8px}
+.jplanv{font-size:13px;font-weight:700;color:var(--ink2)}
+body:not(.presenting) .jplanv{display:none}
+body.presenting .jplan select,body.presenting .jplan input{display:none}

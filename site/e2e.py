@@ -709,6 +709,15 @@ def main(site: str) -> int:
         check(not re.search(r"\bnull\b|\bundefined\b|NaN", page.inner_text("#view")), "the journey shows no stray null, undefined or NaN")
         check(page.locator("#view .jstep").count() >= 3 and page.locator("#view .jconds li").count() >= 5 and "First step:" in page.inner_text("#view ol.journey"), "each step lists what would need to be true, with a first step")
         check("Validated by" in page.inner_text("#view .jstep.k-prove") and "Already true" in page.inner_text("#view ol.journey"), "and how it is validated, and what is already true")
+        first = page.locator("#view .jstep.k-prove .jconds li").first
+        first.locator("select").select_option("together")
+        first.locator("input[type=date]").fill("2026-12-15")
+        first.locator("input[type=date]").dispatch_event("change")
+        page.wait_for_timeout(400)
+        page.click("[data-tab=readout]")
+        check("Together" in page.frame_locator("#report").locator("table").first.inner_text() or "Together" in page.frame_locator("#report").locator("body").inner_text(),
+              "who makes a condition true, and by when, reaches the customer readout")
+        page.click("[data-tab=journey]")
         page.click("[data-tab=hurt]")
         page.wait_for_selector("#view .painmap")
         check("Disaster recovery and backup" in page.inner_text("#view .wsland"), "the line that hurts most is where to start")

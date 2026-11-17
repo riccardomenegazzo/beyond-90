@@ -16,6 +16,7 @@ export const ANSWERS = {
 export const MAX_WORKSHOPS = 200;
 export const PER = ["hour", "day", "week", "month", "year", "incident"];     // what a figure on a value question is counted per
 const MAX_AMOUNT = 1e13;
+export const WHO = { us: "Us", customer: "The customer", together: "Together" };    // who makes a condition true
 const MAX_ANSWERS = 400, MAX_SCOPE = 12;
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 const NONCE = /^[a-z0-9]{6,12}$/;
@@ -54,6 +55,8 @@ export function validWorkshop(w) {
     if (!KEY.test(k) || !v || typeof v !== "object" || !(v.a in ANSWERS) || typeof v.note !== "string" || v.note.length > 300) return false;
     if (v.amount != null && !(typeof v.amount === "number" && Number.isFinite(v.amount) && v.amount >= 0 && v.amount <= MAX_AMOUNT && PER.includes(v.per))) return false;
     if (v.amount == null && v.per != null) return false;
+    if (v.who != null && !(v.who in WHO)) return false;
+    if (v.by != null && !(isDate(v.by) && v.by >= w.created_on)) return false;
   }
   const m = /^ws\|(\d{4}-\d{2}-\d{2})\|([a-z0-9]+)$/.exec(w.id || "");
   return !!m && m[1] === w.created_on && NONCE.test(m[2]);
@@ -92,12 +95,27 @@ export function setAnswer(w, profile, index, answer, note, today) {
   return changed(w, { answers }, today);
 }
 
+/** Who makes a condition true, and by when: the journey becomes a plan both sides can hold each other to. Empty clears. */
+export function setPlan(w, profile, index, who, by, today) {
+  const k = `${profile}#${index}`;
+  const have = w.answers[k];
+  if (!have) throw new Error("Answer the question first, then plan it.");
+  if (who && !(who in WHO)) throw new Error("Say who: us, the customer, or together.");
+  if (by && (!isDate(by) || by < w.created_on)) throw new Error("Give a date on or after the day the workshop started.");
+  const next = { ...have };
+  delete next.who; delete next.by;
+  if (who) next.who = who;
+  if (by) next.by = by;
+  return changed(w, { answers: { ...w.answers, [k]: next } }, today);
+}
+
 /** Put a figure on an answered value question ("2,000,000 per day"); an empty amount removes it. */
 export function setWorth(w, profile, index, amount, per, today) {
   const k = `${profile}#${index}`;
   const have = w.answers[k];
   if (!have) throw new Error("Answer the question first, then put a figure on it.");
-  const rest = { a: have.a, note: have.note };
+  const rest = { ...have };
+  delete rest.amount; delete rest.per;
   if (amount === "" || amount == null) return changed(w, { answers: { ...w.answers, [k]: rest } }, today);
   const n = typeof amount === "number" ? amount : Number(String(amount).replace(/[\s,'_]/g, ""));
   if (!Number.isFinite(n) || n < 0 || n > MAX_AMOUNT) throw new Error("Give the figure as a number, for example 250000.");
@@ -180,7 +198,7 @@ export function lineState(catalog, profile, answers) {
     const m = q.stage === "value" ? 2 : 1;
     sum += ANSWERS[ans.a].weight * m;
     max += m;
-    const item = { ...q, index: i, note: ans.note, ...(ans.amount != null ? { amount: ans.amount, per: ans.per } : {}) };
+    const item = { ...q, index: i, note: ans.note, ...(ans.amount != null ? { amount: ans.amount, per: ans.per } : {}), ...(ans.who ? { who: ans.who } : {}), ...(ans.by ? { by: ans.by } : {}) };
     ({ gap: out.gaps, partly: out.partly, unknown: out.unknowns, solved: out.solved })[ans.a].push(item);
   });
   out.pain = max ? sum / max : 0;
@@ -225,7 +243,7 @@ const STATUS_ORDER = { gap: 0, unknown: 1, partly: 2 };
 
 /** One line's answers turned into conditions: what would need to be true, where the customer is today, the first step. */
 function conditions(l) {
-  const of = (items, status) => items.map((q) => ({ need: q.need || q.q, how: q.how || "", q: q.q, note: q.note || "", status, stage: q.stage }));
+  const of = (items, status) => items.map((q) => ({ need: q.need || q.q, how: q.how || "", q: q.q, note: q.note || "", status, stage: q.stage, profile: l.profile, index: q.index, who: q.who || "", by: q.by || "" }));
   return [...of(l.gaps, "gap"), ...of(l.unknowns, "unknown"), ...of(l.partly, "partly")]
     .sort((a, b) => STAGE_ORDER[a.stage] - STAGE_ORDER[b.stage] || STATUS_ORDER[a.status] - STATUS_ORDER[b.status]);
 }
@@ -291,7 +309,7 @@ export function summaryMarkdown(catalog, w, res) {
     j.steps.forEach((st, i) => {
       out.push(`### ${i + 1}. ${st.title}`, "");
       if (st.why) out.push(`Why next: ${st.why}.`, "");
-      for (const c of st.conditions) out.push(`- [ ] ${c.need}. First step: ${c.how}. Today: ${({ gap: "a real gap", partly: "partly", unknown: "nobody knows yet" })[c.status]}${c.note ? ` ("${c.note}")` : ""}.`);
+      for (const c of st.conditions) out.push(`- [ ] ${c.need}. First step: ${c.how}. Today: ${({ gap: "a real gap", partly: "partly", unknown: "nobody knows yet" })[c.status]}${c.note ? ` ("${c.note}")` : ""}.${c.who ? ` Owner: ${WHO[c.who].toLowerCase()}.` : ""}${c.by ? ` By ${c.by}.` : ""}`);
       for (const a of st.already) out.push(`- [x] ${a}.`);
       if (st.validate.length) out.push("", `Validated by: ${st.validate.join("; ")}.`);
       out.push("");
@@ -373,8 +391,12 @@ export function readoutHtml(catalog, w, res, { preparedBy = "", today = "" } = {
       out.push(`<li><h3>${esc(st.title)}</h3>`);
       if (st.why) out.push(`<p class="why">${esc(st.why.charAt(0).toUpperCase() + st.why.slice(1))}.</p>`);
       if (st.conditions.length) {
-        out.push(`<table><thead><tr><th>What would need to be true</th><th>Today</th><th>First step</th></tr></thead><tbody>`);
-        for (const c of st.conditions) out.push(`<tr><td>${esc(c.need)}${c.note ? `<br><q>${esc(c.note)}</q>` : ""}</td><td class="st">${TODAY_WORDS[c.status]}</td><td>${esc(c.how)}</td></tr>`);
+        const planned = st.conditions.some((c) => c.who || c.by);
+        out.push(`<table><thead><tr><th>What would need to be true</th><th>Today</th><th>First step</th>${planned ? "<th>Who, by when</th>" : ""}</tr></thead><tbody>`);
+        for (const c of st.conditions) {
+          out.push(`<tr><td>${esc(c.need)}${c.note ? `<br><q>${esc(c.note)}</q>` : ""}</td><td class="st">${TODAY_WORDS[c.status]}</td><td>${esc(c.how)}</td>`
+            + (planned ? `<td class="st">${c.who ? esc(WHO[c.who]) : ""}${c.who && c.by ? "<br>" : ""}${c.by ? esc(c.by) : ""}</td>` : "") + `</tr>`);
+        }
         out.push(`</tbody></table>`);
       }
       if (st.already.length) out.push(`<p class="done"><b>Already true:</b> ${esc(st.already.join(". "))}.</p>`);

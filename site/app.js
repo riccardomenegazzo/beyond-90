@@ -882,6 +882,7 @@ function workshopContext() {
     workshop: w, catalog: cat, list: state.workshops, go: (tab, extra) => selectTab(tab, extra), today, present,
     answer: async (profile, i, a, note) => { const next = await edit((x) => WSHOP.setAnswer(x, profile, i, a, note, today)); const r = WSHOP.assess(cat, next); fillHead(next.customer, `Discovery workshop, started ${longDate(next.created_on)}`, r.coverage); return next; },
     worth: async (profile, i, amount, per) => edit((x) => WSHOP.setWorth(x, profile, i, amount, per, today)),
+    plan: async (profile, i, who, by) => edit((x) => WSHOP.setPlan(x, profile, i, who, by, today)),
     rename: async (name) => { await edit((x) => WSHOP.rename(x, name, today)); showWorkshop("workshop"); },
     setScope: async (scope) => { await edit((x) => WSHOP.setScope(x, scope, today)); showWorkshop("workshop"); },
     newWorkshop, openWorkshop, removeWorkshop, presets: WSHOP.PRESETS.map((p) => ({ ...p, scope: p.scope.filter((x) => cat.lines[x]) })).filter((p) => p.scope.length),

@@ -1764,12 +1764,24 @@ const STATUS_TODAY = { gap: "Today: a real gap", partly: "Today: partly", unknow
 /** From "can we?" to "what would need to be true?": the path from today to where the customer could be, step by step. */
 const presentBtn = (present) => (present ? h("div", { class: "presentrow" }, h("button", { class: "btn quiet", type: "button", text: "Present", "data-tip": "Show this view alone and larger, for a shared screen. Esc brings the app back.", onclick: present })) : null);
 
-export function journeyView({ workshop: w, catalog, go, startPov, present }) {
+export function journeyView({ workshop: w, catalog, go, startPov, present, plan }) {
   const res = WS.assess(catalog, w);
   const j = WS.journey(catalog, w, res);
   if (!j) return card("The journey", h("div", {}, h("p", { class: "note first", text: res.waiting + " The journey then shows, for each step, what would need to be true, the first step towards it, and how it is validated." }),
     h("button", { class: "btn", type: "button", text: "Open the questions", onclick: () => go("workshop") })));
   const say = h("p", { class: "note", role: "status" });
+  // who makes each condition true, and by when: saved as it changes, shown as text when presenting
+  const planRow = (c) => {
+    const shown = h("span", { class: "jplanv" });
+    const paint = (who, by) => { shown.textContent = [who ? WS.WHO[who] : "", by ? `by ${by}` : ""].filter(Boolean).join(", "); };
+    const who = h("select", { "aria-label": `Who makes this true: ${c.need}` }, h("option", { value: "", text: "Who?" }), Object.entries(WS.WHO).map(([k, v]) => h("option", { value: k, text: v })));
+    who.value = c.who;
+    const by = h("input", { type: "date", value: c.by, min: w.created_on, "aria-label": `By when: ${c.need}` });
+    const save = async () => { try { await plan(c.profile, c.index, who.value, by.value); paint(who.value, by.value); say.textContent = ""; } catch (e) { say.textContent = e.message; } };
+    who.addEventListener("change", save); by.addEventListener("change", save);
+    paint(c.who, c.by);
+    return h("span", { class: "jplan" }, who, by, shown);
+  };
   const hero = h("section", { class: "card estatehero jhero" },
     h("p", { class: "jyes", text: "Yes, this is possible." }),
     h("p", { class: "tline", text: `Here is what would need to be true for ${w.customer}, how we get there, and how we prove each step along the way.` }),
@@ -1786,7 +1798,8 @@ export function journeyView({ workshop: w, catalog, go, startPov, present }) {
     st.conditions.length ? h("ul", { class: "jconds" }, st.conditions.map((c) => h("li", { class: "s-" + c.status },
       h("b", { text: c.need }),
       h("span", { class: "jtoday", text: STATUS_TODAY[c.status] + (c.note ? `: "${c.note}"` : "") }),
-      c.how ? h("span", { class: "jhow", text: (c.status === "unknown" ? "Find out, then: " : "First step: ") + c.how + "." }) : null))) : null,
+      c.how ? h("span", { class: "jhow", text: (c.status === "unknown" ? "Find out, then: " : "First step: ") + c.how + "." }) : null,
+      plan ? planRow(c) : null))) : null,
     st.already.length ? h("p", { class: "jalready" }, h("small", { text: "Already true" }), h("span", { text: st.already.join(". ") + "." })) : null,
     st.validate.length ? h("div", { class: "growproof" }, h("small", { text: "Validated by" }), h("ul", {}, st.validate.map((v) => h("li", { text: v + "." })))) : null,
     st.kind === "prove" ? h("div", { class: "btnrow" }, h("button", { class: "btn", type: "button", text: "Start the proof of value", onclick: async () => { try { await startPov(res); } catch (e) { say.textContent = e.message; } } }), say) : null)));

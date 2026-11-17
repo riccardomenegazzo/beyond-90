@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { ANSWERS, makeWorkshop, validWorkshop, acceptWorkshops, mergeWorkshops, setAnswer, rename, setScope, lineState, assess, journey, summaryMarkdown, readoutHtml, setWorth, worthText, PER, PRESETS, exampleWorkshop, isExample, MAX_WORKSHOPS } from "../workshop.js";
+import { ANSWERS, makeWorkshop, validWorkshop, acceptWorkshops, mergeWorkshops, setAnswer, rename, setScope, lineState, assess, journey, summaryMarkdown, readoutHtml, setWorth, worthText, PER, PRESETS, exampleWorkshop, isExample, setPlan, WHO, MAX_WORKSHOPS } from "../workshop.js";
 
 const CAT = JSON.parse(readFileSync(new URL("./workshop-catalog.json", import.meta.url), "utf-8"));
 const D = "2026-11-17";
@@ -215,4 +215,27 @@ test("starting points name lines that exist and fit in a workshop", () => {
     assert.ok(p.label && p.scope.length >= 2 && p.scope.length <= 12 && new Set(p.scope).size === p.scope.length, p.id);
     for (const x of p.scope) assert.match(x, /^[a-z0-9-]+$/);
   }
+});
+
+test("a condition can carry who makes it true and by when, shown in the summary and the readout", () => {
+  let w = fill(mk(), "dr-backup", ["gap", "solved", "gap", "partly", "gap"]);
+  assert.throws(() => setPlan(w, "dr-backup", 7, "us", "", D), /Answer the question first/);
+  assert.throws(() => setPlan(w, "dr-backup", 2, "them", "", D));
+  assert.throws(() => setPlan(w, "dr-backup", 2, "us", "2026-01-01", D), /on or after/);
+  w = setPlan(w, "dr-backup", 2, "together", "2026-12-15", D);
+  w = setWorth(w, "dr-backup", 0, 5, "day", D);
+  w = setAnswer(w, "dr-backup", 2, "partly", "", D);
+  assert.deepEqual(w.answers["dr-backup#2"], { a: "partly", note: "", who: "together", by: "2026-12-15" }, "the plan survives a changed answer");
+  assert.ok(validWorkshop(w));
+  assert.equal(validWorkshop({ ...w, answers: { ...w.answers, "dr-backup#2": { a: "gap", note: "", who: "boss" } } }), false);
+  assert.equal(validWorkshop({ ...w, answers: { ...w.answers, "dr-backup#2": { a: "gap", note: "", by: "2020-01-01" } } }), false);
+  const res = assess(CAT, w);
+  const c = journey(CAT, w, res).steps.flatMap((x) => x.conditions).find((x) => x.index === 2 && x.profile === "dr-backup");
+  assert.equal(c.who, "together");
+  assert.match(summaryMarkdown(CAT, w, res), /Owner: together\. By 2026-12-15\./);
+  const html = readoutHtml(CAT, w, res);
+  assert.match(html, /<th>Who, by when<\/th>/);
+  assert.match(html, /Together<br>2026-12-15/);
+  assert.equal(setPlan(w, "dr-backup", 2, "", "", D).answers["dr-backup#2"].who, undefined);
+  assert.deepEqual(Object.keys(WHO), ["us", "customer", "together"]);
 });
