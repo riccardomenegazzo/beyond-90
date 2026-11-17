@@ -71,9 +71,9 @@ def assess(data: CustomerData, terms: Optional[Mapping[str, str]] = None) -> dic
         newest = max([f.opened_at for f in data.findings] + [f.closed_at for f in data.findings if f.closed_at])
         age = (data.as_of - newest).days
         if age > STALE_DAYS:
-            checks.append(_check("freshness", "weak" if age > 3 * STALE_DAYS else "note", "Findings export looks old", f"The newest finding event is {age} days before {data.as_of}. Is the export current?"))
+            checks.append(_check("freshness", "weak" if age > 3 * STALE_DAYS else "note", "Findings export looks old", f"The newest finding event is {age} {'day' if age == 1 else 'days'} before {data.as_of}. Is the export current?"))
         else:
-            checks.append(_check("freshness", "ok", "Findings are recent", f"The newest finding event is {max(age, 0)} days before {data.as_of}."))
+            checks.append(_check("freshness", "ok", "Findings are recent", f"The newest finding event is {max(age, 0)} {'day' if max(age, 0) == 1 else 'days'} before {data.as_of}."))
         older = [f for f in data.findings if (data.as_of - f.opened_at).days > s.triage_window_days and f.closed_at is None]
         if len(older) >= 5 and not any(f.owner for f in older) and not any(f.decision for f in older):
             checks.append(_check("columns", "weak", "No finding has an owner or a decision", f"All {len(older)} open findings past the triage window lack both. If the export does not carry these columns, L4 is understated."))

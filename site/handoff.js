@@ -3,6 +3,7 @@
 //
 // It never includes the TAM's private call notes (they are not stored), and it says what it is built from and when.
 import { ledger } from "./commitments.js";
+import { nOf, verb } from "./words.js";
 
 const clean = (t) => String(t == null ? "" : t).replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim();
 const pc = (x) => (typeof x === "number" && Number.isFinite(x) ? `${(x * 100).toFixed(1)}%` : "n/a");
@@ -77,10 +78,10 @@ export function buildHandoff({ score, dash, result, commitments = [], outcomes =
   const out = dash.outlook;
   if (out && out.loss_points < -0.5) risks.push(`If nothing is done, Yield drops about ${Math.abs(out.loss_points).toFixed(1)} points in ${out.horizon_days} days.`);
   const ob = dash.onboarding;
-  if (ob && ob.listed_but_broken && ob.listed_but_broken.length) risks.push(`${ob.listed_but_broken.length} connector(s) are counted as connected but are not working.`);
-  if (ob && ob.stalled && ob.stalled.length) risks.push(`${ob.stalled.length} onboarding(s) have stalled.`);
+  if (ob && ob.listed_but_broken && ob.listed_but_broken.length) risks.push(`${nOf(ob.listed_but_broken.length, "connector")} ${verb(ob.listed_but_broken.length, "is", "are")} counted as connected but ${verb(ob.listed_but_broken.length, "is", "are")} not working.`);
+  if (ob && ob.stalled && ob.stalled.length) risks.push(`${nOf(ob.stalled.length, "onboarding", "onboardings")} ${verb(ob.stalled.length, "has", "have")} stalled.`);
   if (ob && ob.secrets) for (const s of ob.secrets.filter((x) => x.days_left <= 14)) risks.push(`The secret of ${clean(s.connector)} expires on ${s.expires_on}.`);
-  if (score.outcomes && score.outcomes.critical_open) risks.push(`${score.outcomes.critical_open} critical finding(s) are open.`);
+  if (score.outcomes && score.outcomes.critical_open) risks.push(`${nOf(score.outcomes.critical_open, "critical finding")} ${verb(score.outcomes.critical_open, "is", "are")} open.`);
   if (risks.length) L.push("## Risks to watch", "", ...risks.map((r) => `- ${r}`), "");
 
   // History at renewal

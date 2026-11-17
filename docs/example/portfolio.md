@@ -1,6 +1,6 @@
 # Portfolio
 
-ARR-weighted Yield: **83.3%** across 3 customer(s).
+ARR-weighted Yield: **83.3%** across 3 customers.
 
 | Customer | ARR | Yield | End to end | Level | Legacy | L1 | L2 | L3 | L4 | Change | Top action |
 |---|---|---|---|---|---|---|---|---|---|---|---|
@@ -10,7 +10,7 @@ ARR-weighted Yield: **83.3%** across 3 customer(s).
 
 ## Renewals
 
-3 customer(s) have a renewal date. Revenue at risk inside the window with at least one risk signal: **576,000**.
+3 customers have a renewal date. Revenue at risk inside the window with at least one risk signal: **576,000**.
 
 | Customer | Renewal | Days | ARR | Status | Signals needing attention |
 |---|---|---|---|---|---|

@@ -124,7 +124,7 @@ def test_new_units_are_noted_with_the_profiles_word():
     old_accs = [account(f"a{i}") for i in range(5)]
     new, old = two(old_accs, [*old_accs, account("n1"), account("n2")])
     text = input_drift(new, old, {"unit": "site", "units": "sites"})["items"][0]["text"]
-    assert "2 site(s) are new" in text and "sites" in text
+    assert "2 sites are new" in text and "sites" in text
 
 
 def test_a_much_smaller_inventory_or_activation_file_is_flagged():

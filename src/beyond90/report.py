@@ -309,7 +309,7 @@ def _leak_summary(score: Score, sid: str) -> list[str]:
             out.append(f"+{len(st.leaks) - 3} more")
     elif sid == "L2":
         for leak in st.leaks[:3]:
-            out.append(f"{leak['provider']} {leak['resource_type']}: {len(leak['accounts'])} {score.terms.get('unit', 'account')}(s)")
+            out.append(f"{leak['provider']} {leak['resource_type']}: {len(leak['accounts'])} {score.terms.get('unit', 'account') if len(leak['accounts']) == 1 else score.terms.get('units', 'accounts')}")
         if len(st.leaks) > 3:
             out.append(f"+{len(st.leaks) - 3} more")
     elif sid == "L3":

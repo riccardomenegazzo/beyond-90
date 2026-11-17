@@ -27,6 +27,7 @@ from .playbooks import Action
 from .report import pct, pts
 from .scoring import STAGE_NAMES, Score
 from .sections import md_plan, md_renewal, rubric_headline
+from .words import n_of, verb
 
 LEAK_LABEL = {
     "L1": "Accounts outside the platform",
@@ -107,7 +108,7 @@ def render_qbr(score: Score, actions: list[Action], previous: Optional[dict[str,
             L.append("")
     u = score.universe
     if u and u.get("estimable") and u["unseen_estimate"] >= 1:
-        L.append(f"One caveat: about {u['unseen_estimate']:.0f} {score.terms.get('unit', 'account')}(s) are probably known to no source at all; if they are unconnected, L1 is {pct(u['pessimistic_l1'])}.")
+        L.append(f"One caveat: about {u['unseen_estimate']:.0f} {score.terms.get('unit', 'account') if round(u['unseen_estimate']) == 1 else score.terms.get('units', 'accounts')} {'is' if round(u['unseen_estimate']) == 1 else 'are'} probably known to no source at all; if they are unconnected, L1 is {pct(u['pessimistic_l1'])}.")
     L.append("")
 
     if ranked:
@@ -115,7 +116,7 @@ def render_qbr(score: Score, actions: list[Action], previous: Optional[dict[str,
         for i, (leak, items) in enumerate(ranked, 1):
             gain = sum(a.effect_points for a in items)
             label = LEAK_LABEL.get(leak, leak).replace("Accounts", score.terms.get("units", "accounts").capitalize())
-            L.append(f"{i}. **{label}.** {len(items)} open action(s)" + (f", worth about {gain:.1f} points" if gain else "") + ".")
+            L.append(f"{i}. **{label}.** {n_of(len(items), 'open action')}" + (f", worth about {gain:.1f} points" if gain else "") + ".")
             for a in items[:3]:
                 L.append(f"   - {a.title}: {a.detail}")
         L.append("")
@@ -169,7 +170,7 @@ def render_qbr(score: Score, actions: list[Action], previous: Optional[dict[str,
     if forecast and forecast.get("available"):
         if forecast["state"] == "open":
             z = forecast["p_zero_within"]
-            L += ["## Zero critical", "", (f"{forecast['open_critical']} critical finding(s) are open and {forecast['arrivals_per_week']} new ones arrive per week. "
+            L += ["## Zero critical", "", (f"{n_of(forecast['open_critical'], 'critical finding')} {verb(forecast['open_critical'], 'is', 'are')} open and {forecast['arrivals_per_week']} new ones arrive per week. "
                   f"Probability of reaching zero within 30 / 60 / 90 days: {z['30']:.0%} / {z['60']:.0%} / {z['90']:.0%} on the current pace."), ""]
         else:
             L += ["## Zero critical", "", (f"Zero critical today. A new critical appears within 30 days with probability {forecast['p_new_critical_30d']:.0%}; "

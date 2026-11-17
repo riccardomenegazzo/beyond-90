@@ -11,6 +11,7 @@ from typing import Any, Optional
 from .attribution import Attribution
 from .ladder import describe
 from .planner import Plan
+from .words import n_of, verb
 
 CHECK = (0.90, 0.95, 0.98)
 
@@ -126,11 +127,11 @@ def _forecast_lines(f: dict[str, Any]) -> list[str]:
     p50 = "not within a year" if f["p50_days"] is None else f"{f['p50_days']} days ({f['p50_date']})"
     p90 = "not within a year" if f["p90_days"] is None else f"{f['p90_days']} days ({f['p90_date']})"
     z = f["p_zero_within"]
-    L = [f"{f['open_critical']} critical finding(s) open, {f['arrivals_per_week']} new per week.",
+    L = [f"{n_of(f['open_critical'], 'critical finding')} open, {f['arrivals_per_week']} new per week.",
          f"Zero critical: median {p50}; 90th percentile {p90}.",
          f"Probability of zero within 30 / 60 / 90 days: {z['30']:.0%} / {z['60']:.0%} / {z['90']:.0%}."]
     if f.get("stuck_beyond_history"):
-        L.append(f"{f['stuck_beyond_history']} open finding(s) are older than anything this customer has closed; they are modelled as likely to stay open.")
+        L.append(f"{n_of(f['stuck_beyond_history'], 'open finding')} {verb(f['stuck_beyond_history'], 'is', 'are')} older than anything this customer has closed; they are modelled as likely to stay open.")
     return L
 
 

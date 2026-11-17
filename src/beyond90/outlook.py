@@ -22,6 +22,7 @@ from .catalogue import Catalogue
 from .models import CustomerData
 from .rhythm import touch_status
 from .scoring import compute_score, stage_l1, stage_l2, stage_l3, stage_l4
+from .words import n_of, verb
 
 CHECKPOINTS = (0, 7, 14, 30, 60, 90)
 SCORE_KINDS = {"secret_expiry", "acceptance_expiry", "triage_entry"}
@@ -68,11 +69,15 @@ def events(data: CustomerData, end: date) -> list[dict[str, Any]]:
             due = f.opened_at + timedelta(days=s.sla_days[f.severity])
             if due >= start:
                 by_day.setdefault((due + timedelta(days=1), f"sla_{f.severity}"), []).append(f.id)
-    texts = {"acceptance_expiry": "accepted risk(s) reach their review date and count as expired acceptances",
-             "triage_entry": "finding(s) without an owner or a decision leave the triage window and start counting in L4",
-             "sla_critical": "critical finding(s) pass their remediation deadline", "sla_high": "high finding(s) pass their remediation deadline"}
+    # (the counted noun, what one does, what several do)
+    texts = {"acceptance_expiry": ("accepted risk", "reaches its review date and counts as an expired acceptance", "reach their review date and count as expired acceptances"),
+             "triage_entry": ("finding", "without an owner or a decision leaves the triage window and starts counting in L4",
+                              "without an owner or a decision leave the triage window and start counting in L4"),
+             "sla_critical": ("critical finding", "passes its remediation deadline", "pass their remediation deadline"),
+             "sla_high": ("high finding", "passes its remediation deadline", "pass their remediation deadline")}
     for (day, kind), ids in sorted(by_day.items()):
-        add(day, kind, f"{len(ids)} {texts[kind]}.", sorted(ids), "customer")
+        noun, one, many = texts[kind]
+        add(day, kind, f"{n_of(len(ids), noun)} {verb(len(ids), one, many)}.", sorted(ids), "customer")
     for k in data.commitments:
         if k.done_on is None:
             add(k.due_on + timedelta(days=1), "commitment", f"Our promise is overdue: {k.description}.", [k.id], "us")

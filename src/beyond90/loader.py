@@ -59,6 +59,7 @@ from .models import (
     Team,
 )
 from .provenance import SCHEMA_VERSION, hash_directory
+from .words import n_of
 
 
 class DataError(Exception):
@@ -224,7 +225,7 @@ def _read_csv(
         header = [h.strip() for h in (reader.fieldnames or [])]
         missing = [c for c in required_columns if c not in header]
         if missing:
-            errors.append(f"{path.name}:1: missing column(s): {', '.join(missing)}")
+            errors.append(f"{path.name}:1: missing column{'' if len(missing) == 1 else 's'}: {', '.join(missing)}")
             return []
         for row in reader:
             ctx.line = reader.line_num
@@ -241,7 +242,7 @@ def _read_csv(
         errors.append(f"{path.name}:{reader.line_num}: malformed CSV: {e}")
         return []
     if notes is not None and ctx.adjusted:
-        notes.append(f"{path.name}: {ctx.adjusted} value(s) had line breaks, control characters or '|' replaced, so that tables stay readable.")
+        notes.append(f"{path.name}: {n_of(ctx.adjusted, 'value')} had line breaks, control characters or '|' replaced, so that tables stay readable.")
     return out
 
 
@@ -288,7 +289,7 @@ def _unknown_columns(path: Path, warnings: list[str]) -> None:
     extra = [h for h in header if h and h not in known]
     if extra:
         hints = "; ".join(f"{h!r}{_suggest(h, known)}" for h in extra)
-        warnings.append(f"{path.name}: unknown column(s) ignored: {hints}")
+        warnings.append(f"{path.name}: unknown columns ignored: {hints}")
 
 
 def _settings(raw: dict[str, Any], errors: list[str]) -> Settings:

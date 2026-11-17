@@ -29,6 +29,7 @@ from statistics import median
 from typing import Any, Optional
 
 from .models import Account, Connector, CustomerData
+from .words import n_of
 
 STAGES = ("discovered", "deployed", "authenticated", "authorized", "scanning", "complete")
 STAGE_LABEL = {"discovered": "Discovered", "deployed": "Connector deployed", "authenticated": "Signs in", "authorized": "Can read",
@@ -478,7 +479,7 @@ def customer_status(d: dict[str, Any], customer: str, as_of: str, units: str = "
         if fc and fc["state"] == "on_track":
             md.append(f"At the pace of the last {change['days']} days, every {units[:-1] if units.endswith('s') else units} in scope is complete around **{fc['date']}**.")
     if d["listed_but_broken"]:
-        md.append(f"{len(d['listed_but_broken'])} connector(s) that were working have stopped: {', '.join(d['listed_but_broken'])}.")
+        md.append(f"{n_of(len(d['listed_but_broken']), 'connector')} that were working have stopped: {', '.join(d['listed_but_broken'])}.")
     md += ["", "## Waiting on your teams", ""]
     if not theirs:
         md.append("Nothing.")
@@ -512,7 +513,7 @@ def _html(customer: str, as_of: str, done: int, total: int, units: str, change: 
         parts.append(f"<p>Since {e(change['since'])}: {len(change['finished'])} completed, {len(change['forward'])} moved forward" + (f", {len(change['back'])} went back" if change["back"] else "") + "."
                      + (f" At the recent pace, complete around <b>{e(fc['date'])}</b>." if fc.get("state") == "on_track" else "") + "</p>")
     if d["listed_but_broken"]:
-        parts.append(f"<p class=warn>{len(d['listed_but_broken'])} connector(s) that were working have stopped: {e(', '.join(d['listed_but_broken']))}.</p>")
+        parts.append(f"<p class=warn>{n_of(len(d['listed_but_broken']), 'connector')} that were working have stopped: {e(', '.join(d['listed_but_broken']))}.</p>")
     parts.append("<h2>Waiting on your teams</h2>")
     if not theirs:
         parts.append("<p>Nothing.</p>")

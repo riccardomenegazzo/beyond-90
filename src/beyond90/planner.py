@@ -29,17 +29,19 @@ from .models import CustomerData
 from .playbooks import Action, generate_actions
 from .scoring import CHECKPOINTS, compute_score
 from .simulate import DEFAULT_RAMP, Deferred, RampModel, affected_stages, apply_ops, quick_stages, settle_pending
+from .words import n_of
 
 MIN_HOURS = 0.25
 EPS = 1e-9
 
+# (one, several): the residual is printed after its count, "1 finding that stayed unowned", "3 findings that stayed unowned"
 BLOCKED_LABELS = {
-    "connect": "accounts that could not be connected",
-    "inventory": "inventory gaps that could not be closed",
-    "enable": "module activations that did not happen",
-    "own": "findings that stayed unowned",
-    "decide": "findings that stayed undecided",
-    "set_expiry": "accepted risks that stayed unreviewed",
+    "connect": ("account that could not be connected", "accounts that could not be connected"),
+    "inventory": ("inventory gap that could not be closed", "inventory gaps that could not be closed"),
+    "enable": ("module activation that did not happen", "module activations that did not happen"),
+    "own": ("finding that stayed unowned", "findings that stayed unowned"),
+    "decide": ("finding that stayed undecided", "findings that stayed undecided"),
+    "set_expiry": ("accepted risk that stayed unreviewed", "accepted risks that stayed unreviewed"),
 }
 
 
@@ -271,7 +273,7 @@ class CustomerPlanner:
                     self.pending -= set(op["accounts"])
                     settled += len(op["accounts"])
         if settled:
-            self._events.append(f"Inventory completes and agentless modules switch on for {settled} newly connected {self.cat.terms['unit']}(s).")
+            self._events.append(f"Inventory completes and agentless modules switch on for {settled} newly connected {self.cat.terms['unit'] if settled == 1 else self.cat.terms['units']}.")
 
     def peek(self) -> Optional[Pick]:
         """What this customer would work on next, without spending anything."""
@@ -316,7 +318,7 @@ class CustomerPlanner:
     def end_week(self, week: int, hours_used: float) -> WeekState:
         events = list(self._events)
         if self._connected_now:
-            events.append(f"{self._connected_now} {self.cat.terms['unit']}(s) connected: they enter L2 and L3 with nothing covered yet, so Yield dips before it recovers.")
+            events.append(f"{n_of(self._connected_now, self.cat.terms['unit'], self.cat.terms['units'])} connected: they enter L2 and L3 with nothing covered yet, so Yield dips before it recovers.")
         w = self._snapshot(week, hours_used, list(self._done), events)
         self.weeks.append(w)
         return w
@@ -336,10 +338,14 @@ class CustomerPlanner:
             if cur.yield_ < prev.yield_ - 1e-9:
                 dips.append({"week": cur.week, "drop_points": round((prev.yield_ - cur.yield_) * 100, 2),
                              "cause": cur.events[-1] if cur.events else "A change made earlier took effect."})
-        residual: dict[str, int] = {}
+        by_kind: dict[str, int] = {}
         for kind, _, _ in sorted(self.blocked):
-            label = BLOCKED_LABELS[kind].replace("accounts", self.cat.terms["units"])
-            residual[label] = residual.get(label, 0) + 1
+            by_kind[kind] = by_kind.get(kind, 0) + 1
+        residual: dict[str, int] = {}
+        for kind, count in by_kind.items():
+            one, many = BLOCKED_LABELS[kind]
+            label = (one if count == 1 else many).replace("accounts", self.cat.terms["units"]).replace("account", self.cat.terms["unit"])
+            residual[label] = count
         if residual:
             notes.append(f"At {self.realization:.0%} realization the plan plateaus: the residual needs escalation, not more of the same effort.")
         if not self.jobs:

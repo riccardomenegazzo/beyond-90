@@ -20,6 +20,7 @@ from typing import Any, Optional
 
 from .importers import guess_provider, norm_id
 from .models import UNIVERSE_SOURCES
+from .words import n_of
 
 MAX_ROWS = 200_000
 SAMPLE_ROWS = 5
@@ -313,6 +314,6 @@ def convert(text: str, target: str, mapping: Mapping[str, Optional[str]], defaul
     w.writerow(header)
     w.writerows(out_rows)
     total = sum(skipped.values())
-    notes += [f"{n} row(s) skipped: {why}." for why, n in sorted(skipped.items(), key=lambda kv: -kv[1])]
-    notes += [f"{n} row(s): {why}." for why, n in sorted(adjusted.items(), key=lambda kv: -kv[1])]
+    notes += [f"{n_of(n, 'row')} skipped: {why}." for why, n in sorted(skipped.items(), key=lambda kv: -kv[1])]
+    notes += [f"{n_of(n, 'row')}: {why}." for why, n in sorted(adjusted.items(), key=lambda kv: -kv[1])]
     return Converted(target, buf.getvalue(), len(out_rows), total, notes)

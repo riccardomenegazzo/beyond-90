@@ -28,6 +28,7 @@ from pathlib import Path
 from typing import Any, Optional
 
 from .models import INDEPENDENT_SOURCES, UNIVERSE_SOURCES, Account
+from .words import n_of
 
 HEADER = ["id", "provider", "sources", "connected", "owner", "last_spend", "status", "in_plan", "created_at"]
 SOURCES = UNIVERSE_SOURCES
@@ -208,7 +209,7 @@ def resolve_providers(records: list[Record], existing: list[Account]) -> list[Re
         r.provider = prov
         r.id = norm_id(prov, r.id)
     if unresolved:
-        raise ImportFormatError(f"cannot tell the provider of {len(unresolved)} account(s) ({', '.join(unresolved[:5])}); import them with --provider")
+        raise ImportFormatError(f"cannot tell the provider of {n_of(len(unresolved), 'account')} ({', '.join(unresolved[:5])}); import them with --provider")
     return records
 
 
@@ -310,10 +311,10 @@ def reconcile(accounts: list[Account]) -> dict[str, Any]:
     notes = []
     billed_not_org = [a.id for a in active if "billing" in a.sources and "org" in present and "org" not in a.sources and a.last_spend > 0]
     if billed_not_org:
-        notes.append(f"{len(billed_not_org)} account(s) are billed but not in the organization hierarchy: the most likely shadow accounts.")
+        notes.append(f"{n_of(len(billed_not_org), 'account')} are billed but not in the organization hierarchy: the most likely shadow accounts.")
     org_not_billed = [a.id for a in active if "org" in a.sources and "billing" in present and "billing" not in a.sources]
     if org_not_billed:
-        notes.append(f"{len(org_not_billed)} account(s) are in the organization but have no billing line: dormant, free-tier or missing from the export.")
+        notes.append(f"{n_of(len(org_not_billed), 'account')} are in the organization but have no billing line: dormant, free-tier or missing from the export.")
     unconnected_billed = sorted((a for a in active if not a.connected and a.last_spend > 0), key=lambda a: -a.last_spend)
     return {
         "sources": present,

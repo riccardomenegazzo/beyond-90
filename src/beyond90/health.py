@@ -19,6 +19,7 @@ from collections.abc import Mapping
 from typing import Any, Optional
 
 from .models import CustomerData
+from .words import n_of
 
 WEIGHTS = {"adoption": 0.40, "outcomes": 0.20, "relationship": 0.25, "trajectory": 0.15}
 LABELS = {"adoption": "Adoption", "outcomes": "Outcomes", "relationship": "Relationship", "trajectory": "Trajectory"}
@@ -45,7 +46,7 @@ def _outcomes(data: CustomerData) -> tuple[Optional[float], str]:
     live = [f for f in data.findings if f.closed_at is None and f.severity == "critical" and f.decision != "false_positive"]
     exposed = sum(1 for f in live if f.exposure == "internet")
     value = max(0.0, 100 - min(60, 15 * exposed) - min(25, 5 * (len(live) - exposed)))
-    return value, f"{len(live)} critical finding(s) open, {exposed} exposed to the internet."
+    return value, f"{n_of(len(live), 'critical finding')} open, {exposed} exposed to the internet."
 
 
 def _relationship(renewal: Optional[dict[str, Any]]) -> tuple[Optional[float], str]:

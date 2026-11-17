@@ -15,6 +15,7 @@ from .planner import Plan
 from .playbooks import Action
 from .report import pct
 from .scoring import Score
+from .words import n_of
 
 TARGET_USE_CASE = 0.9
 
@@ -55,7 +56,7 @@ def render_success_plan(score: Score, actions: list[Action], plan: Optional[Plan
              + (f" after {len(plan.weeks) - 1} weeks" if plan else "") + " |")
     if score.rubric and score.rubric.get("checks"):
         r = score.rubric
-        L.append(f"| Maturity level | {r['level'].capitalize()} | " + (f"{r['next_level'].capitalize()} ({len(r['blocking'])} check(s) to pass)" if r["next_level"] else "hold") + " |")
+        L.append(f"| Maturity level | {r['level'].capitalize()} | " + (f"{r['next_level'].capitalize()} ({n_of(len(r['blocking']), 'check')} to pass)" if r["next_level"] else "hold") + " |")
         for c in r["blocking"][:4]:
             from .sections import _fmt_metric, _fmt_target
             L.append(f"| {c['title']} | {_fmt_metric(c['metric'], c['value'])} | {_fmt_target(c)} |")
@@ -98,7 +99,7 @@ def render_success_plan(score: Score, actions: list[Action], plan: Optional[Plan
         risks.append("Some work is assumed to stay blocked and needs escalation rather than more effort: " + "; ".join(f"{n} {k}" for k, n in plan.residual.items()) + ".")
     u = score.universe
     if u and u.get("estimable") and u["unseen_estimate"] >= 1:
-        risks.append(f"About {u['unseen_estimate']:.0f} {score.terms.get('unit', 'account')}(s) may be known to none of our lists; finding them may lower the starting point.")
+        risks.append(f"About {u['unseen_estimate']:.0f} {score.terms.get('unit', 'account') if round(u['unseen_estimate']) == 1 else score.terms.get('units', 'accounts')} may be known to none of our lists; finding them may lower the starting point.")
     if score.quality and score.quality.get("weak"):
         risks.append("Some of the input files are weak (see the report), so some figures are provisional.")
     L += [f"- {r}" for r in risks] or ["- None identified."]

@@ -43,8 +43,8 @@
 
 ## Needs escalation, not more effort
 
-- Contoso Bank (mock): findings that stayed undecided 1; module activations that did not happen 8.
-- Northwind (mock): findings that stayed undecided 2; inventory gaps that could not be closed 2; findings that stayed unowned 1; accepted risks that stayed unreviewed 1.
-- Fabrikam Labs (mock): findings that stayed undecided 1; findings that stayed unowned 1.
+- Contoso Bank (mock): finding that stayed undecided 1; module activations that did not happen 8.
+- Northwind (mock): findings that stayed undecided 2; inventory gaps that could not be closed 2; finding that stayed unowned 1; accepted risk that stayed unreviewed 1.
+- Fabrikam Labs (mock): finding that stayed undecided 1; finding that stayed unowned 1.
 
 _Allocating hours by exact gain per hour ends at 93.7% weighted Yield, +2.2 points against the better of an equal split and an ARR-proportional split._

@@ -17,6 +17,7 @@ from __future__ import annotations
 from typing import Any, Optional
 
 from .models import CustomerData
+from .words import n_of
 
 RANK = {"ok": 0, "watch": 1, "risk": 2}
 
@@ -52,14 +53,14 @@ def compute_renewal(data: CustomerData, score: Any, previous: Optional[dict[str,
         sig.append(_signal("sponsor", "Executive sponsor", "risk" if g["no_executive_sponsor"] else "ok",
                            "No executive sponsor is on record." if g["no_executive_sponsor"] else "An executive sponsor is on record."))
         sig.append(_signal("threads", "More than one relationship", "watch" if g["single_threaded"] else "ok",
-                           f"{rel['coverage']['touched_recently']} contact(s) spoken to recently." + (" Single-threaded." if g["single_threaded"] else "")))
+                           f"{n_of(rel['coverage']['touched_recently'], 'contact')} spoken to recently." + (" Single-threaded." if g["single_threaded"] else "")))
         late = g["overdue_commitments"]
         rate = rel["reliability"]["rate"]
         status = "risk" if (rate is not None and rate < 0.5) else "watch" if late else "ok"
         sig.append(_signal("promises", "Promises kept", status,
-                           (f"{len(late)} promise(s) past their date. " if late else "") + (f"{rate:.0%} kept on time." if rate is not None else "No promises recorded.")))
+                           (f"{n_of(len(late), 'promise')} past their date. " if late else "") + (f"{rate:.0%} kept on time." if rate is not None else "No promises recorded.")))
         stale = g["stale_key_contacts"]
-        sig.append(_signal("contact", "Key contacts reached recently", "watch" if stale else "ok", f"{len(stale)} key contact(s) not spoken to in {data.settings.contact_stale_days} days." if stale else "All key contacts spoken to recently."))
+        sig.append(_signal("contact", "Key contacts reached recently", "watch" if stale else "ok", f"{n_of(len(stale), 'key contact')} not spoken to in {data.settings.contact_stale_days} days." if stale else "All key contacts spoken to recently."))
     else:
         sig.append(_signal("relationship", "Relationship", "not measured", "No contacts file."))
 
@@ -78,7 +79,7 @@ def compute_renewal(data: CustomerData, score: Any, previous: Optional[dict[str,
 
     q = score.quality or {}
     sig.append(_signal("confidence", "Confidence in the numbers", "watch" if q.get("weak") else "ok",
-                       f"{q.get('weak', 0)} weak input check(s)." if q.get("weak") else "Inputs pass the checks that matter."))
+                       f"{n_of(q.get('weak', 0), 'weak input check')}." if q.get("weak") else "Inputs pass the checks that matter."))
 
     measured = [s for s in sig if s["status"] in RANK]
     worst = max((RANK[s["status"]] for s in measured), default=0)

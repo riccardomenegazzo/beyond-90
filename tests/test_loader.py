@@ -36,7 +36,7 @@ def test_errors_are_collected_with_file_and_line(tmp_path):
     assert "findings.csv:2: account_id 'nope' is not in accounts.csv" in text
     assert "findings.csv:3: severity: 'urgent' is not one of" in text
     assert "findings.csv:3: opened_at: expected YYYY-MM-DD" in text
-    assert "teams.csv:1: missing column(s): role_scoped" in text
+    assert "teams.csv:1: missing column: role_scoped" in text
 
 
 def test_missing_files_and_bad_toml(tmp_path):

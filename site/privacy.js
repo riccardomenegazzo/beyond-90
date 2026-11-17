@@ -4,6 +4,7 @@ import { h } from "./ui.js";
 import { LEVELS, LEVEL_TEXT, assign, redact, redactName, restore, leftovers, KINDS } from "./aliases.js";
 import { internalWarning } from "./internal.js";
 import { makeExport, due, soon, outside, receipt } from "./erasure.js";
+import { nOf, verb } from "./words.js";
 
 const LEVEL_KEY = "beyond90.share";
 const KIND_TEXT = { customer: "customer name", person: "people", team: "team names", account: "account ids", email: "email addresses" };
@@ -108,7 +109,7 @@ export function createPrivacy({ state, store, $, say, unlockVaultUi, today, save
     const now = today();
     const kids = [];
     kids.push(h("p", { class: "fine", text: `${LEVEL_TEXT[state.share]}. A pseudonym is not anonymity: sizes, dates and the way a customer is set up can still point to them.` }));
-    if (locked) kids.push(h("p", { class: "fine", text: `${locked} sealed record(s) are locked. Unlock to see and manage them.` }));
+    if (locked) kids.push(h("p", { class: "fine", text: `${nOf(locked, "sealed record")} ${verb(locked, "is", "are")} locked. Unlock to see and manage them.` }));
     const pastDue = due(retention, now);
     if (pastDue.length) kids.push(h("p", { class: "bad-text", role: "status", text: `Past the keep-until date: ${pastDue.map((r) => r.customer).join(", ")}. Erase them below, or move the date.` }));
     const nearly = soon(retention, now);
@@ -154,7 +155,7 @@ export function createPrivacy({ state, store, $, say, unlockVaultUi, today, save
   async function erase(customer, logs) {
     if ((await store.getVault()) && !store.unlocked() && !(await unlockVaultUi())) return;
     const n = await store.countFor(customer);
-    const sentence = `Erase everything this browser holds for ${customer}?\n\n${n.snapshots} snapshot(s), ${n.outcomes} outcome(s), ${n.commitments} promise(s), ${n.povs || 0} proof(s) of value, ${n.asks || 0} ask(s), ${n.done || 0} action(s) marked done, ${n.aliases} alias(es), ${n.exports} export log entr${n.exports === 1 ? "y" : "ies"}.\n\nThis cannot be undone. Copies you already downloaded or copied are not touched.`;
+    const sentence = `Erase everything this browser holds for ${customer}?\n\n${nOf(n.snapshots, "snapshot")}, ${nOf(n.outcomes, "outcome")}, ${nOf(n.commitments, "promise")}, ${nOf(n.povs || 0, "proof")} of value, ${nOf(n.asks || 0, "ask")}, ${nOf(n.done || 0, "action")} marked done, ${n.aliases} alias(es), ${n.exports} export log entr${n.exports === 1 ? "y" : "ies"}.\n\nThis cannot be undone. Copies you already downloaded or copied are not touched.`;
     if (!confirm(sentence)) return;
     const copies = outside(logs.length ? logs : await store.exportsAll(), customer);   // read before the log entries go
     try {
@@ -164,8 +165,8 @@ export function createPrivacy({ state, store, $, say, unlockVaultUi, today, save
       await refreshAll();
       const slot = $("erase-result");
       if (slot) slot.replaceChildren(h("div", { class: "note" },
-        h("p", { text: `${customer} was erased from this browser. A second look found ${r.remaining} record(s) left.` }),
-        h("p", { class: "fine", text: `${copies.items.length} earlier export(s) of this customer are outside this page's reach.` }),
+        h("p", { text: `${customer} was erased from this browser. A second look found ${nOf(r.remaining, "record")} left.` }),
+        h("p", { class: "fine", text: `${nOf(copies.items.length, "earlier export")} of this customer are outside this page's reach.` }),
         h("p", { class: "row left" }, h("button", { class: "btn small primary", type: "button", text: "Download the erasure record", onclick: () => saveBlob(text, `beyond90-erasure-record-${today()}.md`, "text/markdown", { raw: true }) }))));
     } catch (e) { say("Could not erase: " + e.message); }
   }

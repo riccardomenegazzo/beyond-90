@@ -46,6 +46,7 @@ from .simulate import RampModel
 from .store import Store
 from .successplan import render_success_plan
 from .universe import render_universe
+from .words import n_of
 
 if TYPE_CHECKING:
     from .connect import Config
@@ -364,7 +365,7 @@ def cmd_import(args: argparse.Namespace) -> int:
     path = base / "accounts.csv"
     records = resolve_providers(records, read_accounts(path))
     res = merge(read_accounts(path), records, authoritative_connected=bool(args.connected and args.authoritative))
-    print(f"{len(records)} account(s) in {args.file}: {len(res.added)} added, {len(res.updated)} updated, {res.unchanged} unchanged"
+    print(f"{n_of(len(records), 'account')} in {args.file}: {len(res.added)} added, {len(res.updated)} updated, {res.unchanged} unchanged"
           + (f", {len(res.newly_unconnected)} marked unconnected" if res.newly_unconnected else ""))
     for c in res.conflicts:
         print(f"conflict: {c}", file=sys.stderr)
@@ -688,11 +689,11 @@ def cmd_check_config(args: argparse.Namespace) -> int:
 def _print_sync(rep: Any) -> None:
     for r in rep.results:
         extra = f" ({r.error})" if r.error else ""
-        age = f", {r.age_days} day(s) old" if r.status == "stale" else ""
+        age = f", {n_of(r.age_days, 'day')} old" if r.status == "stale" else ""
         print(f"  {r.name:<18} {r.status:<7} {r.rows:>6} rows{age}{extra}")
     print("  merged: " + ", ".join(f"{t} {n}" for t, n in rep.counts.items()))
     for t, n in rep.dropped.items():
-        print(f"  dropped {n} {t} row(s) for accounts that are not in the account list")
+        print(f"  dropped {n} {n_of(t, 'row')} for accounts that are not in the account list")
 
 
 def cmd_sync(args: argparse.Namespace) -> int:
@@ -1067,7 +1068,7 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("config")
     sp.add_argument("--at", default="05:17", help="time of day in UTC, HH:MM")
     sp.add_argument("--every", choices=["hour", "day", "week"], default="day")
-    sp.add_argument("--install-from", default="beyond90", help='pip requirement for the workflow, e.g. "beyond90 @ git+https://github.com/OWNER/beyond-90@v0.77.0"')
+    sp.add_argument("--install-from", default="beyond90", help='pip requirement for the workflow, e.g. "beyond90 @ git+https://github.com/OWNER/beyond-90@v0.78.0"')
     sp.add_argument("--out")
     sp.set_defaults(func=cmd_schedule)
 

@@ -14,6 +14,7 @@ from __future__ import annotations
 from typing import Any
 
 from .models import CustomerData
+from .words import n_of
 
 REMOVED_SHARE = 0.10
 INVENTORY_DROP = 0.25
@@ -40,9 +41,9 @@ def input_drift(new: CustomerData, old: CustomerData, terms: dict[str, str] | No
         items.append(_item("vanished_units", "warn", f"{len(vanished)} of {len(old_ids)} {units} in the earlier file are missing now without being marked decommissioned. "
                            "If that is a change of export rather than a change in the estate, Yield moved for the wrong reason."))
     elif vanished:
-        items.append(_item("vanished_units", "note", f"{len(vanished)} {unit}(s) from the earlier file are missing now and not marked decommissioned."))
+        items.append(_item("vanished_units", "note", f"{len(vanished)} {unit if len(vanished) == 1 else units} from the earlier file {'is' if len(vanished) == 1 else 'are'} missing now and not marked decommissioned."))
     if added:
-        items.append(_item("new_units", "note", f"{len(added)} {unit}(s) are new since {old.as_of}. New, unconnected {units} lower L1 by being counted, which is the point."))
+        items.append(_item("new_units", "note", f"{len(added)} {unit if len(added) == 1 else units} {'is' if len(added) == 1 else 'are'} new since {old.as_of}. New, unconnected {units} lower L1 by being counted, which is the point."))
 
     if old.inventory and len(new.inventory) < (1 - INVENTORY_DROP) * len(old.inventory):
         items.append(_item("inventory_drop", "warn", f"Inventory has {len(new.inventory)} rows against {len(old.inventory)} before. A drop that size is more often a narrower export than a real change."))
@@ -55,10 +56,10 @@ def input_drift(new: CustomerData, old: CustomerData, terms: dict[str, str] | No
     if old_open and len(vanished_f) >= max(3, VANISHED_FINDINGS * len(old_open)):
         items.append(_item("vanished_findings", "warn", f"{len(vanished_f)} of {len(old_open)} findings that were open before are absent now, neither open nor closed. They may have been dropped from the export."))
     elif vanished_f:
-        items.append(_item("vanished_findings", "note", f"{len(vanished_f)} finding(s) that were open before are absent now."))
+        items.append(_item("vanished_findings", "note", f"{n_of(len(vanished_f), 'finding')} that were open before are absent now."))
     reopened = [i for i in old_open if i in new_by_id and new_by_id[i].opened_at != next(f.opened_at for f in old.findings if f.id == i)]
     if reopened:
-        items.append(_item("reopened", "note", f"{len(reopened)} finding(s) have a different opening date than before; time-to-fix figures for them are unreliable."))
+        items.append(_item("reopened", "note", f"{n_of(len(reopened), 'finding')} have a different opening date than before; time-to-fix figures for them are unreliable."))
 
     status = "warn" if any(i["status"] == "warn" for i in items) else "note" if items else "ok"
     return {"since": old.as_of.isoformat(), "status": status, "items": items}

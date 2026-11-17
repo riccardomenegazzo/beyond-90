@@ -18,6 +18,7 @@ from collections.abc import Iterable, Mapping
 from typing import Any, Optional
 
 from .health import LABELS, WEIGHTS
+from .words import n_of
 
 GOOD = ("renewed", "expanded")
 BAD = ("reduced", "churned")
@@ -108,5 +109,5 @@ def report(outcomes: Iterable[Any]) -> dict[str, Any]:
     return {
         "total": len(rows), "stayed": len(good), "left": len(bad), "skipped": skipped, "enough": enough, "parts": parts, "concordance": None if conc is None else round(conc, 3),
         "findings": findings, "suggested_weights": weights, "why": why,
-        "caveat": f"Based on {len(rows)} outcome(s) ({len(good)} stayed, {len(bad)} left): a hint to discuss, not proof." if rows else "No outcomes recorded yet.",
+        "caveat": f"Based on {n_of(len(rows), 'outcome')} ({len(good)} stayed, {len(bad)} left): a hint to discuss, not proof." if rows else "No outcomes recorded yet.",
     }

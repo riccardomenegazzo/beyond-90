@@ -31,6 +31,7 @@ from .catalogue import Catalogue, parse_version
 from .loader import clean_text
 from .models import SEVERITIES, CustomerData
 from .simulate import apply_ops, quick_yield
+from .words import n_of
 
 SEVERITY_WEIGHT = {"critical": 4, "high": 3, "medium": 2, "low": 1}
 
@@ -292,7 +293,7 @@ def render_radar_markdown(releases: list[ReleaseReport], threats: list[ThreatRep
         L += ["## New capabilities: who should hear about them", ""]
         for r in releases:
             L += [f"### {r.name} (released {r.since})", "",
-                  f"Relevant and switched off at {len(r.customers)} customer(s), {r.total_arr:,.0f} ARR.", "",
+                  f"Relevant and switched off at {n_of(len(r.customers), 'customer')}, {r.total_arr:,.0f} ARR.", "",
                   "| Customer | ARR | Relevant accounts | Off | Yield if switched on |", "|---|---|---|---|---|"]
             for rc in r.customers:
                 L.append(f"| {rc.customer} | {rc.arr:,.0f} | {rc.relevant_accounts} | {rc.inactive_accounts} | +{rc.yield_gain_points:.1f} pts |")
@@ -322,7 +323,7 @@ def render_radar_markdown(releases: list[ReleaseReport], threats: list[ThreatRep
 def render_radar_text(releases: list[ReleaseReport], threats: list[ThreatReport]) -> str:
     L: list[str] = []
     for r in releases:
-        L.append(f"{r.name} (released {r.since}): off where relevant at {len(r.customers)} customer(s), {r.total_arr:,.0f} ARR")
+        L.append(f"{r.name} (released {r.since}): off where relevant at {n_of(len(r.customers), 'customer')}, {r.total_arr:,.0f} ARR")
         L += [f"   {rc.customer:<26} {rc.inactive_accounts:>4} of {rc.relevant_accounts:<4} accounts off   +{rc.yield_gain_points:.1f} pts   ARR {rc.arr:,.0f}" for rc in r.customers]
     for t in threats:
         th = t.threat

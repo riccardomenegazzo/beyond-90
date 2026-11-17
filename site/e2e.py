@@ -270,7 +270,7 @@ def main(site: str) -> int:
         check(page.locator("#map-rows select").first.input_value() == "Subscription ID", "the mapper guesses which column is the account")
         page.click("#map-check")
         page.wait_for_selector("#map-preview tr")
-        check(page.locator("#map-preview tr").count() == 2 and "2 row(s) ready" in page.inner_text("#map-notes") and page.locator("#map-use:not([disabled])").count() == 1,
+        check(page.locator("#map-preview tr").count() == 2 and "2 rows ready" in page.inner_text("#map-notes") and page.locator("#map-use:not([disabled])").count() == 1,
               "the mapper previews the result and offers to use it")
         page.select_option("#map-rows select >> nth=1", "")
         check(page.locator("#map-use[disabled]").count() == 1, "changing the mapping asks for a new check")
@@ -285,7 +285,7 @@ def main(site: str) -> int:
         page.locator("#view .agrow input[type=text]").nth(1).fill("identity team")
         recap = page.inner_text("#view pre.recap")
         check("Grant admin consent (identity team)" in recap and "PRIVATE-NOTE-XYZ" not in recap and "What we agreed" in recap, "the recap carries what was agreed and never the private notes")
-        check("1 of" in page.inner_text("#view") and "1 thing(s) agreed" in page.inner_text("#view"), "the call keeps count of what was covered and agreed")
+        check("1 of" in page.inner_text("#view") and "1 thing agreed" in page.inner_text("#view"), "the call keeps count of what was covered and agreed")
         with page.expect_download() as dl:
             page.get_by_role("button", name="Download the actions (CSV)").click()
         csv_text = Path(dl.value.path()).read_text()
@@ -539,8 +539,8 @@ def main(site: str) -> int:
         page.wait_for_selector("#history-empty:not([hidden])")
         page.set_input_files("#import", str(exported))
         page.wait_for_selector("#ws-status:has-text('2 new')")
-        check("1 renewal outcome(s) added" in page.inner_text("#ws-status"), "importing the workspace brings the recorded outcomes back")
-        check("4 commitment(s) added" in page.inner_text("#ws-status"), "importing the workspace brings the promises back")
+        check("1 renewal outcome added" in page.inner_text("#ws-status"), "importing the workspace brings the recorded outcomes back")
+        check("4 commitments added" in page.inner_text("#ws-status"), "importing the workspace brings the promises back")
         page.set_input_files("#import", str(exported))
         page.wait_for_selector("#ws-status:has-text('0 new')")
         check(page.locator("#hist-table tbody tr").count() == 2, "importing the same file twice leaves two snapshots")
@@ -611,7 +611,7 @@ def main(site: str) -> int:
         check("promise to the customer is overdue" in page.inner_text("#view .watch"), "Today flags a promise to the customer that is overdue")
         page.click("[data-tab=qbr]")
         qbr = page.inner_text("#doc")
-        check("site(s)" in qbr and "cloud" not in qbr.lower(), "and reads in its own words (sites, not cloud accounts)")
+        check(" site" in qbr and "cloud" not in qbr.lower(), "and reads in its own words (sites, not cloud accounts)")
         for demo_id, who in (("demo-saas", "Acme SaaS"), ("demo-ai", "Orbit AI"), ("demo-hci", "Granite Manufacturing"), ("demo-objstore", "Meridian Health")):
             page.click(f"#{demo_id}")
             page.wait_for_selector("#loaded li:has-text('customer.toml')")
@@ -896,8 +896,8 @@ def main(site: str) -> int:
         page.once("dialog", lambda dlg: dlg.accept())
         page.locator("#privacy-body tr:has-text('Northwind') button:has-text('Erase all')").click()
         page.wait_for_selector("#erase-result .note")
-        check("0 record(s) left" in page.inner_text("#erase-result"), "after erasing, a second look finds nothing left for that customer")
-        check("earlier export(s)" in page.inner_text("#erase-result"), "the erasure says which earlier exports are outside its reach")
+        check("0 records left" in page.inner_text("#erase-result"), "after erasing, a second look finds nothing left for that customer")
+        check("earlier export" in page.inner_text("#erase-result"), "the erasure says which earlier exports are outside its reach")
         check("Northwind" not in page.inner_text("#hist-table"), "erasing a customer removes its snapshots and leaves other customers' alone")
         with page.expect_download() as rec:
             page.get_by_role("button", name="Download the erasure record").click()

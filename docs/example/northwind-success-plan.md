@@ -13,7 +13,7 @@ _Draft prepared 2026-10-31, ceiling 2026.4. Owner on our side: Alex Doe. Review:
 | Measure | Now | Target |
 |---|---|---|
 | Yield (real adoption, all four stages) | 72.6% | 97.6% after 14 weeks |
-| Maturity level | Bronze | Silver (4 check(s) to pass) |
+| Maturity level | Bronze | Silver (4 checks to pass) |
 | At least 95% of known units are connected | 90.1% | >= 95.0% |
 | No open critical finding is past its deadline | 11 | <= 0 |
 | No severity downgrade lands just before a deadline | 3 | <= 0 |
@@ -65,8 +65,8 @@ A model, not a promise: it rests on the hours available and on each action succe
 ## What could get in the way
 
 - The score will dip around week 3 (about 1.1 points) because newly connected accounts enter it with nothing covered yet. That is the cost of seeing them.
-- Some work is assumed to stay blocked and needs escalation rather than more effort: 2 findings that stayed undecided; 14 module activations that did not happen; 2 inventory gaps that could not be closed; 1 findings that stayed unowned; 1 accepted risks that stayed unreviewed.
-- About 6 account(s) may be known to none of our lists; finding them may lower the starting point.
+- Some work is assumed to stay blocked and needs escalation rather than more effort: 2 findings that stayed undecided; 14 module activations that did not happen; 2 inventory gaps that could not be closed; 1 finding that stayed unowned; 1 accepted risk that stayed unreviewed.
+- About 6 accounts may be known to none of our lists; finding them may lower the starting point.
 
 ## Agreed
 

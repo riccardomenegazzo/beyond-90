@@ -24,6 +24,7 @@ from .catalogue import Catalogue
 from .models import CustomerData
 from .planner import Plan
 from .scoring import Score
+from .words import n_of, verb
 
 
 @dataclass
@@ -96,7 +97,7 @@ def candor_items(
     if u and u.get("estimable") and u["unseen_estimate"] >= 1:
         items.append(CandorItem(
             "hidden_accounts",
-            f"We think around {u['unseen_estimate']:.0f} {unit}(s) are known to none of our lists. If they are unconnected, the real L1 is {_pct(u['pessimistic_l1'])}.",
+            f"We think around {u['unseen_estimate']:.0f} {unit if round(u['unseen_estimate']) == 1 else units} {'is' if round(u['unseen_estimate']) == 1 else 'are'} known to none of our lists. If they are unconnected, the real L1 is {_pct(u['pessimistic_l1'])}.",
             f"{u['seen_by_one']} of {u['observed']} known {units} appear in only one of billing, the organization and SSO ({u['method']}).",
             "Saying what you cannot see is part of credibility; the alternative is a number that looks more certain than it is.",
         ))
@@ -126,7 +127,7 @@ def candor_items(
     if sus:
         items.append(CandorItem(
             "downgrades",
-            f"{len(sus)} severity downgrade(s) landed within days of an SLA deadline. Until we understand why, remediation times may look better than they are.",
+            f"{n_of(len(sus), 'severity downgrade')} landed within days of an SLA deadline. Until we understand why, remediation times may look better than they are.",
             "Findings: " + ", ".join(s["finding_id"] for s in sus[:5]) + (" and more" if len(sus) > 5 else "") + ".",
             "Questioning your own good numbers before the customer does is what makes the rest of your numbers believable.",
         ))
@@ -157,7 +158,7 @@ def candor_items(
         n = len(rel["reliability"]["overdue_open"])
         items.append(CandorItem(
             "overdue_commitments",
-            f"We owe you {n} thing(s) that are past their date. Here is what they are and when you will have them.",
+            f"We owe you {n_of(n, 'thing')} that {verb(n, 'is', 'are')} past their date. Here is what they are and when you will have them.",
             "Commitments: " + ", ".join(rel["reliability"]["overdue_open"][:5]) + ".",
             "Raising your own missed promises before the customer does is reliability in the only form they can see.",
         ))

@@ -49,9 +49,9 @@ test("people, risks, movement and earlier renewals appear when they exist, and a
   assert.match(md, /\| Priya \/ Raman \| champion \| strong \| 12 days ago \|/);
   assert.match(md, /\| Dan \| - \| not rated \| 140 days ago \(stale\) \|/);
   assert.match(md, /drops about 3\.4 points in 90 days/);
-  assert.match(md, /1 connector\(s\) are counted as connected but are not working/);
+  assert.match(md, /1 connector is counted as connected but is not working/);
   assert.match(md, /secret of azure-1 expires on 2026-11-05/);
-  assert.match(md, /3 critical finding\(s\) are open/);
+  assert.match(md, /3 critical findings are open/);
   assert.match(md, /2026-08-31 60\.0% → 2026-10-31 72\.6%/);
   assert.match(md, /2025-12-01: renewed \(after the QBR\); health before the decision 61/);
   assert.doesNotMatch(md, /churned/);

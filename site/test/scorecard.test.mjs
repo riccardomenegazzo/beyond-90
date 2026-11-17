@@ -10,7 +10,7 @@ const bd = { open: { critical: 2, high: 5, medium: 0, low: 0 }, past_sla_total: 
 test("the scorecard carries the numbers, the fingerprint and what it does not prove", () => {
   const t = scorecard({ result, score, burndown: bd, today: "2026-11-11", engine: "0.36.0" });
   assert.match(t, /# Posture scorecard: Acme/); assert.match(t, /Yield 72\.6%/); assert.match(t, /\| Decided \| 60\.0% \|/);
-  assert.match(t, /2 critical finding\(s\) open; 5 high open/); assert.match(t, /the default values/);
+  assert.match(t, /2 critical findings open; 5 high open/); assert.match(t, /the default values/);
   assert.match(t, /does not record whether a later scan confirmed/); assert.match(t, /ab12cd34ef56ab78/); assert.doesNotMatch(t, /ab12cd34ef56ab78cd90/);
   assert.match(t, /not an audit/); assert.match(t, /does not show that the files are complete or true/);
 });
@@ -30,7 +30,7 @@ test("a pasted fingerprint matches only the data it came from", () => {
 
 test("the scorecard states the focus counts and the rule behind them", () => {
   const t = scorecard({ result, score, burndown: bd, today: "2026-11-11" });
-  assert.match(t, /40 finding\(s\) open, 7 that need a decision now/);
+  assert.match(t, /40 findings open, 7 that need a decision now/);
   assert.ok(!/finding\(s\) open, undefined/.test(scorecard({ result, score, burndown: { ...bd, focus: undefined }, today: "2026-11-11" })));
 });
 

@@ -19,6 +19,7 @@ from .catalogue import Catalogue
 from .models import CustomerData
 from .scoring import classify_finding, compute_score
 from .stake import weighted
+from .words import n_of, verb
 
 FOLLOW_DAYS = 21
 TOPICS = {
@@ -81,23 +82,23 @@ def receipt(old: CustomerData, new: CustomerData, cat: Catalogue) -> dict[str, A
     remaining = []
     if s_new.stages["L1"].leaks:
         un = list(s_new.stages["L1"].leaks)
-        remaining.append(f"{len(un)} account(s) are still not connected, holding {w_new['unconnected_spend_share']:.0%} of spend.")
+        remaining.append(f"{n_of(len(un), 'account')} are still not connected, holding {w_new['unconnected_spend_share']:.0%} of spend.")
     crit_open = sum(1 for f in new.findings if f.closed_at is None and f.severity == "critical")
     if crit_open:
-        remaining.append(f"{crit_open} critical finding(s) are still open.")
+        remaining.append(f"{n_of(crit_open, 'critical finding')} {verb(crit_open, 'is', 'are')} still open.")
     top_off = sorted(s_new.stages["L3"].leaks, key=lambda e: -e["inactive"])[:1]
     if top_off:
-        remaining.append(f"{top_off[0]['name']} is still off on {top_off[0]['inactive']} account(s).")
+        remaining.append(f"{top_off[0]['name']} is still off on {n_of(top_off[0]['inactive'], 'account')}.")
 
     headline = []
     if newly:
-        headline.append(f"{len(newly)} account(s) connected" + (f", putting {spend_newly:,.0f} of monthly spend under watch" if spend_newly else ""))
+        headline.append(f"{n_of(len(newly), 'account')} connected" + (f", putting {spend_newly:,.0f} of monthly spend under watch" if spend_newly else ""))
     if closed:
-        headline.append(f"{len(closed)} finding(s) closed" + (f", {closed_sev.get('critical', 0)} critical" if closed_sev.get("critical") else ""))
+        headline.append(f"{n_of(len(closed), 'finding')} closed" + (f", {closed_sev.get('critical', 0)} critical" if closed_sev.get("critical") else ""))
     if decided:
-        headline.append(f"{len(decided)} finding(s) gained an owner and a decision")
+        headline.append(f"{n_of(len(decided), 'finding')} gained an owner and a decision")
     if gained_caps:
-        headline.append(f"{len(gained_caps)} capability activation(s)")
+        headline.append(f"{n_of(len(gained_caps), 'capability activation')}")
     return {
         "from": start.isoformat(), "to": end.isoformat(), "days": (end - start).days, "customer": new.name,
         "headline": headline,

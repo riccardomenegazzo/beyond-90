@@ -33,7 +33,7 @@ DEMO_PROFILES = {key: ROOT / "examples" / "profiles" / key / folder for key, fol
     ("saas", "acme-saas"), ("ai", "orbit-ai"), ("identity", "harbor-identity"), ("siem", "lantern-siem"),
     ("hci", "granite-hci"), ("object-storage", "meridian-storage"))}
 # Every file the page is made of. A test checks that each module a page script imports is in this list.
-PAGE_FILES = ("index.html", "app.js", "style.css", "engine.js", "store.js", "workspace-core.js", "worker.js", "ui.js", "charts.js", "views.js", "vault.js", "recap.js", "guide.js", "graph.js", "qr.js", "starter.js", "outcomes.js", "commitments.js", "handoff.js", "callmode.js", "aliases.js", "erasure.js", "privacy.js", "pov.js", "asks.js", "roles.js", "sla.js", "scorecard.js", "today.js", "fuzzy.js", "triage.js", "internal.js", "nav.js", "keys.js", "done.js")
+PAGE_FILES = ("index.html", "app.js", "style.css", "engine.js", "store.js", "workspace-core.js", "worker.js", "ui.js", "charts.js", "views.js", "vault.js", "recap.js", "guide.js", "graph.js", "qr.js", "starter.js", "outcomes.js", "commitments.js", "handoff.js", "callmode.js", "aliases.js", "erasure.js", "privacy.js", "pov.js", "asks.js", "roles.js", "sla.js", "scorecard.js", "today.js", "fuzzy.js", "triage.js", "internal.js", "nav.js", "keys.js", "done.js", "words.js")
 DEMO_PREVIOUS = ROOT / "examples" / "history" / "northwind-2026-09"
 
 

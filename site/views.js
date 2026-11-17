@@ -14,6 +14,7 @@ import { headline, firstMinute, rankActions, chainText, doneSummary, funnelSegme
 import { stageBars } from "./nav.js";
 import { accountsFirst, accountsAnswer, whyAccount, findingsFirst, findingsAnswer, whyFinding } from "./triage.js";
 import { gauge, waterfall, lineChart, contributions, timeline, shareBar, funnel, STAGE, STAGE_NAME } from "./charts.js";
+import { nOf, verb } from "./words.js";
 
 const card = (title, body, { sub = "", cls = "", actions = null } = {}) =>
   h("section", { class: "card " + cls }, h("header", { class: "cardhead" }, h("h2", { text: title }), actions), sub ? h("p", { class: "note first", text: sub }) : null, body);
@@ -512,7 +513,7 @@ export function maturityView({ score, dash }) {
   const fn = Object.entries(score.views.csf.functions);
   return h("div", {},
     ladder,
-    lad && lad.week != null ? h("p", { class: "note", text: `At ${lad.hours_per_week} hours a week, the roadmap passes the stage checks for ${cap(lad.level)} in week ${lad.week}, after about ${lad.hours.toFixed(0)} hours.` + (lad.outside_plan.length ? ` ${lad.outside_plan.length} check(s) need a decision or a conversation, not hours.` : "") }) : null,
+    lad && lad.week != null ? h("p", { class: "note", text: `At ${lad.hours_per_week} hours a week, the roadmap passes the stage checks for ${cap(lad.level)} in week ${lad.week}, after about ${lad.hours.toFixed(0)} hours.` + (lad.outside_plan.length ? ` ${nOf(lad.outside_plan.length, "check")} ${verb(lad.outside_plan.length, "needs", "need")} a decision or a conversation, not hours.` : "") }) : null,
     h("div", { class: "col2" }, card("Adoption by use case", rateBars(uc.map((u) => ({ label: u.label, rate: u.rate, note: `${u.active} of ${u.relevant}` })))),
       card("NIST CSF 2.0 functions", rateBars(fn.map(([k, v]) => ({ label: cap(k), rate: v.rate, note: v.rate == null ? "no capability serves it" : `${v.active} of ${v.relevant}` }))), { sub: "Capability adoption, not a compliance statement." })),
     h("div", { class: "col3" }, groups));
@@ -556,7 +557,7 @@ export function callView({ result, dash, score, logTouch, go, keepFromCall }) {
   const refresh = () => {
     const o = out();
     preview.textContent = `Subject: ${o.recap.subject}\n\n${o.recap.body}`;
-    count.textContent = `${o.covered.length} of ${call.items.length} agenda items covered, ${o.agreed.length} thing(s) agreed, ${call.ours.length} we owe.`;
+    count.textContent = `${o.covered.length} of ${call.items.length} agenda items covered, ${nOf(o.agreed.length, "thing")} agreed, ${call.ours.length} we owe.`;
   };
   const agenda = h("div", { class: "agenda" }, call.items.map((it) => h("details", { class: "agitem", open: it.covered ? null : true },
     h("summary", {}, h("label", { class: "inline" }, h("input", { type: "checkbox", checked: it.covered, "aria-label": `${it.title}: covered`, onchange: (e) => { it.covered = e.target.checked; refresh(); } }), h("b", { text: it.title }))),
@@ -591,7 +592,7 @@ export function callView({ result, dash, score, logTouch, go, keepFromCall }) {
         h("button", { class: "btn small primary", type: "button", text: "Copy the recap", onclick: (e) => copyText(preview.textContent).then((ok) => { e.target.textContent = ok ? "Copied" : "Not copied"; }) }),
         h("button", { class: "btn small", type: "button", text: "Download the actions (CSV)", onclick: () => saveBlob(out().csv, `beyond90-call-actions-${date.value}.csv`, "text/csv") }),
         logBtn,
-        h("button", { class: "btn small", type: "button", text: "Keep in the ledger", onclick: async () => { try { const o = out(); const n = await keepFromCall({ agreed: o.agreed, ours: call.ours, date: date.value }); say.textContent = n ? `${n} promise(s) kept in the ledger (see Promises).` : "Nothing new to keep: what you agreed is already in the ledger."; } catch (e) { say.textContent = e.message; } } }),
+        h("button", { class: "btn small", type: "button", text: "Keep in the ledger", onclick: async () => { try { const o = out(); const n = await keepFromCall({ agreed: o.agreed, ours: call.ours, date: date.value }); say.textContent = n ? `${nOf(n, "promise")} kept in the ledger (see Promises).` : "Nothing new to keep: what you agreed is already in the ledger."; } catch (e) { say.textContent = e.message; } } }),
         h("button", { class: "btn small quiet", type: "button", text: "Start a new call", onclick: () => { calls.delete(key); go("call"); } })),
       say),
     { sub: "The recap names only what you marked as covered and what you agreed, in the customer's words. Nothing is sent: you copy it. Logging adds a line to interactions.csv and re-runs." }));
@@ -693,7 +694,7 @@ export function bookView({ book, openCustomer }) {
     h("div", { class: "kpiline" }, stat(pct(book.arr_weighted_yield), "ARR-weighted Yield"), stat(pct(book.weighted_end), "after the plan", "good"), stat(String(cs.length), "customers"), stat(num(totalArr), "ARR in the book"), stat(String(book.patterns), "shared patterns")),
     h("div", { class: "col2" },
       card("Where to look first", h("ul", { class: "flags" }, [
-        h("li", { class: "bad" }, h("b", { text: `${worst.name} has the lowest Yield (${pct(worst.yield)})` }), h("span", { text: `${worst.critical_open} critical finding(s) open.` }), h("button", { class: "link", type: "button", text: "Open", onclick: () => openCustomer(worst.key) })),
+        h("li", { class: "bad" }, h("b", { text: `${worst.name} has the lowest Yield (${pct(worst.yield)})` }), h("span", { text: `${nOf(worst.critical_open, "critical finding")} open.` }), h("button", { class: "link", type: "button", text: "Open", onclick: () => openCustomer(worst.key) })),
         h("li", {}, h("b", { text: `${gain.name} gains the most weighted Yield from your hours` }), h("span", { text: `${pct(gain.yield)} to ${pct(gain.planned_yield)} for ${gain.hours.toFixed(0)} hours.` }), h("button", { class: "link", type: "button", text: "Open", onclick: () => openCustomer(gain.key) }))]), { sub: "From the plan that spends one budget of hours across the whole book." }),
       card("Reading the map", h("p", { class: "note first", text: "Each cell is one stage's pass rate; darker means closer to 100%. A column that is pale across many customers is a product or process problem, not one customer's." }))),
     card("The book", dataTable({ columns: cols, rows: cs, label: "Customers", pageSize: 100 }).el));
@@ -857,7 +858,7 @@ export function bookNewsView({ book, advisories, openCustomer }) {
         h("td", { class: "num" }, h("span", { class: c.uncovered ? "bad-text" : "", text: String(c.uncovered) })), h("td", { class: "num", text: String(c.unknown) }),
         h("td", {}, h("button", { class: "btn small", type: "button", text: "Open", "aria-label": `Open ${c.name} on the news`, onclick: () => openCustomer(c.key, "news") })))))),
     h("p", { class: "note" }, "Sources: ", sourceLinks(e), e.severity_why ? ` · ${e.severity} because ${e.severity_why}` : "")),
-    { sub: e.uncovered_customers ? `${e.uncovered_customers} customer(s) with exposed resources and no mitigation on.` : e.customers.some((c) => c.exposed) ? "Every exposed customer is covered: a reassuring note is still worth sending." : "No customer is known to be exposed, but some cannot be assessed: their inventory is incomplete.", cls: "news" }) }));
+    { sub: e.uncovered_customers ? `${nOf(e.uncovered_customers, "customer")} with exposed resources and no mitigation on.` : e.customers.some((c) => c.exposed) ? "Every exposed customer is covered: a reassuring note is still worth sending." : "No customer is known to be exposed, but some cannot be assessed: their inventory is incomplete.", cls: "news" }) }));
   const holder = h("div", {}, cards.map((c) => c.el));
   const apply = () => cards.forEach(({ e, el }) => { el.hidden = (prov.size && !e.platforms.some((p) => prov.has(p))) || (only.has("kev") && !e.kev) || (only.has("uncovered") && !e.uncovered_customers) || (only.has("new") && !(e.first_seen && asOf && (Date.parse(asOf) - Date.parse(e.first_seen)) / 86400000 <= 7)); });
   const providers = [...new Set(news.flatMap((e) => e.platforms))].sort();
@@ -965,7 +966,7 @@ export function onboardingView({ dash, score, result, engine }) {
     h("span", { class: "note", text: "What is done, what waits on whose team, and the read-only commands to check. No internal scores." }));
   return h("div", {},
     head, share, gap, noDetail, since,
-    h("div", { class: "col2" }, card(`Where ${score.terms.units} stop`, funnel(o.funnel), { sub: o.has_detail ? `Median ${o.time_to_deploy.median ?? "n/a"} days from discovery to a deployed connector (90th percentile ${o.time_to_deploy.p90 ?? "n/a"}); ${o.time_to_first_scan.median ?? "n/a"} days from deployment to the first scan.` : "From accounts.csv only." }),
+    h("div", { class: "col2" }, card(`Where ${score.terms.units} stop`, funnel(o.funnel), { sub: o.has_detail ? `Median ${o.time_to_deploy.median == null ? "n/a days" : nOf(o.time_to_deploy.median, "day")} from discovery to a deployed connector (90th percentile ${o.time_to_deploy.p90 == null ? "n/a days" : nOf(o.time_to_deploy.p90, "day")}); ${o.time_to_first_scan.median == null ? "n/a days" : nOf(o.time_to_first_scan.median, "day")} from deployment to the first scan.` : "From accounts.csv only." }),
       card("Unblock in this order", waves, { sub: "Grouped by cause and ordered by accounts unblocked per hour. Causes fixed once for the organization come first when they hold many back.",
         actions: h("button", { class: "btn small", type: "button", text: "Download plan", onclick: () => saveBlob(result.onboarding_markdown, "beyond90-onboarding.md", "text/markdown") }) })),
     card("Every " + score.terms.unit + ", by stage", h("div", {},
@@ -1133,7 +1134,7 @@ export function valueView({ dash, result }) {
         h("small", { class: "block", text: t.followed_count ? `Followed within 21 days by: ${t.followed_by.join("; ")}${t.followed_count > t.followed_by.length ? ` (+${t.followed_count - t.followed_by.length})` : ""}` : "Nothing measurable followed within 21 days." }))))) : h("p", { class: "note first", text: "No touches logged in this window." }),
         { sub: `Followed, not caused: a timeline is evidence for a conversation, not proof. Promises kept: ${v.promises.kept} (${v.promises.on_time} on time).` }),
       card("What did not move", v.remaining.length ? h("ul", {}, v.remaining.map((r) => h("li", { text: r }))) : h("p", { class: "note first", text: "No open gap worth naming." }),
-        { sub: v.connected.lost.length ? `Also lost: ${v.connected.lost.length} account(s) no longer connected.` : "A receipt that hides the gaps is a sales sheet." })));
+        { sub: v.connected.lost.length ? `Also lost: ${nOf(v.connected.lost.length, "account")} no longer connected.` : "A receipt that hides the gaps is a sales sheet." })));
 }
 
 // ------------------------------------------------------------------ teams
@@ -1211,7 +1212,7 @@ export function execQbrView({ score, result, engine, files, saved, advisories, f
   const out = h("div", {});
   const showUsed = () => {
     const before = dates.filter((d) => d < from.value), inside = dates.filter((d) => d >= from.value && d <= to.value);
-    used.textContent = inside.length ? `Compared with ${before.length ? before[before.length - 1] + " (the last snapshot before the period)" : inside[0] + " (the first in the period)"}; ${inside.length} snapshot(s) in the period: ${inside.join(", ")}.`
+    used.textContent = inside.length ? `Compared with ${before.length ? before[before.length - 1] + " (the last snapshot before the period)" : inside[0] + " (the first in the period)"}; ${nOf(inside.length, "snapshot")} in the period: ${inside.join(", ")}.`
       : "No snapshot falls in this period.";
   };
   preset.addEventListener("change", () => { const q = quarters.find((x) => x.label === preset.value); if (q) { from.value = q.from; to.value = q.to; } from.disabled = to.disabled = !!q; showUsed(); });
@@ -1236,14 +1237,14 @@ export function execQbrView({ score, result, engine, files, saved, advisories, f
             h("button", { class: "btn small", type: "button", text: "Download (.md)", onclick: () => saveBlob(r.markdown, name + ".md", "text/markdown") }),
             h("button", { class: "btn small", type: "button", text: "Copy as Markdown", onclick: (e) => copyText(r.markdown).then((ok) => { e.target.textContent = ok ? "Copied" : "Not copied"; }) }))),
         q.decisions.length ? card("Decisions to ask for", h("ol", {}, q.decisions.map((d) => h("li", { text: d })))) : null,
-        card("Preview", frame, { sub: `Built from ${q.snapshots.length} snapshot(s): ${q.snapshots.join(", ")}. Written for an executive reader: no internal scores or stage names.` }));
+        card("Preview", frame, { sub: `Built from ${nOf(q.snapshots.length, "snapshot")}: ${q.snapshots.join(", ")}. Written for an executive reader: no internal scores or stage names.` }));
     } catch (e) { if (!e.cancelled) out.replaceChildren(h("p", { class: "bad-text", role: "alert", text: "Could not build it: " + e.message })); }
     finally { build.disabled = false; }
   });
   const timeline = h("ol", { class: "snaptl", "aria-label": "Saved snapshots" }, dates.map((d) => h("li", {}, h("span", { class: "dot" }), h("b", { text: d }), h("small", { text: mine.some((s) => s.as_of === d) ? "saved" : "this analysis, not saved" }))));
   return h("div", {},
     card(`History of ${score.customer}`, h("div", {}, timeline,
-      h("p", { class: "note", text: mine.length ? `${mine.length} saved snapshot(s) in this browser. Every analysis is added automatically (step 1, "Keep every analysis in the customer's history"); export the workspace to keep it elsewhere.` : "Nothing saved yet for this customer: this analysis will be the only point. Turn on “Keep every analysis” in step 1 and each run adds to the history." })),
+      h("p", { class: "note", text: mine.length ? `${nOf(mine.length, "saved snapshot")} in this browser. Every analysis is added automatically (step 1, "Keep every analysis in the customer's history"); export the workspace to keep it elsewhere.` : "Nothing saved yet for this customer: this analysis will be the only point. Turn on “Keep every analysis” in step 1 and each run adds to the history." })),
       { sub: "Contacts, commitments and interactions are saved only if you choose so; the review takes them from the latest analysis." }),
     card("Build a review", h("div", {},
       h("div", { class: "formgrid" }, h("label", {}, "Period", preset), h("label", {}, "From", from), h("label", {}, "To", to)),

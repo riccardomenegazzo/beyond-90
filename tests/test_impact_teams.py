@@ -35,7 +35,7 @@ def test_receipt_counts_what_moved_on_the_demo(receipt):
     assert receipt["findings"]["closed"] == 37 and receipt["findings"]["by_severity"].get("critical") == 4
     assert receipt["capabilities"]["gained"] > 0
     assert receipt["from"] < receipt["to"] and receipt["days"] > 0
-    assert receipt["headline"] and receipt["headline"][0].startswith("7 account(s) connected")
+    assert receipt["headline"] and receipt["headline"][0].startswith("7 accounts connected")
 
 
 def test_receipt_says_followed_not_caused_and_names_what_did_not_move(receipt):

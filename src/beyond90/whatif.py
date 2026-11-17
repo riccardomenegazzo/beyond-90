@@ -88,7 +88,7 @@ def _ops_for(data: CustomerData, cat: Catalogue, step: Mapping[str, Any]) -> lis
             raise ScenarioError("connect: 'accounts' must be a non-empty list")
         unknown = sorted(str(x) for x in wanted if str(x) not in known)
         if unknown:
-            raise ScenarioError(f"connect: unknown account(s): {', '.join(unknown[:5])}")
+            raise ScenarioError(f"connect: unknown {'account' if len(unknown) == 1 else 'accounts'}: {', '.join(unknown[:5])}")
         ids = sorted(str(x) for x in wanted if any(a.id == str(x) and not a.connected for a in data.accounts))
         return [{"op": "connect", "accounts": ids}] if ids else []
     if kind == "enable_module":

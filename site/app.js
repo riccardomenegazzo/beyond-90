@@ -21,6 +21,7 @@ import { h as el_, s as svg_, saveBlob, copyText, setExitGate, csvCell, icon, in
 import { CUSTOMER_NAV, BOOK_NAV, FAQ, GLOSSARY, TOUR } from "./guide.js";
 import { navBadges, stageBars, togglePin, pinnedViews } from "./nav.js";
 import * as KEYS from "./keys.js";
+import { nOf, verb } from "./words.js";
 
 // Another site could frame this page and steer clicks on it; the app only runs as the top-level page.
 if (window.top !== window.self) throw new Error("Beyond 90 runs only as a top-level page, never inside another site's frame.");
@@ -58,7 +59,7 @@ async function openedWith() {
       }
     } catch { entries = []; }
     finally { try { await caches.delete("share-inbox"); } catch { /* nothing to empty */ } }   // emptied at once, read or not
-    if (entries.length) { showPlace("start"); await addFiles(entries); say(`${entries.length} shared file(s) loaded. Check the list, then Analyse.`); }
+    if (entries.length) { showPlace("start"); await addFiles(entries); say(`${nOf(entries.length, "shared file")} loaded. Check the list, then Analyse.`); }
     else say("Nothing usable was shared: only .csv, .toml and .xlsx files are read.");
     return;
   }
@@ -134,7 +135,7 @@ const lastSegment = (dir) => dir.split("/").pop() || dir;
 async function addFiles(entries) {
   const kept = entries.filter(({ file }) => ALLOWED.test(file.name));
   const skipped = entries.length - kept.length;
-  if (!kept.length) { if (skipped) say(skipped + " file(s) skipped: only .csv, .toml and .xlsx are read."); return; }
+  if (!kept.length) { if (skipped) say(`${nOf(skipped, "file")} skipped: only .csv, .toml and .xlsx are read.`); return; }
   const notes = [];
   const byDir = new Map();
   for (const { file, path } of kept) {
@@ -159,7 +160,7 @@ async function addFiles(entries) {
     state.mode = "single";
     state.files = customers.length === 1 ? customers[0][1] : Object.assign({}, ...byDir.values());
   }
-  if (skipped) notes.push(skipped + " file(s) skipped: only .csv, .toml and .xlsx are read.");
+  if (skipped) notes.push(`${nOf(skipped, "file")} skipped: only .csv, .toml and .xlsx are read.`);
   if (notes.length) say(notes.join(" "));
   renderLoaded();
 }
@@ -276,7 +277,7 @@ async function run(compareId) {
     if (!res.ok) return showErrors(res.errors);
     state.result = res; state.book = null; privacy.learn(res);
     state.compareId = base ? base.id : "";
-    say(res.warnings.length ? res.warnings.length + " warning(s): " + res.warnings.join("; ") : "");
+    say(res.warnings.length ? `${nOf(res.warnings.length, "warning")}: ` + res.warnings.join("; ") : "");
     showResults();
     if ($("autosave").checked && !holdSave) await saveSnapshot({ quiet: true });   // the history a review is built from
   } catch (e) {
@@ -302,7 +303,7 @@ async function runBook() {
     if (!res.ok) return showErrors(res.errors);
     state.book = res; state.result = null; privacy.learn(res);
     const skipped = Object.keys(res.errors || {});
-    say(skipped.length ? `${skipped.length} customer(s) skipped because their data is invalid: ${skipped.join(", ")}.` : "");
+    say(skipped.length ? `${nOf(skipped.length, "customer")} skipped because their data is invalid: ${skipped.join(", ")}.` : "");
     showBook();
   } catch (e) {
     if (e.cancelled) say("Cancelled. The engine was restarted.");
@@ -822,8 +823,8 @@ async function exportWorkspace() {
   const text = W.serializeWorkspace(state.saved, { engine: state.engine ? state.engine.version : "", extra: { outcomes: state.outcomes, commitments: state.commitments, povs: state.povs, asks: state.asks, done: state.marks } });
   const sealed = await store.sealExport(text);
   save(new Blob([sealed || text], { type: "application/json" }), sealed ? "beyond90-workspace.sealed.json" : "beyond90-workspace.json");
-  wsSay(sealed ? `Exported ${state.saved.length} snapshot(s), sealed with your passphrase.`
-    : `Exported ${state.saved.length} snapshot(s). The file is not encrypted and contains customer data: protect saved data with a passphrase and exports are sealed too.`);
+  wsSay(sealed ? `Exported ${nOf(state.saved.length, "snapshot")}, sealed with your passphrase.`
+    : `Exported ${nOf(state.saved.length, "snapshot")}. The file is not encrypted and contains customer data: protect saved data with a passphrase and exports are sealed too.`);
 }
 
 // ---------- start from a form: the two files every analysis needs, made from what the user knows
@@ -901,7 +902,7 @@ function mapRender() {
       el_("option", { value: "", text: "none" }), s.headers.map((h) => el_("option", { value: h, text: h, selected: (s.mapping || {})[f] === h })))))));
   $("map-provider-label").hidden = target !== "accounts.csv";
   $("map-name-label").hidden = $("map-asof-label").hidden = hasCustomer();
-  $("map-count").textContent = `${s.rows} row(s) and ${s.headers.length} column(s) found.` + (s.target ? "" : " The file does not clearly look like accounts or findings; choose what to build.");
+  $("map-count").textContent = `${nOf(s.rows, "row")} and ${nOf(s.headers.length, "column")} found.` + (s.target ? "" : " The file does not clearly look like accounts or findings; choose what to build.");
   $("map-check").hidden = false;
   mapInvalidate();
 }
@@ -939,7 +940,7 @@ $("map-check").addEventListener("click", async () => {
   $("map-head").replaceChildren(el_("tr", {}, cols.map((c) => el_("th", { scope: "col", text: c }))));
   $("map-preview").replaceChildren(...r.preview.map((row) => el_("tr", {}, cols.map((c) => el_("td", { text: row[c] })))));
   $("map-preview-wrap").hidden = !r.preview.length;
-  $("map-notes").replaceChildren(el_("li", { text: `${r.rows} row(s) ready${r.skipped ? `, ${r.skipped} left out` : ""}.` }), ...r.notes.map((t) => el_("li", { text: t })));
+  $("map-notes").replaceChildren(el_("li", { text: `${nOf(r.rows, "row")} ready${r.skipped ? `, ${r.skipped} left out` : ""}.` }), ...r.notes.map((t) => el_("li", { text: t })));
   mapper.ok = r.rows > 0;
   $("map-use").disabled = !mapper.ok;
 });
@@ -953,7 +954,7 @@ $("mapper-form").addEventListener("submit", (e) => {
   }
   state.mode = "single"; state.groups = {}; state.files = files;
   renderLoaded();
-  say(`Added ${r.file} from your export (${r.rows} row(s)).` + ("accounts.csv" in files ? "" : " Add the accounts file too: findings refer to accounts."));
+  say(`Added ${r.file} from your export (${nOf(r.rows, "row")}).` + ("accounts.csv" in files ? "" : " Add the accounts file too: findings refer to accounts."));
   if ("accounts.csv" in files) run();
 });
 
@@ -977,11 +978,11 @@ async function sendWork() {
   if (navigator.canShare && navigator.canShare({ files: [file] })) {
     try {
       await navigator.share({ files: [file], title: "Beyond 90 workspace" });
-      return wsSay(`Sent ${state.saved.length} snapshot(s), encrypted. Import the file on the other device with your passphrase.`);
+      return wsSay(`Sent ${nOf(state.saved.length, "snapshot")}, encrypted. Import the file on the other device with your passphrase.`);
     } catch (e) { if (e.name === "AbortError") return; }
   }
   save(file, file.name);
-  wsSay(`Saved ${state.saved.length} snapshot(s) as one encrypted file. Move it to the other device and import it there with your passphrase.`);
+  wsSay(`Saved ${nOf(state.saved.length, "snapshot")} as one encrypted file. Move it to the other device and import it there with your passphrase.`);
 }
 $("send-work").addEventListener("click", sendWork);
 
@@ -1011,11 +1012,11 @@ async function importWorkspace(file) {
     const addedDn = dns.ok.length ? await store.markPut(dns.ok) : 0;
     await refreshHistory();
     wsSay(`Imported: ${added} new, ${ok.length - added} already here` + (rejected ? `, ${rejected} rejected because their content did not match their name` : "")
-      + (outs.ok.length || outs.rejected ? `; ${addedOut} renewal outcome(s) added` + (outs.rejected ? `, ${outs.rejected} refused` : "") : "")
-      + (cms.ok.length || cms.rejected ? `; ${addedCm} commitment(s) added` + (cms.rejected ? `, ${cms.rejected} refused` : "") : "")
-      + (pvs.ok.length || pvs.rejected ? `; ${addedPv} proof(s) of value added` + (pvs.rejected ? `, ${pvs.rejected} refused` : "") : "")
-      + (aks.ok.length || aks.rejected ? `; ${addedAk} ask(s) added` + (aks.rejected ? `, ${aks.rejected} refused` : "") : "")
-      + (dns.ok.length || dns.rejected ? `; ${addedDn} action(s) marked done added` + (dns.rejected ? `, ${dns.rejected} refused` : "") : "") + ".");
+      + (outs.ok.length || outs.rejected ? `; ${nOf(addedOut, "renewal outcome")} added` + (outs.rejected ? `, ${outs.rejected} refused` : "") : "")
+      + (cms.ok.length || cms.rejected ? `; ${nOf(addedCm, "commitment")} added` + (cms.rejected ? `, ${cms.rejected} refused` : "") : "")
+      + (pvs.ok.length || pvs.rejected ? `; ${nOf(addedPv, "proof")} of value added` + (pvs.rejected ? `, ${pvs.rejected} refused` : "") : "")
+      + (aks.ok.length || aks.rejected ? `; ${nOf(addedAk, "ask")} added` + (aks.rejected ? `, ${aks.rejected} refused` : "") : "")
+      + (dns.ok.length || dns.rejected ? `; ${nOf(addedDn, "action")} marked done added` + (dns.rejected ? `, ${dns.rejected} refused` : "") : "") + ".");
   } catch (e) {
     wsSay(e.message);
   }

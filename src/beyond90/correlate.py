@@ -29,6 +29,7 @@ from typing import Any
 from .catalogue import Catalogue
 from .models import CustomerData
 from .scoring import classify_finding
+from .words import n_of
 
 MAX_ACCOUNTS = 28
 MAX_STORIES = 8
@@ -80,7 +81,7 @@ def build(data: CustomerData, cat: Catalogue, onboarding: dict[str, Any], exposu
             add(a.id, "blocked", 2.0 * factor, f"onboarding blocked: {title[0].lower()}{title[1:]}", row["issue"])
         missing = [m.id for m in cat.modules if set(m.requires_any) & present[a.id] and a.provider in m.providers and (a.id, m.id) not in on]
         if a.connected and missing:
-            add(a.id, "protection", min(1.5, 0.5 * len(missing)), f"{len(missing)} protection(s) off where they apply", ",".join(missing))
+            add(a.id, "protection", min(1.5, 0.5 * len(missing)), f"{n_of(len(missing), 'protection')} off where they apply", ",".join(missing))
 
     worst: dict[str, list[Any]] = defaultdict(list)
     for f in data.findings:
@@ -93,7 +94,7 @@ def build(data: CustomerData, cat: Catalogue, onboarding: dict[str, Any], exposu
         weight = min(8.0, 4.0 * crit + 1.5 * (len(fs) - crit))
         high = len(fs) - crit
         what = " and ".join(x for x in (f"{crit} critical" if crit else "", f"{high} high" if high else "") if x)
-        add(acc, "findings", weight, f"{what} finding(s) open to the internet")
+        add(acc, "findings", weight, f"{what} {'finding' if crit + high == 1 else 'findings'} open to the internet")
 
     stories = []
     for e in exposures:
@@ -217,7 +218,7 @@ def compare(before: dict[str, Any], now: dict[str, Any], since: str) -> dict[str
     fresh = [x for x in ("acct:" + a for a in appeared) if x in drawn] + [x["id"] for x in now["nodes"] if x["type"] in ("story", "cause") and x["id"] not in {y["id"] for y in before["nodes"]}]
     parts = []
     if cleared:
-        parts.append(f"{len(cleared)} account(s) no longer carry any problem")
+        parts.append(f"{n_of(len(cleared), 'account')} no longer carry any problem")
     if better:
         parts.append(f"{len(better)} improved")
     if revealed:
@@ -270,10 +271,10 @@ def _insights(picked: list[dict[str, Any]], nodes: dict[str, dict[str, Any]], ed
         kev = sum(1 for s in covered if nodes[s].get("kev"))
         name = nodes["mod:" + m]["label"]
         out.append({"id": "lever:" + m, "kind": "leverage", "score": 6 * len(covered) + 2 * len(exposed_accs) + 4 * kev,
-                    "title": f"Switching on {name} closes {len(exposed_accs)} exposed account(s)" if len(covered) == 1 else f"One capability covers {len(covered)} security stories: {name}",
+                    "title": f"Switching on {name} closes {n_of(len(exposed_accs), 'exposed account')}" if len(covered) == 1 else f"One capability covers {len(covered)} security stories: {name}",
                     "text": f"{name} is off on {len(accs)} of the accounts that matter here, and it is the protection against "
                             + (nodes[covered[0]]["label"] + (", known to be exploited" if kev else "") if len(covered) == 1 else f"{len(covered)} security stories" + (f", {kev} of them known to be exploited" if kev else ""))
-                            + f". Switching it on where it is missing covers {len(exposed_accs)} exposed account(s) at once.",
+                            + f". Switching it on where it is missing covers {n_of(len(exposed_accs), 'exposed account')} at once.",
                     "action": f"Propose enabling {name} on {', '.join(sorted(a for a in accs)[:5])}{' and the rest' if len(accs) > 5 else ''}.",
                     "owner": "you, with the account owners", "nodes": sorted({"mod:" + m, *covered, *exposed_accs})})
         break
@@ -301,8 +302,8 @@ def _insights(picked: list[dict[str, Any]], nodes: dict[str, dict[str, Any]], ed
         why = sorted({e["source"] for e in edges if e["target"] in stuck and e["kind"] == "blocks"}, key=lambda c: -sum(1 for e in edges if e["source"] == c))
         reasons = "; ".join(nodes[c]["label"].rstrip(".") for c in why[:2])
         out.append({"id": "blind:" + s["id"], "kind": "blind_spot", "score": 3 * len(stuck) + (6 if s.get("kev") else 2),
-                    "title": f"Nobody can tell whether {s['label']} touches {len(stuck)} account(s)",
-                    "text": f"{s['label']} ({s['detail'].rstrip('.')}) may reach {len(stuck)} account(s) that are not connected, so nobody can check them."
+                    "title": f"Nobody can tell whether {s['label']} touches {n_of(len(stuck), 'account')}",
+                    "text": f"{s['label']} ({s['detail'].rstrip('.')}) may reach {n_of(len(stuck), 'account')} that are not connected, so nobody can check them."
                             + (f" The most common reasons: {reasons}." if reasons else "") + " Until they are connected, this is a blind spot, not a clean bill of health.",
                     "action": "Unblock these connectors first, then look again.", "owner": ", ".join(sorted({nodes[c].get("owner") or "account owners" for c in why})) or "account owners",
                     "nodes": sorted({s["id"], *stuck, *why})})
@@ -374,9 +375,9 @@ def book(customers: list[dict[str, Any]], cat: Catalogue) -> dict[str, Any]:
         for key, n in k["at"].items():
             load[key] += 1.0 + min(n, 10) * 0.3
     for c in customers:
-        signals = [f"{s['at'][c['key']][0]} account(s) not covered for {sid}" for sid, s in top_stories.items() if s["at"].get(c["key"], (0, 0))[0]]
-        signals += [f"{s['at'][c['key']][1]} account(s) nobody can check for {sid}" for sid, s in top_stories.items() if s["at"].get(c["key"], (0, 0))[1] and not s["at"][c["key"]][0]]
-        signals += [f"{k['at'][c['key']]} account(s) stuck: {k['title'].rstrip('.')}" for k in top_causes.values() if c["key"] in k["at"]]
+        signals = [f"{n_of(s['at'][c['key']][0], 'account')} not covered for {sid}" for sid, s in top_stories.items() if s["at"].get(c["key"], (0, 0))[0]]
+        signals += [f"{n_of(s['at'][c['key']][1], 'account')} nobody can check for {sid}" for sid, s in top_stories.items() if s["at"].get(c["key"], (0, 0))[1] and not s["at"][c["key"]][0]]
+        signals += [f"{n_of(k['at'][c['key']], 'account')} stuck: {k['title'].rstrip('.')}" for k in top_causes.values() if c["key"] in k["at"]]
         if not signals:
             continue
         nodes["cust:" + c["key"]] = {"id": "cust:" + c["key"], "type": "customer", "label": c["name"], "key": c["key"], "detail": f"Yield {c['yield'] * 100:.1f}%",
@@ -389,22 +390,22 @@ def book(customers: list[dict[str, Any]], cat: Catalogue) -> dict[str, Any]:
                                  "weight": float(len(at))}
         for key, (out, unknown) in sorted(at.items()):
             if out:
-                edges.append({"source": "story:" + sid, "target": "cust:" + key, "kind": "exposes", "label": f"{out} account(s) not covered at"})
+                edges.append({"source": "story:" + sid, "target": "cust:" + key, "kind": "exposes", "label": f"{n_of(out, 'account')} not covered at"})
             else:
-                edges.append({"source": "story:" + sid, "target": "cust:" + key, "kind": "blind", "label": f"{unknown} account(s) cannot be checked at"})
+                edges.append({"source": "story:" + sid, "target": "cust:" + key, "kind": "blind", "label": f"{n_of(unknown, 'account')} cannot be checked at"})
     for issue, k in top_causes.items():
-        nodes["cause:" + issue] = {"id": "cause:" + issue, "type": "cause", "label": k["title"], "detail": f"{sum(k['at'].values())} account(s) at {len(k['at'])} customer(s)",
+        nodes["cause:" + issue] = {"id": "cause:" + issue, "type": "cause", "label": k["title"], "detail": f"{n_of(sum(k['at'].values()), 'account')} at {n_of(len(k['at']), 'customer')}",
                                    "weight": float(sum(k["at"].values()))}
         for key, n in sorted(k["at"].items()):
             if "cust:" + key in nodes:
-                edges.append({"source": "cause:" + issue, "target": "cust:" + key, "kind": "blocks", "label": f"blocks {n} account(s) at"})
+                edges.append({"source": "cause:" + issue, "target": "cust:" + key, "kind": "blocks", "label": f"blocks {n_of(n, 'account')} at"})
     for m, v in top_caps.items():
         label = modules[m].name if m in modules else m.replace("_", " ")
-        nodes["mod:" + m] = {"id": "mod:" + m, "type": "capability", "label": label, "detail": f"would cover exposed accounts at {len(v['at'])} customer(s)",
+        nodes["mod:" + m] = {"id": "mod:" + m, "type": "capability", "label": label, "detail": f"would cover exposed accounts at {n_of(len(v['at']), 'customer')}",
                              "weight": float(sum(len(x) for x in v["at"].values()))}
         for key, accs in sorted(v["at"].items()):
             if "cust:" + key in nodes:
-                edges.append({"source": "cust:" + key, "target": "mod:" + m, "kind": "missing", "label": f"{len(accs)} account(s) without it at"})
+                edges.append({"source": "cust:" + key, "target": "mod:" + m, "kind": "missing", "label": f"{n_of(len(accs), 'account')} without it at"})
         for sid, s in top_stories.items():
             if m in s["mitigated_by"] and "story:" + sid in nodes:
                 edges.append({"source": "mod:" + m, "target": "story:" + sid, "kind": "mitigates", "label": "would cover"})

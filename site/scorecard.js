@@ -1,3 +1,4 @@
+import { nOf, verb } from "./words.js";
 // A one-page posture scorecard a customer can show someone else, tied to the exact inputs it was computed from by their
 // fingerprint. It says what it proves (these numbers came from those files) and what it does not (that the files are true).
 // Pure functions: no DOM, no storage.
@@ -28,11 +29,11 @@ export function scorecard({ result, score, burndown, today, engine = "" }) {
     ...STAGES.map(([k, name]) => `| ${name} | ${pct(score && score.stages && score.stages[k] ? score.stages[k].value : null)} |`), ""];
   if (burndown) {
     const b = burndown, z = b.zero_critical;
-    const state = z.never_had ? "no critical finding on record" : z.now ? `zero critical findings open${z.days != null ? ` for ${z.days} days` : ""}` : `${b.open.critical} critical finding(s) open`;
+    const state = z.never_had ? "no critical finding on record" : z.now ? `zero critical findings open${z.days != null ? ` for ${z.days} days` : ""}` : `${nOf(b.open.critical, "critical finding")} open`;
     lines.push("## Risk", "",
       `- ${state}; ${b.open.high} high open.`,
-      `- ${b.past_sla_total} open finding(s) older than their target age (${["critical", "high", "medium", "low"].map((s) => `${s} ${b.sla_days[s]} d`).join(", ")}${b.sla_is_default ? ", the default values" : ", set for this customer"}).`);
-    if (b.focus && b.focus.raw) lines.push(`- ${b.focus.raw} finding(s) open, ${b.focus.matter} that need a decision now (${b.focus.rule.toLowerCase()}`.replace(/\.$/, "") + ").");
+      `- ${nOf(b.past_sla_total, "open finding")} older than their target age (${["critical", "high", "medium", "low"].map((s) => `${s} ${b.sla_days[s]} d`).join(", ")}${b.sla_is_default ? ", the default values" : ", set for this customer"}).`);
+    if (b.focus && b.focus.raw) lines.push(`- ${nOf(b.focus.raw, "finding")} open, ${b.focus.matter} that need a decision now (${b.focus.rule.toLowerCase()}`.replace(/\.$/, "") + ").");
     if (b.automation && b.automation.tracked) lines.push(`- ${Math.round(b.automation.automated_share * 100)}% of ${b.automation.tracked} recorded fixes in the last ${b.automation.window_days} days needed no one.`);
     const c = b.closure;
     if (c && c.raised) {

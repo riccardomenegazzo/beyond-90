@@ -20,6 +20,7 @@ from .catalogue import Catalogue
 from .models import CustomerData
 from .radar import Threat, ThreatReport, threat_radar
 from .scoring import Score
+from .words import n_of, verb
 
 TOP_TIERS = {"elite", "strategic", "key", "platinum", "top", "tier 1", "tier1"}
 MID_TIERS = {"premium", "enterprise", "gold", "tier 2", "tier2"}
@@ -82,10 +83,10 @@ def trust_gate(data: CustomerData, score: Score) -> dict[str, Any]:
     rel = score.relationship or {}
     late = (rel.get("gaps") or {}).get("overdue_commitments") or []
     if late:
-        reasons.append(f"{len(late)} promise(s) to the customer are past their date: close them before asking for anything.")
+        reasons.append(f"{n_of(len(late), 'promise')} to the customer are past their date: close them before asking for anything.")
     unowned_crit = sum(1 for f in data.findings if f.closed_at is None and f.severity == "critical" and not f.owner)
     if unowned_crit:
-        reasons.append(f"{unowned_crit} critical finding(s) have no owner: that is the conversation to have first.")
+        reasons.append(f"{n_of(unowned_crit, 'critical finding')} {verb(unowned_crit, 'has', 'have')} no owner: that is the conversation to have first.")
     if rel and rel.get("weighted_band") == "fragile":
         reasons.append("The relationship reads as fragile; build trust before a commercial topic.")
     return {"ready": not reasons, "reasons": reasons}
@@ -235,7 +236,7 @@ def build_prep(data: CustomerData, score: Score, actions: list[Any], extras: dic
     if onb and onb.get("waves"):
         pts = [f"{w['title']}: {w['count']} {score.terms['units']}, owner {w['owner']}{' (one fix covers them all)' if w['once'] else ''}." for w in onb["waves"][:3]]
         if onb.get("secrets"):
-            pts.append(f"{len(onb['secrets'])} connector secret(s) expire within a month or already have.")
+            pts.append(f"{n_of(len(onb['secrets']), 'connector secret')} {verb(len(onb['secrets']), 'expires', 'expire')} within a month or already {verb(len(onb['secrets']), 'has', 'have')}.")
         items.append({"id": "onboarding", "title": "Unblock onboarding", "why": "A connector that is stuck is adoption the customer has paid for and cannot see; the fix is usually one guardrail, one consent or one template.", "points": pts})
 
     look = extras.get("outlook")
@@ -326,7 +327,7 @@ def week_plan(rows: list[dict[str, Any]], hours_per_week: float) -> dict[str, An
             why.append(f"{touch['days_since']} days since the last touch; cadence is {touch['cadence_days']}")
         elif touch["state"] == "due_soon":
             pts += 20
-            why.append(f"touch due in {max(0, touch['next_due_in'])} day(s)")
+            why.append(f"touch due in {n_of(max(0, touch['next_due_in']), 'day')}")
         fu = touch["follow_up"]
         if fu and fu["overdue"]:
             pts += 12
@@ -334,7 +335,7 @@ def week_plan(rows: list[dict[str, Any]], hours_per_week: float) -> dict[str, An
         late = ((r["score"].relationship or {}).get("gaps") or {}).get("overdue_commitments") or []
         if late:
             pts += min(30, 15 * len(late))
-            why.append(f"{len(late)} promise(s) past their date")
+            why.append(f"{n_of(len(late), 'promise')} past their date")
         ren = r.get("renewal")
         if ren and ren.get("status") in ("at_risk", "watch") and ren.get("days") is not None and ren["days"] <= 120:
             pts += 25 if ren["status"] == "at_risk" else 12
@@ -348,7 +349,7 @@ def week_plan(rows: list[dict[str, Any]], hours_per_week: float) -> dict[str, An
         unowned = sum(1 for f in data.findings if f.closed_at is None and f.severity == "critical" and not f.owner)
         if unowned:
             pts += 10
-            why.append(f"{unowned} critical finding(s) with no owner")
+            why.append(f"{n_of(unowned, 'critical finding')} with no owner")
         elif crit:
             pts += 4
         onb = r.get("onboarding")
@@ -357,7 +358,7 @@ def week_plan(rows: list[dict[str, Any]], hours_per_week: float) -> dict[str, An
             blocked = sum(1 for a in onb["accounts"] if a["issue"] and a["stage"] not in ("complete",) and a["issue"] != "not_deployed")
             if broken:
                 pts += min(20, 8 * broken)
-                why.append(f"{broken} connector(s) that worked are failing")
+                why.append(f"{n_of(broken, 'connector')} that worked are failing")
             elif blocked:
                 pts += min(12, 3 * blocked)
                 why.append(f"{blocked} {r['score'].terms['units']} blocked in onboarding")

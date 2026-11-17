@@ -85,9 +85,9 @@ def _n(n: int, units: str) -> str:
     return f"{n} {units[:-1] if n == 1 and units.endswith('s') else units}"
 
 
-FRIENDLY = {"triage_entry": "finding(s) on your {units} reach their triage date without an owner or a decision",
-            "acceptance_expiry": "accepted risk(s) on your {units} reach their review date",
-            "sla_critical": "critical finding(s) pass their remediation deadline", "sla_high": "high finding(s) pass their remediation deadline",
+FRIENDLY = {"triage_entry": "findings on your {units} reach their triage date without an owner or a decision",
+            "acceptance_expiry": "accepted risks on your {units} reach their review date",
+            "sla_critical": "critical findings pass their remediation deadline", "sla_high": "high findings pass their remediation deadline",
             "secret_expiry": "a connector credential expires and the connector stops"}
 
 

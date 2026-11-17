@@ -59,7 +59,7 @@ def render_onepager(q: dict[str, Any]) -> str:
         f'<div class="top"><div class="big"><b>{_pct(la["coverage"])}</b><span>effective coverage</span></div><ul class="parts">{parts}</ul></div>'
         '<p class="sub">Effective coverage multiplies the four parts: a gap in any one of them lowers the total.</p>'
         '<div class="cols"><div><h2>What is exposed</h2><ul>'
-        f'<li><b>{k["critical_open"]}</b> critical finding(s) open, <b>{k["critical_internet"]}</b> exposed to the internet</li>'
+        f'<li><b>{k["critical_open"]}</b> critical {"finding" if k["critical_open"] == 1 else "findings"} open, <b>{k["critical_internet"]}</b> exposed to the internet</li>'
         f'<li><b>{_pct(k["unconnected_spend_share"])}</b> of cloud spend not yet connected</li>'
         f'<li><b>{la["connected"]}</b> of <b>{la["accounts"]}</b> {e(u)} connected</li></ul>'
         f'<h2>If nothing changes</h2><p>{e(q["if_nothing"]["summary"])}</p></div>'

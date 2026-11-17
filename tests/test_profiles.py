@@ -92,7 +92,7 @@ def test_an_endpoint_customer_reads_in_its_own_words(capsys):
         text = r[key]
         assert "cloud" not in text.lower(), key
         assert "account(s)" not in text and " accounts " not in text.replace("accounts.csv", ""), key
-    assert "site(s)" in r["qbr_markdown"] and "endpoint assets" in r["report_markdown"]
+    assert " site" in r["qbr_markdown"] and "endpoint assets" in r["report_markdown"]
 
 
 def test_say_only_touches_the_engines_words():
@@ -106,7 +106,7 @@ def test_the_default_profile_output_does_not_depend_on_the_profile_machinery():
     from beyond90.web import analyze_files
     files = {p.name: p.read_text(encoding="utf-8") for p in CLOUD.iterdir() if p.suffix in (".csv", ".toml")}
     r = analyze_files(files)
-    assert "cloud assets" in r["report_markdown"] and "account(s)" in r["qbr_markdown"]
+    assert "cloud assets" in r["report_markdown"] and " account" in r["qbr_markdown"]
     assert json.loads(r["score_json"])["provenance"]["profile"] == "cnapp"
 
 

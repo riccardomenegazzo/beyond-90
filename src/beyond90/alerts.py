@@ -10,6 +10,8 @@ from __future__ import annotations
 
 from typing import Any, Optional
 
+from .words import n_of, verb
+
 ORDER = {"basic": 0, "bronze": 1, "silver": 2, "gold": 3}
 
 
@@ -28,11 +30,11 @@ def compute_alerts(*, score: Any, metrics: dict[str, Optional[float]], previous:
     out: list[dict[str, str]] = []
     for p in sync_problems:
         if p["status"] == "stale":
-            out.append(_a(f"stale:{p['name']}", "warn", f"Source {p['name']} could not be read and its data is {p['age_days']} day(s) old: {p['error']}"))
+            out.append(_a(f"stale:{p['name']}", "warn", f"Source {p['name']} could not be read and its data is {n_of(p['age_days'], 'day')} old: {p['error']}"))
         elif p["status"] == "failed":
             out.append(_a(f"failed:{p['name']}", "warn", f"Source {p['name']} could not be read and has no earlier copy: {p['error']}"))
     for t, n in (dropped or {}).items():
-        out.append(_a(f"dropped:{t}", "warn", f"{n} {t} row(s) were dropped because their account is not in the account list. If the list is incomplete, that is the finding."))
+        out.append(_a(f"dropped:{t}", "warn", f"{n} {t} {'row' if n == 1 else 'rows'} {verb(n, 'was', 'were')} dropped because their account is not in the account list. If the list is incomplete, that is the finding."))
     level = (score.rubric or {}).get("level")
     if previous and level and previous.get("level") and previous["level"] != level:
         down = ORDER.get(level, 0) < ORDER.get(previous["level"], 0)
@@ -43,7 +45,7 @@ def compute_alerts(*, score: Any, metrics: dict[str, Optional[float]], previous:
             out.append(_a("yield", "warn" if d < 0 else "info", f"Yield moved {d:+.1f} points since {previous['as_of']} ({score.yield_:.1%})."))
     cu = metrics.get("critical_unowned")
     if cu and (previous is None or cu > (previous.get("critical_unowned") or 0)):
-        out.append(_a("critical_unowned", "warn", f"{int(cu)} open critical finding(s) have no owner."))
+        out.append(_a("critical_unowned", "warn", f"{n_of(int(cu), 'open critical finding')} {verb(int(cu), 'has', 'have')} no owner."))
     if renewal and renewal["status"] == "at_risk" and (renewal["days"] <= 30 or not previous or previous.get("renewal_status") != "at_risk"):
         out.append(_a("renewal", "warn", f"Renewal on {renewal['date']} ({renewal['days']} days) is at risk: " +
                       ", ".join(s["label"].lower() for s in renewal["signals"] if s["status"] == "risk") + "."))
@@ -56,13 +58,13 @@ def compute_alerts(*, score: Any, metrics: dict[str, Optional[float]], previous:
         before = set((previous or {}).get("broken_connectors") or [])
         new = [b for b in broken if b not in before]
         if new:
-            out.append(_a("connectors", "warn", f"{len(new)} connector(s) that worked are now failing: {', '.join(new[:6])}."))
+            out.append(_a("connectors", "warn", f"{n_of(len(new), 'connector')} that worked are now failing: {', '.join(new[:6])}."))
         soon = [s for s in onboarding.get("secrets") or [] if s["days_left"] <= 14]
         if soon:
-            out.append(_a("secrets", "warn", f"{len(soon)} connector secret(s) expire within 14 days or already have: " + ", ".join(f"{s['connector']} ({s['expires_on']})" for s in soon[:5]) + "."))
+            out.append(_a("secrets", "warn", f"{n_of(len(soon), 'connector secret')} {verb(len(soon), 'expires', 'expire')} within 14 days or already {verb(len(soon), 'has', 'have')}: " + ", ".join(f"{s['connector']} ({s['expires_on']})" for s in soon[:5]) + "."))
         crit = [x for x in onboarding.get("security") or [] if x["severity"] == "critical"]
         if crit and not (previous and previous.get("connector_critical")):
-            out.append(_a("connector_security", "warn", f"{len(crit)} connector(s) have administrative rights at the organization level; they only need to read."))
+            out.append(_a("connector_security", "warn", f"{n_of(len(crit), 'connector')} have administrative rights at the organization level; they only need to read."))
     told = set((previous or {}).get("news_alerted") or [])
     for e in news_to_alert(exposures):
         if e["id"] not in told:
@@ -70,7 +72,7 @@ def compute_alerts(*, score: Any, metrics: dict[str, Optional[float]], previous:
             out.append(_a(f"news:{e['id']}", "warn", f"{e['id']} ({why}): {e['title']}. It touches {e['uncovered']} {score.terms['units']} without a mitigating capability."))
     weak = (score.quality or {}).get("weak", 0)
     if weak and not (previous and previous.get("quality_weak")):
-        out.append(_a("quality", "warn", f"{weak} input check(s) are weak; some figures may mislead."))
+        out.append(_a("quality", "warn", f"{n_of(weak, 'input check')} {verb(weak, 'is', 'are')} weak; some figures may mislead."))
     return out
 
 

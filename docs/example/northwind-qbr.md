@@ -37,19 +37,19 @@ Outside the roadmap, needing a decision or a conversation: No open critical find
 - No open critical finding is past its deadline.
 - No severity downgrade lands just before a deadline.
 
-One caveat: about 6 account(s) are probably known to no source at all; if they are unconnected, L1 is 85.8%.
+One caveat: about 6 accounts are probably known to no source at all; if they are unconnected, L1 is 85.8%.
 
 ## Three reasons
 
-1. **Findings with no owner or decision.** 5 open action(s), worth about 8.7 points.
-   - Give unowned findings an owner and a decision (13): 13 finding(s) past the 7-day triage window have no owner.
-   - Record a decision on owned findings (8): 8 finding(s) past the 7-day triage window have an owner but no decision.
-   - Fix accepted risks with no or expired review date (6): 6 finding(s) past the 7-day triage window are accepted risks with no expiry.
-2. **Accounts outside the platform.** 9 open action(s), worth about 8.0 points.
+1. **Findings with no owner or decision.** 5 open actions, worth about 8.7 points.
+   - Give unowned findings an owner and a decision (13): 13 findings past the 7-day triage window have no owner.
+   - Record a decision on owned findings (8): 8 findings past the 7-day triage window have an owner but no decision.
+   - Fix accepted risks with no or expired review date (6): 6 findings past the 7-day triage window are accepted risks with no expiry.
+2. **Accounts outside the platform.** 9 open actions, worth about 8.0 points.
    - Connect 3 accounts owned by bu-retail: 3 accounts not connected, last spend 10,871: aws-043, aws-065, aws-039.
    - Connect 3 accounts owned by platform: 3 accounts not connected, last spend 33,514: aws-035, azure-029, azure-009.
    - Connect 1 account owned by data: 1 account not connected, last spend 5,532: azure-016.
-3. **Controls that are not switched on.** 9 open action(s), worth about 5.7 points.
+3. **Controls that are not switched on.** 9 open actions, worth about 5.7 points.
    - Adopt Workflow and remediation automation on 31 accounts: Workflow and remediation automation (since 2026.3) is relevant on 109 accounts and inactive on 31: aws-001, aws-005, aws-009, aws-020, aws-021, aws-022, aws-026, aws-028 (+23 more).
    - Adopt External attack surface on 26 accounts: External attack surface (since 2026.2) is relevant on 109 accounts and inactive on 26: aws-008, aws-010, aws-015, aws-017, aws-018, aws-019, aws-027, aws-037 (+18 more).
    - Enable Runtime sensor on 9 accounts: Runtime sensor (since 2025.1) is relevant on 109 accounts and inactive on 9: aws-001, aws-013, aws-023, aws-034, azure-011, azure-015, azure-018, azure-021 (+1 more).
@@ -89,13 +89,13 @@ Each of these is supported by the data. Saying them first, before the customer f
 2. **You are using 540 of 1000 sensors (54%); 180 of 300 code_seats (60%); 2100 of 3000 defend_gb (70%). Either we help you put the rest to work, or you may want to pay for less.**
    - Evidence: Utilization against targets of 80%.
    - Why say it: Naming the option of a smaller purchase shows your attention is on their outcome, not on your revenue.
-3. **We think around 6 account(s) are known to none of our lists. If they are unconnected, the real L1 is 85.8%.**
+3. **We think around 6 accounts are known to none of our lists. If they are unconnected, the real L1 is 85.8%.**
    - Evidence: 32 of 121 known accounts appear in only one of billing, the organization and SSO (Chao 1987 incidence lower bound).
    - Why say it: Saying what you cannot see is part of credibility; the alternative is a number that looks more certain than it is.
 4. **Around week 3 the score will dip by about 1.1 points before it recovers. Newly connected accounts enter it with nothing covered yet.**
-   - Evidence: 4 account(s) connected: they enter L2 and L3 with nothing covered yet, so Yield dips before it recovers.
+   - Evidence: 4 accounts connected: they enter L2 and L3 with nothing covered yet, so Yield dips before it recovers.
    - Why say it: Bad news given in advance is reliability; the same news explained afterwards sounds like an excuse.
-5. **3 severity downgrade(s) landed within days of an SLA deadline. Until we understand why, remediation times may look better than they are.**
+5. **3 severity downgrades landed within days of an SLA deadline. Until we understand why, remediation times may look better than they are.**
    - Evidence: Findings: F-00360, F-00361, F-00362.
    - Why say it: Questioning your own good numbers before the customer does is what makes the rest of your numbers believable.
 
@@ -123,7 +123,7 @@ Each of these is supported by the data. Saying them first, before the customer f
 
 Checkpoints: 90% in week 7, 95% in week 10, 98% not reached.
 
-- Week 3: Yield dips 1.1 pts. 4 account(s) connected: they enter L2 and L3 with nothing covered yet, so Yield dips before it recovers.
+- Week 3: Yield dips 1.1 pts. 4 accounts connected: they enter L2 and L3 with nothing covered yet, so Yield dips before it recovers.
 
 | Weeks | Action | Hours | Effect when settled |
 |---|---|---|---|
@@ -137,14 +137,14 @@ Checkpoints: 90% in week 7, 95% in week 10, 98% not reached.
 | 3-3 | Connect 1 account owned by finance-it | 1.75 | +0.5 pts |
 | | 24 more | | |
 
-Assumed blocked, needs escalation: 2 findings that stayed undecided; 14 module activations that did not happen; 2 inventory gaps that could not be closed; 1 findings that stayed unowned; 1 accepted risks that stayed unreviewed.
+Assumed blocked, needs escalation: 2 findings that stayed undecided; 14 module activations that did not happen; 2 inventory gaps that could not be closed; 1 finding that stayed unowned; 1 accepted risk that stayed unreviewed.
 
 _No further action improves Yield after week 14; the plan stops there._
 _At 90% realization the plan plateaus: the residual needs escalation, not more of the same effort._
 
 ## Zero critical
 
-11 critical finding(s) are open and 1.4 new ones arrive per week. Probability of reaching zero within 30 / 60 / 90 days: 0% / 13% / 37% on the current pace.
+11 critical findings are open and 1.4 new ones arrive per week. Probability of reaching zero within 30 / 60 / 90 days: 0% / 13% / 37% on the current pace.
 
 ## Decisions we need today
 
@@ -174,9 +174,9 @@ Renewal in 120 days (2027-02-28): **at risk**, 480,000 of annual revenue on the 
 | Adoption level | watch | Maturity level bronze; Yield 73%. |
 | Licences in use | watch | The least used is sensors at 54% of 1000 (target 80%). |
 | Executive sponsor | risk | No executive sponsor is on record. |
-| More than one relationship | ok | 4 contact(s) spoken to recently. |
-| Promises kept | watch | 2 promise(s) past their date. 50% kept on time. |
-| Key contacts reached recently | watch | 1 key contact(s) not spoken to in 90 days. |
+| More than one relationship | ok | 4 contacts spoken to recently. |
+| Promises kept | watch | 2 promises past their date. 50% kept on time. |
+| Key contacts reached recently | watch | 1 key contact not spoken to in 90 days. |
 | Critical findings handled | watch | 11 critical open, 11 past deadline. |
 | Direction of travel | ok | Yield moved +5.2 points since 2026-09-30. |
 | Confidence in the numbers | ok | Inputs pass the checks that matter. |

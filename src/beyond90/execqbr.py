@@ -22,6 +22,7 @@ from .catalogue import Catalogue
 from .models import CustomerData
 from .playbooks import generate_actions
 from .scoring import compute_score
+from .words import n_of, verb
 
 PARTS = {"L1": ("Connected", "accounts and clusters the platform reaches"), "L2": ("Visible", "resource types it can see"),
          "L3": ("Protected", "controls switched on where they apply"), "L4": ("Handled", "findings with an owner or a decision")}
@@ -116,11 +117,11 @@ def build(snapshots: list[CustomerData], cat: Catalogue, *, start: Optional[date
         decisions.append(f"Approve connecting the remaining accounts: {w['unconnected_spend_share']:.0%} of cloud spend is still outside the platform.")
     unowned = sum(1 for f in final.findings if f.closed_at is None and f.severity == "critical" and not f.owner and f.decision != "false_positive")
     if unowned:
-        decisions.append(f"Name an owner for {unowned} critical finding(s) that have none; without an owner nothing gets fixed.")
+        decisions.append(f"Name an owner for {n_of(unowned, 'critical finding')} that have none; without an owner nothing gets fixed.")
     for wv in onb.get("waves", [])[:2]:
         decisions.append(f"{wv['owner'][0].upper()}{wv['owner'][1:]}: {wv['title'][0].lower()}{wv['title'][1:].rstrip('.')} ({wv['count']} {units}). One change unblocks all of them.")
     if overdue:
-        decisions.append(f"Agree new dates for {len(overdue)} commitment(s) that slipped.")
+        decisions.append(f"Agree new dates for {n_of(len(overdue), 'commitment')} that slipped.")
 
     head = []
     if compared:
@@ -133,7 +134,7 @@ def build(snapshots: list[CustomerData], cat: Catalogue, *, start: Optional[date
     else:
         head.append(f"Effective coverage is {last['coverage']:.0%}; this is the first recorded point, so the next review will show the change")
     if last["critical_open"]:
-        head.append(f"{last['critical_open']} critical finding(s) remain open" + (f", {last['critical_internet']} exposed to the internet" if last["critical_internet"] else ""))
+        head.append(f"{n_of(last['critical_open'], 'critical finding')} {verb(last['critical_open'], 'remains', 'remain')} open" + (f", {last['critical_internet']} exposed to the internet" if last["critical_internet"] else ""))
 
     return {
         "customer": final.name, "period": {"from": start.isoformat(), "to": end.isoformat(), "label": label},
@@ -172,7 +173,7 @@ def _pct(v: float) -> str:
 def render_markdown(q: dict[str, Any]) -> str:
     f, la, u = q["first"], q["last"], q["units"]
     L = [f"# {q['customer']}: executive review, {q['period']['label']}", "",
-         f"Period {q['period']['from']} to {q['period']['to']}. Built from {len(q['snapshots'])} recorded snapshot(s): {', '.join(q['snapshots'])}.", "",
+         f"Period {q['period']['from']} to {q['period']['to']}. Built from {n_of(len(q['snapshots']), 'recorded snapshot')}: {', '.join(q['snapshots'])}.", "",
          "## In one minute", ""] + [f"- {h}." for h in q["headline"]]
     L += ["", "## Where you stand", "", "| | " + (f"{q['baseline']} | " if q["compared"] else "") + f"{q['final']} |", "|---|" + ("---|" if q["compared"] else "") + "---|"]
     rows = [("Effective coverage", "coverage", _pct), ("Weighted by spend and exposure", "weighted", _pct)]
@@ -192,7 +193,7 @@ def render_markdown(q: dict[str, Any]) -> str:
     if e["open"]:
         L += ["", "Still open on our side:"] + [f"- {c['what']} (due {c['due']}{', late' if c['overdue'] else ''})" for c in e["open"]]
     k = q["risk"]
-    L += ["", "## Exposure today", "", f"- {k['critical_open']} critical finding(s) open, {k['critical_internet']} exposed to the internet.",
+    L += ["", "## Exposure today", "", f"- {n_of(k['critical_open'], 'critical finding')} open, {k['critical_internet']} exposed to the internet.",
           f"- {k['unconnected_spend_share']:.0%} of cloud spend is not yet connected."] + [f"- {s}" for s in k["heaviest"]]
     if q["news"]:
         L += ["", "## Threats this quarter that touched you", ""] + [
@@ -297,7 +298,7 @@ def render_html(q: dict[str, Any]) -> str:
     return ("<!doctype html><html lang=en><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'>"
             "<meta http-equiv=Content-Security-Policy content=\"default-src 'none'; style-src 'unsafe-inline'\">"
             f"<title>{e(q['customer'])}: executive review {e(q['period']['label'])}</title><style>{css}</style></head><body>"
-            + "".join(sec) + f"<footer>Built from {len(q['snapshots'])} recorded snapshot(s) ({e(', '.join(q['snapshots']))}). Print to PDF: one page per section.</footer></body></html>\n")
+            + "".join(sec) + f"<footer>Built from {n_of(len(q['snapshots']), 'recorded snapshot')} ({e(', '.join(q['snapshots']))}). Print to PDF: one page per section.</footer></body></html>\n")
 
 
 # ------------------------------------------------------------------ as a PowerPoint deck

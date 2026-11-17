@@ -21,6 +21,7 @@ from .catalogue import Catalogue
 from .models import CustomerData
 from .scoring import Score
 from .trust import NOTES, classify
+from .words import n_of
 
 ENTITLEMENT_LABELS = {
     "workloads": "workloads",
@@ -201,7 +202,7 @@ def generate_actions(data: CustomerData, score: Score, cat: Optional[Catalogue] 
         add(
             kind_to_pb[leak["kind"]],
             leak["kind"],
-            f"{leak['count']} finding(s) past the {data.settings.triage_window_days}-day triage window {kind_text[leak['kind']]}.",
+            f"{n_of(leak['count'], 'finding')} past the {data.settings.triage_window_days}-day triage window {kind_text[leak['kind']]}.",
             "",
             leak["count"],
             _effect(score, "L4", leak["count"]),
@@ -213,7 +214,7 @@ def generate_actions(data: CustomerData, score: Score, cat: Optional[Catalogue] 
         add(
             "l4_review_reclassifications",
             "downgrades",
-            f"{len(suspects)} severity downgrade(s) landed within {data.settings.downgrade_window_days} days of an SLA deadline: "
+            f"{n_of(len(suspects), 'severity downgrade')} landed within {data.settings.downgrade_window_days} days of an SLA deadline: "
             f"{_short([s['finding_id'] for s in suspects])}.",
             "",
             len(suspects),
@@ -231,7 +232,7 @@ def generate_actions(data: CustomerData, score: Score, cat: Optional[Catalogue] 
         }
         for gap, ids in reach["gaps"].items():
             if ids:
-                add(team_pb[gap], gap, f"{len(ids)} of {reach['teams']} team(s) with {score.terms.get('estate', 'cloud')} assets: {_short(ids)}.", "", len(ids), 0.0, people=ids)
+                add(team_pb[gap], gap, f"{len(ids)} of {n_of(reach['teams'], 'team')} with {score.terms.get('estate', 'cloud')} assets: {_short(ids)}.", "", len(ids), 0.0, people=ids)
 
     # Relationship (reported next to Yield, not inside it).
     rel = score.relationship
@@ -241,17 +242,17 @@ def generate_actions(data: CustomerData, score: Score, cat: Optional[Catalogue] 
             add("rel_find_sponsor", "sponsor", "No executive sponsor is recorded among the contacts.", "", 1, 0.0)
         if g["stale_key_contacts"]:
             ids = g["stale_key_contacts"]
-            add("rel_reconnect", "stale", f"{len(ids)} key contact(s) not spoken to in {data.settings.contact_stale_days} days: {_short(ids)}.", "", len(ids), 0.0)
+            add("rel_reconnect", "stale", f"{n_of(len(ids), 'key contact')} not spoken to in {data.settings.contact_stale_days} days: {_short(ids)}.", "", len(ids), 0.0)
         if g["single_threaded"]:
-            add("rel_widen", "single", f"Only {rel['coverage']['touched_recently']} contact(s) touched in the last {data.settings.contact_stale_days} days.", "", 1, 0.0)
+            add("rel_widen", "single", f"Only {n_of(rel['coverage']['touched_recently'], 'contact')} touched in the last {data.settings.contact_stale_days} days.", "", 1, 0.0)
         if g["teams_without_a_contact"]:
             ids = g["teams_without_a_contact"]
-            add("rel_introduce", "teams", f"{len(ids)} team(s) with {score.terms.get('estate', 'cloud')} assets and no contact: {_short(ids)}.", "", len(ids), 0.0, people=ids)
+            add("rel_introduce", "teams", f"{n_of(len(ids), 'team')} with {score.terms.get('estate', 'cloud')} assets and no contact: {_short(ids)}.", "", len(ids), 0.0, people=ids)
         if g["overdue_commitments"]:
             ids = g["overdue_commitments"]
-            add("rel_close_commitments", "overdue", f"{len(ids)} commitment(s) past their date: {_short(ids)}.", "", len(ids), 0.0)
+            add("rel_close_commitments", "overdue", f"{n_of(len(ids), 'commitment')} past their date: {_short(ids)}.", "", len(ids), 0.0)
         for comp, ids in g["weak_by_component"].items():
-            add(f"rel_improve_{comp}", comp, f"The component that would help most for {len(ids)} influential contact(s): {_short(ids)}.", "", len(ids), 0.0)
+            add(f"rel_improve_{comp}", comp, f"The component that would help most for {n_of(len(ids), 'influential contact')}: {_short(ids)}.", "", len(ids), 0.0)
 
     # Entitlements.
     for e in score.entitlements:

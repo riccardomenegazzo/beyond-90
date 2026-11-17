@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.78.0
+
+- **No more "finding(s)".** A scan of every view of two example customers found about twenty kinds of counted noun written with "(s)" ("13 finding(s)", "1 accepted risk(s) reach", "4 account(s) connected"), and a few "1 findings" and "1 days". Every one now agrees with its number, verbs included ("1 critical finding has no owner", "3 connector secrets expire"), in the engine (`beyond90.words`) and in the page (`words.js`). A test fails if a counted "(s)" comes back.
+
 ## 0.77.0
 
 - **A front page that explains itself.** The README opens with one sentence, a picture of Today, the three numbers on the example customer (the usual 92%, Yield 72.6%, 29 of 121 accounts end to end), the three ways to try it, and what it does in eight lines, with four pictures. The longer text follows under "In depth".

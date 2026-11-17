@@ -20,6 +20,7 @@ from .renewal import compute_renewal
 from .report import pct, pts
 from .scoring import Score, compute_score
 from .store import Store
+from .words import n_of
 
 
 @dataclass
@@ -101,7 +102,7 @@ def render_portfolio_markdown(pf: Portfolio, min_customers: int = 2, top_pattern
     L = ["# Portfolio", ""]
     w = pf.arr_weighted_yield
     if w is not None:
-        L += [f"ARR-weighted Yield: **{pct(w)}** across {len(pf.entries)} customer(s).", ""]
+        L += [f"ARR-weighted Yield: **{pct(w)}** across {n_of(len(pf.entries), 'customer')}.", ""]
     L += ["| Customer | ARR | Yield | End to end | Level | Legacy | L1 | L2 | L3 | L4 | Change | Top action |", "|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for e in pf.entries:
         s = e.score
@@ -115,7 +116,7 @@ def render_portfolio_markdown(pf: Portfolio, min_customers: int = 2, top_pattern
     renewing = sorted(((e, e.renewal) for e in pf.entries if e.renewal), key=lambda er: (er[1]["days"], er[0].name))
     if renewing:
         at_risk = sum(r["arr_at_risk"] for _, r in renewing)
-        L += ["## Renewals", "", f"{len(renewing)} customer(s) have a renewal date. Revenue at risk inside the window with at least one risk signal: **{at_risk:,.0f}**.", "",
+        L += ["## Renewals", "", f"{n_of(len(renewing), 'customer')} have a renewal date. Revenue at risk inside the window with at least one risk signal: **{at_risk:,.0f}**.", "",
               "| Customer | Renewal | Days | ARR | Status | Signals needing attention |", "|---|---|---|---|---|---|"]
         for e, r in renewing:
             flagged = ", ".join(s["label"].lower() for s in r["signals"] if s["status"] in ("risk", "watch")) or "-"

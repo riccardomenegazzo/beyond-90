@@ -6,7 +6,7 @@
 
 Checkpoints: 90% in week 7, 95% in week 10, 98% not reached.
 
-- Week 3: Yield dips 1.1 pts. 4 account(s) connected: they enter L2 and L3 with nothing covered yet, so Yield dips before it recovers.
+- Week 3: Yield dips 1.1 pts. 4 accounts connected: they enter L2 and L3 with nothing covered yet, so Yield dips before it recovers.
 
 | Weeks | Action | Hours | Effect when settled |
 |---|---|---|---|
@@ -24,7 +24,7 @@ Checkpoints: 90% in week 7, 95% in week 10, 98% not reached.
 | 4-4 | Connect 1 account owned by security | 1.75 | +0.5 pts |
 | | 20 more | | |
 
-Assumed blocked, needs escalation: 2 findings that stayed undecided; 14 module activations that did not happen; 2 inventory gaps that could not be closed; 1 findings that stayed unowned; 1 accepted risks that stayed unreviewed.
+Assumed blocked, needs escalation: 2 findings that stayed undecided; 14 module activations that did not happen; 2 inventory gaps that could not be closed; 1 finding that stayed unowned; 1 accepted risk that stayed unreviewed.
 
 _No further action improves Yield after week 14; the plan stops there._
 _At 90% realization the plan plateaus: the residual needs escalation, not more of the same effort._

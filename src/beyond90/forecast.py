@@ -27,6 +27,7 @@ from datetime import timedelta
 from typing import Any, Optional
 
 from .models import CustomerData
+from .words import n_of
 
 
 def _quantile(sorted_vals: list[float], q: float) -> Optional[float]:
@@ -112,6 +113,6 @@ def render_forecast(f: dict[str, Any]) -> str:
     z = f["p_zero_within"]
     stuck = (f"{f['stuck_beyond_history']} of them are older than anything this customer has ever closed, so the model treats them as likely to stay open.\n"
              if f.get("stuck_beyond_history") else "")
-    return (f"{f['open_critical']} critical finding(s) open, {f['arrivals_per_week']} new per week.\n" + stuck +
+    return (f"{n_of(f['open_critical'], 'critical finding')} open, {f['arrivals_per_week']} new per week.\n" + stuck +
             f"Zero critical: median {p50}, 90th percentile {p90}.\n"
             f"Probability of reaching zero within 30 / 60 / 90 days: {z['30']:.0%} / {z['60']:.0%} / {z['90']:.0%}.\n")

@@ -1,3 +1,4 @@
+import { nOf, verb } from "./words.js";
 // Keeping customer data only as long as it should be kept, and proving to yourself that it is gone.
 // Pure functions: dates in, dates out, text out. The browser storage work lives in store.js.
 //
@@ -80,12 +81,12 @@ export function receipt({ customer, on, removed, remaining, outsideCopies, locke
     `- alias entries: ${n(removed.aliases)}`,
     `- export log entries: ${n(removed.exports)}`,
     "",
-    `A second look afterwards found ${n(remaining)} record(s) for this customer that could be read.` + (locked ? ` ${n(locked)} sealed record(s) could not be read without the passphrase and were not checked.` : ""),
+    `A second look afterwards found ${nOf(n(remaining), "record")} for this customer that could be read.` + (locked ? ` ${nOf(n(locked), "sealed record")} could not be read without the passphrase and were not checked.` : ""),
     "",
     "What this page cannot reach:",
   ];
   if (outsideCopies.items.length) {
-    lines.push(`- ${outsideCopies.items.length} time(s) something left this page for this customer (${outsideCopies.withNames} with real names). Those copies are wherever you put them:`);
+    lines.push(`- ${nOf(outsideCopies.items.length, "time")} something left this page for this customer (${outsideCopies.withNames} with real names). Those copies are wherever you put them:`);
     for (const e of outsideCopies.items.slice(0, 50)) lines.push(`  - ${e.on}: ${e.how === "file" ? "file" : "copied text"}${e.what ? ` (${e.what})` : ""}, level ${e.level}`);
     if (outsideCopies.items.length > 50) lines.push(`  - and ${outsideCopies.items.length - 50} more`);
   } else {
