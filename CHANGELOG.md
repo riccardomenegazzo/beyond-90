@@ -2,6 +2,12 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.83.0
+
+- **The journey: from "can we?" to "what would need to be true?".** A new view in the discovery workshop opens on "Yes, this is possible." and turns the answers into a path: agree what success looks like, prove it on the first line, then the lines it leads to. Every gap or unknown becomes a condition to make true, with where the customer is today (in their words), the first step towards it and how the step is validated; what is already true is shown too, and what is at stake heads the page.
+- Every discovery question in every profile now carries the condition it tests (`need`) and a first step (`how`). A test keeps it so.
+- The meeting summary carries the journey as a checklist, ready for the follow-up email.
+
 ## 0.82.0
 
 - **Discovery workshop, from the start page, with no data.** Choose the product lines in scope and record, question by question, what the prospect says: solved, partly, a real gap, nobody knows, with their words in a note. The questions are each profile's discovery questions, two on business value and six tied to a stage. See [docs/workshop.md](docs/workshop.md).

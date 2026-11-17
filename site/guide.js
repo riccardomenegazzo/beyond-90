@@ -52,6 +52,7 @@ export const CUSTOMER_NAV = [
 export const WORKSHOP_NAV = [
   { question: "The meeting", views: [
     { id: "workshop", label: "Questions", icon: "prep", tip: "The discovery questions for each product line in scope. Record what the customer says: solved, partly, a real gap, or nobody knows." },
+    { id: "journey", label: "The journey", icon: "planview", tip: "Yes, this is possible: what would need to be true, the first step towards each condition and how each step is validated, from today to where the customer could be." },
     { id: "hurt", label: "Where it hurts", icon: "outlook", tip: "Where the pain is, which line to start with and why, the path after it, and what to find out before the next meeting." },
     { id: "wspov", label: "Proof of value", icon: "maturity", tip: "The proof of value for the first line: criteria agreed before it starts, sessions, results. Kept in this browser." },
   ] },

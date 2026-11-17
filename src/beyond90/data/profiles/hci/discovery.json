@@ -3,42 +3,58 @@
     {
       "stage": "value",
       "q": "What does an hour of downtime cost on your most important application?",
-      "why": "Turns recovery features into money the sponsor recognises."
+      "why": "Turns recovery features into money the sponsor recognises.",
+      "need": "The cost of an hour down on the key application is known",
+      "how": "Put a number on it with the application owner"
     },
     {
       "stage": "value",
       "q": "When did you last restore a whole system, not a file, and how long did it take?",
-      "why": "Untested recovery is the usual gap behind a confident answer."
+      "why": "Untested recovery is the usual gap behind a confident answer.",
+      "need": "A whole system can be restored in a known time",
+      "how": "Restore one complete system and time it"
     },
     {
       "stage": "L1",
       "q": "How many clusters run outside the main data centre: plants, branches, edge sites?",
-      "why": "Remote clusters are the ones the central console does not see."
+      "why": "Remote clusters are the ones the central console does not see.",
+      "need": "Clusters outside the main data centre are known and managed",
+      "how": "Bring plant, branch and edge clusters under central management"
     },
     {
       "stage": "L2",
       "q": "Do you know which virtual machines have no owner and what they run?",
-      "why": "Unowned machines are skipped by protection and patching."
+      "why": "Unowned machines are skipped by protection and patching.",
+      "need": "Every virtual machine has an owner and a purpose",
+      "how": "Tag machines with owners and retire the orphans"
     },
     {
       "stage": "L3",
       "q": "Which workloads have snapshots, and could an administrator account delete them?",
-      "why": "Snapshots an attacker can delete are not ransomware protection."
+      "why": "Snapshots an attacker can delete are not ransomware protection.",
+      "need": "Important workloads have snapshots that an admin cannot delete",
+      "how": "Apply protection policies with immutable copies"
     },
     {
       "stage": "L3",
       "q": "Is there a second site, and has failover to it been run end to end?",
-      "why": "Replication without a tested recovery plan is a hope."
+      "why": "Replication without a tested recovery plan is a hope.",
+      "need": "Failover to a second site has been run end to end",
+      "how": "Run a test failover of one application"
     },
     {
       "stage": "L3",
       "q": "How far behind on upgrades are you, and what makes upgrading hard?",
-      "why": "Lifecycle debt is a security risk and the most common hidden effort."
+      "why": "Lifecycle debt is a security risk and the most common hidden effort.",
+      "need": "Upgrades are routine, not a project",
+      "how": "Agree an upgrade cadence and remove what makes upgrading hard"
     },
     {
       "stage": "L4",
       "q": "When the platform raises an alert at night, who acts on it?",
-      "why": "Alerts without an owner turn into noise, then into outages."
+      "why": "Alerts without an owner turn into noise, then into outages.",
+      "need": "A platform alert at night reaches someone who acts",
+      "how": "Route platform alerts to a named on-call owner"
     }
   ]
 }

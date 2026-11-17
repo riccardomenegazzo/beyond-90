@@ -3,42 +3,58 @@
     {
       "stage": "value",
       "q": "If an attacker took one privileged account today, what could they reach?",
-      "why": "Puts a price on privilege before any tool is discussed."
+      "why": "Puts a price on privilege before any tool is discussed.",
+      "need": "One stolen privileged account cannot reach everything",
+      "how": "Map what each privileged role can reach and cut what it does not need"
     },
     {
       "stage": "value",
       "q": "How long does it take to remove every access of someone who leaves?",
-      "why": "Offboarding time is the identity metric executives understand."
+      "why": "Offboarding time is the identity metric executives understand.",
+      "need": "Every access of a leaver is removed within a day",
+      "how": "Automate offboarding from the HR system"
     },
     {
       "stage": "L1",
       "q": "How many directories and identity providers do you run, including the ones from acquisitions?",
-      "why": "Unconnected directories are where old accounts survive."
+      "why": "Unconnected directories are where old accounts survive.",
+      "need": "Every directory and identity provider is known and connected",
+      "how": "List them, acquisitions included, and connect each one"
     },
     {
       "stage": "L2",
       "q": "Do you know every account with administrative rights, human and machine?",
-      "why": "Privileged inventory sizes the work."
+      "why": "Privileged inventory sizes the work.",
+      "need": "Every privileged account, human or machine, is known",
+      "how": "Build the privileged inventory and give each an owner"
     },
     {
       "stage": "L3",
       "q": "Is strong multi-factor required for every privileged sign-in, with no exceptions list?",
-      "why": "Exceptions are where breaches start."
+      "why": "Exceptions are where breaches start.",
+      "need": "Strong multi-factor protects every privileged sign-in, with no exceptions",
+      "how": "Close the exceptions list one account at a time"
     },
     {
       "stage": "L3",
       "q": "When were access rights last reviewed, and who signed the review?",
-      "why": "Unsigned reviews are paperwork, not control."
+      "why": "Unsigned reviews are paperwork, not control.",
+      "need": "Access is reviewed on a schedule, and someone signs",
+      "how": "Set a review cycle with named reviewers"
     },
     {
       "stage": "L3",
       "q": "How many service accounts have passwords that never change?",
-      "why": "Static secrets are the quiet risk."
+      "why": "Static secrets are the quiet risk.",
+      "need": "Service account secrets change",
+      "how": "Vault the secrets and set rotation"
     },
     {
       "stage": "L4",
       "q": "When a risky sign-in alert fires, who acts and how fast?",
-      "why": "Detection without an owner is noise."
+      "why": "Detection without an owner is noise.",
+      "need": "A risky sign-in alert is acted on quickly",
+      "how": "Agree who acts and how fast"
     }
   ]
 }

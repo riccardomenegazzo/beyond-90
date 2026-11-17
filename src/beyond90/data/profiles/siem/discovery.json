@@ -3,42 +3,58 @@
     {
       "stage": "value",
       "q": "Which incident would you most hate to find out about from someone outside?",
-      "why": "Anchors the log sources that matter."
+      "why": "Anchors the log sources that matter.",
+      "need": "The incident nobody wants to hear about from outside is covered",
+      "how": "Map the sources and detections that would catch it"
     },
     {
       "stage": "value",
       "q": "How long did the last real investigation take, from alert to answer?",
-      "why": "Investigation time is what the platform must cut."
+      "why": "Investigation time is what the platform must cut.",
+      "need": "Investigations take hours, not days",
+      "how": "Time one investigation and remove the slowest step"
     },
     {
       "stage": "L1",
       "q": "Which environments send no logs at all today?",
-      "why": "Blind spots are the first gap to close."
+      "why": "Blind spots are the first gap to close.",
+      "need": "Every environment sends its logs",
+      "how": "Connect the silent environments first"
     },
     {
       "stage": "L2",
       "q": "Do you know which log sources are expected for each environment, and which are missing?",
-      "why": "A list of expected sources makes silence visible."
+      "why": "A list of expected sources makes silence visible.",
+      "need": "Expected log sources are listed, and missing ones are visible",
+      "how": "Write the expected list per environment"
     },
     {
       "stage": "L3",
       "q": "How many detections are switched on, and how many have fired in the last month?",
-      "why": "Rules that never fire may be broken, not quiet."
+      "why": "Rules that never fire may be broken, not quiet.",
+      "need": "Detections that are on actually fire when they should",
+      "how": "Test the top detections with safe simulations"
     },
     {
       "stage": "L3",
       "q": "Are response playbooks automated for the most common alerts?",
-      "why": "Automation decides how much the team can handle."
+      "why": "Automation decides how much the team can handle.",
+      "need": "Common alerts are handled by automated playbooks",
+      "how": "Automate the three most frequent responses"
     },
     {
       "stage": "L3",
       "q": "How long are logs kept, and is that enough for an investigation or an auditor?",
-      "why": "Retention gaps appear at the worst moment."
+      "why": "Retention gaps appear at the worst moment.",
+      "need": "Logs are kept long enough for an investigation and an audit",
+      "how": "Agree retention with legal and the auditors"
     },
     {
       "stage": "L4",
       "q": "How many alerts are closed without anyone looking, and who decides that?",
-      "why": "Unreviewed closures hide real incidents."
+      "why": "Unreviewed closures hide real incidents.",
+      "need": "No alert is closed without someone deciding",
+      "how": "Make closure need a reason and an owner"
     }
   ]
 }

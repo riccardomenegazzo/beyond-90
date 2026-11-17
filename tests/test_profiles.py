@@ -167,3 +167,13 @@ def test_discovery_questions_are_short_tied_to_a_stage_and_unique(profile):
     assert len({x["q"] for x in cat.discovery}) == len(cat.discovery)
     if profile in ("cnapp", "hci", "object-storage", "saas", "ai", "dbaas", "file-storage", "kubernetes-platform", "dr-backup"):
         assert len(cat.discovery) >= 8 and any(x["stage"] == "value" for x in cat.discovery)
+
+
+@pytest.mark.parametrize("profile", sorted(available_profiles()))
+def test_every_question_says_what_would_need_to_be_true(profile: str) -> None:
+    """Each discovery question also carries the condition it tests and a first step: a path, not only a limit."""
+    cat = Catalogue.load(profile=profile)
+    for q in cat.discovery:
+        assert q.get("need") and q.get("how"), q["q"]
+        assert not q["need"].endswith(".") and not q["how"].endswith("."), q["q"]
+        assert "?" not in q["need"], q["q"]

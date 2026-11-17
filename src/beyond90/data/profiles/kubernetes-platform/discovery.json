@@ -3,42 +3,58 @@
     {
       "stage": "value",
       "q": "How long does a team wait today for a new environment to run its application?",
-      "why": "Platform speed is the main reason teams adopt it."
+      "why": "Platform speed is the main reason teams adopt it.",
+      "need": "A team gets a new environment in under an hour",
+      "how": "Offer clusters or namespaces from templates, self-service"
     },
     {
       "stage": "value",
       "q": "Who is responsible for a cluster's upgrades today, and how far behind are they?",
-      "why": "Upgrade debt is the most common hidden risk."
+      "why": "Upgrade debt is the most common hidden risk.",
+      "need": "Cluster upgrades have an owner and are current",
+      "how": "Name the owner and agree an upgrade cadence"
     },
     {
       "stage": "L1",
       "q": "How many clusters exist, including the ones teams created themselves?",
-      "why": "Unmanaged clusters escape every rule."
+      "why": "Unmanaged clusters escape every rule.",
+      "need": "Every cluster is known, team-made ones included",
+      "how": "Attach every cluster to central management"
     },
     {
       "stage": "L2",
       "q": "Which workloads keep data in volumes, and is that data backed up?",
-      "why": "Stateful workloads are the ones that lose data."
+      "why": "Stateful workloads are the ones that lose data.",
+      "need": "Data in volumes is backed up and restorable",
+      "how": "Back up stateful workloads and test one restore"
     },
     {
       "stage": "L3",
       "q": "What stops a team from deploying an unapproved image or a privileged pod?",
-      "why": "Policy at admission is where security becomes routine."
+      "why": "Policy at admission is where security becomes routine.",
+      "need": "Unapproved images and privileged pods are refused",
+      "how": "Turn on admission policies, first in audit mode"
     },
     {
       "stage": "L3",
       "q": "Are changes made through Git, or by hand on the cluster?",
-      "why": "Hand changes are the source of drift and outages."
+      "why": "Hand changes are the source of drift and outages.",
+      "need": "Changes go through Git, not by hand",
+      "how": "Move one team to GitOps and show the drift it removes"
     },
     {
       "stage": "L3",
       "q": "Could each team tell you what its workloads cost last month?",
-      "why": "Cost visibility changes behaviour more than budgets."
+      "why": "Cost visibility changes behaviour more than budgets.",
+      "need": "Each team sees what its workloads cost",
+      "how": "Turn on cost per namespace and share it monthly"
     },
     {
       "stage": "L4",
       "q": "When a node or a workload fails at night, who knows first?",
-      "why": "Observability without an owner is a dashboard nobody reads."
+      "why": "Observability without an owner is a dashboard nobody reads.",
+      "need": "A failure at night is seen by someone who acts",
+      "how": "Route cluster alerts to a named owner"
     }
   ]
 }

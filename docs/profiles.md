@@ -85,4 +85,4 @@ A profile may ship `pov.json`: `{"criteria": [{"text": "...", "how": "..."}]}`, 
 
 ## Discovery questions
 
-A profile may ship `discovery.json`: `{"questions": [{"stage": "value|L1|L2|L3|L4", "q": "...?", "why": "..."}]}`. Prep a call and `beyond90 discovery` list them business value first, then from the customer's weakest stage to the strongest. Not inherited from the base profile. Shipped for `cnapp`, `hci`, `object-storage`, `saas`, `ai`, `dbaas`, `file-storage`, `kubernetes-platform` and `dr-backup`.
+A profile may ship `discovery.json`: `{"questions": [{"stage": "value|L1|L2|L3|L4", "q": "...?", "why": "...", "need": "...", "how": "..."}]}`. `need` is the condition the question tests, written as something that would be true ("No administrator account can delete the backups"), and `how` the first step towards it; the [discovery workshop](workshop.md) turns them into the journey. Prep a call and `beyond90 discovery` list the questions business value first, then from the customer's weakest stage to the strongest. Not inherited from the base profile. Shipped for every profile.

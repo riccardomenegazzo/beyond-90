@@ -3,42 +3,58 @@
     {
       "stage": "value",
       "q": "Which AI use cases are in production, and which ones worry you most?",
-      "why": "Starts from real use, not from the AI policy."
+      "why": "Starts from real use, not from the AI policy.",
+      "need": "The AI use cases in production are known, with the riskiest named",
+      "how": "List them with their owners and rank by what they can touch"
     },
     {
       "stage": "L1",
       "q": "How would you find out about a team using a new model or AI service?",
-      "why": "Unapproved AI use is the norm before inventory exists."
+      "why": "Unapproved AI use is the norm before inventory exists.",
+      "need": "A new model or AI service is seen when a team starts using it",
+      "how": "Watch for AI services in cloud accounts and on the network"
     },
     {
       "stage": "L2",
       "q": "Do you know which agents can call tools, and what those tools can change?",
-      "why": "An agent is as dangerous as the permissions of its tools."
+      "why": "An agent is as dangerous as the permissions of its tools.",
+      "need": "What each agent can call, and change, is known",
+      "how": "List agents with their tools and the permissions behind them"
     },
     {
       "stage": "L3",
       "q": "Are prompts and responses logged anywhere you could investigate?",
-      "why": "Without logs, an AI incident cannot be reconstructed."
+      "why": "Without logs, an AI incident cannot be reconstructed.",
+      "need": "Prompts and responses can be investigated",
+      "how": "Log them where security can search them, with retention agreed"
     },
     {
       "stage": "L3",
       "q": "What stops sensitive data from being pasted into a prompt or indexed for retrieval?",
-      "why": "Data leaves through prompts and vector stores, not only through files."
+      "why": "Data leaves through prompts and vector stores, not only through files.",
+      "need": "Sensitive data cannot reach a prompt or a retrieval index unseen",
+      "how": "Put a data check in front of prompts and indexing"
     },
     {
       "stage": "L3",
       "q": "Who owns the keys to model providers, and when were they last rotated?",
-      "why": "Shared, long-lived keys are the usual weak point."
+      "why": "Shared, long-lived keys are the usual weak point.",
+      "need": "Model provider keys have an owner and are rotated",
+      "how": "Move keys to a vault and set a rotation date"
     },
     {
       "stage": "L4",
       "q": "Has anyone tried to break your models or agents on purpose?",
-      "why": "Adversarial testing finds what guardrails miss."
+      "why": "Adversarial testing finds what guardrails miss.",
+      "need": "Models and agents have been tested by someone trying to break them",
+      "how": "Run one red-team exercise on the riskiest use case"
     },
     {
       "stage": "value",
       "q": "Which regulation or customer question about AI do you need to answer this year?",
-      "why": "Gives the work a deadline and a sponsor."
+      "why": "Gives the work a deadline and a sponsor.",
+      "need": "The AI regulation or customer question due this year has an answer",
+      "how": "Name the question, the owner and the evidence it needs"
     }
   ]
 }

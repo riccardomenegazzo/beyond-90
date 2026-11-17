@@ -1648,7 +1648,7 @@ export function workshopView({ workshop: w, catalog, list, answer, rename, setSc
   const drawProg = () => {
     const res = WS.assess(catalog, cur);
     prog.replaceChildren(h("span", { text: `${res.answered} of ${res.total} questions answered` }), h("span", { class: "ebar wsbar" }, h("i", { class: "er", style: `width:${(res.coverage * 100).toFixed(1)}%` })),
-      h("button", { class: "btn", type: "button", text: "See where it hurts", onclick: () => go("hurt") }));
+      h("button", { class: "btn", type: "button", text: "See the journey", onclick: () => go("journey") }));
   };
   drawProg();
 
@@ -1725,4 +1725,35 @@ export function hurtView({ workshop: w, catalog, go, startPov }) {
     { sub: "Questions nobody in the room could answer. Each one is a reason for the next meeting, and often the real gap." }));
   }
   return h("div", {}, out);
+}
+
+const STATUS_TODAY = { gap: "Today: a real gap", partly: "Today: partly", unknown: "Today: nobody knows yet" };
+
+/** From "can we?" to "what would need to be true?": the path from today to where the customer could be, step by step. */
+export function journeyView({ workshop: w, catalog, go, startPov }) {
+  const res = WS.assess(catalog, w);
+  const j = WS.journey(catalog, w, res);
+  if (!j) return card("The journey", h("div", {}, h("p", { class: "note first", text: res.waiting + " The journey then shows, for each step, what would need to be true, the first step towards it, and how it is validated." }),
+    h("button", { class: "btn", type: "button", text: "Open the questions", onclick: () => go("workshop") })));
+  const say = h("p", { class: "note", role: "status" });
+  const hero = h("section", { class: "card estatehero jhero" },
+    h("p", { class: "jyes", text: "Yes, this is possible." }),
+    h("p", { class: "tline", text: `Here is what would need to be true for ${w.customer}, how we get there, and how we prove each step along the way.` }),
+    h("div", { class: "ehead jstats" },
+      h("div", {}, h("b", { text: String(j.need) }), h("small", { text: "to make true" })),
+      h("div", {}, h("b", { class: "ok", text: String(j.done) }), h("small", { text: "already true" })),
+      h("div", {}, h("b", { text: String(j.unknown) }), h("small", { text: "still to find out" }))),
+    j.impact.length ? h("p", { class: "jimpact" }, h("small", { text: "What is at stake, in their words" }), h("q", { text: j.impact.join("; ") })) : null);
+  const steps = h("ol", { class: "journey" }, j.steps.map((st) => h("li", { class: "jstep k-" + st.kind },
+    h("header", {}, h("h2", { text: st.title }), st.kind === "then" && !st.discussed ? h("span", { class: "wsstage", text: "not discussed yet" }) : null),
+    st.why ? h("p", { class: "note first", text: cap(st.why) + "." }) : null,
+    st.conditions.length ? h("ul", { class: "jconds" }, st.conditions.map((c) => h("li", { class: "s-" + c.status },
+      h("b", { text: c.need }),
+      h("span", { class: "jtoday", text: STATUS_TODAY[c.status] + (c.note ? `: "${c.note}"` : "") }),
+      c.how ? h("span", { class: "jhow", text: (c.status === "unknown" ? "Find out, then: " : "First step: ") + c.how + "." }) : null))) : null,
+    st.already.length ? h("p", { class: "jalready" }, h("small", { text: "Already true" }), h("span", { text: st.already.join(". ") + "." })) : null,
+    st.validate.length ? h("div", { class: "growproof" }, h("small", { text: "Validated by" }), h("ul", {}, st.validate.map((v) => h("li", { text: v + "." })))) : null,
+    st.kind === "prove" ? h("div", { class: "btnrow" }, h("button", { class: "btn", type: "button", text: "Start the proof of value", onclick: async () => { try { await startPov(res); } catch (e) { say.textContent = e.message; } } }), say) : null)));
+  const dest = card("Where it can go", h("p", { class: "note first", text: `With these steps done, ${w.customer} runs ${j.destination.join(", then ").toLowerCase()} with every condition above made true, validated as it went rather than promised up front.` }));
+  return h("div", {}, hero, steps, dest);
 }

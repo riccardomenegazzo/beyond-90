@@ -151,7 +151,9 @@ class Catalogue:
         pov_file = base / "pov.json"   # never inherited from the base: another kind of product proves other things
         pov = [{"text": str(c["text"]), "how": str(c.get("how", ""))} for c in json.loads(pov_file.read_text(encoding="utf-8"))["criteria"]] if pov_file.exists() else []
         disc_file = base / "discovery.json"   # never inherited either: another product has other questions
-        discovery = [{"stage": str(x["stage"]), "q": str(x["q"]), "why": str(x.get("why", ""))} for x in json.loads(disc_file.read_text(encoding="utf-8"))["questions"]] if disc_file.exists() else []
+        # "need" says what would have to be true, "how" the first step towards it: the question turned into a path
+        discovery = [{"stage": str(x["stage"]), "q": str(x["q"]), "why": str(x.get("why", "")), **{k: str(x[k]) for k in ("need", "how") if x.get(k)}}
+                     for x in json.loads(disc_file.read_text(encoding="utf-8"))["questions"]] if disc_file.exists() else []
         if any(x["stage"] not in ("value", "L1", "L2", "L3", "L4") for x in discovery):
             raise ValueError(f"catalogue: {disc_file}: each question's stage is value, L1, L2, L3 or L4")
         validate_rubric(rubric)

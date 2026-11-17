@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { ANSWERS, makeWorkshop, validWorkshop, acceptWorkshops, mergeWorkshops, setAnswer, rename, setScope, lineState, assess, summaryMarkdown, MAX_WORKSHOPS } from "../workshop.js";
+import { ANSWERS, makeWorkshop, validWorkshop, acceptWorkshops, mergeWorkshops, setAnswer, rename, setScope, lineState, assess, journey, summaryMarkdown, MAX_WORKSHOPS } from "../workshop.js";
 
 const CAT = JSON.parse(readFileSync(new URL("./workshop-catalog.json", import.meta.url), "utf-8"));
 const D = "2026-11-17";
@@ -113,8 +113,39 @@ test("the meeting summary says what was heard, where to start and what is open",
   assert.match(md, /^# Discovery: Halden/);
   assert.match(md, /## What we heard/);
   assert.match(md, /A day down is about 2M/);
-  assert.match(md, /## Where we propose to start/);
+  assert.match(md, /## The journey/);
+  assert.match(md, /Yes, this is possible/);
+  assert.match(md, /- \[ \] .+ First step: .+ Today: a real gap/);
   assert.match(md, /## To find out before the next meeting/);
   const empty = summaryMarkdown(CAT, mk(), assess(CAT, mk()));
+  assert.match(empty, /## Where to start/);
   assert.match(empty, /Answer at least 3 questions/);
+});
+
+test("the journey turns every gap into a condition with a first step, and keeps what is already true", () => {
+  let w = mk();
+  assert.equal(journey(CAT, w, assess(CAT, w)), null);
+  w = fill(w, "hci", ["partly", "solved", "solved", "partly", "solved", "gap", "solved", "partly"]);
+  w = fill(w, "dr-backup", ["gap", "solved", "gap", "partly", "gap", "unknown", "gap", "unknown"]);
+  w = setAnswer(w, "dr-backup", 0, "gap", "A day down is about 2M in lost orders", D);
+  const j = journey(CAT, w, assess(CAT, w));
+  assert.match(j.headline, /^Yes, this is possible\. For Halden, \d+ things need to be true; \d+ already/);
+  assert.deepEqual(j.steps.map((s) => s.kind).slice(0, 2), ["agree", "prove"]);
+  const [agree, prove] = j.steps;
+  assert.ok(agree.conditions.every((c) => c.stage === "value") && agree.already.length === 1);
+  assert.ok(prove.conditions.every((c) => c.stage !== "value"));
+  // stages in order, and within a stage the real gaps before what nobody knows before what is partly there
+  const order = prove.conditions.map((c) => c.stage);
+  assert.deepEqual(order, [...order].sort());
+  for (const c of [...agree.conditions, ...prove.conditions]) {
+    assert.ok(c.need && !c.need.endsWith("?"), c.need);
+    assert.ok(c.how, c.need);
+  }
+  assert.ok(prove.validate.length >= 3, "the proof's own criteria validate the step");
+  assert.deepEqual(j.impact, ["A day down is about 2M in lost orders"]);
+  assert.equal(j.unknown, 2);
+  const then = j.steps.filter((s) => s.kind === "then");
+  assert.ok(then.length >= 1 && then[0].why, "the next steps say why they follow");
+  assert.equal(j.need, j.steps.reduce((n, s) => n + s.conditions.length, 0));
+  assert.equal(j.done, j.steps.reduce((n, s) => n + s.already.length, 0));
 });

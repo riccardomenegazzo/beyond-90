@@ -3,42 +3,58 @@
     {
       "stage": "value",
       "q": "Which business applications hold the data you would least like to see leaked?",
-      "why": "Ranks tenants by what is at stake, not by size."
+      "why": "Ranks tenants by what is at stake, not by size.",
+      "need": "The applications holding the most sensitive data are known",
+      "how": "Rank tenants by the data they hold"
     },
     {
       "stage": "L1",
       "q": "How many SaaS tenants do you have, including ones teams bought on a card?",
-      "why": "Shadow tenants are the ones with no one watching."
+      "why": "Shadow tenants are the ones with no one watching.",
+      "need": "Every SaaS tenant is known, card purchases included",
+      "how": "Find tenants from sign-ins and expenses, and connect them"
     },
     {
       "stage": "L2",
       "q": "Do you know which third-party apps can read your mail or files today?",
-      "why": "OAuth grants are a common, quiet path to data."
+      "why": "OAuth grants are a common, quiet path to data.",
+      "need": "Third-party apps with access to mail or files are known and approved",
+      "how": "Review app grants and remove the risky ones"
     },
     {
       "stage": "L3",
       "q": "Is strong sign-in enforced for everyone, admins included, with no exceptions list?",
-      "why": "Exceptions lists tend to grow and are where accounts get taken."
+      "why": "Exceptions lists tend to grow and are where accounts get taken.",
+      "need": "Strong sign-in protects everyone, admins included",
+      "how": "Close the exceptions one group at a time"
     },
     {
       "stage": "L3",
       "q": "How do you find files shared with anyone who has the link?",
-      "why": "Public links are the most frequent SaaS data leak."
+      "why": "Public links are the most frequent SaaS data leak.",
+      "need": "Files shared with anyone who has the link are found and reviewed",
+      "how": "Find public links and agree a policy"
     },
     {
       "stage": "L3",
       "q": "Who reviews admin roles, and how often?",
-      "why": "Standing admin rights outlive the people and projects that needed them."
+      "why": "Standing admin rights outlive the people and projects that needed them.",
+      "need": "Admin roles are reviewed on a schedule",
+      "how": "Set a review cycle with a named reviewer"
     },
     {
       "stage": "L4",
       "q": "When a risky setting is found, which team owns the fix?",
-      "why": "SaaS settings often belong to the business, not to IT."
+      "why": "SaaS settings often belong to the business, not to IT.",
+      "need": "Every risky setting has a team that owns the fix",
+      "how": "Map settings to owning teams"
     },
     {
       "stage": "value",
       "q": "What would a clean audit of these tenants mean for you this year?",
-      "why": "Ties posture work to a date the sponsor already cares about."
+      "why": "Ties posture work to a date the sponsor already cares about.",
+      "need": "A clean audit of these tenants is within reach this year",
+      "how": "Agree what the auditor will ask, and close the gaps"
     }
   ]
 }

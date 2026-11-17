@@ -3,42 +3,58 @@
     {
       "stage": "value",
       "q": "What would a day without the shared drives cost the business?",
-      "why": "Gives a price to downtime and to recovery."
+      "why": "Gives a price to downtime and to recovery.",
+      "need": "The cost of a day without the shared drives is known",
+      "how": "Put a number on it with the departments that use them most"
     },
     {
       "stage": "value",
       "q": "Have you been hit by ransomware, or come close, and how did you recover?",
-      "why": "A near miss is the strongest reason to act."
+      "why": "A near miss is the strongest reason to act.",
+      "need": "Recovery from ransomware is planned, not improvised",
+      "how": "Write the recovery steps and test them on a test share"
     },
     {
       "stage": "L1",
       "q": "How many file servers do you have, including branches and old ones nobody turned off?",
-      "why": "Forgotten file servers keep data nobody protects."
+      "why": "Forgotten file servers keep data nobody protects.",
+      "need": "Every file server is known, old ones included",
+      "how": "List servers from the network and the directory, and retire the dead ones"
     },
     {
       "stage": "L2",
       "q": "Do you know which shares hold sensitive data, and who owns each one?",
-      "why": "Ownership decides who approves permissions and retention."
+      "why": "Ownership decides who approves permissions and retention.",
+      "need": "Shares with sensitive data are known and owned",
+      "how": "Scan shares and give each sensitive one an owner"
     },
     {
       "stage": "L3",
       "q": "Can a user restore yesterday's version of a file without calling IT?",
-      "why": "Self-service restore removes a large share of tickets."
+      "why": "Self-service restore removes a large share of tickets.",
+      "need": "Users restore yesterday's file without calling IT",
+      "how": "Turn on previous versions on every share"
     },
     {
       "stage": "L3",
       "q": "Would you notice if one account started encrypting thousands of files right now?",
-      "why": "Detection time decides how much is lost."
+      "why": "Detection time decides how much is lost.",
+      "need": "Mass encryption by one account is stopped in minutes",
+      "how": "Switch on detection with automatic blocking, and test it"
     },
     {
       "stage": "L3",
       "q": "Who can open the shares marked for everyone, and does anyone check?",
-      "why": "Over-broad permissions are where data walks out."
+      "why": "Over-broad permissions are where data walks out.",
+      "need": "Shares open to everyone are known and justified",
+      "how": "Review open shares with their owners"
     },
     {
       "stage": "L4",
       "q": "When an alert fires on a file server, who looks at it and how fast?",
-      "why": "Detection without an owner does not stop anything."
+      "why": "Detection without an owner does not stop anything.",
+      "need": "A file server alert is looked at quickly by someone named",
+      "how": "Route alerts to an owner with a response time"
     }
   ]
 }

@@ -3,42 +3,58 @@
     {
       "stage": "value",
       "q": "What data would hurt most if it were encrypted or deleted tomorrow?",
-      "why": "Points straight at the buckets that need immutability first."
+      "why": "Points straight at the buckets that need immutability first.",
+      "need": "The data that would hurt most is known and protected first",
+      "how": "Name it with the business, and protect it first"
     },
     {
       "stage": "value",
       "q": "What do you pay today per terabyte, including egress and requests?",
-      "why": "Request and egress fees are where storage bills surprise people."
+      "why": "Request and egress fees are where storage bills surprise people.",
+      "need": "The full cost per terabyte is known",
+      "how": "Add up storage, egress and requests for a typical month"
     },
     {
       "stage": "L1",
       "q": "Which applications and backup jobs write to object storage, and where?",
-      "why": "Unknown writers mean unknown tenants and keys."
+      "why": "Unknown writers mean unknown tenants and keys.",
+      "need": "Every application and backup job writing to object storage is known",
+      "how": "List writers and their buckets"
     },
     {
       "stage": "L2",
       "q": "Do you know how many access keys exist, who owns them and when they were last used?",
-      "why": "Old keys with broad rights are the easiest way in."
+      "why": "Old keys with broad rights are the easiest way in.",
+      "need": "Every access key has an owner and is used",
+      "how": "Review keys, give owners, and remove unused ones"
     },
     {
       "stage": "L3",
       "q": "Are your backup copies under object lock, and for how long?",
-      "why": "Backups an administrator can delete do not survive ransomware."
+      "why": "Backups an administrator can delete do not survive ransomware.",
+      "need": "Backup copies are under object lock for long enough",
+      "how": "Turn on object lock with the agreed retention"
     },
     {
       "stage": "L3",
       "q": "Must any data stay in a given country, and can you prove where it is?",
-      "why": "Residency is often a legal requirement before it is a technical one."
+      "why": "Residency is often a legal requirement before it is a technical one.",
+      "need": "Data that must stay in a country stays there, with proof",
+      "how": "Pin buckets to regions and keep the evidence"
     },
     {
       "stage": "L3",
       "q": "When did you last restore from these backups, and how long did it take?",
-      "why": "The restore is the only test that counts."
+      "why": "The restore is the only test that counts.",
+      "need": "A restore from object storage has been tested and timed",
+      "how": "Restore one backup end to end and time it"
     },
     {
       "stage": "L4",
       "q": "Who is alerted when someone reads or deletes far more than usual?",
-      "why": "Mass reads and deletes are the first signs of theft or ransomware."
+      "why": "Mass reads and deletes are the first signs of theft or ransomware.",
+      "need": "Unusual reads or deletes alert someone named",
+      "how": "Alert on unusual volumes, routed to an owner"
     }
   ]
 }

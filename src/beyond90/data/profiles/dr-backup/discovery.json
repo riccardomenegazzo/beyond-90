@@ -3,42 +3,58 @@
     {
       "stage": "value",
       "q": "What would one day without your main site cost, and has anyone put a number on it?",
-      "why": "Turns recovery objectives into a business decision."
+      "why": "Turns recovery objectives into a business decision.",
+      "need": "The cost of a day without the main site is known and agreed",
+      "how": "Put a number on it with finance and the business owner"
     },
     {
       "stage": "value",
       "q": "When was the last full recovery test, and what went wrong in it?",
-      "why": "Tests always find something; no test means it is still hidden."
+      "why": "Tests always find something; no test means it is still hidden.",
+      "need": "A full recovery test runs regularly, and its findings are closed",
+      "how": "Schedule a non-disruptive test failover and track what it finds"
     },
     {
       "stage": "L1",
       "q": "Which sites and branches have no copy of their workloads anywhere?",
-      "why": "Unprotected sites are the first gap to close."
+      "why": "Unprotected sites are the first gap to close.",
+      "need": "Every site and branch has a copy of its workloads",
+      "how": "Connect the unprotected sites and start their first copies"
     },
     {
       "stage": "L2",
       "q": "Has every workload been given a recovery point and a recovery time, agreed with the business?",
-      "why": "Without objectives, nothing can be checked or prioritised."
+      "why": "Without objectives, nothing can be checked or prioritised.",
+      "need": "Every workload has a recovery point and time agreed with the business",
+      "how": "Classify workloads in tiers with the business owners"
     },
     {
       "stage": "L3",
       "q": "Could an administrator account delete your backups today?",
-      "why": "If yes, ransomware can too."
+      "why": "If yes, ransomware can too.",
+      "need": "No administrator account can delete the backups",
+      "how": "Keep an immutable copy that admins cannot remove"
     },
     {
       "stage": "L3",
       "q": "Does the recovery plan include the network: addresses, DNS, firewall rules?",
-      "why": "Most failed recoveries fail on the network, not on the data."
+      "why": "Most failed recoveries fail on the network, not on the data.",
+      "need": "The recovery plan includes the network",
+      "how": "Add addresses, DNS and firewall changes to the plan, and test them"
     },
     {
       "stage": "L3",
       "q": "Who can start a failover, and do they have the runbook at night?",
-      "why": "Recovery depends on people as much as on copies."
+      "why": "Recovery depends on people as much as on copies.",
+      "need": "Whoever starts a failover has the runbook, at night too",
+      "how": "Name who can start it, and give them a one-click plan"
     },
     {
       "stage": "L4",
       "q": "When a replication falls behind, who is told and what do they do?",
-      "why": "A silent missed recovery point is discovered on the worst day."
+      "why": "A silent missed recovery point is discovered on the worst day.",
+      "need": "A replication that falls behind reaches a named owner",
+      "how": "Alert on missed recovery points with an owner and a response"
     }
   ]
 }

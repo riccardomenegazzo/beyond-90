@@ -684,6 +684,11 @@ def main(site: str) -> int:
         note.fill("A day down is about 2M in lost orders")
         note.press("Tab")
         check("16 of 32 questions answered" in page.inner_text("#view .wsprog"), "progress follows the answers")
+        page.get_by_role("button", name="See the journey").click()
+        page.wait_for_selector("#view ol.journey")
+        check("Yes, this is possible." in page.inner_text("#view .jhero") and "2M in lost orders" in page.inner_text("#view .jhero"), "the journey opens on what is possible, with what is at stake in the customer's words")
+        check(page.locator("#view .jstep").count() >= 3 and page.locator("#view .jconds li").count() >= 5 and "First step:" in page.inner_text("#view ol.journey"), "each step lists what would need to be true, with a first step")
+        check("Validated by" in page.inner_text("#view .jstep.k-prove") and "Already true" in page.inner_text("#view ol.journey"), "and how it is validated, and what is already true")
         page.click("[data-tab=hurt]")
         page.wait_for_selector("#view .painmap")
         check("Disaster recovery and backup" in page.inner_text("#view .wsland"), "the line that hurts most is where to start")
@@ -1108,6 +1113,11 @@ def main(site: str) -> int:
                 apage.wait_for_selector("#view .wsq")
                 apage.locator("#view .wsq").first.get_by_role("button", name="A real gap", exact=True).click()
                 bad += [f"workshop: {v}" for v in audit()]
+                for i, ans in enumerate(("A real gap", "A real gap", "Partly")):
+                    apage.locator("#view .wsq").nth(i + 1).get_by_role("button", name=ans, exact=True).click()
+                apage.click("[data-tab=journey]")
+                apage.wait_for_selector("#view ol.journey")
+                bad += [f"journey: {v}" for v in audit()]
                 apage.click("[data-tab=hurt]")
                 bad += [f"hurt: {v}" for v in audit()]
                 apage.hover("#open-palette")

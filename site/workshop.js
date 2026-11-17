@@ -152,6 +152,54 @@ export function assess(catalog, w) {
   };
 }
 
+// ------------------------------------------------------------------ the journey: from "can we?" to "what would need to be true?"
+
+const STAGE_ORDER = { value: 0, L1: 1, L2: 2, L3: 3, L4: 4 };
+const STATUS_ORDER = { gap: 0, unknown: 1, partly: 2 };
+
+/** One line's answers turned into conditions: what would need to be true, where the customer is today, the first step. */
+function conditions(l) {
+  const of = (items, status) => items.map((q) => ({ need: q.need || q.q, how: q.how || "", q: q.q, note: q.note || "", status, stage: q.stage }));
+  return [...of(l.gaps, "gap"), ...of(l.unknowns, "unknown"), ...of(l.partly, "partly")]
+    .sort((a, b) => STAGE_ORDER[a.stage] - STAGE_ORDER[b.stage] || STATUS_ORDER[a.status] - STATUS_ORDER[b.status]);
+}
+const already = (items) => items.map((q) => q.need || q.q);
+
+/**
+ * The path from where the customer is today to where it could be: first agree what success means, then prove it on the
+ * line that hurts most, then the lines it leads to. Every gap is a condition to make true, with a first step and a way to
+ * validate it; every "nobody knows" is a rock in the road still to be seen; every "solved" is already true.
+ */
+export function journey(catalog, w, res) {
+  if (!res.land) return null;
+  const land = res.land, all = conditions(land);
+  const steps = [];
+  const agree = all.filter((c) => c.stage === "value"), agreeDone = already(land.solved.filter((q) => q.stage === "value"));
+  if (agree.length || agreeDone.length) {
+    steps.push({ kind: "agree", title: "Agree what success looks like", profile: land.profile, label: land.label, conditions: agree, already: agreeDone,
+      validate: ["Success criteria written with the sponsor and signed before the proof starts"] });
+  }
+  steps.push({ kind: "prove", title: `Prove it on ${land.label.toLowerCase()}`, profile: land.profile, label: land.label,
+    conditions: all.filter((c) => c.stage !== "value"), already: already(land.solved.filter((q) => q.stage !== "value")),
+    validate: res.proof.slice(0, 4).map((c) => c.text) });
+  for (const e of res.expand) {
+    const l = res.lines.find((x) => x.profile === e.profile);
+    const proof = (catalog.lines[e.profile] || { proof: [] }).proof;
+    steps.push({ kind: "then", title: `Then ${e.label.toLowerCase()}`, profile: e.profile, label: e.label, why: e.why,
+      conditions: l ? conditions(l) : [], already: l ? already(l.solved) : [], discussed: !!(l && l.answered),
+      validate: proof.slice(0, 1).map((c) => c.text) });
+  }
+  const need = steps.reduce((n, s) => n + s.conditions.length, 0);
+  const done = steps.reduce((n, s) => n + s.already.length, 0);
+  const unknown = steps.reduce((n, s) => n + s.conditions.filter((c) => c.status === "unknown").length, 0);
+  const impact = [...land.gaps, ...land.partly, ...land.unknowns, ...land.solved].filter((q) => q.stage === "value" && q.note).map((q) => q.note);
+  const destination = steps.map((s) => s.label);
+  return {
+    customer: w.customer, steps, need, done, unknown, impact, destination,
+    headline: `Yes, this is possible. For ${w.customer}, ${need} thing${need === 1 ? "" : "s"} need${need === 1 ? "s" : ""} to be true; ${done} already ${done === 1 ? "is" : "are"}.`,
+  };
+}
+
 /** The note to send after the meeting: what we heard, where it hurts, the proposal, and what is still open. */
 export function summaryMarkdown(catalog, w, res) {
   const out = [`# Discovery: ${w.customer}`, "", `Workshop started ${w.created_on}, last updated ${w.updated_on}. ${res.answered} of ${res.total} questions answered across ${res.lines.length} product line${res.lines.length === 1 ? "" : "s"}.`, ""];
@@ -166,21 +214,20 @@ export function summaryMarkdown(catalog, w, res) {
     for (const q of l.solved) out.push(say(q, "Solved"));
     out.push("");
   }
-  if (res.land) {
-    out.push("## Where we propose to start", "", `**${res.land.label}**: ${res.land.gaps.length} real gap${res.land.gaps.length === 1 ? "" : "s"} and ${res.land.partly.length} partly solved.`, "");
-    if (res.proof.length) {
-      out.push("A proof of value, agreed before it starts:", "");
-      for (const c of res.proof.slice(0, 3)) out.push(`- ${c.text}. How: ${c.how}`);
+  const j = journey(catalog, w, res);
+  if (j) {
+    out.push("## The journey", "", j.headline, "");
+    if (j.impact.length) out.push(`What is at stake, in their words: ${j.impact.map((x) => `"${x}"`).join("; ")}.`, "");
+    j.steps.forEach((st, i) => {
+      out.push(`### ${i + 1}. ${st.title}`, "");
+      if (st.why) out.push(`Why next: ${st.why}.`, "");
+      for (const c of st.conditions) out.push(`- [ ] ${c.need}. First step: ${c.how}. Today: ${({ gap: "a real gap", partly: "partly", unknown: "nobody knows yet" })[c.status]}${c.note ? ` ("${c.note}")` : ""}.`);
+      for (const a of st.already) out.push(`- [x] ${a}.`);
+      if (st.validate.length) out.push("", `Validated by: ${st.validate.join("; ")}.`);
       out.push("");
-    }
-    if (res.expand.length) {
-      out.push("## After that", "");
-      for (const e of res.expand) out.push(`- **${e.label}**${e.why ? `: once ${res.land.label.toLowerCase()} is in place, ${e.why}.` : "."}`);
-      out.push("");
-    }
-  } else {
-    out.push("## Where to start", "", res.waiting, "");
+    });
   }
+  if (!j) out.push("## Where to start", "", res.waiting, "");
   if (res.unknowns.length) {
     out.push("## To find out before the next meeting", "");
     for (const u of res.unknowns) out.push(`- ${u.label}: ${u.q}`);

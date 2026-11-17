@@ -13,8 +13,12 @@ The rest of Beyond 90 reads what a customer runs. The first meetings with a pros
    - **The map:** each line in scope filled by how much it hurts; lines not discussed yet are dashed; dashed links show where the first line leads.
    - **Then:** the path after the first line, from the links between kinds of product ("immutable copies need a target that an administrator cannot delete from"), and the other lines where pain was heard.
    - **Find out before the next meeting:** every question nobody in the room could answer. Often that is the real gap.
-4. **Start the proof of value** in one click: a plan for the prospect with the first line's own success criteria and how to test each, a problem statement made from the gaps heard, and the readiness checklist. From there it is the same [proof of value](app.md) as for any customer: sessions, results, the mutual plan.
-5. **Meeting summary:** what was heard line by line, where you propose to start and the proof that would settle it, what comes after, and the open questions. Copy it into the follow-up email or the CRM.
+4. **The journey.** "Yes, this is possible": the answers turned into a path from where the customer is today to where it could be. Every gap and every "nobody knows" becomes a condition, *what would need to be true*, with where the customer is today (in their words when you noted them) and the first step towards it. The steps are in order: agree what success looks like (the business-value questions), prove it on the first line (validated by that line's proof-of-value criteria), then each line it leads to and why. What is already true is shown too, and what is at stake, from the customer's own notes, heads the page.
+
+   ![The journey: what would need to be true, step by step](img/app-journey.png)
+
+5. **Start the proof of value** in one click: a plan for the prospect with the first line's own success criteria and how to test each, a problem statement made from the gaps heard, and the readiness checklist. From there it is the same [proof of value](app.md) as for any customer: sessions, results, the mutual plan.
+6. **Meeting summary:** what was heard line by line, the journey as a checklist (each condition with its first step and where the customer is today, what is already true ticked, how each step is validated), and the open questions. Copy it into the follow-up email or the CRM.
 
 ![Where it hurts: start here, the map and the path after](img/app-hurt.png)
 
@@ -25,3 +29,7 @@ For each line, a real gap counts 1, nobody knows 0.6 (not knowing is itself a fi
 ## Privacy
 
 A workshop is a customer fact, like a proof of value: it is kept in this browser's store, sealed under a random slot when you set a passphrase, erased with the customer from *Saved*, and carried between devices only in the workspace file, where it is checked field by field on import. Its identifier holds a date and a random suffix, never the prospect's name. The questions are built into the page at release time; nothing is fetched or sent.
+
+## Why "what would need to be true"
+
+Presales engineers are trained to look for limits, and a list of gaps can read as a list of reasons not to start. The journey keeps the same rigour (every risk named, its impact in the customer's words, a step to address it and a test that proves it) but asks a different question: not "can we?" but "what would need to be true for us to do this?". Each discovery question in the profiles carries both: the question to ask, and the condition it tests with a first step towards it.

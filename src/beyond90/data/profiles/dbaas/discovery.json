@@ -3,42 +3,58 @@
     {
       "stage": "value",
       "q": "How long does a team wait today for a copy of production, and who makes it?",
-      "why": "Copy time is usually the most visible pain and the easiest win."
+      "why": "Copy time is usually the most visible pain and the easiest win.",
+      "need": "A team gets a safe copy of production in under an hour",
+      "how": "Offer self-service clones from approved profiles"
     },
     {
       "stage": "value",
       "q": "When did you last restore a database to a precise point in time, and how long did it take?",
-      "why": "Untested point-in-time recovery is the usual hidden gap."
+      "why": "Untested point-in-time recovery is the usual hidden gap.",
+      "need": "Any database can be restored to a precise point in time, in a known time",
+      "how": "Restore one production database to a minute and time it"
     },
     {
       "stage": "L1",
       "q": "How many databases are there, and how many does nobody own clearly?",
-      "why": "Databases outside any list are the ones that miss backups and patches."
+      "why": "Databases outside any list are the ones that miss backups and patches.",
+      "need": "Every database is known and has an owner",
+      "how": "Register databases with the platform and assign owners"
     },
     {
       "stage": "L2",
       "q": "Which versions are you running, and how far are they from the supported ones?",
-      "why": "Version spread is effort and risk; it sizes the patching work."
+      "why": "Version spread is effort and risk; it sizes the patching work.",
+      "need": "Database versions are within support",
+      "how": "Agree target versions and a patch window for the fleet"
     },
     {
       "stage": "L3",
       "q": "Which production databases have no point-in-time backup today?",
-      "why": "The answer is the first list of the plan."
+      "why": "The answer is the first list of the plan.",
+      "need": "Every production database has point-in-time backup",
+      "how": "Apply a backup policy to the databases without one"
     },
     {
       "stage": "L3",
       "q": "How are test copies masked, if at all?",
-      "why": "Unmasked copies of production are a common data leak."
+      "why": "Unmasked copies of production are a common data leak.",
+      "need": "Test copies are masked before a team sees them",
+      "how": "Mask sensitive columns as part of cloning"
     },
     {
       "stage": "L3",
       "q": "Which databases must survive a server failure without anyone acting?",
-      "why": "Separates what needs a cluster from what does not."
+      "why": "Separates what needs a cluster from what does not.",
+      "need": "Databases that must survive a server failure do so with nobody acting",
+      "how": "Cluster the ones that need it, and test a failure"
     },
     {
       "stage": "L4",
       "q": "Who is woken up when a backup fails, and how quickly do they know?",
-      "why": "A failed backup nobody sees is no backup."
+      "why": "A failed backup nobody sees is no backup.",
+      "need": "A failed backup wakes the right person within minutes",
+      "how": "Route backup alerts to a named on-call owner"
     }
   ]
 }

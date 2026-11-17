@@ -470,7 +470,7 @@ const VIEWS = {
   portfolio: { kind: "md", key: "portfolio_markdown", file: "beyond90-portfolio.md", type: "text/markdown" },
   book: { kind: "md", key: "book_markdown", file: "beyond90-book.md", type: "text/markdown" },
   bookreport: { kind: "html", key: "book_html", file: "beyond90-book.html", type: "text/html" },
-  workshop: { kind: "view", view: "workshopView" }, hurt: { kind: "view", view: "hurtView" }, wspov: { kind: "view", view: "povView" },
+  workshop: { kind: "view", view: "workshopView" }, journey: { kind: "view", view: "journeyView" }, hurt: { kind: "view", view: "hurtView" }, wspov: { kind: "view", view: "povView" },
   wsummary: { kind: "md", key: "summary_markdown", file: "beyond90-discovery.md", type: "text/markdown" },
   estate: { kind: "view", view: "estateView" }, estategrow: { kind: "view", view: "growView" },
   estateplan: { kind: "md", key: "plan_markdown", file: "beyond90-account-plan.md", type: "text/markdown" },

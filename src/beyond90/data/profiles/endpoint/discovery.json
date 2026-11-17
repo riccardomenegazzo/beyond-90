@@ -3,42 +3,58 @@
     {
       "stage": "value",
       "q": "If ransomware started on one laptop right now, how far could it spread before anyone saw it?",
-      "why": "Turns endpoint coverage into business risk."
+      "why": "Turns endpoint coverage into business risk.",
+      "need": "Ransomware on one laptop is seen before it spreads",
+      "how": "Measure detection time in a safe simulation"
     },
     {
       "stage": "value",
       "q": "How long does it take today to isolate a compromised machine?",
-      "why": "Isolation time is the number that limits damage."
+      "why": "Isolation time is the number that limits damage.",
+      "need": "A compromised machine is isolated in minutes",
+      "how": "Give the on-call team one-click isolation and rehearse it"
     },
     {
       "stage": "L1",
       "q": "How many devices have no agent, including servers, branches and contractors?",
-      "why": "Uncovered devices are where attacks land."
+      "why": "Uncovered devices are where attacks land.",
+      "need": "Every device has an agent, servers and contractors included",
+      "how": "Compare the agent list with the asset list and close the gap"
     },
     {
       "stage": "L2",
       "q": "Do you know every operating system and version in use, and which are out of support?",
-      "why": "Unsupported systems need a different plan."
+      "why": "Unsupported systems need a different plan.",
+      "need": "Every operating system in use is known, with the unsupported ones planned",
+      "how": "List versions and plan the out-of-support ones"
     },
     {
       "stage": "L3",
       "q": "Is prevention switched on everywhere, or are some groups still in detect-only mode?",
-      "why": "Detect-only left on by habit is a common gap."
+      "why": "Detect-only left on by habit is a common gap.",
+      "need": "Prevention is on everywhere it should be",
+      "how": "Move detect-only groups to prevention, one group at a time"
     },
     {
       "stage": "L3",
       "q": "Are exclusions reviewed, and who can add one?",
-      "why": "Broad exclusions quietly turn protection off."
+      "why": "Broad exclusions quietly turn protection off.",
+      "need": "Exclusions are few, reviewed and owned",
+      "how": "Review exclusions and limit who can add them"
     },
     {
       "stage": "L3",
       "q": "Is device control or application control in use where it matters?",
-      "why": "Separates basic antivirus from real hardening."
+      "why": "Separates basic antivirus from real hardening.",
+      "need": "Device or application control is in place where it matters",
+      "how": "Start with the machines that handle the most sensitive data"
     },
     {
       "stage": "L4",
       "q": "When the console raises a critical alert at night, who answers it?",
-      "why": "Coverage without response is a dashboard."
+      "why": "Coverage without response is a dashboard.",
+      "need": "A critical alert at night is answered",
+      "how": "Agree who answers, how fast, and with what authority"
     }
   ]
 }

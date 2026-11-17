@@ -3,42 +3,58 @@
     {
       "stage": "value",
       "q": "What would have to be true in six months for you to call this a success?",
-      "why": "Sets the criteria before the tool sets them for you."
+      "why": "Sets the criteria before the tool sets them for you.",
+      "need": "Success in six months is written down and agreed with the sponsor",
+      "how": "Write three outcomes with the sponsor and a date for each"
     },
     {
       "stage": "value",
       "q": "What happened last time a cloud risk reached production, and who found it?",
-      "why": "A real incident is the strongest reason to change, and shows who cares."
+      "why": "A real incident is the strongest reason to change, and shows who cares.",
+      "need": "A cloud risk is found by the security team before it reaches production",
+      "how": "Agree which risks must be caught before deployment, and who sees them first"
     },
     {
       "stage": "L1",
       "q": "Where does your full list of cloud accounts live: the bill, the organisation, or someone's spreadsheet?",
-      "why": "Coverage measured against the platform's own list is always perfect."
+      "why": "Coverage measured against the platform's own list is always perfect.",
+      "need": "There is one list of cloud accounts everyone trusts",
+      "how": "Pull accounts from the organisation and the bill, and reconcile the two"
     },
     {
       "stage": "L1",
       "q": "Who creates new accounts, and how long until security hears about one?",
-      "why": "Accounts made outside the process are the ones nobody connects."
+      "why": "Accounts made outside the process are the ones nobody connects.",
+      "need": "Security hears about a new account the day it is created",
+      "how": "Hook account creation to an automatic connection"
     },
     {
       "stage": "L2",
       "q": "Are there accounts that are connected but where you rarely see anything?",
-      "why": "Connected without inventory looks covered and is not."
+      "why": "Connected without inventory looks covered and is not.",
+      "need": "Every connected account is really seen, not just connected",
+      "how": "List accounts with little or no inventory and fix their permissions"
     },
     {
       "stage": "L3",
       "q": "Which capabilities did you buy that nobody has switched on yet, and what stopped them?",
-      "why": "The answer is usually a person or an approval, not the technology."
+      "why": "The answer is usually a person or an approval, not the technology.",
+      "need": "What was bought is switched on, and what blocked it is known",
+      "how": "Name the blocker for each capability not in use, with an owner"
     },
     {
       "stage": "L4",
       "q": "When the tool finds something critical, who gets it and how do they know it is theirs?",
-      "why": "Findings without an owner are where risk stays open."
+      "why": "Findings without an owner are where risk stays open.",
+      "need": "Every critical finding reaches a named owner who knows it is theirs",
+      "how": "Map owners to accounts and route findings to them"
     },
     {
       "stage": "L4",
       "q": "How do you accept a risk today, and does that acceptance ever expire?",
-      "why": "Acceptances without an end date quietly become permanent."
+      "why": "Acceptances without an end date quietly become permanent.",
+      "need": "Accepted risks have an owner and an end date",
+      "how": "Record each acceptance with who accepted it and when it expires"
     }
   ]
 }
