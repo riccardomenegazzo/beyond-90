@@ -729,6 +729,30 @@ def main(site: str) -> int:
         page.click("#open-workshop")
         page.wait_for_selector("#view .wsq")
         check("Kestrel Logistics" in page.inner_text("#reshead") and page.locator("#view .wsopt[aria-pressed=true]").count() == 16, "a workshop is kept in the browser and comes back after a reload")
+        page.get_by_role("button", name="Leaving a virtualisation platform").click()
+        page.wait_for_selector("#ws-platform-migration")
+        check(page.locator("#view details.wsline").count() == 4 and page.locator("#view .wsopt[aria-pressed=true]").count() >= 8,
+              "a starting point sets the lines in scope, and keeps what was already answered")
+        # a filled-in example, for showing the method in thirty seconds, and deleting it again
+        page.click(".rail [data-place=start]")
+        page.click("#demo-workshop")
+        page.wait_for_selector("#view ol.journey")
+        check("2,000,000 per day" in page.inner_text("#view .jhero") and "Kestrel Logistics" in page.inner_text("#reshead") and page.locator("#view .jstep").count() >= 3,
+              "the example opens on its journey, with figures and notes")
+        page.get_by_role("button", name="Present", exact=True).click()
+        page.wait_for_selector("body.presenting")
+        check(not page.is_visible("#rail") and page.is_visible("#view .jhero") and page.is_visible("#present-exit"), "presenting shows the journey alone, with a way back")
+        page.keyboard.press("Escape")
+        page.wait_for_selector("body:not(.presenting)")
+        check(page.is_visible("#rail") and not page.is_visible("#present-exit"), "and Esc brings the app back")
+        page.click("[data-tab=workshop]")
+        page.once("dialog", lambda dlg: dlg.accept())
+        page.get_by_role("button", name="Delete this workshop").click()
+        page.wait_for_function("!document.querySelector('#reshead') || !document.querySelector('#reshead').innerText.includes('example')")
+        page.click(".rail [data-place=start]")
+        page.click("#open-workshop")
+        page.wait_for_selector("#view .wsq")
+        check(page.locator("#view select[aria-label='Open another workshop'] option").count() in (0, 1), "deleting a workshop removes it from this browser")
 
         # one customer, every product line: each line on its own profile, the estate on one map
         page.click(".rail [data-place=start]")

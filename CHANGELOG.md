@@ -2,6 +2,15 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.87.0
+
+- **A filled-in example workshop**, from the start page: an invented logistics company leaving its virtualisation platform, worried about recovery, with answers, notes and figures. It opens on the journey, so the method can be shown in thirty seconds.
+- **Start from a conversation:** resilience and ransomware, leaving a virtualisation platform, modernising applications, securing the cloud. Each sets the usual lines in scope; answers already given are kept.
+- **Present:** the journey and the estate can be shown alone and larger, full screen where the browser allows, for a shared screen. Esc brings the app back.
+- **Delete this workshop**, after a confirmation.
+- A figure at stake is now shown with the question it answers.
+- The five-minute demo guide has a presales version.
+
 ## 0.86.0
 
 - **Quantify the impact.** A business-value answer in the discovery workshop can carry a figure, counted per hour, day, week, month, year or incident ("2,000,000 per day"). The figures head the journey, the meeting summary and the customer readout, each with what it measures; a figure is kept when the answer or the note changes, and validated on import.

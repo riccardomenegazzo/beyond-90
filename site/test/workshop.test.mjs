@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { ANSWERS, makeWorkshop, validWorkshop, acceptWorkshops, mergeWorkshops, setAnswer, rename, setScope, lineState, assess, journey, summaryMarkdown, readoutHtml, setWorth, worthText, PER, MAX_WORKSHOPS } from "../workshop.js";
+import { ANSWERS, makeWorkshop, validWorkshop, acceptWorkshops, mergeWorkshops, setAnswer, rename, setScope, lineState, assess, journey, summaryMarkdown, readoutHtml, setWorth, worthText, PER, PRESETS, exampleWorkshop, isExample, MAX_WORKSHOPS } from "../workshop.js";
 
 const CAT = JSON.parse(readFileSync(new URL("./workshop-catalog.json", import.meta.url), "utf-8"));
 const D = "2026-11-17";
@@ -194,7 +194,25 @@ test("the figures head the journey, the summary and the readout", () => {
   w = setWorth(w, "dr-backup", 0, 2000000, "day", D);
   const res = assess(CAT, w), j = journey(CAT, w, res);
   assert.deepEqual(j.stakes.map((x) => x.text), ["2,000,000 per day"]);
-  assert.match(j.stakes[0].what, /cost of a day without the main site/i);
+  assert.match(j.stakes[0].what, /one day without your main site cost/i);
   assert.match(summaryMarkdown(CAT, w, res), /\*\*At stake: 2,000,000 per day\*\*/);
   assert.match(readoutHtml(CAT, w, res), /<b class="fig">2,000,000 per day<\/b>/);
+});
+
+test("the example is a valid workshop, recognisable as the example, with figures and notes", () => {
+  const w = exampleWorkshop(D);
+  assert.ok(validWorkshop(w) && isExample(w) && !isExample(mk()));
+  assert.match(w.customer, /\(mock\)$/);
+  assert.ok(Object.values(w.answers).some((a) => a.amount) && Object.values(w.answers).some((a) => a.note));
+  const j = journey(CAT, w, assess(CAT, w));
+  assert.equal(j.steps[1].profile, "dr-backup", "recovery is where the example starts");
+});
+
+test("starting points name lines that exist and fit in a workshop", () => {
+  const shipped = JSON.parse(readFileSync(new URL("../../src/beyond90/data/profiles/hci/discovery.json", import.meta.url), "utf-8"));
+  assert.ok(shipped.questions.length);
+  for (const p of PRESETS) {
+    assert.ok(p.label && p.scope.length >= 2 && p.scope.length <= 12 && new Set(p.scope).size === p.scope.length, p.id);
+    for (const x of p.scope) assert.match(x, /^[a-z0-9-]+$/);
+  }
 });

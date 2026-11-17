@@ -137,3 +137,14 @@ def test_each_risk_comes_with_the_first_step_on_the_weak_line() -> None:
     for r in e["risks"]:
         assert r["step"] == by[r["to"]]["top_action"]["title"] and r["points"] > 0
     assert "First step:" in e["plan_markdown"]
+
+
+def test_the_workshop_starting_points_name_shipped_profiles() -> None:
+    import re
+    src = (ROOT / "site" / "workshop.js").read_text(encoding="utf-8")
+    block = src[src.index("export const PRESETS"):src.index("];", src.index("export const PRESETS"))]
+    names = set(re.findall(r'"([a-z0-9-]+)"', block.split("scope:", 1)[1])) - {"id", "label", "scope"}
+    known = set(estate.workshop_catalog()["lines"])
+    for scope in re.findall(r"scope: \[([^\]]*)\]", block):
+        assert set(re.findall(r'"([a-z0-9-]+)"', scope)) <= known, scope
+    assert names

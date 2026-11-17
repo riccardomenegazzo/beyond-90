@@ -630,7 +630,7 @@ function selectTab(name, extra) {
 
 function context() {
   if (state.workshop && !state.result && !state.book && !state.estate) return workshopContext();
-  if (state.estate) return { estate: state.estate, go: (tab, extra) => selectTab(tab, extra), openLine: (key, tab = "today") => { state.mode = "single"; state.files = { ...state.groups[key] }; state.estate = null; state.tab = tab; renderLoaded(); run(); } };
+  if (state.estate) return { estate: state.estate, present, go: (tab, extra) => selectTab(tab, extra), openLine: (key, tab = "today") => { state.mode = "single"; state.files = { ...state.groups[key] }; state.estate = null; state.tab = tab; renderLoaded(); run(); } };
   if (state.book) return { book: state.book, povs: state.povs, savePov, removePov, today: todayIso(), advisories: state.advisories, openCustomer: (key, tab = "prep") => { state.mode = "single"; state.files = { ...state.groups[key] }; state.book = null; state.tab = tab; renderLoaded(); run(); } };
   const r = state.result;
   if (r && state.parsedFor !== r) { state.parsed = JSON.parse(r.score_json); state.parsedFor = r; }
@@ -814,6 +814,20 @@ async function openWorkshop(id) {
   state.workshop = w.id; state.result = null; state.book = null; state.estate = null;
   showWorkshop("workshop");
 }
+async function openExampleWorkshop() {
+  await workshopCatalog();
+  await refreshWorkshops();
+  const have = state.workshops.find(WSHOP.isExample);
+  const w = have || await keepWorkshop(WSHOP.exampleWorkshop(todayIso()));
+  state.workshop = w.id; state.result = null; state.book = null; state.estate = null;
+  showWorkshop("journey");
+}
+async function removeWorkshop(id) {
+  await store.workshopRemove(id);
+  await refreshWorkshops();
+  if (state.workshops.length) { state.workshop = state.workshops[0].id; showWorkshop("workshop"); }
+  else { state.workshop = null; showPlace("start"); }
+}
 async function newWorkshop() {
   const cat = await workshopCatalog();
   const was = currentWorkshop();
@@ -834,6 +848,23 @@ function showWorkshop(tab) {
   renderNav(WORKSHOP_NAV, w.customer);
   selectTab(state.tab);
 }
+// ---------- presenting: the view alone, larger, for a shared screen; Esc or the button brings the app back
+function present() {
+  document.body.classList.add("presenting");
+  $("present-exit").hidden = false;
+  const el = document.documentElement;
+  if (el.requestFullscreen && !document.fullscreenElement) el.requestFullscreen().catch(() => { /* a window is fine too */ });
+  $("main").focus();
+}
+function stopPresenting() {
+  document.body.classList.remove("presenting");
+  $("present-exit").hidden = true;
+  if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {});
+}
+$("present-exit").addEventListener("click", stopPresenting);
+document.addEventListener("fullscreenchange", () => { if (!document.fullscreenElement && document.body.classList.contains("presenting")) stopPresenting(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && document.body.classList.contains("presenting")) stopPresenting(); });
+
 function workshopDocs() {
   const w = currentWorkshop(), res = WSHOP.assess(state.wcat, w);
   return { summary_markdown: WSHOP.summaryMarkdown(state.wcat, w, res), readout_html: WSHOP.readoutHtml(state.wcat, w, res, { today: longDate(todayIso()) }) };
@@ -848,12 +879,12 @@ function workshopContext() {
     return run;
   };
   return {
-    workshop: w, catalog: cat, list: state.workshops, go: (tab, extra) => selectTab(tab, extra), today,
+    workshop: w, catalog: cat, list: state.workshops, go: (tab, extra) => selectTab(tab, extra), today, present,
     answer: async (profile, i, a, note) => { const next = await edit((x) => WSHOP.setAnswer(x, profile, i, a, note, today)); const r = WSHOP.assess(cat, next); fillHead(next.customer, `Discovery workshop, started ${longDate(next.created_on)}`, r.coverage); return next; },
     worth: async (profile, i, amount, per) => edit((x) => WSHOP.setWorth(x, profile, i, amount, per, today)),
     rename: async (name) => { await edit((x) => WSHOP.rename(x, name, today)); showWorkshop("workshop"); },
     setScope: async (scope) => { await edit((x) => WSHOP.setScope(x, scope, today)); showWorkshop("workshop"); },
-    newWorkshop, openWorkshop,
+    newWorkshop, openWorkshop, removeWorkshop, presets: WSHOP.PRESETS.map((p) => ({ ...p, scope: p.scope.filter((x) => cat.lines[x]) })).filter((p) => p.scope.length),
     startPov: async (r) => {
       const p = POV.makePov({ customer: w.customer, createdOn: today, problem: `Heard in discovery on ${r.land.label.toLowerCase()}: ${r.land.gaps.map((q) => q.q).join(" ")}`.slice(0, 300),
         criteria: r.proof.slice(0, 4).map((c) => ({ text: c.text, target: c.how })) });
@@ -1209,6 +1240,7 @@ $("try-now").addEventListener("click", async () => { $("try-now").disabled = tru
 $("demo-book").addEventListener("click", loadDemoBook);
 $("demo-estate").addEventListener("click", loadDemoEstate);
 $("open-workshop").addEventListener("click", () => openWorkshop().catch((e) => say(e.message)));
+$("demo-workshop").addEventListener("click", () => openExampleWorkshop().catch((e) => say(e.message)));
 $("demo-endpoint").addEventListener("click", loadDemoEndpoint);
 $("keys-open").addEventListener("click", () => showKeys());
 // Phone with a customer open: the sharing level and the theme move from the crowded top bar into the menu sheet.

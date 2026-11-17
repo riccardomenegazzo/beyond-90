@@ -1568,7 +1568,7 @@ function estateMap(estate, onNode, opt = {}) {
   return svgEl("svg", { viewBox: `0 0 ${W} ${H + 24}`, class: "estatemap" + (opt.cls ? " " + opt.cls : ""), role: "group", "aria-label": opt.label || `${estate.customer}: ${estate.lines.length} lines in place, ${estate.whitespace.length} to open` }, edges, dots);
 }
 
-export function estateView({ estate, openLine, go }) {
+export function estateView({ estate, openLine, go, present }) {
   const e = estate, open = (n, ln) => (ln ? openLine(ln.key) : go("estategrow", { open: n.profile }));
   const gap = e.naive != null ? e.naive - e.yield : null;
   const hero = h("section", { class: "card estatehero" },
@@ -1602,7 +1602,7 @@ export function estateView({ estate, openLine, go }) {
   const next = card("The next move on each line", h("ul", { class: "enext" }, e.lines.filter((l) => l.top_action).map((l) =>
     h("li", {}, h("span", { class: "eline", text: shortName(l.profile, l.label) }), h("span", { text: l.top_action.title }), h("b", { class: "pos", text: `+${l.top_action.points.toFixed(1)} pts` })))),
   { sub: "The action with the biggest effect on each line's Yield, from its own playbooks." });
-  return h("div", {}, h("div", { class: "col2 estatetop" }, hero, mapCard), risks, h("div", { class: "col2" }, next,
+  return h("div", {}, presentBtn(present), h("div", { class: "col2 estatetop" }, hero, mapCard), risks, h("div", { class: "col2" }, next,
     card("Reading the estate", h("p", { class: "note first", text: "Each line is scored on its own profile, in its own units: clusters, database environments, sites. The estate figure weights each line by its ARR. A pale column across lines is a process problem, not a product one." }))),
   card("Every line, four stages", dataTable({ columns: cols, rows: e.lines, label: "Lines", pageSize: 50 }).el));
 }
@@ -1626,7 +1626,7 @@ export function growView({ estate, focus }) {
 const STAGE_TAG = { value: "Value", L1: "L1 connected", L2: "L2 seen", L3: "L3 switched on", L4: "L4 decided" };
 const painPct = (v) => `${Math.round(v * 100)}%`;
 
-export function workshopView({ workshop: w, catalog, list, answer, worth, rename, setScope, newWorkshop, openWorkshop, go, focus }) {
+export function workshopView({ workshop: w, catalog, list, answer, worth, rename, setScope, newWorkshop, openWorkshop, removeWorkshop, presets = [], go, focus }) {
   const say = h("p", { class: "note", role: "status" });
   const act = (fn) => async (...a) => { try { await fn(...a); say.textContent = ""; } catch (e) { say.textContent = e.message; } };
   let cur = w;
@@ -1642,7 +1642,15 @@ export function workshopView({ workshop: w, catalog, list, answer, worth, rename
   const meeting = card("The meeting", h("div", { class: "wsmeet" },
     h("div", { class: "btnrow" }, name, h("button", { class: "btn small", type: "button", text: "Save the name", onclick: act(() => rename(name.value)) })),
     list.length > 1 ? h("div", { class: "btnrow" }, pick, h("button", { class: "btn small", type: "button", text: "Open", onclick: act(() => openWorkshop(pick.value)) })) : null,
-    h("div", { class: "btnrow" }, h("button", { class: "btn small", type: "button", text: "New workshop", onclick: act(() => newWorkshop()) })),
+    h("div", { class: "btnrow" }, h("button", { class: "btn small", type: "button", text: "New workshop", onclick: act(() => newWorkshop()) }),
+      h("button", { class: "btn small danger", type: "button", text: "Delete this workshop", onclick: act(async () => {
+        if (!confirm(`Delete the workshop with ${w.customer}? Its answers and notes are removed from this browser. This cannot be undone.`)) return;
+        await removeWorkshop(w.id);
+      }) })),
+    presets.length ? h("div", { class: "wsfam", role: "group", "aria-label": "Start from a conversation about" },
+      h("span", { class: "wsfamname", text: "Start from" }),
+      presets.map((p) => h("button", { type: "button", class: "kindchip", "aria-pressed": String(p.scope.length === w.scope.length && p.scope.every((x) => w.scope.includes(x))),
+        "data-tip": `Lines in scope: ${p.scope.map((x) => catalog.lines[x].label).join(", ")}. Answers already given are kept.`, text: p.label, onclick: act(() => setScope(p.scope)) }))) : null,
     scopeRow, h("p", { class: "note", text: "In the meeting: select an answer and the next question is selected for you; the keys 1 to 4 answer it (Solved, Partly, A real gap, Nobody knows)." }), say),
   { sub: "Choose the product lines in scope, then record what the customer says to each question. Nothing leaves this browser; it is sealed when you set a passphrase." });
 
@@ -1754,7 +1762,9 @@ export function hurtView({ workshop: w, catalog, go, startPov }) {
 const STATUS_TODAY = { gap: "Today: a real gap", partly: "Today: partly", unknown: "Today: nobody knows yet" };
 
 /** From "can we?" to "what would need to be true?": the path from today to where the customer could be, step by step. */
-export function journeyView({ workshop: w, catalog, go, startPov }) {
+const presentBtn = (present) => (present ? h("div", { class: "presentrow" }, h("button", { class: "btn quiet", type: "button", text: "Present", "data-tip": "Show this view alone and larger, for a shared screen. Esc brings the app back.", onclick: present })) : null);
+
+export function journeyView({ workshop: w, catalog, go, startPov, present }) {
   const res = WS.assess(catalog, w);
   const j = WS.journey(catalog, w, res);
   if (!j) return card("The journey", h("div", {}, h("p", { class: "note first", text: res.waiting + " The journey then shows, for each step, what would need to be true, the first step towards it, and how it is validated." }),
@@ -1768,7 +1778,7 @@ export function journeyView({ workshop: w, catalog, go, startPov }) {
       h("div", {}, h("b", { class: "ok", text: String(j.done) }), h("small", { text: "already true" })),
       h("div", {}, h("b", { text: String(j.unknown) }), h("small", { text: "still to find out" }))),
     j.stakes.length || j.impact.length ? h("div", { class: "jimpact" }, h("small", { text: "What is at stake, in their words" }),
-      j.stakes.map((x) => h("p", { class: "jfig" }, h("b", { text: x.text }), h("span", { text: " " + x.what.charAt(0).toLowerCase() + x.what.slice(1) }))),
+      j.stakes.map((x) => h("p", { class: "jfig" }, h("b", { text: x.text }), h("small", { text: `in answer to "${x.what}"` }))),
       j.impact.length ? h("q", { text: j.impact.join("; ") }) : null) : null);
   const steps = h("ol", { class: "journey" }, j.steps.map((st) => h("li", { class: "jstep k-" + st.kind },
     h("header", {}, h("h2", { text: st.title }), st.kind === "then" && !st.discussed ? h("span", { class: "wsstage", text: "not discussed yet" }) : null),
@@ -1781,5 +1791,5 @@ export function journeyView({ workshop: w, catalog, go, startPov }) {
     st.validate.length ? h("div", { class: "growproof" }, h("small", { text: "Validated by" }), h("ul", {}, st.validate.map((v) => h("li", { text: v + "." })))) : null,
     st.kind === "prove" ? h("div", { class: "btnrow" }, h("button", { class: "btn", type: "button", text: "Start the proof of value", onclick: async () => { try { await startPov(res); } catch (e) { say.textContent = e.message; } } }), say) : null)));
   const dest = card("Where it can go", h("p", { class: "note first", text: `With these steps done, ${w.customer} runs ${j.destination.join(", then ").toLowerCase()} with every condition above made true, validated as it went rather than promised up front.` }));
-  return h("div", {}, hero, steps, dest);
+  return h("div", {}, presentBtn(present), hero, steps, dest);
 }

@@ -120,6 +120,52 @@ export function setScope(w, scope, today) {
   return changed(w, { scope: lines }, today);
 }
 
+// ------------------------------------------------------------------ starting points
+
+/** Conversations a workshop often starts from, each with the lines that usually come up in it. */
+export const PRESETS = [
+  { id: "resilience", label: "Resilience and ransomware", scope: ["hci", "dr-backup", "object-storage", "file-storage"] },
+  { id: "migration", label: "Leaving a virtualisation platform", scope: ["platform-migration", "hci", "dr-backup", "dbaas"] },
+  { id: "modernise", label: "Modernising applications", scope: ["kubernetes-platform", "dbaas", "hci", "object-storage"] },
+  { id: "cloudsec", label: "Securing the cloud", scope: ["cnapp", "identity", "siem", "saas"] },
+];
+
+/**
+ * A filled-in example, so the method can be shown in thirty seconds: an invented logistics company leaving its
+ * virtualisation platform, worried about recovery. Answers are given by question position, per line.
+ */
+const EXAMPLE = {
+  customer: "Kestrel Logistics (mock)", nonce: "example1",
+  scope: ["platform-migration", "hci", "dr-backup", "dbaas", "object-storage"],
+  answers: {
+    "platform-migration": ["gap", "unknown", "partly", "gap", "gap", "gap", "unknown", "partly"],
+    "hci": ["partly", "solved", "solved", "partly", "solved", "gap", "solved", "partly"],
+    "dr-backup": ["gap", "gap", "gap", "partly", "gap", "unknown", "gap", "unknown"],
+    "dbaas": ["partly", "gap", "solved", "partly", "gap", "unknown", "solved", "partly"],
+  },
+  notes: {
+    "platform-migration#0": "Support on the current platform ends in September; renewal would triple the cost",
+    "platform-migration#3": "Nobody is sure what the warehouse system talks to",
+    "dr-backup#0": "A day without the main site stops every truck: about 2M in lost orders",
+    "dr-backup#4": "The backup admin account is the same as the domain admin",
+    "dbaas#1": "Last point-in-time restore took two days and needed the vendor",
+  },
+  worth: { "dr-backup#0": [2000000, "day"], "platform-migration#0": [1400000, "year"] },
+};
+
+export function exampleWorkshop(createdOn) {
+  let w = makeWorkshop({ customer: EXAMPLE.customer, scope: EXAMPLE.scope, createdOn, nonce: EXAMPLE.nonce });
+  for (const [profile, list] of Object.entries(EXAMPLE.answers)) {
+    list.forEach((a, i) => { w = setAnswer(w, profile, i, a, EXAMPLE.notes[`${profile}#${i}`] || "", createdOn); });
+  }
+  for (const [k, [amount, per]] of Object.entries(EXAMPLE.worth)) {
+    const [profile, i] = k.split("#");
+    w = setWorth(w, profile, Number(i), amount, per, createdOn);
+  }
+  return w;
+}
+export const isExample = (w) => /\|example1$/.test(w.id);
+
 // ------------------------------------------------------------------ reading the answers
 
 /** What one line's answers say. `pain` runs from 0 (all solved) to 1 (all real gaps); value questions count double. */
@@ -215,7 +261,7 @@ export function journey(catalog, w, res) {
   const values = [...land.gaps, ...land.partly, ...land.unknowns, ...land.solved].filter((q) => q.stage === "value");
   const impact = values.filter((q) => q.note).map((q) => q.note);
   // the figures the customer put on what is at stake, each with what it measures
-  const stakes = values.filter((q) => q.amount != null).map((q) => ({ amount: q.amount, per: q.per, what: q.need || q.q, text: worthText(q) }));
+  const stakes = values.filter((q) => q.amount != null).map((q) => ({ amount: q.amount, per: q.per, what: q.q, text: worthText(q) }));
   const destination = steps.map((s) => s.label);
   return {
     customer: w.customer, steps, need, done, unknown, impact, stakes, destination,
@@ -240,7 +286,7 @@ export function summaryMarkdown(catalog, w, res) {
   const j = journey(catalog, w, res);
   if (j) {
     out.push("## The journey", "", j.headline, "");
-    if (j.stakes.length) out.push(...j.stakes.map((x) => `**At stake: ${x.text}**, for: ${x.what.charAt(0).toLowerCase() + x.what.slice(1)}.`), "");
+    if (j.stakes.length) out.push(...j.stakes.map((x) => `**At stake: ${x.text}**, in answer to "${x.what}"`), "");
     if (j.impact.length) out.push(`What is at stake, in their words: ${j.impact.map((x) => `"${x}"`).join("; ")}.`, "");
     j.steps.forEach((st, i) => {
       out.push(`### ${i + 1}. ${st.title}`, "");
@@ -289,6 +335,7 @@ export function readoutHtml(catalog, w, res, { preparedBy = "", today = "" } = {
     .stake{border-left:4px solid #0f766e;background:#f1f6f5;padding:10px 14px;margin:14px 0;border-radius:0 8px 8px 0}
     .stake small{display:block;color:#43515b;font-size:12.5px;font-weight:700}
     .stake .fig{font-size:20px;color:#0b5f59}
+    .stake .q{font-size:12.5px;color:#43515b}
     .stats{display:flex;gap:28px;margin:14px 0 4px}
     .stats div b{display:block;font-size:26px;line-height:1.1}
     .stats div span{font-size:12.5px;color:#43515b}
@@ -318,7 +365,7 @@ export function readoutHtml(catalog, w, res, { preparedBy = "", today = "" } = {
     out.push(`<div class="stats"><div><b>${j.need}</b><span>things to make true</span></div><div><b>${j.done}</b><span>already true today</span></div><div><b>${j.unknown}</b><span>to find out together</span></div></div>`);
     if (j.stakes.length || j.impact.length) {
       out.push(`<div class="stake"><small>What is at stake, in your words</small>`);
-      for (const x of j.stakes) out.push(`<b class="fig">${esc(x.text)}</b> <span>${esc(x.what.charAt(0).toLowerCase() + x.what.slice(1))}</span><br>`);
+      for (const x of j.stakes) out.push(`<b class="fig">${esc(x.text)}</b> <span class="q">in answer to &ldquo;${esc(x.what)}&rdquo;</span><br>`);
       out.push(`${j.impact.map((x) => `&ldquo;${esc(x)}&rdquo;`).join("<br>")}</div>`);
     }
     out.push(`<h2>The journey</h2><ol class="steps">`);

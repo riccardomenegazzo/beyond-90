@@ -85,7 +85,8 @@
           </div>
           <div class="wsstart">
             <div><h2>A new prospect, no data yet?</h2><p>Run the discovery workshop: the questions for each product line, what the customer says, where it hurts and where to start. Nothing leaves this browser.</p></div>
-            <button class="btn primary" id="open-workshop" type="button">Start a discovery workshop</button>
+            <div class="btnrow"><button class="btn primary" id="open-workshop" type="button">Start a discovery workshop</button>
+              <button class="btn" id="demo-workshop" type="button" data-tip="An invented logistics company leaving its virtualisation platform, worried about recovery: every view of the workshop, filled in.">See a filled-in example</button></div>
           </div>
           <div class="demos" role="group" aria-labelledby="demos-title">
             <h2 id="demos-title">Or explore with made-up data</h2>
@@ -300,6 +301,7 @@
   </main>
 </div>
 
+<button class="btn" id="present-exit" type="button" hidden>Exit presenting (Esc)</button>
 <footer class="foot">
   <p>Independent open source project, Apache-2.0, not affiliated with any vendor. <a href="https://github.com/riccardomenegazzo/beyond-90">Source</a>, <a href="LICENSE.txt">licence</a>, <a href="THIRD_PARTY.md">bundled software</a>. Plans and forecasts are models; their limits are in the <a href="https://github.com/riccardomenegazzo/beyond-90/blob/main/README.md#honest-limits">README</a>.</p>
 </footer>

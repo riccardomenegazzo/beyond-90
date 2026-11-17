@@ -956,3 +956,14 @@ ol.journey{list-style:none;counter-reset:jstep;margin:18px 0 0;padding:0;display
 .wsworth input{width:150px}
 .jfig{margin:2px 0;color:#c5d2e1}
 .jfig b{font-size:24px;color:#5eead4;font-variant-numeric:tabular-nums;margin-right:6px}
+
+/* ---------- presenting: the view alone, larger, for a shared screen */
+#present-exit{position:fixed;right:18px;top:14px;z-index:90;box-shadow:var(--shadow)}
+.presentrow{display:flex;justify-content:flex-end;margin:-6px 0 10px}
+body.presenting header.top,body.presenting .rail,body.presenting .mobilebar,body.presenting footer.foot,body.presenting .work-head,
+body.presenting #kpis,body.presenting .viewhead,body.presenting #saved-note,body.presenting .presentrow,body.presenting .nextstep,body.presenting .btnrow{display:none!important}
+body.presenting .shell{display:block}
+body.presenting main{max-width:1180px;margin:0 auto;padding:36px 40px;font-size:17.5px}
+body.presenting .jstep h2{font-size:23px}
+body.presenting .jconds li b{font-size:17px}
+.jfig small{display:block;font-size:12.5px;color:#c5d2e1;margin-top:2px}
