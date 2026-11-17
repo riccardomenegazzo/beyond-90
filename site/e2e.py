@@ -809,6 +809,27 @@ def main(site: str) -> int:
         check("Yield" in page.inner_text("#kpis"), "the whole app works with no network")
         ctx.set_offline(False)
 
+        # opened like an installed app: a shortcut on its icon, and files shared to it from another app
+        page.goto(base + "?start=demo")
+        page.wait_for_selector("#results:not([hidden])", timeout=180_000)
+        check("start=" not in page.url, "the icon's Example shortcut opens the example, analysed, and leaves a clean address")
+        shared = page.evaluate("""async () => {
+          const files = await (await fetch("./demo.json")).json();
+          const form = new FormData();
+          for (const [name, text] of Object.entries(files)) form.append("files", new File([text], name));
+          form.append("files", new File(["MZ"], "tool.exe"));
+          form.append("files", new File(["x"], "../../etc/passwd.csv"));
+          const r = await fetch("./share-target", { method: "POST", body: form });
+          return { redirected: r.redirected, status: r.status, n: Object.keys(files).length };
+        }""")
+        check(shared["status"] == 200, f"sharing files to the app is answered by its own service worker, which opens the app (a plain server would refuse a POST): {shared}")
+        page.goto(base + "?shared=1")
+        page.wait_for_selector("#loaded li:has-text('customer.toml')", timeout=120_000)
+        names = page.eval_on_selector_all("#loaded li", "els => els.map(e => e.textContent)")
+        check(len(names) == shared["n"] + 1 and not any("tool.exe" in x for x in names) and any("passwd.csv" in x for x in names) and not any("/" in x.split(" ")[0] for x in names),
+              f"shared files load like picked ones: only csv, toml and xlsx, folder paths stripped: {len(names)} files")
+        check(page.evaluate("caches.has('share-inbox')") is False and "shared=" not in page.url, "the share inbox is emptied at once and the address is clean")
+
         # a new build is offered, not forced, and one click moves the page to it
         sw = Path(site) / "sw.js"
         original = sw.read_text(encoding="utf-8")

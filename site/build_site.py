@@ -182,7 +182,15 @@ def write_app_manifest(out: Path) -> None:
            "description": "Customer health for cloud security teams: where each customer stands and what to do next. Your data never leaves the device.",
            "icons": [{"src": "icons/app-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
                      {"src": "icons/app-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
-                     {"src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}]}
+                     {"src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}],
+           # Long-press the app's icon: these two. A shortcut only opens a place of the app; it carries no data.
+           "shortcuts": [{"name": "See it on an example", "short_name": "Example", "url": "./index.html?start=demo", "icons": [{"src": "icons/app-192.png", "sizes": "192x192"}]},
+                         {"name": "Saved customers", "short_name": "Saved", "url": "./index.html?start=saved", "icons": [{"src": "icons/app-192.png", "sizes": "192x192"}]}],
+           "launch_handler": {"client_mode": ["focus-existing", "auto"]},
+           # "Share" from another app (mail, files) to Beyond 90: the files go to this app's own service worker, never to a server.
+           "share_target": {"action": "./share-target", "method": "POST", "enctype": "multipart/form-data",
+                            "params": {"files": [{"name": "files", "accept": [".csv", ".toml", ".xlsx", "text/csv", "text/comma-separated-values", "text/plain",
+                                                                                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]}]}}}
     (out / "app.webmanifest").write_text(json.dumps(doc, indent=1) + "\n", encoding="utf-8")
 
 

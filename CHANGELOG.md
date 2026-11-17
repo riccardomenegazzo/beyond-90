@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.75.0
+
+- **More like a phone app.** Installed from the browser, Beyond 90 now offers two shortcuts on a long press of its icon ("See it on an example", which opens the example already analysed, and "Saved customers"), reuses the open window instead of opening a second one, and accepts files shared from other apps: on Android, Share, then Beyond 90, on an export from mail or Files opens the app with the files loaded. The share goes to the app's own service worker, never to a server: at most 50 files of at most 20 MB, only `.csv`, `.toml` and `.xlsx`, folder paths stripped, in a local inbox emptied as soon as the page opens. Tests send a share with a `.exe` and a `../` path and check both are handled.
+
 ## 0.74.0
 
 - **End to end across the book.** The portfolio report (`beyond90 portfolio`, Markdown and JSON) and the browser's book table now show, next to each customer's Yield, how many of its accounts pass every stage. On the examples: Contoso Bank 136 of 220, Northwind 29 of 121, Fabrikam Labs 0 of 27. Two customers with a similar Yield can differ a lot here, and the difference says whether the work is a rule applied everywhere or a few accounts to finish.

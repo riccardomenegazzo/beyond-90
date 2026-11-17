@@ -18,6 +18,9 @@ From a clone instead: `npm ci --ignore-scripts --prefix site/npm`, `python3 site
 
 ## Install it as an app
 
+Once installed, a long press on the app's icon offers "See it on an example" and "Saved customers". On Android, an export you receive by mail or keep in Files can be sent to the app with Share, then Beyond 90: it opens with the files loaded, ready to analyse. The files go to the app's own service worker on the phone, not to any server.
+
+
 On a phone, a tablet or a computer, the site installs like an app: its own icon, its own window, offline. Chrome and Edge show an install icon in the address bar (or Help, "Install the app"); on Android it is in the browser menu; on iPhone and iPad, Safari's Share button, "Add to Home Screen". Firefox on a computer cannot install web apps: use the [extension](extension.md).
 
 ![On a phone](img/app-phone.png)

@@ -42,6 +42,30 @@ const privacy = createPrivacy({ state, store, $, say, unlockVaultUi: () => unloc
 setExitGate(privacy.gate);
 privacy.onRefresh(() => refreshHistory());
 
+// ---------- how the app was opened: a shortcut on its icon, or files shared to it from another app
+async function openedWith() {
+  const q = new URLSearchParams(location.search);
+  const start = q.get("start"), shared = q.has("shared");
+  if (start || shared) history.replaceState(null, "", location.pathname);   // a reload must not repeat it
+  if (shared) {
+    let entries = [];
+    try {
+      const inbox = await caches.open("share-inbox");
+      for (const req of await inbox.keys()) {
+        const res = await inbox.match(req);
+        const name = decodeURIComponent(res.headers.get("x-name") || "").split(/[\\/]/).pop();
+        if (ALLOWED.test(name)) entries.push({ file: new File([await res.blob()], name), path: name });
+      }
+    } catch { entries = []; }
+    finally { try { await caches.delete("share-inbox"); } catch { /* nothing to empty */ } }   // emptied at once, read or not
+    if (entries.length) { showPlace("start"); await addFiles(entries); say(`${entries.length} shared file(s) loaded. Check the list, then Analyse.`); }
+    else say("Nothing usable was shared: only .csv, .toml and .xlsx files are read.");
+    return;
+  }
+  if (start === "demo") { showPlace("start"); await loadDemo(); await run(); }
+  else if (start === "saved") showPlace("saved");
+}
+
 // ---------- engine
 async function boot() {
   state.engine = new Engine(say);
@@ -52,6 +76,7 @@ async function boot() {
     $("demo").disabled = false;
     $("try-now").disabled = false; $("try-now").textContent = "See it on an example";
     refreshRun();
+    await openedWith();
   } catch (e) {
     $("version").textContent = "engine failed";
     say("The engine could not start: " + e.message);
