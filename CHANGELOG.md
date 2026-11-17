@@ -2,6 +2,11 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.73.0
+
+- **Actions marked done are kept, and newer data checks them.** "Mark done" on Today used to last only while the tab was open. A mark is now a customer fact like a promise: kept in this browser, sealed with the passphrase when one is set (under a random slot, because action ids name the customer's teams), included in the sealed workspace export and import, and erased with the customer. Each mark remembers the date of the data it was made on. When newer data still contains the action, Today puts "1 action you marked done is still in the newer data" at the top of Keep an eye on: the work did not land, or not everywhere. When the action is gone from newer data, Today says the mark is confirmed.
+- **A missing page module is caught by the tests, not by the browser.** The page's file list is now one constant, and a test reads every `import` of every page script and fails when one names a file the build does not ship.
+
 ## 0.72.0
 
 - **Set or move a proof of value's window at any time.** The mutual plan card now carries the start and end dates, so a plan made without a window can get one later, and a window that slips can be moved; every step of the mutual plan is re-dated at once. An end before the start, or a date that is not a date, is refused with a plain message.

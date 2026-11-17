@@ -32,6 +32,8 @@ DEMO_ENDPOINT = ROOT / "examples" / "profiles" / "endpoint" / "acme-endpoint"
 DEMO_PROFILES = {key: ROOT / "examples" / "profiles" / key / folder for key, folder in (
     ("saas", "acme-saas"), ("ai", "orbit-ai"), ("identity", "harbor-identity"), ("siem", "lantern-siem"),
     ("hci", "granite-hci"), ("object-storage", "meridian-storage"))}
+# Every file the page is made of. A test checks that each module a page script imports is in this list.
+PAGE_FILES = ("index.html", "app.js", "style.css", "engine.js", "store.js", "workspace-core.js", "worker.js", "ui.js", "charts.js", "views.js", "vault.js", "recap.js", "guide.js", "graph.js", "qr.js", "starter.js", "outcomes.js", "commitments.js", "handoff.js", "callmode.js", "aliases.js", "erasure.js", "privacy.js", "pov.js", "asks.js", "roles.js", "sla.js", "scorecard.js", "today.js", "fuzzy.js", "triage.js", "internal.js", "nav.js", "keys.js", "done.js")
 DEMO_PREVIOUS = ROOT / "examples" / "history" / "northwind-2026-09"
 
 
@@ -65,7 +67,7 @@ def build(out: Path, pyodide: Path, feed: Optional[Path] = None, font: Path = FO
     if out.exists():
         shutil.rmtree(out)
     out.mkdir(parents=True)
-    for name in ("index.html", "app.js", "style.css", "engine.js", "store.js", "workspace-core.js", "worker.js", "ui.js", "charts.js", "views.js", "vault.js", "recap.js", "guide.js", "graph.js", "qr.js", "starter.js", "outcomes.js", "commitments.js", "handoff.js", "callmode.js", "aliases.js", "erasure.js", "privacy.js", "pov.js", "asks.js", "roles.js", "sla.js", "scorecard.js", "today.js", "fuzzy.js", "triage.js", "internal.js", "nav.js", "keys.js"):
+    for name in PAGE_FILES:
         shutil.copy(ROOT / "site" / name, out / name)
     # The engine: the package and its data, nothing else, in a fixed order so builds are reproducible.
     with zipfile.ZipFile(out / "beyond90.zip", "w", zipfile.ZIP_DEFLATED) as z:

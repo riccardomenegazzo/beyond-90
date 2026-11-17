@@ -26,8 +26,13 @@ function csvButton(name, columns, getRows) {
 }
 
 // ------------------------------------------------------------------ today: the screen to open first
-export function todayView({ result, dash, score, go, history = [], done = new Set(), markDone = () => {} }) {
+export function todayView({ result, dash, score, go, history = [], done = new Set(), markDone = () => {}, marks = { stillOpen: [], confirmed: [] } }) {
   const flags = attention({ result, dash, score });
+  if (marks.stillOpen.length) {
+    const n = marks.stillOpen.length;
+    flags.unshift({ kind: "bad", title: `${n} action${n === 1 ? "" : "s"} you marked done ${n === 1 ? "is" : "are"} still in the newer data`,
+      text: marks.stillOpen.slice(0, 2).map((x) => `${x.title} (marked ${x.done_on})`).join("; ") + ". The work did not land, or not everywhere.", go: "actions", cta: "Open actions" });
+  }
   const big = (label, hint, to) => h("button", { class: "bigbtn", type: "button", onclick: () => go(to) }, h("b", { text: label }), h("small", { text: hint }));
   const seen = (() => { try { return localStorage.getItem("beyond90.tour") === "1"; } catch { return false; } })();
   const tour = seen ? null : h("section", { class: "card tour", "aria-label": "Your first minute" },
@@ -92,10 +97,11 @@ export function todayView({ result, dash, score, go, history = [], done = new Se
   paint();
   const sum = doneSummary(dash.actions, done, score.yield);
   const progress = sum.n ? h("div", { class: "doneprog", role: "status" },
-    h("p", {}, h("b", { text: `${sum.n} done this session: up to +${sum.points.toFixed(1)} pts, about ${pct(sum.projected)}` })),
-    h("p", { class: "note", text: "Effects overlap, so this is an upper estimate. It is kept only while this tab is open; load the next data to see the real figure." }),
+    h("p", {}, h("b", { text: `${sum.n} marked done: up to +${sum.points.toFixed(1)} pts, about ${pct(sum.projected)}` })),
+    h("p", { class: "note", text: "Effects overlap, so this is an upper estimate. The marks are kept with this customer's saved data; the next data load checks them." }),
     h("ul", { class: "donelist" }, dash.actions.filter((a) => done.has(a.id)).map((a) => h("li", {}, h("s", { text: a.title }), doneBtn(a, true))))) : null;
-  const todo = card("Do these first", h("div", {}, progress, list, left.length > 3 ? h("button", { class: "linkbtn", type: "button", text: `See all ${left.length} open actions`, onclick: () => go("actions") }) : null), { cls: "todocard", actions: seg });
+  const confirmedNote = marks.confirmed.length ? h("p", { class: "note good-note", text: `${marks.confirmed.length} action${marks.confirmed.length === 1 ? "" : "s"} you marked done earlier ${marks.confirmed.length === 1 ? "is" : "are"} gone from this data: confirmed.` }) : null;
+  const todo = card("Do these first", h("div", {}, confirmedNote, progress, list, left.length > 3 ? h("button", { class: "linkbtn", type: "button", text: `See all ${left.length} open actions`, onclick: () => go("actions") }) : null), { cls: "todocard", actions: seg });
 
   // keep an eye on: up to three, each with its door
   const watch = card("Keep an eye on", flags.length ? h("ul", { class: "watch" }, flags.slice(0, 3).map((f) => h("li", { class: f.kind },

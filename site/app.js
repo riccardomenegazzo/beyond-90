@@ -9,6 +9,7 @@ import * as W from "./workspace-core.js";
 import * as O from "./outcomes.js";
 import * as K from "./commitments.js";
 import * as ASK from "./asks.js";
+import * as DONE from "./done.js";
 import * as POV from "./pov.js";
 import * as SLA from "./sla.js";
 import { ROLES, ROLE_IDS, isRole, shape } from "./roles.js";
@@ -29,7 +30,7 @@ const $ = (id) => document.getElementById(id);
 // which has no scripts and no access to this page. Its content is produced by the engine from the customer's files, escaped there.
 const swPolicy = window.trustedTypes ? window.trustedTypes.createPolicy("b90-sw", { createScriptURL: (u) => { if (u !== "./sw.js") throw new TypeError("only the page's own service worker may be registered"); return u; } }) : null;
 const reportPolicy = window.trustedTypes ? window.trustedTypes.createPolicy("b90-report", { createHTML: (t) => t }) : null;
-const state = { commitments: [], outcomes: [], povs: [], asks: [], calibration: null, healthWeights: null, advisories: null, files: {}, groups: {}, mode: "single", result: null, book: null, tab: "today", saved: [], yields: new Map(), engine: null, running: false };
+const state = { commitments: [], outcomes: [], povs: [], asks: [], marks: [], calibration: null, healthWeights: null, advisories: null, files: {}, groups: {}, mode: "single", result: null, book: null, tab: "today", saved: [], yields: new Map(), engine: null, running: false };
 const ALLOWED = /\.(csv|toml|xlsx)$/i;
 const MAX_BYTES = 20 * 1024 * 1024;
 const pct = (x) => (x == null ? "n/a" : (x * 100).toFixed(1) + "%");
@@ -412,13 +413,27 @@ let navGroups = [], navTitle = "";
 function savedRole() { try { const r = localStorage.getItem("beyond90.role"); return isRole(r) ? r : "core"; } catch { return "core"; } }
 const readList = (key) => { try { const v = JSON.parse(localStorage.getItem(key) || "[]"); return Array.isArray(v) ? v.filter((x) => typeof x === "string") : []; } catch { return []; } };
 const writeList = (key, list) => { try { localStorage.setItem(key, JSON.stringify(list)); } catch { /* the choice just does not persist */ } };
-// Actions marked done live in this tab's memory only: their ids name the customer's teams, and nothing about a customer
-// is written outside the protected store. The next data load is what records the work.
-const doneByData = new Map();
-function doneFor(r) { const k = r && r.input_hash; if (!k) return new Set(); if (!doneByData.has(k)) doneByData.set(k, new Set()); return doneByData.get(k); }
-function markDone(id, on) {
-  const set = doneFor(state.result);
-  if (on) set.add(id); else set.delete(id);
+// Actions marked done are customer facts like promises: kept in this browser's store, sealed with the passphrase when one is
+// set, erased with the customer. Each mark remembers the date of the data it was made on, so newer data can check it.
+async function refreshMarks() { try { state.marks = await store.marksAll(); } catch { state.marks = []; } }
+function marksFor(r) {
+  if (!r || !r.dashboard) return { done: new Set(), stillOpen: [], confirmed: [] };
+  return DONE.readMarks(state.marks, r.customer, r.dashboard.actions, r.as_of);
+}
+function doneFor(r) { return marksFor(r).done; }
+async function markDone(id, on) {
+  const r = state.result, today = todayIso();
+  const have = state.marks.find((m) => m.customer === r.customer && m.action === id);
+  try {
+    if (on) {
+      const a = r.dashboard.actions.find((x) => x.id === id);
+      if (!a) return;
+      await store.markPut([DONE.makeDone({ customer: r.customer, action: id, title: a.title, points: a.effect, dataAsOf: r.as_of, today })], true);
+    } else if (have) {
+      await store.markPut([DONE.withDone(have, false, today)], true);
+    }
+  } catch (e) { say(e.message); return; }
+  await refreshMarks();
   renderNav(navGroups, navTitle); markTab();
   renderView(current());
 }
@@ -527,7 +542,7 @@ function context() {
   const r = state.result;
   if (r && state.parsedFor !== r) { state.parsed = JSON.parse(r.score_json); state.parsedFor = r; }
   return { result: r, dash: r.dashboard, score: state.parsed, done: doneFor(r), markDone, engine: state.engine, files: state.files, options: options(), advisories: state.advisories, logTouch, go: (tab, extra) => selectTab(tab, extra),
-    povs: state.povs, savePov, removePov, setSla, asks: state.asks, addAsk, setAskStatus, removeAsk,
+    povs: state.povs, savePov, removePov, setSla, asks: state.asks, addAsk, setAskStatus, removeAsk, marks: marksFor(r),
     commitments: state.commitments, addCommitment, setCommitmentStatus, removeCommitment, keepFromCall, today: todayIso(),
     history: state.saved.filter((x) => x.customer === r.customer).map((x) => ({ as_of: x.as_of, yield: state.yields.get(x.id) })).filter((x) => typeof x.yield === "number"),
     outcomes: state.outcomes, calibration: state.calibration, healthWeights: state.healthWeights, recordOutcome, removeOutcome, applyWeights, resetWeights,
@@ -699,6 +714,7 @@ async function refreshHistory() {
   await refreshCommitments();
   await refreshPovs();
   await refreshAsks();
+  await refreshMarks();
   await refreshOutcomes();
   try { state.saved = await store.all(); }
   catch (e) { state.saved = []; wsSay("Saving is not available here: " + e.message); }
@@ -774,7 +790,7 @@ function drawTrend() {
 
 async function exportWorkspace() {
   if (await store.getVault() && !store.unlocked() && !(await unlockVaultUi())) return;
-  const text = W.serializeWorkspace(state.saved, { engine: state.engine ? state.engine.version : "", extra: { outcomes: state.outcomes, commitments: state.commitments, povs: state.povs, asks: state.asks } });
+  const text = W.serializeWorkspace(state.saved, { engine: state.engine ? state.engine.version : "", extra: { outcomes: state.outcomes, commitments: state.commitments, povs: state.povs, asks: state.asks, done: state.marks } });
   const sealed = await store.sealExport(text);
   save(new Blob([sealed || text], { type: "application/json" }), sealed ? "beyond90-workspace.sealed.json" : "beyond90-workspace.json");
   wsSay(sealed ? `Exported ${state.saved.length} snapshot(s), sealed with your passphrase.`
@@ -927,7 +943,7 @@ async function sendWork() {
     return;
   }
   if (!store.unlocked() && !(await unlockVaultUi())) return;
-  const sealed = await store.sealExport(W.serializeWorkspace(state.saved, { engine: state.engine ? state.engine.version : "", extra: { outcomes: state.outcomes, commitments: state.commitments, povs: state.povs, asks: state.asks } }));
+  const sealed = await store.sealExport(W.serializeWorkspace(state.saved, { engine: state.engine ? state.engine.version : "", extra: { outcomes: state.outcomes, commitments: state.commitments, povs: state.povs, asks: state.asks, done: state.marks } }));
   const file = new File([sealed], "beyond90-workspace.sealed.json", { type: "application/json" });
   if (navigator.canShare && navigator.canShare({ files: [file] })) {
     try {
@@ -962,12 +978,15 @@ async function importWorkspace(file) {
     const addedPv = pvs.ok.length ? await store.povPut(pvs.ok) : 0;
     const aks = ASK.acceptAsks(unknown.asks);
     const addedAk = aks.ok.length ? await store.askPut(aks.ok) : 0;
+    const dns = DONE.acceptDone(unknown.done);
+    const addedDn = dns.ok.length ? await store.markPut(dns.ok) : 0;
     await refreshHistory();
     wsSay(`Imported: ${added} new, ${ok.length - added} already here` + (rejected ? `, ${rejected} rejected because their content did not match their name` : "")
       + (outs.ok.length || outs.rejected ? `; ${addedOut} renewal outcome(s) added` + (outs.rejected ? `, ${outs.rejected} refused` : "") : "")
       + (cms.ok.length || cms.rejected ? `; ${addedCm} commitment(s) added` + (cms.rejected ? `, ${cms.rejected} refused` : "") : "")
       + (pvs.ok.length || pvs.rejected ? `; ${addedPv} proof(s) of value added` + (pvs.rejected ? `, ${pvs.rejected} refused` : "") : "")
-      + (aks.ok.length || aks.rejected ? `; ${addedAk} ask(s) added` + (aks.rejected ? `, ${aks.rejected} refused` : "") : "") + ".");
+      + (aks.ok.length || aks.rejected ? `; ${addedAk} ask(s) added` + (aks.rejected ? `, ${aks.rejected} refused` : "") : "")
+      + (dns.ok.length || dns.rejected ? `; ${addedDn} action(s) marked done added` + (dns.rejected ? `, ${dns.rejected} refused` : "") : "") + ".");
   } catch (e) {
     wsSay(e.message);
   }

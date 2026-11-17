@@ -28,7 +28,7 @@ The target ages are the customer's own, kept in `customer.toml` (`settings.sla_d
 
 ## Where the data lives
 
-Proofs of value and asks are kept in this browser like promises: sealed with your passphrase if you set one, erased with the customer, and passed through the sharing gate (the customer name and people can be replaced by aliases) when you copy or download. They travel in an exported workspace file (sealed with the file, if you seal it), so moving to another device keeps them.
+Proofs of value, asks and actions marked done are kept in this browser like promises: sealed with your passphrase if you set one, erased with the customer, and passed through the sharing gate (the customer name and people can be replaced by aliases) when you copy or download. They travel in an exported workspace file (sealed with the file, if you seal it), so moving to another device keeps them.
 
 ## Importing exports from other tools
 

@@ -7,13 +7,14 @@ import { mergeCommitments, validCommitment } from "./commitments.js";
 import { MAX_EXPORTS, mergeRetention, validRetention, mergeExports, validExport } from "./erasure.js";
 import { mergePovs, validPov } from "./pov.js";
 import { mergeAsks, validAsk } from "./asks.js";
+import { mergeDone, validDone } from "./done.js";
 import { emptyTable, validTable, dropCustomer } from "./aliases.js";
 import { seal, openSealed, sealWorkspace } from "./vault.js";
 
 const DB = "beyond90", STORE = "snapshots", META = "meta", OUTCOMES = "outcomes", COMMITMENTS = "commitments";
-const RETENTION = "retention", EXPORTS = "exports", ALIASES = "aliases", POVS = "povs", ASKS = "asks";
-const FACTS = [OUTCOMES, COMMITMENTS, RETENTION, EXPORTS, POVS, ASKS];   // customer facts: sealed under an opaque slot, never under their own id
-const ALL_STORES = [STORE, META, OUTCOMES, COMMITMENTS, RETENTION, EXPORTS, ALIASES, POVS, ASKS];
+const RETENTION = "retention", EXPORTS = "exports", ALIASES = "aliases", POVS = "povs", ASKS = "asks", MARKS = "done";
+const FACTS = [OUTCOMES, COMMITMENTS, RETENTION, EXPORTS, POVS, ASKS, MARKS];   // customer facts: sealed under an opaque slot, never under their own id
+const ALL_STORES = [STORE, META, OUTCOMES, COMMITMENTS, RETENTION, EXPORTS, ALIASES, POVS, ASKS, MARKS];
 let key = null;                                      // the passphrase key, in memory only
 export const setKey = (k) => { key = k; };
 export const unlocked = () => key !== null;
@@ -26,7 +27,7 @@ export async function sealExport(text) {
 
 function open() {
   return new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB, 6);
+    const req = indexedDB.open(DB, 7);
     req.onupgradeneeded = () => {
       for (const name of ALL_STORES) if (!req.result.objectStoreNames.contains(name)) req.result.createObjectStore(name, { keyPath: name === META ? "k" : "id" });
     };
@@ -174,9 +175,9 @@ async function slot(name, fact, sealed) {
   return { id: s, sealed: await seal(key, fact, s) };
 }
 
-const ID_OF = { [OUTCOMES]: (o) => o.id, [COMMITMENTS]: (c) => c.id, [RETENTION]: (r) => r.customer, [EXPORTS]: (e) => e.id, [POVS]: (p) => p.id, [ASKS]: (a) => a.id };
-const VALID = { [OUTCOMES]: validOutcome, [COMMITMENTS]: validCommitment, [RETENTION]: validRetention, [EXPORTS]: validExport, [POVS]: validPov, [ASKS]: validAsk };
-const MERGE = { [OUTCOMES]: mergeOutcomes, [COMMITMENTS]: mergeCommitments, [RETENTION]: mergeRetention, [EXPORTS]: mergeExports, [POVS]: mergePovs, [ASKS]: mergeAsks };
+const ID_OF = { [OUTCOMES]: (o) => o.id, [COMMITMENTS]: (c) => c.id, [RETENTION]: (r) => r.customer, [EXPORTS]: (e) => e.id, [POVS]: (p) => p.id, [ASKS]: (a) => a.id, [MARKS]: (d) => d.id };
+const VALID = { [OUTCOMES]: validOutcome, [COMMITMENTS]: validCommitment, [RETENTION]: validRetention, [EXPORTS]: validExport, [POVS]: validPov, [ASKS]: validAsk, [MARKS]: validDone };
+const MERGE = { [OUTCOMES]: mergeOutcomes, [COMMITMENTS]: mergeCommitments, [RETENTION]: mergeRetention, [EXPORTS]: mergeExports, [POVS]: mergePovs, [ASKS]: mergeAsks, [MARKS]: mergeDone };
 
 /** Every readable fact of a store with the slot it lives in. */
 async function openFacts(name) {
@@ -265,6 +266,8 @@ export const povRemove = (id) => factsRemove(POVS, id);
 export const asksAll = () => factsAll(ASKS);
 export const askPut = (list, edit = false) => factsPut(ASKS, list, edit);
 export const askRemove = (id) => factsRemove(ASKS, id);
+export const marksAll = () => factsAll(MARKS);
+export const markPut = (list, edit = false) => factsPut(MARKS, list, edit);
 export const retentionAll = () => factsAll(RETENTION);
 export const retentionPut = (list) => factsPut(RETENTION, list);
 export const retentionRemove = (customer) => factsRemove(RETENTION, customer);
@@ -328,6 +331,7 @@ export async function customersHeld() {
   for (const r of await retentionAll()) names.add(r.customer);
   for (const p of await povsAll()) names.add(p.customer);
   for (const a of await asksAll()) names.add(a.customer);
+  for (const d of await marksAll()) names.add(d.customer);
   names.delete("");
   return [...names].sort((a, b) => a.localeCompare(b));
 }
@@ -335,7 +339,7 @@ export async function customersHeld() {
 /** Counts of readable records for one customer, and how many sealed records could not be read (so could not be checked). */
 export async function countFor(customer) {
   const snaps = (await all()).filter((s) => s.customer === customer).length;
-  const [o, c, r, e, pv, ak] = await Promise.all([outcomesAll(), commitmentsAll(), retentionAll(), exportsAll(), povsAll(), asksAll()]);
+  const [o, c, r, e, pv, ak, dn] = await Promise.all([outcomesAll(), commitmentsAll(), retentionAll(), exportsAll(), povsAll(), asksAll(), marksAll()]);
   const table = await aliasTable();
   return {
     snapshots: snaps,
@@ -345,6 +349,7 @@ export async function countFor(customer) {
     exports: e.filter((x) => x.customer === customer).length,
     povs: pv.filter((x) => x.customer === customer).length,
     asks: ak.filter((x) => x.customer === customer).length,
+    done: dn.filter((x) => x.customer === customer).length,
     aliases: table.entries.filter((x) => x.c === customer).length,
   };
 }
@@ -374,7 +379,7 @@ export async function eraseCustomer(customer) {
     db.close();
   }
   const after = await countFor(customer);
-  const remaining = after.snapshots + after.outcomes + after.commitments + after.retention + after.exports + after.povs + after.asks + after.aliases;
+  const remaining = after.snapshots + after.outcomes + after.commitments + after.retention + after.exports + after.povs + after.asks + after.done + after.aliases;
   return { before, remaining, locked: await lockedCount() };
 }
 

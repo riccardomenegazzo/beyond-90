@@ -222,3 +222,22 @@ def test_the_start_page_preview_is_what_the_engine_says(monkeypatch):
     assert html.count("<li") == 4 and html.count('class="weak"') == 1
     assert "<script" not in html and "javascript:" not in html
     assert sys.modules["build_site"] is build_site
+
+
+def test_every_module_a_page_script_imports_is_shipped(monkeypatch):
+    """A module left out of the build only fails in the browser, at boot. Catch it here instead."""
+    import re
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    monkeypatch.syspath_prepend(str(root / "site"))
+    import build_site
+
+    shipped = set(build_site.PAGE_FILES)
+    missing = []
+    for js in sorted(n for n in shipped if n.endswith(".js")):
+        text = (root / "site" / js).read_text(encoding="utf-8")
+        for target in re.findall(r"""(?:from\s+|import\(\s*|new Worker\(\s*)["']\./([\w.-]+\.js)["']""", text):
+            if target not in shipped and target != "sw.js":
+                missing.append(f"{js} -> {target}")
+    assert missing == []
