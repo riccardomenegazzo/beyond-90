@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { ANSWERS, makeWorkshop, validWorkshop, acceptWorkshops, mergeWorkshops, setAnswer, rename, setScope, lineState, assess, journey, summaryMarkdown, readoutHtml, MAX_WORKSHOPS } from "../workshop.js";
+import { ANSWERS, makeWorkshop, validWorkshop, acceptWorkshops, mergeWorkshops, setAnswer, rename, setScope, lineState, assess, journey, summaryMarkdown, readoutHtml, setWorth, worthText, PER, MAX_WORKSHOPS } from "../workshop.js";
 
 const CAT = JSON.parse(readFileSync(new URL("./workshop-catalog.json", import.meta.url), "utf-8"));
 const D = "2026-11-17";
@@ -167,4 +167,34 @@ test("the customer readout speaks the customer's language and escapes everything
   assert.ok(!/https?:\/\//.test(html), "the page loads nothing");
   const early = readoutHtml(CAT, mk(), assess(CAT, mk()));
   assert.match(early, /We are still listening/);
+});
+
+test("a value answer can carry a figure, kept through later edits and validated on the way in", () => {
+  let w = setAnswer(mk(), "dr-backup", 0, "gap", "", D);
+  assert.throws(() => setWorth(mk(), "dr-backup", 0, "100", "day", D), /Answer the question first/);
+  w = setWorth(w, "dr-backup", 0, "2,000,000", "day", D);
+  assert.deepEqual(w.answers["dr-backup#0"], { a: "gap", note: "", amount: 2000000, per: "day" });
+  w = setAnswer(w, "dr-backup", 0, "partly", "two million a day", D);
+  assert.equal(w.answers["dr-backup#0"].amount, 2000000, "changing the answer keeps the figure");
+  assert.ok(validWorkshop(w));
+  assert.throws(() => setWorth(w, "dr-backup", 0, "lots", "day", D));
+  assert.throws(() => setWorth(w, "dr-backup", 0, "-5", "day", D));
+  assert.throws(() => setWorth(w, "dr-backup", 0, "5", "fortnight", D));
+  assert.equal(setWorth(w, "dr-backup", 0, "", "day", D).answers["dr-backup#0"].amount, undefined);
+  for (const bad of [{ a: "gap", note: "", amount: "5", per: "day" }, { a: "gap", note: "", amount: 5, per: "eon" }, { a: "gap", note: "", amount: Infinity, per: "day" },
+    { a: "gap", note: "", amount: 1e14, per: "day" }, { a: "gap", note: "", per: "day" }]) {
+    assert.equal(validWorkshop({ ...w, answers: { "dr-backup#0": bad } }), false, JSON.stringify(bad));
+  }
+  assert.equal(worthText({ amount: 2000000, per: "day" }), "2,000,000 per day");
+  assert.ok(PER.includes("incident"));
+});
+
+test("the figures head the journey, the summary and the readout", () => {
+  let w = fill(mk(), "dr-backup", ["gap", "solved", "gap", "partly", "gap"]);
+  w = setWorth(w, "dr-backup", 0, 2000000, "day", D);
+  const res = assess(CAT, w), j = journey(CAT, w, res);
+  assert.deepEqual(j.stakes.map((x) => x.text), ["2,000,000 per day"]);
+  assert.match(j.stakes[0].what, /cost of a day without the main site/i);
+  assert.match(summaryMarkdown(CAT, w, res), /\*\*At stake: 2,000,000 per day\*\*/);
+  assert.match(readoutHtml(CAT, w, res), /<b class="fig">2,000,000 per day<\/b>/);
 });

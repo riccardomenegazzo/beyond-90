@@ -14,6 +14,8 @@ export const ANSWERS = {
   unknown: { label: "Nobody knows", weight: 0.6 },     // not knowing is itself a finding
 };
 export const MAX_WORKSHOPS = 200;
+export const PER = ["hour", "day", "week", "month", "year", "incident"];     // what a figure on a value question is counted per
+const MAX_AMOUNT = 1e13;
 const MAX_ANSWERS = 400, MAX_SCOPE = 12;
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 const NONCE = /^[a-z0-9]{6,12}$/;
@@ -50,6 +52,8 @@ export function validWorkshop(w) {
   if (entries.length > MAX_ANSWERS) return false;
   for (const [k, v] of entries) {
     if (!KEY.test(k) || !v || typeof v !== "object" || !(v.a in ANSWERS) || typeof v.note !== "string" || v.note.length > 300) return false;
+    if (v.amount != null && !(typeof v.amount === "number" && Number.isFinite(v.amount) && v.amount >= 0 && v.amount <= MAX_AMOUNT && PER.includes(v.per))) return false;
+    if (v.amount == null && v.per != null) return false;
   }
   const m = /^ws\|(\d{4}-\d{2}-\d{2})\|([a-z0-9]+)$/.exec(w.id || "");
   return !!m && m[1] === w.created_on && NONCE.test(m[2]);
@@ -84,9 +88,25 @@ export function setAnswer(w, profile, index, answer, note, today) {
   const answers = { ...w.answers };
   if (!answer) delete answers[k];
   else if (!(answer in ANSWERS)) throw new Error("Unknown answer.");
-  else answers[k] = { a: answer, note: text(note, 300) };
+  else answers[k] = { ...answers[k], a: answer, note: text(note, 300) };     // a figure already given is kept
   return changed(w, { answers }, today);
 }
+
+/** Put a figure on an answered value question ("2,000,000 per day"); an empty amount removes it. */
+export function setWorth(w, profile, index, amount, per, today) {
+  const k = `${profile}#${index}`;
+  const have = w.answers[k];
+  if (!have) throw new Error("Answer the question first, then put a figure on it.");
+  const rest = { a: have.a, note: have.note };
+  if (amount === "" || amount == null) return changed(w, { answers: { ...w.answers, [k]: rest } }, today);
+  const n = typeof amount === "number" ? amount : Number(String(amount).replace(/[\s,'_]/g, ""));
+  if (!Number.isFinite(n) || n < 0 || n > MAX_AMOUNT) throw new Error("Give the figure as a number, for example 250000.");
+  if (!PER.includes(per)) throw new Error("Say what the figure is counted per: hour, day, week, month, year or incident.");
+  return changed(w, { answers: { ...w.answers, [k]: { ...rest, amount: Math.round(n), per } } }, today);
+}
+
+const NUM = new Intl.NumberFormat("en", { maximumFractionDigits: 0 });
+export const worthText = (x) => `${NUM.format(x.amount)} per ${x.per}`;
 
 export function rename(w, customer, today) {
   const name = text(customer, 200);
@@ -114,7 +134,7 @@ export function lineState(catalog, profile, answers) {
     const m = q.stage === "value" ? 2 : 1;
     sum += ANSWERS[ans.a].weight * m;
     max += m;
-    const item = { ...q, index: i, note: ans.note };
+    const item = { ...q, index: i, note: ans.note, ...(ans.amount != null ? { amount: ans.amount, per: ans.per } : {}) };
     ({ gap: out.gaps, partly: out.partly, unknown: out.unknowns, solved: out.solved })[ans.a].push(item);
   });
   out.pain = max ? sum / max : 0;
@@ -192,10 +212,13 @@ export function journey(catalog, w, res) {
   const need = steps.reduce((n, s) => n + s.conditions.length, 0);
   const done = steps.reduce((n, s) => n + s.already.length, 0);
   const unknown = steps.reduce((n, s) => n + s.conditions.filter((c) => c.status === "unknown").length, 0);
-  const impact = [...land.gaps, ...land.partly, ...land.unknowns, ...land.solved].filter((q) => q.stage === "value" && q.note).map((q) => q.note);
+  const values = [...land.gaps, ...land.partly, ...land.unknowns, ...land.solved].filter((q) => q.stage === "value");
+  const impact = values.filter((q) => q.note).map((q) => q.note);
+  // the figures the customer put on what is at stake, each with what it measures
+  const stakes = values.filter((q) => q.amount != null).map((q) => ({ amount: q.amount, per: q.per, what: q.need || q.q, text: worthText(q) }));
   const destination = steps.map((s) => s.label);
   return {
-    customer: w.customer, steps, need, done, unknown, impact, destination,
+    customer: w.customer, steps, need, done, unknown, impact, stakes, destination,
     headline: `Yes, this is possible. For ${w.customer}, ${need} thing${need === 1 ? "" : "s"} need${need === 1 ? "s" : ""} to be true; ${done} already ${done === 1 ? "is" : "are"}.`,
   };
 }
@@ -217,6 +240,7 @@ export function summaryMarkdown(catalog, w, res) {
   const j = journey(catalog, w, res);
   if (j) {
     out.push("## The journey", "", j.headline, "");
+    if (j.stakes.length) out.push(...j.stakes.map((x) => `**At stake: ${x.text}**, for: ${x.what.charAt(0).toLowerCase() + x.what.slice(1)}.`), "");
     if (j.impact.length) out.push(`What is at stake, in their words: ${j.impact.map((x) => `"${x}"`).join("; ")}.`, "");
     j.steps.forEach((st, i) => {
       out.push(`### ${i + 1}. ${st.title}`, "");
@@ -264,6 +288,7 @@ export function readoutHtml(catalog, w, res, { preparedBy = "", today = "" } = {
     .lead{font-size:19px;font-weight:600;color:#0b5f59;margin:0 0 6px}
     .stake{border-left:4px solid #0f766e;background:#f1f6f5;padding:10px 14px;margin:14px 0;border-radius:0 8px 8px 0}
     .stake small{display:block;color:#43515b;font-size:12.5px;font-weight:700}
+    .stake .fig{font-size:20px;color:#0b5f59}
     .stats{display:flex;gap:28px;margin:14px 0 4px}
     .stats div b{display:block;font-size:26px;line-height:1.1}
     .stats div span{font-size:12.5px;color:#43515b}
@@ -291,7 +316,11 @@ export function readoutHtml(catalog, w, res, { preparedBy = "", today = "" } = {
   if (j) {
     out.push(`<p class="lead">Yes, this is possible.</p><p>Here is what would need to be true, how we would get there, and how each step would be proven before the next one starts.</p>`);
     out.push(`<div class="stats"><div><b>${j.need}</b><span>things to make true</span></div><div><b>${j.done}</b><span>already true today</span></div><div><b>${j.unknown}</b><span>to find out together</span></div></div>`);
-    if (j.impact.length) out.push(`<div class="stake"><small>What is at stake, in your words</small>${j.impact.map((x) => `&ldquo;${esc(x)}&rdquo;`).join("<br>")}</div>`);
+    if (j.stakes.length || j.impact.length) {
+      out.push(`<div class="stake"><small>What is at stake, in your words</small>`);
+      for (const x of j.stakes) out.push(`<b class="fig">${esc(x.text)}</b> <span>${esc(x.what.charAt(0).toLowerCase() + x.what.slice(1))}</span><br>`);
+      out.push(`${j.impact.map((x) => `&ldquo;${esc(x)}&rdquo;`).join("<br>")}</div>`);
+    }
     out.push(`<h2>The journey</h2><ol class="steps">`);
     for (const st of j.steps) {
       out.push(`<li><h3>${esc(st.title)}</h3>`);

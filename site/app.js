@@ -841,10 +841,16 @@ function workshopDocs() {
 function workshopContext() {
   const w = currentWorkshop(), cat = state.wcat, today = todayIso();
   const res = WSHOP.assess(cat, w);
-  const edit = async (fn) => { const next = await keepWorkshop(fn(currentWorkshop())); return next; };
+  // edits are applied one after another, each on the result of the last: a note and a figure typed in quick succession both land
+  const edit = (fn) => {
+    const run = (state.wsQueue || Promise.resolve()).catch(() => {}).then(() => keepWorkshop(fn(currentWorkshop())));
+    state.wsQueue = run;
+    return run;
+  };
   return {
     workshop: w, catalog: cat, list: state.workshops, go: (tab, extra) => selectTab(tab, extra), today,
     answer: async (profile, i, a, note) => { const next = await edit((x) => WSHOP.setAnswer(x, profile, i, a, note, today)); const r = WSHOP.assess(cat, next); fillHead(next.customer, `Discovery workshop, started ${longDate(next.created_on)}`, r.coverage); return next; },
+    worth: async (profile, i, amount, per) => edit((x) => WSHOP.setWorth(x, profile, i, amount, per, today)),
     rename: async (name) => { await edit((x) => WSHOP.rename(x, name, today)); showWorkshop("workshop"); },
     setScope: async (scope) => { await edit((x) => WSHOP.setScope(x, scope, today)); showWorkshop("workshop"); },
     newWorkshop, openWorkshop,

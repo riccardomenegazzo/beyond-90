@@ -2,6 +2,12 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.86.0
+
+- **Quantify the impact.** A business-value answer in the discovery workshop can carry a figure, counted per hour, day, week, month, year or incident ("2,000,000 per day"). The figures head the journey, the meeting summary and the customer readout, each with what it measures; a figure is kept when the answer or the note changes, and validated on import.
+- **Fixed:** a question not yet answered showed the word "null" under its buttons, and a line not yet discussed showed it in its heading. Every redraw now drops empty parts, and the browser tests look for stray "null", "undefined" and "NaN".
+- **Fixed:** a note and a figure typed in quick succession could overwrite each other. Workshop edits are now applied one after another, each on the result of the last.
+
 ## 0.85.0
 
 - **New kind of product: moving off a virtualisation platform** (`platform-migration`). Sites whose virtual machines move to a new platform in waves: discovery with owners, dependency mapping, wave planning, test migration, automated cutover, a tested rollback for every wave, backup and monitoring working on the new platform before the first production wave, and the old platform switched off. Vendor-neutral.

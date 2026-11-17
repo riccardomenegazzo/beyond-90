@@ -95,7 +95,7 @@ def shoot(site: Path, out: Path) -> None:
                 for i, a in enumerate(ans.replace(" ", "")):
                     d.locator(".wsq").nth(i).get_by_role("button", name=label[a], exact=True).click()
                     pg.wait_for_timeout(40)
-            note = pg.locator("#ws-dr-backup .wsq").first.locator("input[type=text]")
+            note = pg.locator("#ws-dr-backup .wsq").first.locator("input.wsnote")
             note.fill("A day down is about 2M in lost orders")
             note.press("Tab")
             pg.locator("#ws-dr-backup").scroll_into_view_if_needed()

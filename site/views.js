@@ -19,6 +19,8 @@ import { nOf, verb } from "./words.js";
 
 const card = (title, body, { sub = "", cls = "", actions = null } = {}) =>
   h("section", { class: "card " + cls }, h("header", { class: "cardhead" }, h("h2", { text: title }), actions), sub ? h("p", { class: "note first", text: sub }) : null, body);
+// replaceChildren writes null and undefined as the text "null"; every redraw here goes through this instead
+const put = (el, ...kids) => el.replaceChildren(...kids.flat(Infinity).filter((k) => k != null && k !== false));
 const stat = (value, label, kind = "") => h("div", { class: "stat " + kind }, h("b", { text: value }), h("span", { text: label }));
 const SEV = { critical: "bad", high: "warn", medium: "", low: "" };
 const STATUS_KIND = { ok: "good", pass: "good", watch: "warn", risk: "bad", fail: "bad", note: "", warn: "warn", unknown: "" };
@@ -111,7 +113,7 @@ export function todayView({ result, dash, score, go, history = [], done = new Se
       if (v.dataset.orig) v.textContent = v.dataset.orig;
     }
   };
-  const paint = () => list.replaceChildren(...(left.length ? rankActions(left, mode).map((a) => h("div", { class: "opprow", onmouseenter: () => show(a), onmouseleave: hide, onfocusin: () => show(a), onfocusout: hide },
+  const paint = () => put(list, ...(left.length ? rankActions(left, mode).map((a) => h("div", { class: "opprow", onmouseenter: () => show(a), onmouseleave: hide, onfocusin: () => show(a), onfocusout: hide },
     h("button", { type: "button", class: "opp", onclick: () => go("actions", { open: a.id }) },
       h("span", { class: "stagepip", style: `border-color:${STAGE[a.leak] || "var(--accent)"}`, text: a.leak }),
       h("span", { class: "opp-t" }, h("b", { text: a.title }), h("small", { text: `${a.owner}, due ${a.due}, about ${a.hours.toFixed(1)} h` + (a.unlocks ? `, finishes ${a.unlocks} ${a.unlocks === 1 ? score.terms.unit : score.terms.units}` : "") })),
@@ -364,7 +366,7 @@ export function planView({ dash, score, files, engine, options }) {
     if (cur !== base) series.push({ label: "Original plan", points: dw.map((x) => [x.week, x.yield]), dashed: true, color: "var(--ink2)" });
     const chart = lineChart({ series, marks: [{ y: 0.9, label: "90%" }, { y: 0.95, label: "95%" }], milestones: Object.entries(cur.milestones).filter(([, k]) => k != null).map(([k, wk]) => ({ x: wk, y: w.find((q) => q.week === wk)?.yield ?? 0, label: `${k} in week ${wk}` })) });
     const end = w.at(-1).yield, hrs = w.reduce((a, x) => a + x.hours, 0);
-    out.replaceChildren(
+    put(out, 
       h("div", { class: "kpiline" }, stat(pct(w[0].yield), "now"), stat(pct(end), `after ${cur.horizon_weeks} weeks`, end >= 0.9 ? "good" : ""), stat(cur.milestones["90%"] != null ? `week ${cur.milestones["90%"]}` : "not reached", "90%"), stat(cur.milestones["95%"] != null ? `week ${cur.milestones["95%"]}` : "not reached", "95%"), stat(hrs.toFixed(0) + " h", "hours spent")),
       card("Yield by week", chart, { sub: cur.dips.length ? `Expect a dip around week ${cur.dips[0].week} (${cur.dips[0].drop_points.toFixed(1)} pts): ${cur.dips[0].cause}` : "No dip expected." }),
       card("What gets done, and when", timeline(cur.jobs, cur.horizon_weeks), { sub: "Bars run from the week work starts to the week it lands; colour is the stage it helps." }),
@@ -418,7 +420,7 @@ export function commitmentsView({ result, commitments, today, addCommitment, set
   const draw = () => {
     const l = ledger(commitments, today, { customer: scope.value === "this" ? result.customer : "" });
     const n = l.counts;
-    body.replaceChildren(
+    put(body, 
       h("div", { class: "kpiline" }, stat(String(n.open), "open"), stat(String(n.overdue), "late", n.overdue ? "bad" : ""), stat(String(n.soon), "due this week", n.soon ? "warn" : ""), stat(String(n.we_owe), "we owe")),
       !commitments.length ? h("p", { class: "note", text: "Nothing is kept yet. Add a promise below, or finish a call and choose “Keep in the ledger”." }) : null,
       group("Late", l.late, { late: true }), group("Due this week", l.soon), group("Open", [...l.later, ...l.undated]), group("Closed in the last 30 days", l.recent),
@@ -478,7 +480,7 @@ export function whatifView({ dash, score, files, engine }) {
   function drawTry(sc) {
     const dip = sc.dip ? "warn" : "";
     const t = sc.touched;
-    tryOut.replaceChildren(
+    put(tryOut, 
       h("div", { class: "kpiline" },
         stat(pct(sc.today.yield), "today"),
         stat(pct(sc.right_after.yield), "right after", dip),
@@ -489,14 +491,14 @@ export function whatifView({ dash, score, files, engine }) {
   async function recomputeTry() {
     const picked = boxes.filter((b) => b.input.checked).flatMap((b) => b.s.steps);
     const mine = ++seqTry;
-    if (!picked.length) { tryOut.replaceChildren(h("p", { class: "note", text: "Tick one or more changes to see where Yield would land." })); return; }
+    if (!picked.length) { put(tryOut, h("p", { class: "note", text: "Tick one or more changes to see where Yield would land." })); return; }
     try {
       const res = await ask({ scenarios: [{ name: "Your combination", steps: picked }] });
       if (mine === seqTry) { status.textContent = ""; drawTry(res.scenarios[0]); }
     } catch (e) { if (mine === seqTry) status.textContent = e.cancelled ? "" : "Could not compute: " + e.message; }
   }
   function drawReach(r) {
-    reachOut.replaceChildren(
+    put(reachOut, 
       h("div", { class: "kpiline" }, stat(pct(r.start_yield), "today"), stat(pct(r.end_yield), `after ${r.path.length} step${r.path.length === 1 ? "" : "s"}`, r.reached ? "good" : "warn")),
       r.path.length ? h("ol", { class: "whatif-path" }, r.path.map((p) => h("li", {}, h("b", { text: p.title }), " ", h("span", { class: "muted", text: `${pts(p.gain_points)} → ${pct(p.yield_after)}` })))) : h("p", { class: "note", text: r.reached ? "Already there." : "Nothing this tool can model gets closer." }),
       ...r.notes.map((n) => h("p", { class: "note", text: n })));
@@ -593,7 +595,7 @@ export function callView({ result, dash, score, logTouch, go, keepFromCall }) {
     h("textarea", { rows: 2, maxlength: 600, "aria-label": `Your private notes on ${it.title}`, placeholder: "Your notes. They stay here: they are never in the recap.", oninput: (e) => { it.note = e.target.value; } }, it.note))));
   const rows = h("div", { class: "agreed" });
   const drawRows = () => {
-    rows.replaceChildren(...call.agreed.map((a, i) => h("div", { class: "agrow" },
+    put(rows, ...call.agreed.map((a, i) => h("div", { class: "agrow" },
       h("input", { type: "text", maxlength: 200, value: a.what, "aria-label": `Agreed thing ${i + 1}`, placeholder: "What was agreed", oninput: (e) => { a.what = e.target.value; refresh(); } }),
       h("input", { type: "text", maxlength: 80, value: a.who, "aria-label": `Who, for thing ${i + 1}`, placeholder: "Who", oninput: (e) => { a.who = e.target.value; refresh(); } }),
       h("input", { type: "date", value: a.when, "aria-label": `By when, for thing ${i + 1}`, onchange: (e) => { a.when = e.target.value; refresh(); } }),
@@ -1034,16 +1036,16 @@ function triageCard(engine) {
   const kind = h("select", { "aria-label": "Connector kind" }, ["", "cloud", "kubernetes", "sensor", "registry"].map((k) => h("option", { value: k, text: k || "any connector" })));
   const out = h("div", { class: "triage-out", role: "status" });
   const run = async () => {
-    if (!ta.value.trim()) { out.replaceChildren(h("p", { class: "note", text: "Paste a message first." })); return; }
-    out.replaceChildren(h("p", { class: "note", text: "Reading…" }));
+    if (!ta.value.trim()) { put(out, h("p", { class: "note", text: "Paste a message first." })); return; }
+    put(out, h("p", { class: "note", text: "Reading…" }));
     try {
       const r = await engine.json("triage", { text: ta.value, options: { provider: prov.value, kind: kind.value } });
       const m = r.match;
-      if (!m) { out.replaceChildren(h("p", { class: "note", text: "No known cause matches. Collect the full error, the connector ID and the time, and open a support case." })); return; }
-      out.replaceChildren(h("div", { class: "card inset" }, h("h3", { text: m.title }), h("p", { class: "note first", text: `${m.owner} · about ${m.hours} h${m.scope === "org" ? " · one fix covers the organization" : ""}` }),
+      if (!m) { put(out, h("p", { class: "note", text: "No known cause matches. Collect the full error, the connector ID and the time, and open a support case." })); return; }
+      put(out, h("div", { class: "card inset" }, h("h3", { text: m.title }), h("p", { class: "note first", text: `${m.owner} · about ${m.hours} h${m.scope === "org" ? " · one fix covers the organization" : ""}` }),
         h("p", { text: m.why }), h("ol", {}, m.steps.map((x) => h("li", { text: x }))), commands(m.checks), h("p", {}, h("b", { text: "Verify: " }), m.verify),
         r.also.length ? h("p", { class: "note", text: "Also possible: " + r.also.map((x) => x.title).join("; ") }) : null));
-    } catch (e) { if (!e.cancelled) out.replaceChildren(h("p", { class: "note", text: "Could not read it: " + e.message })); }
+    } catch (e) { if (!e.cancelled) put(out, h("p", { class: "note", text: "Could not read it: " + e.message })); }
   };
   return card("Explain a connector error", h("div", { class: "triage" }, ta, h("div", { class: "row left" }, prov, kind, h("button", { class: "btn small primary", type: "button", text: "Explain", onclick: run })), out),
     { sub: "Matched against a catalogue of the usual causes for cloud accounts, clusters and sensors. Nothing leaves this page." });
@@ -1062,10 +1064,10 @@ function preflightCard(engine) {
     try {
       const r = await engine.json("preflight", { options });
       md = r.markdown;
-      out.replaceChildren(...r.sections.map((sct) => h("section", { class: "agitem" }, h("h3", { text: sct.title }), h("ul", { class: "todo" }, sct.items.map((x) => h("li", {}, h("input", { type: "checkbox", "aria-label": x }), " ", x))))),
+      put(out, ...r.sections.map((sct) => h("section", { class: "agitem" }, h("h3", { text: sct.title }), h("ul", { class: "todo" }, sct.items.map((x) => h("li", {}, h("input", { type: "checkbox", "aria-label": x }), " ", x))))),
         h("div", { class: "row left" }, h("button", { class: "btn small", type: "button", text: "Copy", onclick: (e) => copyText(md).then((ok) => { e.target.textContent = ok ? "Copied" : "Not copied"; }) }),
           h("button", { class: "btn small", type: "button", text: "Download .md", onclick: () => saveBlob(md, "beyond90-preflight.md", "text/markdown") })));
-    } catch (e) { if (!e.cancelled) out.replaceChildren(h("p", { class: "note", text: "Could not build it: " + e.message })); }
+    } catch (e) { if (!e.cancelled) put(out, h("p", { class: "note", text: "Could not build it: " + e.message })); }
   };
   return card("Pre-flight checklist for a kickoff", h("div", {},
     h("div", { class: "row left wrap" }, prov("aws", "AWS"), prov("azure", "Azure"), prov("gcp", "Google Cloud"), prov("oci", "Oracle Cloud")),
@@ -1249,14 +1251,14 @@ export function execQbrView({ score, result, engine, files, saved, advisories, f
   showUsed();
   const build = h("button", { class: "btn primary", type: "button", text: "Build the executive review" });
   build.addEventListener("click", async () => {
-    build.disabled = true; out.replaceChildren(h("p", { class: "note", role: "status", text: "Building from the history…" }));
+    build.disabled = true; put(out, h("p", { class: "note", role: "status", text: "Building from the history…" }));
     try {
       const r = await engine.json("execqbr", { snapshots: [...mine.map((s) => s.files), files], from: from.value, to: to.value, advisories });
-      if (!r.ok) { out.replaceChildren(h("p", { class: "bad-text", role: "alert", text: r.errors.join(" ") })); return; }
+      if (!r.ok) { put(out, h("p", { class: "bad-text", role: "alert", text: r.errors.join(" ") })); return; }
       const q = r.review, name = `beyond90-executive-review-${q.period.label.replace(/\W+/g, "-")}`;
       const frame = h("iframe", { class: "qbrframe", title: "Executive review preview", sandbox: "" });
       frameHtml(frame, r.html);
-      out.replaceChildren(
+      put(out, 
         h("div", { class: "card callout good" }, h("h2", { text: `${q.customer}: ${q.period.label}` }), h("ul", {}, q.headline.map((x) => h("li", { text: x + "." }))),
           h("span", { class: "btnrow" },
             h("button", { class: "btn small primary", type: "button", text: "Download slides (.pptx)", "data-tip": "The review as a PowerPoint deck to present: six slides, the numbers large, no internal jargon.",
@@ -1266,7 +1268,7 @@ export function execQbrView({ score, result, engine, files, saved, advisories, f
             h("button", { class: "btn small", type: "button", text: "Copy as Markdown", onclick: (e) => copyText(r.markdown).then((ok) => { e.target.textContent = ok ? "Copied" : "Not copied"; }) }))),
         q.decisions.length ? card("Decisions to ask for", h("ol", {}, q.decisions.map((d) => h("li", { text: d })))) : null,
         card("Preview", frame, { sub: `Built from ${nOf(q.snapshots.length, "snapshot")}: ${q.snapshots.join(", ")}. Written for an executive reader: no internal scores or stage names.` }));
-    } catch (e) { if (!e.cancelled) out.replaceChildren(h("p", { class: "bad-text", role: "alert", text: "Could not build it: " + e.message })); }
+    } catch (e) { if (!e.cancelled) put(out, h("p", { class: "bad-text", role: "alert", text: "Could not build it: " + e.message })); }
     finally { build.disabled = false; }
   });
   const timeline = h("ol", { class: "snaptl", "aria-label": "Saved snapshots" }, dates.map((d) => h("li", {}, h("span", { class: "dot" }), h("b", { text: d }), h("small", { text: mine.some((s) => s.as_of === d) ? "saved" : "this analysis, not saved" }))));
@@ -1321,7 +1323,7 @@ export function asksView({ result, asks, today, addAsk, setAskStatus, removeAsk 
     const list = scope.value === "this" ? asks.filter((a) => a.customer === result.customer) : asks;
     const d = A.digest(list, today);
     const open = list.filter((a) => a.status === "open" || a.status === "shared");
-    body.replaceChildren(
+    put(body, 
       h("div", { class: "kpiline" }, stat(String(d.counts.open), "open"), stat(String(d.counts.themes), "different asks"), stat(String(d.counts.escalations), "escalations", d.counts.escalations ? "warn" : ""), stat(String(d.counts.customers), "customers")),
       !asks.length ? h("p", { class: "note", text: "Nothing is kept yet. Add what a customer asked for below." }) : null,
       d.themes.length ? card("Asked by several customers first", h("ul", { class: "rates wide" }, d.themes.map((t) => h("li", {}, h("span", { class: "rl", text: t.title }),
@@ -1360,7 +1362,7 @@ export function povView({ result, book, povs, today, savePov, removePov, dash })
   const draw = () => {
     povPick = sel.value;
     const p = mine.find((x) => x.id === sel.value);
-    if (!p) { body.replaceChildren(h("p", { class: "note", text: "No proof of value yet. Fill in the plan above to start one with starter criteria you can change." })); return; }
+    if (!p) { put(body, h("p", { class: "note", text: "No proof of value yet. Fill in the plan above to start one with starter criteria you can change." })); return; }
     const pr = P.progress(p);
     const edit = (fn) => act(async () => { await savePov(fn(p)); });
     const crit = p.criteria.map((c) => {
@@ -1376,7 +1378,7 @@ export function povView({ result, book, povs, today, savePov, removePov, dash })
     const summ = h("textarea", { rows: 3, maxlength: 1000, "aria-label": "Summary in your words", placeholder: "Summary in your words" }); summ.value = p.summary;
     const stage = h("select", { "aria-label": "Stage" }, P.STAGES.map((s) => h("option", { value: s, text: s }))); stage.value = p.stage;
     const ql = P.qualify(p), ttv = P.timeToFirstValue(p);
-    body.replaceChildren(
+    put(body, 
       h("section", { class: "card bdhero" },
         h("p", { class: "bdlead", role: "status", text: `${p.customer}: ${pr.met} of ${pr.total} criteria met.` }),
         h("p", { class: "bdnoise" }, h("b", { text: ql.verdict }), ttv == null ? "" : ` · first value after ${ttv} day${ttv === 1 ? "" : "s"}`)),
@@ -1624,7 +1626,7 @@ export function growView({ estate, focus }) {
 const STAGE_TAG = { value: "Value", L1: "L1 connected", L2: "L2 seen", L3: "L3 switched on", L4: "L4 decided" };
 const painPct = (v) => `${Math.round(v * 100)}%`;
 
-export function workshopView({ workshop: w, catalog, list, answer, rename, setScope, newWorkshop, openWorkshop, go, focus }) {
+export function workshopView({ workshop: w, catalog, list, answer, worth, rename, setScope, newWorkshop, openWorkshop, go, focus }) {
   const say = h("p", { class: "note", role: "status" });
   const act = (fn) => async (...a) => { try { await fn(...a); say.textContent = ""; } catch (e) { say.textContent = e.message; } };
   let cur = w;
@@ -1648,7 +1650,7 @@ export function workshopView({ workshop: w, catalog, list, answer, rename, setSc
   const prog = h("div", { class: "wsprog" });
   const drawProg = () => {
     const res = WS.assess(catalog, cur);
-    prog.replaceChildren(h("span", { text: `${res.answered} of ${res.total} questions answered` }), h("span", { class: "ebar wsbar" }, h("i", { class: "er", style: `width:${(res.coverage * 100).toFixed(1)}%` })),
+    put(prog, h("span", { text: `${res.answered} of ${res.total} questions answered` }), h("span", { class: "ebar wsbar" }, h("i", { class: "er", style: `width:${(res.coverage * 100).toFixed(1)}%` })),
       h("button", { class: "btn", type: "button", text: "See the journey", onclick: () => go("journey") }));
   };
   drawProg();
@@ -1658,7 +1660,7 @@ export function workshopView({ workshop: w, catalog, list, answer, rename, setSc
     const head = h("span", { class: "wshead" });
     const drawHead = () => {
       const st = WS.lineState(catalog, p, cur.answers);
-      head.replaceChildren(h("b", { text: line.label }), h("span", { class: "muted", text: `${st.answered} of ${st.total}` }),
+      put(head, h("b", { text: line.label }), h("span", { class: "muted", text: `${st.answered} of ${st.total}` }),
         st.answered ? h("span", { class: "wspain " + (st.pain >= 0.6 ? "hi" : st.pain >= 0.35 ? "mid" : "lo"), text: `${painPct(st.pain)} missing` }) : null);
     };
     drawHead();
@@ -1666,9 +1668,9 @@ export function workshopView({ workshop: w, catalog, list, answer, rename, setSc
       const li = h("li", { class: "wsq" });
       const draw = () => {
         const ans = cur.answers[`${p}#${i}`];
-        const note = h("input", { type: "text", maxlength: 300, value: ans ? ans.note : "", placeholder: "What they said, in a few words", "aria-label": `Note for: ${q.q}` });
+        const note = h("input", { type: "text", class: "wsnote", maxlength: 300, value: ans ? ans.note : "", placeholder: "What they said, in a few words", "aria-label": `Note for: ${q.q}` });
         note.addEventListener("change", act(async () => { if (!cur.answers[`${p}#${i}`]) return; cur = await answer(p, i, cur.answers[`${p}#${i}`].a, note.value); }));
-        li.replaceChildren(
+        put(li, 
           h("div", { class: "wsqtext" }, h("span", { class: "wsstage s-" + q.stage, text: STAGE_TAG[q.stage] || q.stage }), h("span", { text: q.q }), q.why ? h("small", { class: "muted", text: q.why }) : null),
           h("div", { class: "wsans", role: "group", "aria-label": `Answer to: ${q.q}` }, Object.entries(WS.ANSWERS).map(([k, v]) =>
             h("button", { type: "button", class: "wsopt o-" + k, "aria-pressed": String(!!ans && ans.a === k), text: v.label,
@@ -1678,7 +1680,17 @@ export function workshopView({ workshop: w, catalog, list, answer, rename, setSc
                 const next = again ? null : li.nextElementSibling;
                 (next ? next.querySelector(".wsopt") : li.querySelector(`.o-${k}`)).focus();
               }) }))),
-          ans ? note : null);
+          ans ? note : null,
+          ans && q.stage === "value" ? worthRow(ans) : null);
+      };
+      // a value question can carry a figure: what a day down costs, what a terabyte costs, what an incident cost
+      const worthRow = (ans) => {
+        const amt = h("input", { type: "text", inputmode: "numeric", maxlength: 18, value: ans.amount != null ? String(ans.amount) : "", placeholder: "e.g. 250000", "aria-label": `Figure for: ${q.q}` });
+        const per = h("select", { "aria-label": `Counted per, for: ${q.q}` }, WS.PER.map((x) => h("option", { value: x, text: "per " + x })));
+        per.value = ans.per || "day";
+        const save = act(async () => { cur = await worth(p, i, amt.value.trim(), per.value); });
+        amt.addEventListener("change", save); per.addEventListener("change", () => { if (amt.value.trim()) save(); });
+        return h("div", { class: "wsworth" }, h("span", { class: "muted", text: "What is at stake, as a figure (optional)" }), amt, per);
       };
       draw();
       // keys 1 to 4 answer the question that has the focus (and do not switch views, as digits do elsewhere)
@@ -1755,7 +1767,9 @@ export function journeyView({ workshop: w, catalog, go, startPov }) {
       h("div", {}, h("b", { text: String(j.need) }), h("small", { text: "to make true" })),
       h("div", {}, h("b", { class: "ok", text: String(j.done) }), h("small", { text: "already true" })),
       h("div", {}, h("b", { text: String(j.unknown) }), h("small", { text: "still to find out" }))),
-    j.impact.length ? h("p", { class: "jimpact" }, h("small", { text: "What is at stake, in their words" }), h("q", { text: j.impact.join("; ") })) : null);
+    j.stakes.length || j.impact.length ? h("div", { class: "jimpact" }, h("small", { text: "What is at stake, in their words" }),
+      j.stakes.map((x) => h("p", { class: "jfig" }, h("b", { text: x.text }), h("span", { text: " " + x.what.charAt(0).toLowerCase() + x.what.slice(1) }))),
+      j.impact.length ? h("q", { text: j.impact.join("; ") }) : null) : null);
   const steps = h("ol", { class: "journey" }, j.steps.map((st) => h("li", { class: "jstep k-" + st.kind },
     h("header", {}, h("h2", { text: st.title }), st.kind === "then" && !st.discussed ? h("span", { class: "wsstage", text: "not discussed yet" }) : null),
     st.why ? h("p", { class: "note first", text: cap(st.why) + "." }) : null,
