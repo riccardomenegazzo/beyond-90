@@ -213,3 +213,20 @@ def render_plan_markdown(e: dict[str, Any]) -> str:
             out.append(f"- {ln['label']}: {ln['question']['q']}")
     out += ["", "_Computed by Beyond 90 from the customer's files. Each line is scored on its own profile; the estate figure weights lines by ARR._", ""]
     return "\n".join(out)
+
+
+def workshop_catalog() -> dict[str, Any]:
+    """What a discovery workshop needs, for every profile that ships discovery questions: built into the page once."""
+    from .catalogue import available_profiles
+
+    lines: dict[str, Any] = {}
+    for profile in available_profiles():
+        cat = Catalogue.load(profile=profile)
+        if not cat.discovery:
+            continue
+        lines[profile] = {"label": label(profile, cat), "description": cat.description, "units": cat.terms["units"],
+                          "questions": [{"stage": q["stage"], "q": q["q"], "why": q.get("why", "")} for q in cat.discovery],
+                          "proof": [{"text": c["text"], "how": c.get("how", "")} for c in cat.pov_criteria]}
+    families = {name: [p for p in members if p in lines] for name, members in FAMILIES.items()}
+    return {"families": families, "links": [list(x) for x in LINKS if x[0] in lines and x[1] in lines], "lines": lines}
+

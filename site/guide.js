@@ -49,6 +49,17 @@ export const CUSTOMER_NAV = [
   ] },
 ];
 
+export const WORKSHOP_NAV = [
+  { question: "The meeting", views: [
+    { id: "workshop", label: "Questions", icon: "prep", tip: "The discovery questions for each product line in scope. Record what the customer says: solved, partly, a real gap, or nobody knows." },
+    { id: "hurt", label: "Where it hurts", icon: "outlook", tip: "Where the pain is, which line to start with and why, the path after it, and what to find out before the next meeting." },
+    { id: "wspov", label: "Proof of value", icon: "maturity", tip: "The proof of value for the first line: criteria agreed before it starts, sessions, results. Kept in this browser." },
+  ] },
+  { question: "Documents to share", views: [
+    { id: "wsummary", label: "Meeting summary", icon: "doc", tip: "What we heard, where we propose to start, what comes after and what is still open: the note to send after the meeting." },
+  ] },
+];
+
 export const ESTATE_NAV = [
   { question: "The whole customer", views: [
     { id: "estate", label: "Estate", icon: "layers", tip: "Every product line of this customer side by side: what is really working, where one line puts another at risk." },

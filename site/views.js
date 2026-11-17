@@ -9,6 +9,7 @@ import * as P from "./pov.js";
 import * as A from "./asks.js";
 import * as SLA from "./sla.js";
 import * as SC from "./scorecard.js";
+import * as WS from "./workshop.js";
 import { connections } from "./graph.js";
 import { headline, firstMinute, rankActions, chainText, doneSummary, funnelSegments, preview } from "./today.js";
 import { stageBars } from "./nav.js";
@@ -1530,7 +1531,10 @@ const SHORT = { hci: "Platform", dbaas: "Databases", "file-storage": "Files", "o
 const shortName = (p, label) => SHORT[p] || label.split(" ")[0];
 
 /** The estate as a map: the first line of the family in the middle, the others around it, the links between them coloured by what they say. */
-function estateMap(estate, onNode) {
+function estateMap(estate, onNode, opt = {}) {
+  const value = opt.value || ((l) => l.yield), toneOf = opt.tone || ((v) => (v < 0.6 ? "weak" : v < 0.7 ? "mid" : "strong"));
+  const subOf = opt.sub || ((l) => (l.naive != null ? `not ${pct(l.naive).replace(/\.\d%$/, "%")}` : ""));
+  const say = opt.say || ((n, l) => (l ? `${n.label}: Yield ${pct(l.yield)}. Open this line.` : `${n.label}: not in place yet. See why it could be next.`));
   const W = 560, H = 380, cx = W / 2, cy = H / 2 + 6, R = 150, nodes = estate.map;
   const byProfile = Object.fromEntries(estate.lines.map((l) => [l.profile, l]));
   const pos = {};
@@ -1546,20 +1550,20 @@ function estateMap(estate, onNode) {
   const r = 40, c = 2 * Math.PI * r;
   const dots = nodes.map((n) => {
     const [x, y] = pos[n.profile], ln = byProfile[n.profile];
-    const tone = !ln ? "absent" : ln.yield < 0.6 ? "weak" : ln.yield < 0.7 ? "mid" : "strong";
+    const tone = !ln ? "absent" : toneOf(value(ln), ln);
     const g = svgEl("g", { class: "enode " + tone, transform: `translate(${x.toFixed(1)},${y.toFixed(1)})`, tabindex: 0, role: "button",
-      "aria-label": ln ? `${n.label}: Yield ${pct(ln.yield)}. Open this line.` : `${n.label}: not in place yet. See why it could be next.` },
+      "aria-label": say(n, ln) },
       svgEl("circle", { r, class: "ebg" }),
-      ln ? svgEl("circle", { r, class: "earc", "stroke-dasharray": `${(Math.max(0.01, ln.yield) * c).toFixed(1)} ${c.toFixed(1)}`, transform: "rotate(-90)" }) : null,
-      svgEl("text", { y: ln ? -2 : 4, class: "eval" }, ln ? pct(ln.yield).replace(/\.\d%$/, "%") : "+"),
-      ln ? svgEl("text", { y: 15, class: "esub" }, ln.naive != null ? `not ${pct(ln.naive).replace(/\.\d%$/, "%")}` : "") : null,
+      ln ? svgEl("circle", { r, class: "earc", "stroke-dasharray": `${(Math.max(0.01, value(ln)) * c).toFixed(1)} ${c.toFixed(1)}`, transform: "rotate(-90)" }) : null,
+      svgEl("text", { y: ln ? -2 : 4, class: "eval" }, ln ? pct(value(ln)).replace(/\.\d%$/, "%") : "+"),
+      ln ? svgEl("text", { y: 15, class: "esub" + (opt.sub ? " plain" : "") }, subOf(ln)) : null,
       svgEl("text", { y: r + 18, class: "ename" }, shortName(n.profile, n.label)));
     const go = () => onNode(n, ln);
     g.addEventListener("click", go);
     g.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(); } });
     return g;
   });
-  return svgEl("svg", { viewBox: `0 0 ${W} ${H + 24}`, class: "estatemap", role: "group", "aria-label": `${estate.customer}: ${estate.lines.length} lines in place, ${estate.whitespace.length} to open` }, edges, dots);
+  return svgEl("svg", { viewBox: `0 0 ${W} ${H + 24}`, class: "estatemap" + (opt.cls ? " " + opt.cls : ""), role: "group", "aria-label": opt.label || `${estate.customer}: ${estate.lines.length} lines in place, ${estate.whitespace.length} to open` }, edges, dots);
 }
 
 export function estateView({ estate, openLine, go }) {
@@ -1613,4 +1617,112 @@ export function growView({ estate, focus }) {
     w.proof ? h("div", { class: "growproof" }, h("small", { text: "A proof to offer" }), h("p", { text: w.proof.text + "." }), h("span", { class: "note", text: "How: " + w.proof.how })) : null));
   if (focus) requestAnimationFrame(() => { const el = document.getElementById("grow-" + focus); if (el) el.scrollIntoView({ block: "start" }); });
   return h("div", {}, h("p", { class: "note first", text: `The lines ${e.customer} does not run yet, in the order they follow from what it already runs. A line that several solid lines lead to comes first.` }), items);
+}
+
+// ------------------------------------------------------------------ the discovery workshop: before there is any data
+const STAGE_TAG = { value: "Value", L1: "L1 connected", L2: "L2 seen", L3: "L3 switched on", L4: "L4 decided" };
+const painPct = (v) => `${Math.round(v * 100)}%`;
+
+export function workshopView({ workshop: w, catalog, list, answer, rename, setScope, newWorkshop, openWorkshop, go, focus }) {
+  const say = h("p", { class: "note", role: "status" });
+  const act = (fn) => async (...a) => { try { await fn(...a); say.textContent = ""; } catch (e) { say.textContent = e.message; } };
+  let cur = w;
+  // the meeting: who it is with, which workshop, which lines are in scope
+  const name = h("input", { type: "text", maxlength: 200, value: w.customer, "aria-label": "Who the workshop is with" });
+  const pick = h("select", { "aria-label": "Open another workshop" }, list.map((x) => h("option", { value: x.id, text: `${x.customer}, ${x.created_on}` })));
+  pick.value = w.id;
+  const fam = Object.entries(catalog.families).filter(([, ps]) => ps.length);
+  const scopeRow = h("div", { class: "wsscope" }, fam.map(([f, ps]) => h("div", { class: "wsfam", role: "group", "aria-label": `${cap(f)} lines` },
+    h("span", { class: "wsfamname", text: cap(f) }),
+    ps.map((p) => h("button", { type: "button", class: "kindchip", "aria-pressed": String(w.scope.includes(p)), text: catalog.lines[p].label,
+      onclick: act(async () => { const next = cur.scope.includes(p) ? cur.scope.filter((x) => x !== p) : [...cur.scope, p]; await setScope(next); }) })))));
+  const meeting = card("The meeting", h("div", { class: "wsmeet" },
+    h("div", { class: "btnrow" }, name, h("button", { class: "btn small", type: "button", text: "Save the name", onclick: act(() => rename(name.value)) })),
+    list.length > 1 ? h("div", { class: "btnrow" }, pick, h("button", { class: "btn small", type: "button", text: "Open", onclick: act(() => openWorkshop(pick.value)) })) : null,
+    h("div", { class: "btnrow" }, h("button", { class: "btn small", type: "button", text: "New workshop", onclick: act(() => newWorkshop()) })),
+    scopeRow, say),
+  { sub: "Choose the product lines in scope, then record what the customer says to each question. Nothing leaves this browser; it is sealed when you set a passphrase." });
+
+  // progress, kept current as answers come in
+  const prog = h("div", { class: "wsprog" });
+  const drawProg = () => {
+    const res = WS.assess(catalog, cur);
+    prog.replaceChildren(h("span", { text: `${res.answered} of ${res.total} questions answered` }), h("span", { class: "ebar wsbar" }, h("i", { class: "er", style: `width:${(res.coverage * 100).toFixed(1)}%` })),
+      h("button", { class: "btn", type: "button", text: "See where it hurts", onclick: () => go("hurt") }));
+  };
+  drawProg();
+
+  const lines = cur.scope.filter((p) => catalog.lines[p]).map((p, li) => {
+    const line = catalog.lines[p];
+    const head = h("span", { class: "wshead" });
+    const drawHead = () => {
+      const st = WS.lineState(catalog, p, cur.answers);
+      head.replaceChildren(h("b", { text: line.label }), h("span", { class: "muted", text: `${st.answered} of ${st.total}` }),
+        st.answered ? h("span", { class: "wspain " + (st.pain >= 0.6 ? "hi" : st.pain >= 0.35 ? "mid" : "lo"), text: `${painPct(st.pain)} pain` }) : null);
+    };
+    drawHead();
+    const items = line.questions.map((q, i) => {
+      const li = h("li", { class: "wsq" });
+      const draw = () => {
+        const ans = cur.answers[`${p}#${i}`];
+        const note = h("input", { type: "text", maxlength: 300, value: ans ? ans.note : "", placeholder: "What they said, in a few words", "aria-label": `Note for: ${q.q}` });
+        note.addEventListener("change", act(async () => { if (!cur.answers[`${p}#${i}`]) return; cur = await answer(p, i, cur.answers[`${p}#${i}`].a, note.value); }));
+        li.replaceChildren(
+          h("div", { class: "wsqtext" }, h("span", { class: "wsstage s-" + q.stage, text: STAGE_TAG[q.stage] || q.stage }), h("span", { text: q.q }), q.why ? h("small", { class: "muted", text: q.why }) : null),
+          h("div", { class: "wsans", role: "group", "aria-label": `Answer to: ${q.q}` }, Object.entries(WS.ANSWERS).map(([k, v]) =>
+            h("button", { type: "button", class: "wsopt o-" + k, "aria-pressed": String(!!ans && ans.a === k), text: v.label,
+              onclick: act(async () => { const again = ans && ans.a === k; cur = await answer(p, i, again ? "" : k, again ? "" : note.value); draw(); drawHead(); drawProg(); }) }))),
+          ans ? note : null);
+      };
+      draw();
+      return li;
+    });
+    const st = WS.lineState(catalog, p, cur.answers);
+    return h("details", { class: "card wsline", id: "ws-" + p, open: focus === p || (!focus && (li === 0 || (st.answered > 0 && st.answered < st.total))) ? "" : null }, h("summary", {}, head), h("ol", { class: "wslist" }, items));
+  });
+  if (focus) requestAnimationFrame(() => { const el = document.getElementById("ws-" + focus); if (el) el.scrollIntoView({ block: "start" }); });
+  return h("div", {}, meeting, h("div", { class: "card wsprogcard" }, prog), lines);
+}
+
+export function hurtView({ workshop: w, catalog, go, startPov }) {
+  const res = WS.assess(catalog, w);
+  const say = h("p", { class: "note", role: "status" });
+  if (!res.answered) return card("Where it hurts", h("div", {}, h("p", { class: "note first", text: "Nothing recorded yet. Answer a few questions in the workshop and this page shows where the pain is, where to start and what to find out next." }),
+    h("button", { class: "btn", type: "button", text: "Open the questions", onclick: () => go("workshop") })));
+  const order = res.land ? [res.land.profile, ...w.scope.filter((p) => p !== res.land.profile)] : [...w.scope];
+  const heard = res.lines.filter((l) => l.answered);
+  const pseudo = { customer: w.customer, lines: heard, whitespace: [], map: order.filter((p) => catalog.lines[p]).map((p) => ({ profile: p, label: catalog.lines[p].label })),
+    links: catalog.links.filter(([a, b]) => order.includes(a) && order.includes(b)).map(([a, b, why]) => ({ from: a, to: b, why, state: res.land && a === res.land.profile ? "grow" : "ok" })) };
+  const map = estateMap(pseudo, (n) => go("workshop", { open: n.profile }), {
+    value: (l) => l.pain, tone: (v) => (v >= 0.6 ? "weak" : v >= 0.35 ? "mid" : "strong"), sub: (l) => `${l.answered} of ${l.total}`, cls: "painmap",
+    say: (n, l) => (l ? `${n.label}: ${painPct(l.pain)} pain from ${l.answered} answers.` : `${n.label}: not discussed yet.`), label: `${w.customer}: where it hurts, by product line` });
+  const hero = h("section", { class: "card estatehero" },
+    res.land ? h("div", { class: "ehead" }, h("div", { class: "ereal" }, h("small", { text: "Start here" }), h("b", { class: "wsland", text: res.land.label })))
+      : h("p", { class: "tline", text: res.waiting },),
+    res.land ? h("p", { class: "tline", text: `${painPct(res.land.pain)} pain from ${res.land.answered} answers: ${nOf(res.land.gaps.length, "real gap")}, ${res.land.partly.length} partly solved${res.land.unknowns.length ? `, ${res.land.unknowns.length} nobody could answer` : ""}.` }) : null,
+    h("ul", { class: "elines" }, res.lines.map((l) => h("li", {}, h("span", { class: "en", text: shortName(l.profile, l.label) }),
+      h("span", { class: "ebar", title: `${l.label}: ${l.answered ? painPct(l.pain) + " pain" : "not discussed"}` }, h("i", { class: "er" + (l.pain >= 0.6 ? " weak" : ""), style: `width:${(l.pain * 100).toFixed(1)}%` })),
+      h("b", { text: l.answered ? painPct(l.pain) : "—" })))),
+    h("p", { class: "note", text: "Pain: real gaps count fully, partly solved half, \"nobody knows\" most of the way; answers on business value count double." }));
+  const mapCard = card("Where it hurts", h("div", {}, map, h("ul", { class: "elegend" }, h("li", { class: "grow", text: "where the first line leads" }), h("li", { class: "ok", text: "lines that work together" }))),
+    { sub: "Each ring is a product line in scope, filled by how much it hurts. Dashed circles have not been discussed yet. Select one to open its questions." });
+  const out = [h("div", { class: "col2 estatetop" }, hero, mapCard)];
+  if (res.land) {
+    const reasons = [...res.land.gaps, ...res.land.partly].slice(0, 4);
+    out.push(card(`Why ${res.land.label.toLowerCase()} first`, h("div", {},
+      h("ul", { class: "growwhy" }, reasons.map((q) => h("li", {}, h("b", { text: q.q }), q.note ? h("span", { text: `They said: ${q.note}` }) : null))),
+      res.proof.length ? h("div", { class: "growproof" }, h("small", { text: "Proof of value to propose" }), h("ul", {}, res.proof.slice(0, 3).map((c) => h("li", { text: c.text + "." })))) : null,
+      h("div", { class: "btnrow" }, h("button", { class: "btn", type: "button", text: "Start the proof of value", onclick: async () => { try { await startPov(res); } catch (e) { say.textContent = e.message; } } })), say),
+    { sub: "What the customer said that points here, and the proof that would settle it." }));
+    if (res.expand.length) out.push(card("Then", h("ol", { class: "enext wsthen" }, res.expand.map((e) => h("li", {}, h("span", { class: "eline", text: shortName(e.profile, e.label) }),
+      h("span", { text: e.why ? cap(e.why) + "." : "Pain heard here too." }), h("b", { class: e.pain >= 0.6 ? "neg" : "", text: e.answered ? `${painPct(e.pain)} pain` : "not discussed" })))),
+    { sub: "The path after the first line: what it leads to, and how much the customer said each one hurts." }));
+  }
+  if (res.unknowns.length) {
+    const text = res.unknowns.map((u) => `- ${u.label}: ${u.q}`).join("\n");
+    out.push(card("Find out before the next meeting", h("div", {}, h("ul", { class: "flags" }, res.unknowns.map((u) => h("li", {}, h("b", { text: u.label }), h("span", { text: u.q })))),
+      h("button", { class: "btn small", type: "button", text: "Copy the list", onclick: (ev) => copyText(text).then((ok) => { ev.target.textContent = ok ? "Copied" : "Not copied"; }) })),
+    { sub: "Questions nobody in the room could answer. Each one is a reason for the next meeting, and often the real gap." }));
+  }
+  return h("div", {}, out);
 }

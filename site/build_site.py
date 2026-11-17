@@ -34,7 +34,7 @@ DEMO_PROFILES = {key: ROOT / "examples" / "profiles" / key / folder for key, fol
     ("hci", "granite-hci"), ("object-storage", "meridian-storage"), ("dbaas", "aurora-dbaas"), ("file-storage", "northgate-files"),
     ("kubernetes-platform", "pixel-kubernetes"), ("dr-backup", "harborline-dr"))}
 # Every file the page is made of. A test checks that each module a page script imports is in this list.
-PAGE_FILES = ("index.html", "app.js", "style.css", "engine.js", "store.js", "workspace-core.js", "worker.js", "ui.js", "charts.js", "views.js", "vault.js", "recap.js", "guide.js", "graph.js", "qr.js", "starter.js", "outcomes.js", "commitments.js", "handoff.js", "callmode.js", "aliases.js", "erasure.js", "privacy.js", "pov.js", "asks.js", "roles.js", "sla.js", "scorecard.js", "today.js", "fuzzy.js", "triage.js", "internal.js", "nav.js", "keys.js", "done.js", "words.js", "next.js")
+PAGE_FILES = ("index.html", "app.js", "style.css", "engine.js", "store.js", "workspace-core.js", "worker.js", "ui.js", "charts.js", "views.js", "vault.js", "recap.js", "guide.js", "graph.js", "qr.js", "starter.js", "outcomes.js", "commitments.js", "handoff.js", "callmode.js", "aliases.js", "erasure.js", "privacy.js", "pov.js", "asks.js", "roles.js", "sla.js", "scorecard.js", "today.js", "fuzzy.js", "triage.js", "internal.js", "nav.js", "keys.js", "done.js", "words.js", "next.js", "workshop.js")
 DEMO_PREVIOUS = ROOT / "examples" / "history" / "northwind-2026-09"
 
 
@@ -97,6 +97,8 @@ def build(out: Path, pyodide: Path, feed: Optional[Path] = None, font: Path = FO
     estate = {p.name: {q.name: q.read_text(encoding="utf-8") for q in sorted(p.iterdir()) if q.suffix in (".csv", ".toml")}
               for p in sorted(estate_dir.iterdir()) if p.is_dir()}
     (out / "demo-estate.json").write_text(json.dumps(estate, ensure_ascii=False), encoding="utf-8")
+    from beyond90.estate import workshop_catalog
+    (out / "workshop.json").write_text(json.dumps(workshop_catalog(), ensure_ascii=False), encoding="utf-8")
     ep = {p.name: p.read_text(encoding="utf-8") for p in sorted(DEMO_ENDPOINT.iterdir()) if p.suffix in (".csv", ".toml")}
     (out / "demo-endpoint.json").write_text(json.dumps(ep, ensure_ascii=False), encoding="utf-8")
     for key, folder in DEMO_PROFILES.items():

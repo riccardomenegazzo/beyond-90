@@ -1,0 +1,44 @@
+{
+  "questions": [
+    {
+      "stage": "value",
+      "q": "If an attacker took one privileged account today, what could they reach?",
+      "why": "Puts a price on privilege before any tool is discussed."
+    },
+    {
+      "stage": "value",
+      "q": "How long does it take to remove every access of someone who leaves?",
+      "why": "Offboarding time is the identity metric executives understand."
+    },
+    {
+      "stage": "L1",
+      "q": "How many directories and identity providers do you run, including the ones from acquisitions?",
+      "why": "Unconnected directories are where old accounts survive."
+    },
+    {
+      "stage": "L2",
+      "q": "Do you know every account with administrative rights, human and machine?",
+      "why": "Privileged inventory sizes the work."
+    },
+    {
+      "stage": "L3",
+      "q": "Is strong multi-factor required for every privileged sign-in, with no exceptions list?",
+      "why": "Exceptions are where breaches start."
+    },
+    {
+      "stage": "L3",
+      "q": "When were access rights last reviewed, and who signed the review?",
+      "why": "Unsigned reviews are paperwork, not control."
+    },
+    {
+      "stage": "L3",
+      "q": "How many service accounts have passwords that never change?",
+      "why": "Static secrets are the quiet risk."
+    },
+    {
+      "stage": "L4",
+      "q": "When a risky sign-in alert fires, who acts and how fast?",
+      "why": "Detection without an owner is noise."
+    }
+  ]
+}

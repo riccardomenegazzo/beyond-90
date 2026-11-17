@@ -78,6 +78,7 @@ export function receipt({ customer, on, removed, remaining, outsideCopies, locke
     `- proofs of value: ${n(removed.povs)}`,
     `- customer asks: ${n(removed.asks)}`,
     `- actions marked done: ${n(removed.done)}`,
+    `- discovery workshops: ${n(removed.workshops)}`,
     `- alias entries: ${n(removed.aliases)}`,
     `- export log entries: ${n(removed.exports)}`,
     "",

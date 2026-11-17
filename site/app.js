@@ -11,6 +11,7 @@ import * as K from "./commitments.js";
 import * as ASK from "./asks.js";
 import * as DONE from "./done.js";
 import * as POV from "./pov.js";
+import * as WSHOP from "./workshop.js";
 import * as SLA from "./sla.js";
 import { ROLES, ROLE_IDS, isRole, shape } from "./roles.js";
 import * as store from "./store.js";
@@ -18,7 +19,7 @@ import * as Vault from "./vault.js";
 import * as V from "./views.js";
 import { createPrivacy } from "./privacy.js";
 import { h as el_, s as svg_, saveBlob, copyText, setExitGate, csvCell, icon, initTips, info } from "./ui.js";
-import { CUSTOMER_NAV, BOOK_NAV, ESTATE_NAV, FAQ, GLOSSARY, TOUR } from "./guide.js";
+import { CUSTOMER_NAV, BOOK_NAV, ESTATE_NAV, WORKSHOP_NAV, FAQ, GLOSSARY, TOUR } from "./guide.js";
 import { navBadges, stageBars, togglePin, pinnedViews } from "./nav.js";
 import * as KEYS from "./keys.js";
 import { nextStep, answers } from "./next.js";
@@ -32,7 +33,7 @@ const $ = (id) => document.getElementById(id);
 // which has no scripts and no access to this page. Its content is produced by the engine from the customer's files, escaped there.
 const swPolicy = window.trustedTypes ? window.trustedTypes.createPolicy("b90-sw", { createScriptURL: (u) => { if (u !== "./sw.js") throw new TypeError("only the page's own service worker may be registered"); return u; } }) : null;
 const reportPolicy = window.trustedTypes ? window.trustedTypes.createPolicy("b90-report", { createHTML: (t) => t }) : null;
-const state = { commitments: [], outcomes: [], povs: [], asks: [], marks: [], calibration: null, healthWeights: null, advisories: null, files: {}, groups: {}, mode: "single", result: null, book: null, tab: "today", saved: [], yields: new Map(), engine: null, running: false };
+const state = { commitments: [], outcomes: [], povs: [], asks: [], marks: [], workshops: [], workshop: null, wcat: null, calibration: null, healthWeights: null, advisories: null, files: {}, groups: {}, mode: "single", result: null, book: null, tab: "today", saved: [], yields: new Map(), engine: null, running: false };
 const ALLOWED = /\.(csv|toml|xlsx)$/i;
 const MAX_BYTES = 20 * 1024 * 1024;
 const pct = (x) => (x == null ? "n/a" : (x * 100).toFixed(1) + "%");
@@ -88,7 +89,7 @@ async function boot() {
 }
 
 const multiMode = () => state.mode === "book" || state.mode === "estate";
-const multi = () => state.book || state.estate;
+const multi = () => state.book || state.estate || state.workshop;
 
 function refreshRun() {
   const have = multiMode() ? Object.keys(state.groups).length : Object.keys(state.files).length;
@@ -201,7 +202,7 @@ function renderLoaded() {
   $("run").textContent = labels.length ? `Analyse ${what}` : "Analyse";
   if (state.mode === "book") say(`${Object.keys(state.groups).length} customers found: analyse them together to plan your week across the book.`);
   if (state.mode === "estate") say(`${estateName()} on ${nOf(Object.keys(state.groups).length, "product line")}: analyse them together to see the whole customer.`);
-  state.result = null; state.book = null; state.estate = null;
+  state.result = null; state.book = null; state.estate = null; state.workshop = null;
   setStep(labels.length ? 2 : 1);
   refreshRun();
 }
@@ -292,7 +293,7 @@ async function run(compareId) {
     if (base) opts.since_files = base.files;
     const res = await state.engine.json("analyze", { files: state.files, options: opts });
     if (!res.ok) return showErrors(res.errors);
-    state.result = res; state.book = null; state.estate = null; privacy.learn(res);
+    state.result = res; state.book = null; state.estate = null; state.workshop = null; privacy.learn(res);
     state.compareId = base ? base.id : "";
     say(res.warnings.length ? `${nOf(res.warnings.length, "warning")}: ` + res.warnings.join("; ") : "");
     showResults();
@@ -318,7 +319,7 @@ async function runBook() {
       hours: Number($("bookhours").value) || 30, week_hours: Number($("bookhours").value) || 30, weeks: o.weeks, realization: o.realization, weighting: $("weighting").value,
       ...(state.advisories ? { advisories: state.advisories } : {}) } });
     if (!res.ok) return showErrors(res.errors);
-    state.book = res; state.result = null; state.estate = null; privacy.learn(res);
+    state.book = res; state.result = null; state.estate = null; state.workshop = null; privacy.learn(res);
     const skipped = Object.keys(res.errors || {});
     say(skipped.length ? `${nOf(skipped.length, "customer")} skipped because their data is invalid: ${skipped.join(", ")}.` : "");
     showBook();
@@ -340,7 +341,7 @@ async function runEstate() {
   try {
     const res = await state.engine.json("estate", { groups: state.groups });
     if (!res.ok) return showErrors(res.errors);
-    state.estate = res; state.result = null; state.book = null;
+    state.estate = res; state.result = null; state.book = null; state.workshop = null;
     const skipped = Object.keys(res.errors || {});
     say(skipped.length ? `${nOf(skipped.length, "line")} skipped because their data is invalid: ${skipped.join(", ")}.` : "");
     showEstate();
@@ -469,6 +470,8 @@ const VIEWS = {
   portfolio: { kind: "md", key: "portfolio_markdown", file: "beyond90-portfolio.md", type: "text/markdown" },
   book: { kind: "md", key: "book_markdown", file: "beyond90-book.md", type: "text/markdown" },
   bookreport: { kind: "html", key: "book_html", file: "beyond90-book.html", type: "text/html" },
+  workshop: { kind: "view", view: "workshopView" }, hurt: { kind: "view", view: "hurtView" }, wspov: { kind: "view", view: "povView" },
+  wsummary: { kind: "md", key: "summary_markdown", file: "beyond90-discovery.md", type: "text/markdown" },
   estate: { kind: "view", view: "estateView" }, estategrow: { kind: "view", view: "growView" },
   estateplan: { kind: "md", key: "plan_markdown", file: "beyond90-account-plan.md", type: "text/markdown" },
 };
@@ -548,7 +551,7 @@ function renderNav(groups, title) {
   paintRoles();
   const { badges, bars } = navSignals();
   const closed = new Set(readList("beyond90.navclosed"));
-  const { main, more } = groups === BOOK_NAV || groups === ESTATE_NAV ? { main: groups, more: [] } : shape(groups, savedRole());
+  const { main, more } = groups === BOOK_NAV || groups === ESTATE_NAV || groups === WORKSHOP_NAV ? { main: groups, more: [] } : shape(groups, savedRole());
   const badge = (id) => badges[id] ? el_("span", { class: "nbadge t-" + badges[id].tone, title: badges[id].label }, el_("span", { "aria-hidden": "true", text: badges[id].n > 99 ? "99+" : String(badges[id].n) }), el_("span", { class: "sr", text: `, ${badges[id].n} waiting` })) : null;
   const label = (v) => [icon(v.icon), el_("span", { class: "nlabel", text: v.label }), badge(v.id)];
   const btn = (v) => el_("button", { type: "button", dataset: { tab: v.id }, "data-tip": v.tip, onclick: () => selectTab(v.id) }, ...label(v));
@@ -596,7 +599,7 @@ function paintRoles() {
 function markTab() { for (const b of document.querySelectorAll("#tabs [data-tab], #tabs [data-pin], #mobilebar [data-go]")) b.toggleAttribute("aria-current", (b.dataset.tab || b.dataset.pin || b.dataset.go) === state.tab); }
 
 const current = () => tabDefs.find((t) => t.id === state.tab) || tabDefs[0];
-const payload = () => (state.estate ? state.estate : state.mode === "book" || state.book ? state.book : state.result);
+const payload = () => (state.workshop && !state.result && !state.book && !state.estate && currentWorkshop() ? { summary_markdown: WSHOP.summaryMarkdown(state.wcat, currentWorkshop(), WSHOP.assess(state.wcat, currentWorkshop())) } : state.estate ? state.estate : state.mode === "book" || state.book ? state.book : state.result);
 
 function selectTab(name, extra) {
   state.tab = name;
@@ -625,6 +628,7 @@ function selectTab(name, extra) {
 }
 
 function context() {
+  if (state.workshop && !state.result && !state.book && !state.estate) return workshopContext();
   if (state.estate) return { estate: state.estate, go: (tab, extra) => selectTab(tab, extra), openLine: (key, tab = "today") => { state.mode = "single"; state.files = { ...state.groups[key] }; state.estate = null; state.tab = tab; renderLoaded(); run(); } };
   if (state.book) return { book: state.book, povs: state.povs, savePov, removePov, today: todayIso(), advisories: state.advisories, openCustomer: (key, tab = "prep") => { state.mode = "single"; state.files = { ...state.groups[key] }; state.book = null; state.tab = tab; renderLoaded(); run(); } };
   const r = state.result;
@@ -787,6 +791,67 @@ async function setSla(days) {
 }
 let holdSave = false;
 async function refreshPovs() { try { state.povs = await store.povsAll(); } catch { state.povs = []; } }
+async function refreshWorkshops() { try { state.workshops = await store.workshopsAll(); } catch { state.workshops = []; } }
+
+// ---------- the discovery workshop: no files, the profiles' questions and what the customer says
+const currentWorkshop = () => state.workshops.find((x) => x.id === state.workshop) || null;
+async function workshopCatalog() {
+  if (!state.wcat) state.wcat = await (await fetch("./workshop.json")).json();
+  return state.wcat;
+}
+async function keepWorkshop(w) {
+  await store.workshopPut([w], true);
+  await refreshWorkshops();
+  state.workshop = w.id;
+  return w;
+}
+async function openWorkshop(id) {
+  const cat = await workshopCatalog();   // the questions ship with the page: no engine needed
+  await refreshWorkshops();
+  let w = id ? state.workshops.find((x) => x.id === id) : state.workshops[0];
+  if (!w) w = await keepWorkshop(WSHOP.makeWorkshop({ customer: "New prospect", scope: cat.families.infrastructure.slice(0, 4), createdOn: todayIso() }));
+  state.workshop = w.id; state.result = null; state.book = null; state.estate = null;
+  showWorkshop("workshop");
+}
+async function newWorkshop() {
+  const cat = await workshopCatalog();
+  const was = currentWorkshop();
+  const w = await keepWorkshop(WSHOP.makeWorkshop({ customer: "New prospect", scope: was ? was.scope : cat.families.infrastructure.slice(0, 4), createdOn: todayIso() }));
+  state.workshop = w.id;
+  showWorkshop("workshop");
+}
+function showWorkshop(tab) {
+  const w = currentWorkshop();
+  if (!w) return;
+  const res = WSHOP.assess(state.wcat, w);
+  fillHead(w.customer, `Discovery workshop, started ${longDate(w.created_on)}`, res.coverage);
+  $("kpis").replaceChildren(kpi(`${res.answered} of ${res.total}`, "Questions answered"), kpi(res.land ? res.land.label : "Not yet", "Start here"), kpi(String(res.unknowns.length), "To find out"));
+  $("worktools").hidden = true;
+  $("saved-note").textContent = "";
+  $("book-table").hidden = true;
+  state.tab = tab || "workshop";
+  renderNav(WORKSHOP_NAV, w.customer);
+  selectTab(state.tab);
+}
+function workshopContext() {
+  const w = currentWorkshop(), cat = state.wcat, today = todayIso();
+  const res = WSHOP.assess(cat, w);
+  const edit = async (fn) => { const next = await keepWorkshop(fn(currentWorkshop())); return next; };
+  return {
+    workshop: w, catalog: cat, list: state.workshops, go: (tab, extra) => selectTab(tab, extra), today,
+    answer: async (profile, i, a, note) => { const next = await edit((x) => WSHOP.setAnswer(x, profile, i, a, note, today)); const r = WSHOP.assess(cat, next); fillHead(next.customer, `Discovery workshop, started ${longDate(next.created_on)}`, r.coverage); return next; },
+    rename: async (name) => { await edit((x) => WSHOP.rename(x, name, today)); showWorkshop("workshop"); },
+    setScope: async (scope) => { await edit((x) => WSHOP.setScope(x, scope, today)); showWorkshop("workshop"); },
+    newWorkshop, openWorkshop,
+    startPov: async (r) => {
+      const p = POV.makePov({ customer: w.customer, createdOn: today, problem: `Heard in discovery on ${r.land.label.toLowerCase()}: ${r.land.gaps.map((q) => q.q).join(" ")}`.slice(0, 300),
+        criteria: r.proof.slice(0, 4).map((c) => ({ text: c.text, target: c.how })) });
+      await store.povPut([p], true); await refreshPovs(); selectTab("wspov");
+    },
+    // the proof-of-value view, for this prospect, with the first line's own criteria as suggestions
+    result: { customer: w.customer }, dash: { pov_criteria: res.proof }, povs: state.povs, savePov, removePov,
+  };
+}
 async function refreshAsks() { try { state.asks = await store.asksAll(); } catch { state.asks = []; } }
 async function savePov(p) { await store.povPut([p], true); await refreshPovs(); selectTab(state.tab); }
 async function removePov(id) { await store.povRemove(id); await refreshPovs(); selectTab(state.tab); }
@@ -805,6 +870,7 @@ async function removeAsk(id) { await store.askRemove(id); await refreshAsks(); s
 async function refreshHistory() {
   await refreshCommitments();
   await refreshPovs();
+  await refreshWorkshops();
   await refreshAsks();
   await refreshMarks();
   await refreshOutcomes();
@@ -882,7 +948,7 @@ function drawTrend() {
 
 async function exportWorkspace() {
   if (await store.getVault() && !store.unlocked() && !(await unlockVaultUi())) return;
-  const text = W.serializeWorkspace(state.saved, { engine: state.engine ? state.engine.version : "", extra: { outcomes: state.outcomes, commitments: state.commitments, povs: state.povs, asks: state.asks, done: state.marks } });
+  const text = W.serializeWorkspace(state.saved, { engine: state.engine ? state.engine.version : "", extra: { outcomes: state.outcomes, commitments: state.commitments, povs: state.povs, asks: state.asks, done: state.marks, workshops: state.workshops } });
   const sealed = await store.sealExport(text);
   save(new Blob([sealed || text], { type: "application/json" }), sealed ? "beyond90-workspace.sealed.json" : "beyond90-workspace.json");
   wsSay(sealed ? `Exported ${nOf(state.saved.length, "snapshot")}, sealed with your passphrase.`
@@ -1035,7 +1101,7 @@ async function sendWork() {
     return;
   }
   if (!store.unlocked() && !(await unlockVaultUi())) return;
-  const sealed = await store.sealExport(W.serializeWorkspace(state.saved, { engine: state.engine ? state.engine.version : "", extra: { outcomes: state.outcomes, commitments: state.commitments, povs: state.povs, asks: state.asks, done: state.marks } }));
+  const sealed = await store.sealExport(W.serializeWorkspace(state.saved, { engine: state.engine ? state.engine.version : "", extra: { outcomes: state.outcomes, commitments: state.commitments, povs: state.povs, asks: state.asks, done: state.marks, workshops: state.workshops } }));
   const file = new File([sealed], "beyond90-workspace.sealed.json", { type: "application/json" });
   if (navigator.canShare && navigator.canShare({ files: [file] })) {
     try {
@@ -1072,13 +1138,17 @@ async function importWorkspace(file) {
     const addedAk = aks.ok.length ? await store.askPut(aks.ok) : 0;
     const dns = DONE.acceptDone(unknown.done);
     const addedDn = dns.ok.length ? await store.markPut(dns.ok) : 0;
+    const wss = WSHOP.acceptWorkshops(unknown.workshops);
+    const addedWs = wss.ok.length ? await store.workshopPut(wss.ok) : 0;
+    await refreshWorkshops();
     await refreshHistory();
     wsSay(`Imported: ${added} new, ${ok.length - added} already here` + (rejected ? `, ${rejected} rejected because their content did not match their name` : "")
       + (outs.ok.length || outs.rejected ? `; ${nOf(addedOut, "renewal outcome")} added` + (outs.rejected ? `, ${outs.rejected} refused` : "") : "")
       + (cms.ok.length || cms.rejected ? `; ${nOf(addedCm, "commitment")} added` + (cms.rejected ? `, ${cms.rejected} refused` : "") : "")
       + (pvs.ok.length || pvs.rejected ? `; ${nOf(addedPv, "proof")} of value added` + (pvs.rejected ? `, ${pvs.rejected} refused` : "") : "")
       + (aks.ok.length || aks.rejected ? `; ${nOf(addedAk, "ask")} added` + (aks.rejected ? `, ${aks.rejected} refused` : "") : "")
-      + (dns.ok.length || dns.rejected ? `; ${nOf(addedDn, "action")} marked done added` + (dns.rejected ? `, ${dns.rejected} refused` : "") : "") + ".");
+      + (dns.ok.length || dns.rejected ? `; ${nOf(addedDn, "action")} marked done added` + (dns.rejected ? `, ${dns.rejected} refused` : "") : "")
+      + (wss.ok.length || wss.rejected ? `; ${nOf(addedWs, "discovery workshop")} added` + (wss.rejected ? `, ${wss.rejected} refused` : "") : "") + ".");
   } catch (e) {
     wsSay(e.message);
   }
@@ -1127,6 +1197,7 @@ paintRoles();
 $("try-now").addEventListener("click", async () => { $("try-now").disabled = true; try { await loadDemo(); await run(); } finally { $("try-now").disabled = false; } });
 $("demo-book").addEventListener("click", loadDemoBook);
 $("demo-estate").addEventListener("click", loadDemoEstate);
+$("open-workshop").addEventListener("click", () => openWorkshop().catch((e) => say(e.message)));
 $("demo-endpoint").addEventListener("click", loadDemoEndpoint);
 $("keys-open").addEventListener("click", () => showKeys());
 // Phone with a customer open: the sharing level and the theme move from the crowded top bar into the menu sheet.

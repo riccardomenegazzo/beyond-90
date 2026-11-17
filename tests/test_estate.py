@@ -109,3 +109,23 @@ def test_a_security_estate_is_compared_with_the_security_family(tmp_path: Path) 
     e = estate.analyze_estate_dir(tmp_path)
     assert e["ok"] and e["family"] == "security"
     assert "hci" not in {w["profile"] for w in e["whitespace"]}
+
+
+def test_workshop_catalog_has_questions_and_proofs_for_every_line() -> None:
+    c = estate.workshop_catalog()
+    assert set(c["families"]["infrastructure"]) == set(estate.FAMILIES["infrastructure"])
+    assert set(c["families"]["security"]) == set(estate.FAMILIES["security"])
+    for profile, line in c["lines"].items():
+        assert len(line["questions"]) >= 8, profile
+        assert any(q["stage"] == "value" for q in line["questions"]), profile
+        assert all(q["stage"] in ("value", "L1", "L2", "L3", "L4") for q in line["questions"]), profile
+        assert len(line["questions"]) <= 99                       # the page keys answers as profile#index, two digits
+    for a, b, _ in c["links"]:
+        assert a in c["lines"] and b in c["lines"]
+
+
+def test_the_page_tests_use_the_shipped_questions() -> None:
+    fixture = json.loads((ROOT / "site" / "test" / "workshop-catalog.json").read_text(encoding="utf-8"))
+    c = estate.workshop_catalog()
+    for profile, line in fixture["lines"].items():
+        assert line == c["lines"][profile], f"site/test/workshop-catalog.json is stale for {profile}"

@@ -880,3 +880,47 @@ body:not(.has-files) .runbar{display:none}
 /* the phone bar shares its width among the buttons the mode has */
 body.has-work .mobilebar{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:1fr}
 .mobilebar button[hidden]{display:none}
+
+/* ---------- discovery workshop */
+.wsstart{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px 24px;margin-top:26px;padding:18px 22px;border-radius:var(--r);background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow)}
+.wsstart h2{font-size:17px;margin:0 0 4px}
+.wsstart p{margin:0;color:var(--ink2);max-width:60ch;font-size:14.5px}
+.wsmeet{display:grid;gap:12px}
+.wsmeet input[type=text]{min-width:min(320px,100%)}
+.wsscope{display:grid;gap:10px}
+.wsfam{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.wsfamname{font-size:13px;font-weight:700;color:var(--ink2);min-width:110px}
+.kindchip[aria-pressed=true]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-text)}
+.wsprogcard{padding:14px 20px}
+.wsprog{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:16px;align-items:center}
+.wsbar{background:var(--sunk);height:10px}
+.wsbar .er{background:var(--accent)}
+details.wsline>summary{cursor:pointer;list-style:none;padding:2px 0}
+details.wsline>summary::-webkit-details-marker{display:none}
+.wshead{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline}
+.wshead b{font-size:17px}
+.wspain{font-size:12.5px;font-weight:700;padding:2px 9px;border-radius:999px}
+.wspain.hi{background:color-mix(in srgb,var(--bad) 14%,transparent);color:var(--bad)}
+.wspain.mid{background:color-mix(in srgb,var(--warn) 16%,transparent);color:var(--warn)}
+.wspain.lo{background:var(--accent-soft);color:var(--accent-text)}
+.wslist{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:4px}
+.wsq{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 18px;padding:12px 0;border-top:1px solid var(--line);align-items:start}
+.wsq input[type=text]{grid-column:1/-1}
+.wsqtext{display:grid;gap:3px}
+.wsqtext small{font-size:13px}
+.wsstage{justify-self:start;font-size:11.5px;font-weight:700;padding:1px 8px;border-radius:6px;background:var(--sunk);color:var(--ink2)}
+.wsstage.s-value{background:var(--accent-soft);color:var(--accent-text)}
+.wsans{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}
+.wsopt{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:6px 12px;font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.wsopt:hover{border-color:var(--accent)}
+.wsopt[aria-pressed=true].o-solved{background:var(--pos);border-color:var(--pos);color:var(--on)}
+.wsopt[aria-pressed=true].o-partly{background:var(--warn);border-color:var(--warn);color:var(--on)}
+.wsopt[aria-pressed=true].o-gap{background:var(--bad);border-color:var(--bad);color:var(--on)}
+.wsopt[aria-pressed=true].o-unknown{background:var(--ink2);border-color:var(--ink2);color:var(--on)}
+.estatehero .wsland{font-size:clamp(30px,4.4vw,46px);letter-spacing:-.02em;line-height:1.1}
+.painmap .enode.strong .earc{stroke:var(--accent)}
+.enode .esub.plain{text-decoration:none}
+.wsthen b.neg{color:var(--bad)}
+@media (max-width:700px){.wsq{grid-template-columns:1fr}.wsans{justify-content:flex-start}.wsprog{grid-template-columns:1fr}}
+.estatehero .ereal b.wsland{font-size:clamp(28px,3.4vw,40px);line-height:1.1}
+.growproof ul{margin:0;padding-left:18px;display:grid;gap:4px}

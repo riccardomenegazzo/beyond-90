@@ -26,7 +26,7 @@ from playwright.sync_api import sync_playwright
 
 # Controls live in places (Start, Saved, Help); the test opens the place before using one, as a person would.
 PLACE_OF = {
-    **dict.fromkeys(("open-starter", "open-mapper", "map-file", "map-body", "map-check", "map-use", "map-cancel", "map-notes", "demo", "demo-book", "demo-estate", "demo-endpoint", "demo-saas", "demo-ai", "demo-identity", "demo-siem", "demo-hci", "demo-objstore", "demo-dbaas", "demo-files", "demo-k8s", "demo-dr", "latest-adv", "demo-adv", "clear-adv", "adv-status", "run", "cancel",
+    **dict.fromkeys(("open-starter", "open-mapper", "map-file", "map-body", "map-check", "map-use", "map-cancel", "map-notes", "demo", "demo-book", "demo-estate", "open-workshop", "demo-endpoint", "demo-saas", "demo-ai", "demo-identity", "demo-siem", "demo-hci", "demo-objstore", "demo-dbaas", "demo-files", "demo-k8s", "demo-dr", "latest-adv", "demo-adv", "clear-adv", "adv-status", "run", "cancel",
                      "weeks", "hours", "real", "quarter", "bookhours", "weighting", "loaded", "status"), "start"),
     **dict.fromkeys(("demo-prev", "export", "forget", "vault-on", "vault-unlock", "vault-lock", "vault-off", "vault-state",
                      "vault-warn", "ws-status", "history-body", "device-qr", "send-work", "history-empty", "hist-table", "trend", "autosave", "personal", "privacy-body", "restore-in", "restore-out", "restore-note", "erase-result"), "saved"),
@@ -100,6 +100,9 @@ def main(site: str) -> int:
         def boot() -> None:
             page.goto(base)
             page.wait_for_selector("#demo:not([disabled])", timeout=180_000)
+
+        def state_tab(pg) -> str:
+            return pg.evaluate("document.body.dataset.view")
 
         def run_and_wait() -> None:
             page.click("#run")
@@ -660,6 +663,43 @@ def main(site: str) -> int:
         page.wait_for_selector("#view .promises li:has-text('cannot be deleted or overwritten')")
         check(page.locator("#view .suggest li").count() == n_sug - 1, "and one click adds a suggested test to the success criteria, and takes it off the suggestions")
 
+        # a discovery workshop: no files, the profiles' questions, what the customer says, where to start
+        page.click(".rail [data-place=start]")
+        page.click("#open-workshop")
+        page.wait_for_selector("#view .wsq")
+        check(page.locator("#view details.wsline").count() == 4 and "New prospect" in page.inner_text("#reshead"), "a workshop opens with no data, four infrastructure lines in scope")
+        page.fill("#view input[aria-label='Who the workshop is with']", "Kestrel Logistics (mock)")
+        page.get_by_role("button", name="Save the name").click()
+        page.wait_for_selector("#reshead:has-text('Kestrel Logistics')")
+        answers = {"hci": ["partly", "solved", "solved", "partly", "solved", "gap", "solved", "partly"], "dr-backup": ["gap", "gap", "gap", "partly", "gap", "unknown", "gap", "unknown"]}
+        label = {"solved": "Solved", "partly": "Partly", "gap": "A real gap", "unknown": "Nobody knows"}
+        for prof, ans in answers.items():
+            d = page.locator(f"#ws-{prof}")
+            if d.get_attribute("open") is None:
+                d.locator("summary").click()
+            for i, a in enumerate(ans):
+                d.locator(".wsq").nth(i).get_by_role("button", name=label[a], exact=True).click()
+                page.wait_for_selector(f"#ws-{prof} .wsq:nth-child({i + 1}) .wsopt.o-{a}[aria-pressed=true]")
+        note = page.locator("#ws-dr-backup .wsq").first.locator("input[type=text]")
+        note.fill("A day down is about 2M in lost orders")
+        note.press("Tab")
+        check("16 of 32 questions answered" in page.inner_text("#view .wsprog"), "progress follows the answers")
+        page.click("[data-tab=hurt]")
+        page.wait_for_selector("#view .painmap")
+        check("Disaster recovery and backup" in page.inner_text("#view .wsland"), "the line that hurts most is where to start")
+        check(page.locator("#view .painmap .enode.absent").count() == 2 and "2M in lost orders" in page.inner_text("#view"), "lines not discussed are dashed, and the customer's own words back the choice")
+        check(page.locator("#view .flags li").count() == 2, "what nobody could answer becomes the list for the next meeting")
+        page.get_by_role("button", name="Start the proof of value").click()
+        page.wait_for_selector("#view .promise")
+        check(state_tab(page) == "wspov" and "immutable copy" in page.inner_text("#view"), "starting the proof of value carries the first line's own criteria")
+        page.click("[data-tab=wsummary]")
+        check("Discovery: Kestrel Logistics" in page.inner_text("#doc") and "To find out before the next meeting" in page.inner_text("#doc"), "the meeting summary is ready to send")
+        page.reload()
+        page.wait_for_selector("#demo:not([disabled])", timeout=180_000)
+        page.click("#open-workshop")
+        page.wait_for_selector("#view .wsq")
+        check("Kestrel Logistics" in page.inner_text("#reshead") and page.locator("#view .wsopt[aria-pressed=true]").count() == 16, "a workshop is kept in the browser and comes back after a reload")
+
         # one customer, every product line: each line on its own profile, the estate on one map
         page.click(".rail [data-place=start]")
         page.click("#demo-estate")
@@ -1063,6 +1103,13 @@ def main(site: str) -> int:
                 bad += [f"estate: {v}" for v in audit()]
                 apage.click("[data-tab=estategrow]")
                 bad += [f"grow: {v}" for v in audit()]
+                apage.click(".rail [data-place=start]")
+                apage.click("#open-workshop")
+                apage.wait_for_selector("#view .wsq")
+                apage.locator("#view .wsq").first.get_by_role("button", name="A real gap", exact=True).click()
+                bad += [f"workshop: {v}" for v in audit()]
+                apage.click("[data-tab=hurt]")
+                bad += [f"hurt: {v}" for v in audit()]
                 apage.hover("#open-palette")
                 apage.wait_for_selector("#tip:not([hidden])")
                 bad += [f"tooltip: {v}" for v in audit()]

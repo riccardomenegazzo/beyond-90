@@ -81,6 +81,30 @@ def shoot(site: Path, out: Path) -> None:
             pg.wait_for_timeout(500)
             pg.screenshot(path=str(out / "app-grow.png"))
 
+            # a discovery workshop: invented answers for an invented prospect
+            pg.click(".rail [data-place=start]")
+            pg.click("#open-workshop")
+            pg.wait_for_selector("#view .wsq")
+            pg.fill("#view input[aria-label='Who the workshop is with']", "Kestrel Logistics (mock)")
+            pg.get_by_role("button", name="Save the name").click()
+            label = {"s": "Solved", "p": "Partly", "g": "A real gap", "u": "Nobody knows"}
+            for prof, ans in (("hci", "pssps gsp"), ("dr-backup", "gggpgugu"), ("dbaas", "pgspgusp")):
+                d = pg.locator(f"#ws-{prof}")
+                if d.get_attribute("open") is None:
+                    d.locator("summary").click()
+                for i, a in enumerate(ans.replace(" ", "")):
+                    d.locator(".wsq").nth(i).get_by_role("button", name=label[a], exact=True).click()
+                    pg.wait_for_timeout(40)
+            note = pg.locator("#ws-dr-backup .wsq").first.locator("input[type=text]")
+            note.fill("A day down is about 2M in lost orders")
+            note.press("Tab")
+            pg.locator("#ws-dr-backup").scroll_into_view_if_needed()
+            pg.wait_for_timeout(300)
+            pg.screenshot(path=str(out / "app-workshop.png"))
+            pg.click("#tabs [data-tab=hurt]")
+            pg.wait_for_timeout(500)
+            pg.screenshot(path=str(out / "app-hurt.png"))
+
             phone = b.new_context(**p.devices["Pixel 7"], color_scheme="light")
             phone.add_init_script(INIT)
             mp = phone.new_page()

@@ -2,6 +2,14 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.82.0
+
+- **Discovery workshop, from the start page, with no data.** Choose the product lines in scope and record, question by question, what the prospect says: solved, partly, a real gap, nobody knows, with their words in a note. The questions are each profile's discovery questions, two on business value and six tied to a stage. See [docs/workshop.md](docs/workshop.md).
+- **Where it hurts.** The line to start with and the answers that point there, a map of the lines in scope filled by pain (dashed when not discussed yet), the path after the first line, and what nobody could answer, as the list for the next meeting.
+- **From discovery to proof of value in one click.** The proof of value opens with the first line's own success criteria and how to test each, and a problem statement made from the gaps heard. The meeting summary is ready to send.
+- Workshops are sealed customer facts: kept in the browser under a random slot, erased with the customer, carried in the workspace file and checked on import.
+- Discovery questions for identity, security monitoring and endpoint, so every security line can be run in a workshop too.
+
 ## 0.81.0
 
 - **One customer, every product line.** Drop a folder whose sub-folders are the same customer on different profiles (platform, databases, files, recovery…) and it opens as an estate, not a book. Each line is scored on its own profile and in its own units; the estate shows what really works across them, weighted by ARR, next to the usual number. See [docs/estate.md](docs/estate.md).

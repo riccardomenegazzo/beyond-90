@@ -1,0 +1,318 @@
+{
+ "families": {
+  "infrastructure": [
+   "hci",
+   "dr-backup",
+   "dbaas",
+   "object-storage"
+  ]
+ },
+ "links": [
+  [
+   "hci",
+   "dr-backup",
+   "workloads now run on the platform, and losing a site would still mean rebuilding them by hand"
+  ],
+  [
+   "hci",
+   "dbaas",
+   "databases already run on the platform, but are still provisioned, patched and copied by hand"
+  ],
+  [
+   "dbaas",
+   "dr-backup",
+   "point-in-time recovery protects a database, not the site it runs on"
+  ],
+  [
+   "dr-backup",
+   "object-storage",
+   "immutable copies need a target that an administrator cannot delete from"
+  ]
+ ],
+ "lines": {
+  "hci": {
+   "label": "Platform (hyperconverged)",
+   "description": "Hyperconverged infrastructure and private cloud: clusters that run virtual machines, storage and networking together, with protection, recovery and lifecycle to adopt.",
+   "units": "clusters",
+   "questions": [
+    {
+     "stage": "value",
+     "q": "What does an hour of downtime cost on your most important application?",
+     "why": "Turns recovery features into money the sponsor recognises."
+    },
+    {
+     "stage": "value",
+     "q": "When did you last restore a whole system, not a file, and how long did it take?",
+     "why": "Untested recovery is the usual gap behind a confident answer."
+    },
+    {
+     "stage": "L1",
+     "q": "How many clusters run outside the main data centre: plants, branches, edge sites?",
+     "why": "Remote clusters are the ones the central console does not see."
+    },
+    {
+     "stage": "L2",
+     "q": "Do you know which virtual machines have no owner and what they run?",
+     "why": "Unowned machines are skipped by protection and patching."
+    },
+    {
+     "stage": "L3",
+     "q": "Which workloads have snapshots, and could an administrator account delete them?",
+     "why": "Snapshots an attacker can delete are not ransomware protection."
+    },
+    {
+     "stage": "L3",
+     "q": "Is there a second site, and has failover to it been run end to end?",
+     "why": "Replication without a tested recovery plan is a hope."
+    },
+    {
+     "stage": "L3",
+     "q": "How far behind on upgrades are you, and what makes upgrading hard?",
+     "why": "Lifecycle debt is a security risk and the most common hidden effort."
+    },
+    {
+     "stage": "L4",
+     "q": "When the platform raises an alert at night, who acts on it?",
+     "why": "Alerts without an owner turn into noise, then into outages."
+    }
+   ],
+   "proof": [
+    {
+     "text": "A virtual machine is restored from an immutable snapshot after a simulated ransomware encryption",
+     "how": "Encrypt a test VM's disk, try to delete its snapshots as an administrator, then restore it and time the restore."
+    },
+    {
+     "text": "A planned failover to the secondary site meets the agreed recovery time and recovery point",
+     "how": "Run the recovery plan on a test application and record the time to service and the data lost."
+    },
+    {
+     "text": "A host fails and its virtual machines restart elsewhere with no manual step",
+     "how": "Power off one node during a load test and watch the workloads move."
+    },
+    {
+     "text": "A full software and firmware upgrade completes on a running cluster with no workload downtime",
+     "how": "Upgrade a cluster carrying a test workload and check that it never stops serving."
+    },
+    {
+     "text": "A new virtual machine is provisioned by an application team through self-service within its quota",
+     "how": "Have one team request and receive a VM without opening a ticket."
+    },
+    {
+     "text": "The capacity forecast names the month the cluster runs out of storage, and the team agrees with it",
+     "how": "Compare the forecast with the team's own estimate and growth plan."
+    }
+   ]
+  },
+  "dr-backup": {
+   "label": "Disaster recovery and backup",
+   "description": "Disaster recovery and backup: sites whose workloads must be copied, recoverable within agreed times, and tested before they are needed.",
+   "units": "sites",
+   "questions": [
+    {
+     "stage": "value",
+     "q": "What would one day without your main site cost, and has anyone put a number on it?",
+     "why": "Turns recovery objectives into a business decision."
+    },
+    {
+     "stage": "value",
+     "q": "When was the last full recovery test, and what went wrong in it?",
+     "why": "Tests always find something; no test means it is still hidden."
+    },
+    {
+     "stage": "L1",
+     "q": "Which sites and branches have no copy of their workloads anywhere?",
+     "why": "Unprotected sites are the first gap to close."
+    },
+    {
+     "stage": "L2",
+     "q": "Has every workload been given a recovery point and a recovery time, agreed with the business?",
+     "why": "Without objectives, nothing can be checked or prioritised."
+    },
+    {
+     "stage": "L3",
+     "q": "Could an administrator account delete your backups today?",
+     "why": "If yes, ransomware can too."
+    },
+    {
+     "stage": "L3",
+     "q": "Does the recovery plan include the network: addresses, DNS, firewall rules?",
+     "why": "Most failed recoveries fail on the network, not on the data."
+    },
+    {
+     "stage": "L3",
+     "q": "Who can start a failover, and do they have the runbook at night?",
+     "why": "Recovery depends on people as much as on copies."
+    },
+    {
+     "stage": "L4",
+     "q": "When a replication falls behind, who is told and what do they do?",
+     "why": "A silent missed recovery point is discovered on the worst day."
+    }
+   ],
+   "proof": [
+    {
+     "text": "A test failover of a business application meets the agreed recovery time and point, without touching production",
+     "how": "Run the recovery plan in test mode and record time to service and data lost."
+    },
+    {
+     "text": "After a simulated ransomware attack, systems are restored from an immutable copy that the attacker's admin account could not delete",
+     "how": "Try to delete the copies with an administrator account, then restore from them."
+    },
+    {
+     "text": "A missed recovery point raises an alert to a named owner within minutes",
+     "how": "Pause replication for one VM and watch who is told."
+    },
+    {
+     "text": "A failback to the primary site completes in the order of the plan, with no manual network change",
+     "how": "Fail back the test application and check its addresses and order."
+    },
+    {
+     "text": "The recovery test produces a report an auditor accepts as evidence",
+     "how": "Show the report to the customer's audit or compliance contact."
+    }
+   ]
+  },
+  "dbaas": {
+   "label": "Databases as a service",
+   "description": "Database platform as a service: database environments whose provisioning, patching, backup, cloning and recovery are run by a platform instead of by hand.",
+   "units": "database environments",
+   "questions": [
+    {
+     "stage": "value",
+     "q": "How long does a team wait today for a copy of production, and who makes it?",
+     "why": "Copy time is usually the most visible pain and the easiest win."
+    },
+    {
+     "stage": "value",
+     "q": "When did you last restore a database to a precise point in time, and how long did it take?",
+     "why": "Untested point-in-time recovery is the usual hidden gap."
+    },
+    {
+     "stage": "L1",
+     "q": "How many databases are there, and how many does nobody own clearly?",
+     "why": "Databases outside any list are the ones that miss backups and patches."
+    },
+    {
+     "stage": "L2",
+     "q": "Which versions are you running, and how far are they from the supported ones?",
+     "why": "Version spread is effort and risk; it sizes the patching work."
+    },
+    {
+     "stage": "L3",
+     "q": "Which production databases have no point-in-time backup today?",
+     "why": "The answer is the first list of the plan."
+    },
+    {
+     "stage": "L3",
+     "q": "How are test copies masked, if at all?",
+     "why": "Unmasked copies of production are a common data leak."
+    },
+    {
+     "stage": "L3",
+     "q": "Which databases must survive a server failure without anyone acting?",
+     "why": "Separates what needs a cluster from what does not."
+    },
+    {
+     "stage": "L4",
+     "q": "Who is woken up when a backup fails, and how quickly do they know?",
+     "why": "A failed backup nobody sees is no backup."
+    }
+   ],
+   "proof": [
+    {
+     "text": "A production database is restored to a point in time five minutes before a simulated error, within the agreed time",
+     "how": "Drop a table on a copy of production, restore to the minute before, and time it end to end."
+    },
+    {
+     "text": "A masked copy of a production database is delivered to a development team in under an hour, with no DBA ticket",
+     "how": "Have one team request a clone through self-service and check that sensitive columns are masked."
+    },
+    {
+     "text": "The whole fleet moves to an approved patch level in one maintenance window, with a tested rollback",
+     "how": "Patch a group of test databases together, then roll one back."
+    },
+    {
+     "text": "A new database is provisioned from an approved profile in minutes, with backup already on",
+     "how": "Request one, then check its backup policy without touching it."
+    },
+    {
+     "text": "A database server failure leaves the clustered database available with no manual step",
+     "how": "Stop the primary node during a test load and watch the service continue."
+    }
+   ]
+  },
+  "object-storage": {
+   "label": "Object storage",
+   "description": "S3-compatible object storage: tenants that keep buckets for applications, backups and archives, with immutability, replication, encryption and access to adopt.",
+   "units": "tenants",
+   "questions": [
+    {
+     "stage": "value",
+     "q": "What data would hurt most if it were encrypted or deleted tomorrow?",
+     "why": "Points straight at the buckets that need immutability first."
+    },
+    {
+     "stage": "value",
+     "q": "What do you pay today per terabyte, including egress and requests?",
+     "why": "Request and egress fees are where storage bills surprise people."
+    },
+    {
+     "stage": "L1",
+     "q": "Which applications and backup jobs write to object storage, and where?",
+     "why": "Unknown writers mean unknown tenants and keys."
+    },
+    {
+     "stage": "L2",
+     "q": "Do you know how many access keys exist, who owns them and when they were last used?",
+     "why": "Old keys with broad rights are the easiest way in."
+    },
+    {
+     "stage": "L3",
+     "q": "Are your backup copies under object lock, and for how long?",
+     "why": "Backups an administrator can delete do not survive ransomware."
+    },
+    {
+     "stage": "L3",
+     "q": "Must any data stay in a given country, and can you prove where it is?",
+     "why": "Residency is often a legal requirement before it is a technical one."
+    },
+    {
+     "stage": "L3",
+     "q": "When did you last restore from these backups, and how long did it take?",
+     "why": "The restore is the only test that counts."
+    },
+    {
+     "stage": "L4",
+     "q": "Who is alerted when someone reads or deletes far more than usual?",
+     "why": "Mass reads and deletes are the first signs of theft or ransomware."
+    }
+   ],
+   "proof": [
+    {
+     "text": "An object under object lock cannot be deleted or overwritten, even with administrator credentials, until its retention ends",
+     "how": "Write a test object with a retention date, then try to delete it as the bucket owner and as an administrator."
+    },
+    {
+     "text": "A backup job writes to the bucket and a full restore of a test system completes within the agreed time",
+     "how": "Run the customer's own backup software against the bucket and time a restore of one system."
+    },
+    {
+     "text": "Losing one site or node leaves every object readable, with no manual step",
+     "how": "Take one site or node offline during reads and check that every object still returns."
+    },
+    {
+     "text": "Data stays in the countries the policy names, and the placement can be shown to an auditor",
+     "how": "Write objects under a residency policy and export where each copy lives."
+    },
+    {
+     "text": "The customer's existing S3 tools and applications work unchanged against the endpoint",
+     "how": "Point two real applications and one command-line tool at the endpoint and run their normal jobs."
+    },
+    {
+     "text": "The monthly cost for the customer's real volume and access pattern is known before signature, egress and requests included",
+     "how": "Replay a month of the customer's usage figures through the price list and agree the total with finance."
+    }
+   ]
+  }
+ }
+}

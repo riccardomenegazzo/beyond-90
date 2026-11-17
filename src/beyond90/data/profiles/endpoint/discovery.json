@@ -1,0 +1,44 @@
+{
+  "questions": [
+    {
+      "stage": "value",
+      "q": "If ransomware started on one laptop right now, how far could it spread before anyone saw it?",
+      "why": "Turns endpoint coverage into business risk."
+    },
+    {
+      "stage": "value",
+      "q": "How long does it take today to isolate a compromised machine?",
+      "why": "Isolation time is the number that limits damage."
+    },
+    {
+      "stage": "L1",
+      "q": "How many devices have no agent, including servers, branches and contractors?",
+      "why": "Uncovered devices are where attacks land."
+    },
+    {
+      "stage": "L2",
+      "q": "Do you know every operating system and version in use, and which are out of support?",
+      "why": "Unsupported systems need a different plan."
+    },
+    {
+      "stage": "L3",
+      "q": "Is prevention switched on everywhere, or are some groups still in detect-only mode?",
+      "why": "Detect-only left on by habit is a common gap."
+    },
+    {
+      "stage": "L3",
+      "q": "Are exclusions reviewed, and who can add one?",
+      "why": "Broad exclusions quietly turn protection off."
+    },
+    {
+      "stage": "L3",
+      "q": "Is device control or application control in use where it matters?",
+      "why": "Separates basic antivirus from real hardening."
+    },
+    {
+      "stage": "L4",
+      "q": "When the console raises a critical alert at night, who answers it?",
+      "why": "Coverage without response is a dashboard."
+    }
+  ]
+}

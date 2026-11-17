@@ -155,7 +155,7 @@ export function createPrivacy({ state, store, $, say, unlockVaultUi, today, save
   async function erase(customer, logs) {
     if ((await store.getVault()) && !store.unlocked() && !(await unlockVaultUi())) return;
     const n = await store.countFor(customer);
-    const sentence = `Erase everything this browser holds for ${customer}?\n\n${nOf(n.snapshots, "snapshot")}, ${nOf(n.outcomes, "outcome")}, ${nOf(n.commitments, "promise")}, ${nOf(n.povs || 0, "proof")} of value, ${nOf(n.asks || 0, "ask")}, ${nOf(n.done || 0, "action")} marked done, ${n.aliases} alias(es), ${n.exports} export log entr${n.exports === 1 ? "y" : "ies"}.\n\nThis cannot be undone. Copies you already downloaded or copied are not touched.`;
+    const sentence = `Erase everything this browser holds for ${customer}?\n\n${nOf(n.snapshots, "snapshot")}, ${nOf(n.outcomes, "outcome")}, ${nOf(n.commitments, "promise")}, ${nOf(n.povs || 0, "proof")} of value, ${nOf(n.asks || 0, "ask")}, ${nOf(n.done || 0, "action")} marked done, ${nOf(n.workshops || 0, "discovery workshop")}, ${nOf(n.aliases, "alias", "aliases")}, ${n.exports} export log entr${n.exports === 1 ? "y" : "ies"}.\n\nThis cannot be undone. Copies you already downloaded or copied are not touched.`;
     if (!confirm(sentence)) return;
     const copies = outside(logs.length ? logs : await store.exportsAll(), customer);   // read before the log entries go
     try {
