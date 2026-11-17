@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.74.0
+
+- **End to end across the book.** The portfolio report (`beyond90 portfolio`, Markdown and JSON) and the browser's book table now show, next to each customer's Yield, how many of its accounts pass every stage. On the examples: Contoso Bank 136 of 220, Northwind 29 of 121, Fabrikam Labs 0 of 27. Two customers with a similar Yield can differ a lot here, and the difference says whether the work is a rule applied everywhere or a few accounts to finish.
+
 ## 0.73.0
 
 - **Actions marked done are kept, and newer data checks them.** "Mark done" on Today used to last only while the tab was open. A mark is now a customer fact like a promise: kept in this browser, sealed with the passphrase when one is set (under a random slot, because action ids name the customer's teams), included in the sealed workspace export and import, and erased with the customer. Each mark remembers the date of the data it was made on. When newer data still contains the action, Today puts "1 action you marked done is still in the newer data" at the top of Keep an eye on: the work did not land, or not everywhere. When the action is gone from newer data, Today says the mark is confirmed.

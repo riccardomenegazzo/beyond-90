@@ -348,7 +348,8 @@ def analyze_book(
             "weighted_end": plan.weighted_end,
             "profile": cat.profile,
             "customers": [
-                {"name": n, "key": keys[n], "arr": by_name[n].arr, "yield": by_name[n].score.yield_, "confidence": by_name[n].score.quality.get("confidence", ""),
+                {"name": n, "key": keys[n], "arr": by_name[n].arr, "yield": by_name[n].score.yield_,
+                 "through": (by_name[n].score.end_to_end or {}).get("through"), "units_total": (by_name[n].score.end_to_end or {}).get("total"), "confidence": by_name[n].score.quality.get("confidence", ""),
                  "stages": {k: by_name[n].score.stages[k].value for k in ("L1", "L2", "L3", "L4")}, "level": by_name[n].score.rubric.get("level", ""),
                  "critical_open": by_name[n].score.outcomes.get("critical_open", 0), "naive": by_name[n].score.naive,
                  "planned_yield": next(c.end_yield for c in plan.customers if c.name == n), "hours": next(c.hours for c in plan.customers if c.name == n)}

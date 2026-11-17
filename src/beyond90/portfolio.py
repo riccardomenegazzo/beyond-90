@@ -92,18 +92,23 @@ def load_portfolio(root: str | Path, cat: Optional[Catalogue] = None, store: Opt
     return pf
 
 
+def _e2e(s: Any) -> str:
+    e = s.end_to_end or {}
+    return f"{e['through']} of {e['total']}" if e.get("total") else "-"
+
+
 def render_portfolio_markdown(pf: Portfolio, min_customers: int = 2, top_patterns: Optional[int] = None) -> str:
     L = ["# Portfolio", ""]
     w = pf.arr_weighted_yield
     if w is not None:
         L += [f"ARR-weighted Yield: **{pct(w)}** across {len(pf.entries)} customer(s).", ""]
-    L += ["| Customer | ARR | Yield | Level | Legacy | L1 | L2 | L3 | L4 | Change | Top action |", "|---|---|---|---|---|---|---|---|---|---|---|"]
+    L += ["| Customer | ARR | Yield | End to end | Level | Legacy | L1 | L2 | L3 | L4 | Change | Top action |", "|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for e in pf.entries:
         s = e.score
         change = pts(s.yield_ - e.previous_yield) if e.previous_yield is not None else "-"
         top = e.actions[0].title if e.actions else "-"
         L.append(
-            f"| {e.name} | {e.arr:,.0f} | {pct(s.yield_)} | {(s.rubric.get('level') or '-').capitalize()}{'*' if s.rubric.get('provisional') else ''} | {pct(s.naive)} | {pct(s.stages['L1'].value)} | {pct(s.stages['L2'].value)} | "
+            f"| {e.name} | {e.arr:,.0f} | {pct(s.yield_)} | {_e2e(s)} | {(s.rubric.get('level') or '-').capitalize()}{'*' if s.rubric.get('provisional') else ''} | {pct(s.naive)} | {pct(s.stages['L1'].value)} | {pct(s.stages['L2'].value)} | "
             f"{pct(s.stages['L3'].value)} | {pct(s.stages['L4'].value)} | {change} | {top} |"
         )
     L.append("")
@@ -143,6 +148,7 @@ def render_portfolio_json(pf: Portfolio, min_customers: int = 2) -> str:
                 "arr": e.arr,
                 "yield": e.score.yield_,
                 "naive": e.score.naive,
+                "end_to_end": {k: e.score.end_to_end.get(k) for k in ("total", "through", "value", "first_break")} if e.score.end_to_end else None,
                 "stages": {k: v.value for k, v in e.score.stages.items()},
                 "previous_yield": e.previous_yield,
                 "level": e.score.rubric.get("level"),

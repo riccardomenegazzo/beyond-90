@@ -681,6 +681,7 @@ export function bookView({ book, openCustomer }) {
     { key: "arr", label: "ARR", num: true, render: (c) => h("span", {}, num(c.arr), h("i", { class: "arrbar", style: `width:${(c.arr / Math.max(...cs.map((x) => x.arr))) * 60}px` })) },
     ...["L1", "L2", "L3", "L4"].map((k) => ({ key: k, label: k + " " + STAGE_NAME[k], num: true, sort: (c) => c.stages[k], render: (c) => h("span", { class: "heatcell", style: heat(c.stages[k]), text: pct(c.stages[k]) }) })),
     { key: "yield", label: "Yield", num: true, render: (c) => h("b", { text: pct(c.yield) }) },
+    { key: "through", label: "End to end", num: true, sort: (c) => (c.units_total ? c.through / c.units_total : -1), render: (c) => (c.units_total ? `${c.through} of ${c.units_total}` : "—") },
     { key: "planned_yield", label: "After the plan", num: true, render: (c) => pct(c.planned_yield) },
     { key: "hours", label: "Hours", num: true, render: (c) => c.hours.toFixed(0) },
     { key: "level", label: "Level", render: (c) => h("span", { class: "levelbadge small lv-" + c.level, text: cap(c.level) }) },

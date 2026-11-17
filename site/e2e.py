@@ -661,6 +661,8 @@ def main(site: str) -> int:
         check("Portfolio" in page.inner_text("#doc"), "book mode keeps its written portfolio")
         page.click("[data-tab=book]")
         check("hours" in page.inner_text("#doc").lower(), "the plan says where the hours go")
+        page.click("[data-tab=bookmap]")
+        check("29 of 121" in page.inner_text("#view") and "0 of 27" in page.inner_text("#view"), "the book shows, for each customer, how many accounts pass every stage")
         page.click("[data-tab=bookreport]")
         check("hours" in page.frame_locator("#report").locator("body").inner_text().lower(), "the book report renders")
         page.click("[data-tab=bookmap]")
