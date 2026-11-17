@@ -86,7 +86,8 @@ def weighted(data: CustomerData, score: Score, cat: Catalogue) -> dict[str, Any]
     say = []
     basis = ("spend and criticality" if spend_known else "criticality") if crit_known else "spend"
     if abs(l1 - count["L1"]) >= 0.02:
-        say.append(f"By count {count['L1']:.0%} of accounts are connected; by {basis} {l1:.0%}. The unconnected accounts hold {unconnected_share:.0%} of the {'weight' if crit_known else 'spend'}.")
+        units = (score.terms or {}).get("units", "accounts")
+        say.append(f"By count {count['L1']:.0%} of {units} are connected; by {basis} {l1:.0%}. The unconnected {units} hold {unconnected_share:.0%} of the {'weight' if crit_known else 'spend'}.")
     if abs(l4 - count["L4"]) >= 0.02:
         say.append(f"By count {count['L4']:.0%} of triaged findings are owned and decided; weighted by severity, exposure{' and account criticality' if crit_known else ''} {l4:.0%}.")
     return {"value": value, "stages": stages, "count": count, "yield": score.yield_, "spend_known": spend_known, "unconnected_spend_share": unconnected_share,

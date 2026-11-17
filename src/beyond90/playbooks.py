@@ -81,6 +81,10 @@ def generate_actions(data: CustomerData, score: Score, cat: Optional[Catalogue] 
     cat = cat or Catalogue.load()
     pb = cat.playbooks
     u = cat.terms["unit"]
+    us = cat.terms.get("units", u + "s")
+
+    def n_u(n: int) -> str:
+        return f"{n} {u if n == 1 else us}"
     actions: list[Action] = []
 
     contact_teams = {c.team.strip().lower() for c in data.contacts if c.team.strip()}
@@ -123,11 +127,11 @@ def generate_actions(data: CustomerData, score: Score, cat: Optional[Catalogue] 
         add(
             "l1_connect_account",
             owner,
-            f"{len(items)} {u}(s) not connected, last spend {spend:,.0f}: {_short(ids)}.",
+            f"{n_u(len(items))} not connected, last spend {spend:,.0f}: {_short(ids)}.",
             owner,
             len(items),
             _effect(score, "L1", len(items)),
-            title=f"Connect {len(items)} {u}(s) owned by {owner}",
+            title=f"Connect {n_u(len(items))} owned by {owner}",
             ops=[{"op": "connect", "accounts": ids}],
             people=[] if owner == "unassigned" else [owner],
         )
@@ -137,7 +141,7 @@ def generate_actions(data: CustomerData, score: Score, cat: Optional[Catalogue] 
         add(
             "l1_auto_onboarding",
             "recent",
-            f"{len(recent)} unconnected {u}(s) were created in the last {data.settings.new_account_days} days: "
+            f"{len(recent)} unconnected {u if len(recent) == 1 else us} {'was' if len(recent) == 1 else 'were'} created in the last {data.settings.new_account_days} days: "
             f"{_short([r['account_id'] for r in recent])}.",
             "",
             0,
@@ -150,11 +154,11 @@ def generate_actions(data: CustomerData, score: Score, cat: Optional[Catalogue] 
         add(
             "l2_enable_inventory",
             f"{leak['provider']}:{leak['resource_type']}",
-            f"{leak['resource_type']} is not inventoried on {n} connected {leak['provider']} {u}(s): {_short(leak['accounts'])}.",
+            f"{leak['resource_type']} is not inventoried on {n} connected {leak['provider']} {u if n == 1 else us}: {_short(leak['accounts'])}.",
             "",
             n,
             _effect(score, "L2", n),
-            title=f"Inventory {leak['resource_type']} on {leak['provider']} ({n} {u}(s))",
+            title=f"Inventory {leak['resource_type']} on {leak['provider']} ({n_u(n)})",
             ops=[{"op": "inventory", "resource_type": leak["resource_type"], "accounts": list(leak["accounts"])}],
         )
 
@@ -164,12 +168,12 @@ def generate_actions(data: CustomerData, score: Score, cat: Optional[Catalogue] 
         add(
             pid,
             leak["module"],
-            f"{leak['name']} (since {leak['since']}) is relevant on {leak['relevant']} {u}(s) and inactive on "
+            f"{leak['name']} (since {leak['since']}) is relevant on {n_u(leak['relevant'])} and inactive on "
             f"{leak['inactive']}: {_short(leak['accounts'])}.",
             "",
             leak["inactive"],
             _effect(score, "L3", leak["inactive"]),
-            title=f"{'Adopt' if leak['new_since_baseline'] else 'Enable'} {leak['name']} on {leak['inactive']} {u}(s)",
+            title=f"{'Adopt' if leak['new_since_baseline'] else 'Enable'} {leak['name']} on {n_u(leak['inactive'])}",
             ops=[{"op": "enable", "module": leak["module"], "accounts": list(leak["accounts"])}],
             people=[owner_of.get(a, "") for a in leak["accounts"]],
         )

@@ -29,9 +29,9 @@ The score is measured against accounts and asset types from independent lists, n
 
 | By | Expected Yield | What moves |
 |---|---|---|
-| Day 30 | 82.8% | Connect 1 account(s) owned by retail-it; Connect 1 account(s) owned by security |
-| Day 60 | 91.9% | Adopt External attack surface on 26 account(s): first 18 of 26 |
-| Day 90 | 96.9% | Adopt Workflow and remediation automation on 11 account(s); Enable AI services posture on 5 account(s) |
+| Day 30 | 82.8% | Connect 1 account owned by retail-it; Connect 1 account owned by security |
+| Day 60 | 91.9% | Adopt External attack surface on 26 accounts: first 18 of 26 |
+| Day 90 | 96.9% | Adopt Workflow and remediation automation on 11 accounts; Enable AI services posture on 5 accounts |
 
 A model, not a promise: it rests on the hours available and on each action succeeding as assumed.
 
@@ -41,19 +41,19 @@ A model, not a promise: it rests on the hours available and on each action succe
 |---|---|---|---|---|
 | Give unowned findings an owner and a decision (13) | unassigned | 2026-11-14 | 5.05 h | Every triaged finding has an owner and a decision. |
 | Record a decision on owned findings (8) | unassigned | 2026-11-21 | 2.1 h | Every triaged finding has a decision. |
-| Adopt Workflow and remediation automation on 31 account(s) | unassigned | 2026-12-30 | 11.8 h | Capability active within 60 days of release. |
-| Connect 3 account(s) owned by bu-retail | bu-retail | 2026-11-14 | 3.25 h | Account is connected and inventoried within 7 days. |
-| Connect 3 account(s) owned by platform | platform | 2026-11-14 | 3.25 h | Account is connected and inventoried within 7 days. |
+| Adopt Workflow and remediation automation on 31 accounts | unassigned | 2026-12-30 | 11.8 h | Capability active within 60 days of release. |
+| Connect 3 accounts owned by bu-retail | bu-retail | 2026-11-14 | 3.25 h | Account is connected and inventoried within 7 days. |
+| Connect 3 accounts owned by platform | platform | 2026-11-14 | 3.25 h | Account is connected and inventoried within 7 days. |
 | Fix accepted risks with no or expired review date (6) | unassigned | 2026-11-30 | 1.4 h | All accepted risks have a reason and a future expiry. |
-| Adopt External attack surface on 26 account(s) | unassigned | 2026-12-30 | 10.3 h | Capability active within 60 days of release. |
-| Inventory container_registry on aws (15 account(s)) | unassigned | 2026-11-21 | 4.75 h | Resource type is marked inventoried on every connected account. |
+| Adopt External attack surface on 26 accounts | unassigned | 2026-12-30 | 10.3 h | Capability active within 60 days of release. |
+| Inventory container_registry on aws (15 accounts) | unassigned | 2026-11-21 | 4.75 h | Resource type is marked inventoried on every connected account. |
 
 ## What we need from you
 
 - A named owner and a date for: Give unowned findings an owner and a decision (13).
 - A named owner and a date for: Record a decision on owned findings (8).
-- A named owner and a date for: Adopt Workflow and remediation automation on 31 account(s).
-- A named owner and a date for: Connect 3 account(s) owned by bu-retail.
+- A named owner and a date for: Adopt Workflow and remediation automation on 31 accounts.
+- A named owner and a date for: Connect 3 accounts owned by bu-retail.
 
 ## What we commit to
 

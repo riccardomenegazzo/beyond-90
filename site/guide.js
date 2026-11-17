@@ -7,7 +7,7 @@ export const CUSTOMER_NAV = [
     { id: "today", label: "Today", icon: "overview", tip: "One sentence on where they stand, the three things to do first, and the one thing to watch." },
     { id: "overview", label: "Overview", icon: "overview", tip: "The score, where it is lost, and what needs attention first." },
     { id: "connections", label: "Connections", icon: "layers", tip: "Where the separate problems meet: security stories, gaps, accounts, findings and owners on one interactive map, with what it means." },
-    { id: "accounts", label: "Accounts", icon: "accounts", tip: "Every cloud account and cluster: connected or not, what is visible, what is switched on." },
+    { id: "accounts", label: "Accounts", icon: "accounts", tip: "Every unit in scope (account, cluster, tenant): connected or not, what is visible, what is switched on." },
     { id: "findings", label: "Findings", icon: "findings", tip: "Open findings and whether each one has an owner and a decision." },
     { id: "burndown", label: "Risk burn-down", icon: "findings", tip: "Is risk going away? Critical and high findings open, how old, how long fixes take, the last six months, and whether the customer is at zero criticals." },
     { id: "onboarding", label: "Onboarding", icon: "onboarding", tip: "Connectors that are stuck, why, and the one change that unblocks each group." },

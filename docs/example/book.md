@@ -27,13 +27,13 @@
 | 1 | Northwind (mock) | Record a decision on owned findings (8) | 2.1 | +2.5 pts |
 | 2 | Northwind (mock) | Give unowned findings an owner and a decision (13) | 5.0 | +4.0 pts |
 | 2 | Contoso Bank (mock) | Give unowned findings an owner and a decision (1) | 0.8 | +0.2 pts |
-| 2 | Contoso Bank (mock) | Connect 2 account(s) owned by finance-it | 2.5 | +0.6 pts |
-| 3 | Contoso Bank (mock) | Connect 2 account(s) owned by retail-it | 2.5 | +0.6 pts |
+| 2 | Contoso Bank (mock) | Connect 2 accounts owned by finance-it | 2.5 | +0.6 pts |
+| 3 | Contoso Bank (mock) | Connect 2 accounts owned by retail-it | 2.5 | +0.6 pts |
 | 3 | Fabrikam Labs (mock) | Fix accepted risks with no or expired review date (4) | 1.1 | +2.8 pts |
 | 3 | Northwind (mock) | Fix accepted risks with no or expired review date (1) | 0.7 | +0.3 pts |
-| 3 | Northwind (mock) | Connect 3 account(s) owned by bu-retail | 3.2 | +1.6 pts |
-| 4 | Northwind (mock) | Connect 3 account(s) owned by platform | 3.2 | +1.6 pts |
-| 4 | Contoso Bank (mock) | Connect 1 account(s) owned by bu-retail | 1.8 | +0.3 pts |
+| 3 | Northwind (mock) | Connect 3 accounts owned by bu-retail | 3.2 | +1.6 pts |
+| 4 | Northwind (mock) | Connect 3 accounts owned by platform | 3.2 | +1.6 pts |
+| 4 | Contoso Bank (mock) | Connect 1 account owned by bu-retail | 1.8 | +0.3 pts |
 | 5 | Fabrikam Labs (mock) | Give unowned findings an owner and a decision (11) | 4.3 | +7.8 pts |
 
 ## Dips to warn customers about

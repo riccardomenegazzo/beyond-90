@@ -100,7 +100,7 @@ def analyze(
     extras["candor"] = candor_items(score, data, cat, plan=plan, forecast=extras.get("forecast"), attribution=extras.get("attribution"))
     exposures = rhythm.customer_exposures(data, threats, cat)
     expansion = rhythm.expansion_signals(data, score, actions, exposures)
-    onb = onboarding.diagnose(data)
+    onb = onboarding.in_words_of(onboarding.diagnose(data), cat.terms["unit"])
     look = outlook.outlook(data, cat)
     weighted = stake.weighted(data, score, cat)
     healthy = health.compute(score, data, extras.get("renewal"), look, weighted, health_weights)

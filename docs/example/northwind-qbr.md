@@ -19,8 +19,8 @@ Questions to ask before presenting anything (open ones; let them answer in their
 - What has changed on your side that I should know about, and what would make this review worth your time?
 - When a finding has no obvious owner, who ends up deciding, and how?  _(on: Give unowned findings an owner and a decision)_
 - Which decisions are slow because people lack information, and which because of priorities?  _(on: Record a decision on owned findings)_
-- Where in your estate would you most want this capability, and what would it have to prove to earn its place?  _(on: Adopt Workflow and remediation automation on 31 account(s))_
-- Which of these accounts matter most to your business this quarter, and what has made them hard to connect so far?  _(on: Connect 3 account(s) owned by bu-retail)_
+- Where in your estate would you most want this capability, and what would it have to prove to earn its place?  _(on: Adopt Workflow and remediation automation on 31 accounts)_
+- Which of these accounts matter most to your business this quarter, and what has made them hard to connect so far?  _(on: Connect 3 accounts owned by bu-retail)_
 
 ## The answer
 
@@ -46,13 +46,13 @@ One caveat: about 6 account(s) are probably known to no source at all; if they a
    - Record a decision on owned findings (8): 8 finding(s) past the 7-day triage window have an owner but no decision.
    - Fix accepted risks with no or expired review date (6): 6 finding(s) past the 7-day triage window are accepted risks with no expiry.
 2. **Accounts outside the platform.** 9 open action(s), worth about 8.0 points.
-   - Connect 3 account(s) owned by bu-retail: 3 account(s) not connected, last spend 10,871: aws-043, aws-065, aws-039.
-   - Connect 3 account(s) owned by platform: 3 account(s) not connected, last spend 33,514: aws-035, azure-029, azure-009.
-   - Connect 1 account(s) owned by data: 1 account(s) not connected, last spend 5,532: azure-016.
+   - Connect 3 accounts owned by bu-retail: 3 accounts not connected, last spend 10,871: aws-043, aws-065, aws-039.
+   - Connect 3 accounts owned by platform: 3 accounts not connected, last spend 33,514: aws-035, azure-029, azure-009.
+   - Connect 1 account owned by data: 1 account not connected, last spend 5,532: azure-016.
 3. **Controls that are not switched on.** 9 open action(s), worth about 5.7 points.
-   - Adopt Workflow and remediation automation on 31 account(s): Workflow and remediation automation (since 2026.3) is relevant on 109 account(s) and inactive on 31: aws-001, aws-005, aws-009, aws-020, aws-021, aws-022, aws-026, aws-028 (+23 more).
-   - Adopt External attack surface on 26 account(s): External attack surface (since 2026.2) is relevant on 109 account(s) and inactive on 26: aws-008, aws-010, aws-015, aws-017, aws-018, aws-019, aws-027, aws-037 (+18 more).
-   - Enable Runtime sensor on 9 account(s): Runtime sensor (since 2025.1) is relevant on 109 account(s) and inactive on 9: aws-001, aws-013, aws-023, aws-034, azure-011, azure-015, azure-018, azure-021 (+1 more).
+   - Adopt Workflow and remediation automation on 31 accounts: Workflow and remediation automation (since 2026.3) is relevant on 109 accounts and inactive on 31: aws-001, aws-005, aws-009, aws-020, aws-021, aws-022, aws-026, aws-028 (+23 more).
+   - Adopt External attack surface on 26 accounts: External attack surface (since 2026.2) is relevant on 109 accounts and inactive on 26: aws-008, aws-010, aws-015, aws-017, aws-018, aws-019, aws-027, aws-037 (+18 more).
+   - Enable Runtime sensor on 9 accounts: Runtime sensor (since 2025.1) is relevant on 109 accounts and inactive on 9: aws-001, aws-013, aws-023, aws-034, azure-011, azure-015, azure-018, azure-021 (+1 more).
 
 ## Evidence
 
@@ -113,9 +113,9 @@ Each of these is supported by the data. Saying them first, before the customer f
 |---|---|---|---|
 | Give unowned findings an owner and a decision (13) | unassigned | 2026-11-14 | Every triaged finding has an owner and a decision. |
 | Record a decision on owned findings (8) | unassigned | 2026-11-21 | Every triaged finding has a decision. |
-| Adopt Workflow and remediation automation on 31 account(s) | unassigned | 2026-12-30 | Capability active within 60 days of release. |
-| Connect 3 account(s) owned by bu-retail | bu-retail | 2026-11-14 | Account is connected and inventoried within 7 days. |
-| Connect 3 account(s) owned by platform | platform | 2026-11-14 | Account is connected and inventoried within 7 days. |
+| Adopt Workflow and remediation automation on 31 accounts | unassigned | 2026-12-30 | Capability active within 60 days of release. |
+| Connect 3 accounts owned by bu-retail | bu-retail | 2026-11-14 | Account is connected and inventoried within 7 days. |
+| Connect 3 accounts owned by platform | platform | 2026-11-14 | Account is connected and inventoried within 7 days. |
 
 ## Roadmap
 
@@ -131,10 +131,10 @@ Checkpoints: 90% in week 7, 95% in week 10, 98% not reached.
 | 1-1 | Record a decision on owned findings (8) | 2.1 | +2.5 pts |
 | 1-2 | Give unowned findings an owner and a decision (13) | 5.05 | +4.0 pts |
 | 2-2 | Fix accepted risks with no or expired review date (1) | 0.65 | +0.3 pts |
-| 2-2 | Connect 3 account(s) owned by bu-retail | 3.25 | +1.6 pts |
-| 2-2 | Connect 3 account(s) owned by platform | 3.25 | +1.6 pts |
-| 2-3 | Connect 1 account(s) owned by data | 1.75 | +0.5 pts |
-| 3-3 | Connect 1 account(s) owned by finance-it | 1.75 | +0.5 pts |
+| 2-2 | Connect 3 accounts owned by bu-retail | 3.25 | +1.6 pts |
+| 2-2 | Connect 3 accounts owned by platform | 3.25 | +1.6 pts |
+| 2-3 | Connect 1 account owned by data | 1.75 | +0.5 pts |
+| 3-3 | Connect 1 account owned by finance-it | 1.75 | +0.5 pts |
 | | 24 more | | |
 
 Assumed blocked, needs escalation: 2 findings that stayed undecided; 14 module activations that did not happen; 2 inventory gaps that could not be closed; 1 findings that stayed unowned; 1 accepted risks that stayed unreviewed.
@@ -149,8 +149,8 @@ _At 90% realization the plan plateaus: the residual needs escalation, not more o
 ## Decisions we need today
 
 - Name an owner and a date for: Give unowned findings an owner and a decision (13).
-- Name an owner and a date for: Connect 3 account(s) owned by bu-retail.
-- Name an owner and a date for: Adopt Workflow and remediation automation on 31 account(s).
+- Name an owner and a date for: Connect 3 accounts owned by bu-retail.
+- Name an owner and a date for: Adopt Workflow and remediation automation on 31 accounts.
 
 ## What we commit to
 
@@ -196,17 +196,17 @@ Reliability, measured: 3 of 6 promises due in the last period were kept on time 
 
 Each of these is an expansion of some kind. They feel different to the customer, so they are approached differently (EXPAND: new capability, people who trust you; BROADEN: same service, new people; DIVERSIFY: new capability and new people).
 
-- **EXPAND**: Adopt Workflow and remediation automation on 31 account(s).
+- **EXPAND**: Adopt Workflow and remediation automation on 31 accounts.
   A new capability for people who already trust you. Present it through them, tied to a problem they have named, and do your homework before bringing in a colleague; do not just hand over a business card.
-- **BROADEN**: Connect 3 account(s) owned by bu-retail.
+- **BROADEN**: Connect 3 accounts owned by bu-retail.
   The same service for people who do not know you. Trust does not travel from your champion to them. Ask for an introduction, say what is in it for them and for the champion, and arrive having learned about the team on your own time.
-- **EXPAND**: Adopt External attack surface on 26 account(s).
-- **BROADEN**: Connect 1 account(s) owned by ml-research.
-- **BROADEN**: Connect 1 account(s) owned by payments.
-- **DIVERSIFY**: Enable Runtime sensor on 9 account(s).
+- **EXPAND**: Adopt External attack surface on 26 accounts.
+- **BROADEN**: Connect 1 account owned by ml-research.
+- **BROADEN**: Connect 1 account owned by payments.
+- **DIVERSIFY**: Enable Runtime sensor on 9 accounts.
   A new capability for new people: two new relationships at once, and the lowest trust you will start from. Build the relationship first, give something useful before asking, and do not treat the institutional relationship as if it carried over.
-- **EXPAND**: Enable Code and pipeline scanning on 6 account(s).
-- **DIVERSIFY**: Enable AI services posture on 5 account(s).
+- **EXPAND**: Enable Code and pipeline scanning on 6 accounts.
+- **DIVERSIFY**: Enable AI services posture on 5 accounts.
 
 ### Before you walk in
 

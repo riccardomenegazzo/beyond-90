@@ -246,7 +246,7 @@ def build_prep(data: CustomerData, score: Score, actions: list[Any], extras: dic
                           "points": [f"{e['date']}: {e['text']}" + (f" ({e['points']:+.1f} pts)" if e.get("points") else "") for e in hits]})
     st = extras.get("stake")
     if st and st.get("say"):
-        items.append({"id": "stake", "title": "Where the gap matters", "why": "Counting accounts treats a sandbox like production; spend and exposure do not.", "points": st["say"]})
+        items.append({"id": "stake", "title": "Where the gap matters", "why": f"Counting {(score.terms or {}).get('units', 'accounts')} treats a sandbox like production; spend and exposure do not.", "points": st["say"]})
 
     top = actions[:3]
     if top:

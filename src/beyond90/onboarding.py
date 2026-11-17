@@ -282,6 +282,16 @@ def _stats(values: list[int]) -> dict[str, Any]:
     return {"n": len(v), "median": median(v), "p90": v[min(len(v) - 1, round(0.9 * (len(v) - 1)))]}
 
 
+def in_words_of(d: dict[str, Any], unit: str) -> dict[str, Any]:
+    """Name the owner of a stuck unit in the profile's words: a cluster owner, a tenant owner, not an account owner."""
+    if unit == "account":
+        return d
+    for w in d.get("waves", []):
+        if w.get("owner") == "account owner":
+            w["owner"] = f"{unit} owner"
+    return d
+
+
 def diagnose(data: CustomerData) -> dict[str, Any]:
     by_acc: dict[str, list[Connector]] = {}
     for c in data.connectors:

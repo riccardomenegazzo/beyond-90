@@ -497,7 +497,7 @@ def cmd_onboarding(args: argparse.Namespace) -> int:
     from . import onboarding
     cat = _catalogue(args)
     data, _ = load_customer(args.directory, cat, require_accounts=True)
-    d = onboarding.diagnose(data)
+    d = onboarding.in_words_of(onboarding.diagnose(data), cat.terms["unit"])
     if args.since:
         old, _ = load_customer(args.since, cat)
         d["delta"] = onboarding.delta(onboarding.diagnose(old), d, old.as_of, data.as_of)
@@ -1067,7 +1067,7 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("config")
     sp.add_argument("--at", default="05:17", help="time of day in UTC, HH:MM")
     sp.add_argument("--every", choices=["hour", "day", "week"], default="day")
-    sp.add_argument("--install-from", default="beyond90", help='pip requirement for the workflow, e.g. "beyond90 @ git+https://github.com/OWNER/beyond-90@v0.75.0"')
+    sp.add_argument("--install-from", default="beyond90", help='pip requirement for the workflow, e.g. "beyond90 @ git+https://github.com/OWNER/beyond-90@v0.76.0"')
     sp.add_argument("--out")
     sp.set_defaults(func=cmd_schedule)
 

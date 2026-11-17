@@ -618,6 +618,13 @@ def main(site: str) -> int:
             run_and_wait()
             page.wait_for_selector("#results:not([hidden])")
             check(who in page.inner_text("#context"), f"the {who} demo runs with its own profile")
+            if demo_id == "demo-hci":
+                page.click("[data-tab=onboarding]")
+                body = page.inner_text("#main")
+                check(page.locator("#tabs [data-tab=accounts]").inner_text().strip().startswith("Clusters") and "Where clusters stop" in body and "AWS" not in body and "Azure" not in body and "(s)" not in page.inner_text("#tabs") and "cloud account" not in body.lower(),
+                      "a hyperconverged customer reads in its own words: clusters, no public-cloud checklist")
+                page.click("[data-tab=today]")
+                check("(s)" not in page.inner_text("#view .todocard") and "1 clusters" not in page.inner_text("#view"), "and its actions use real plurals")
         page.click("[data-tab=pov]")
         page.get_by_role("button", name="Create the plan").click()
         page.wait_for_selector("#view .suggest li")

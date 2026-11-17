@@ -2,6 +2,11 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.76.0
+
+- **Every profile reads in its own words.** A walk through the hyperconverged example found cloud wording left over; it is gone. The Accounts view is named after the profile's units in the menu and the title ("Clusters", "Tenants"); onboarding says "Where clusters stop" and names the "cluster owner"; the call prep counts clusters, not accounts. The connector error explainer and the kickoff checklist, which know public clouds and Kubernetes only, show for the cloud security profile alone.
+- **Real plurals in actions.** "Connect 1 cluster owned by plant-it", "Enable Immutable snapshots against ransomware on 2 clusters", "1 cluster stuck in onboarding": no more "cluster(s)".
+
 ## 0.75.0
 
 - **More like a phone app.** Installed from the browser, Beyond 90 now offers two shortcuts on a long press of its icon ("See it on an example", which opens the example already analysed, and "Saved customers"), reuses the open window instead of opening a second one, and accepts files shared from other apps: on Android, Share, then Beyond 90, on an export from mail or Files opens the app with the files loaded. The share goes to the app's own service worker, never to a server: at most 50 files of at most 20 MB, only `.csv`, `.toml` and `.xlsx`, folder paths stripped, in a local inbox emptied as soon as the page opens. Tests send a share with a `.exe` and a `../` path and check both are handled.

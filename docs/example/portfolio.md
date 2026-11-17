@@ -4,7 +4,7 @@ ARR-weighted Yield: **83.3%** across 3 customer(s).
 
 | Customer | ARR | Yield | End to end | Level | Legacy | L1 | L2 | L3 | L4 | Change | Top action |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| Contoso Bank (mock) | 1,250,000 | 91.0% | 136 of 220 | Silver | 98.6% | 97.7% | 99.7% | 96.6% | 96.7% | - | Adopt Workflow and remediation automation on 35 account(s) |
+| Contoso Bank (mock) | 1,250,000 | 91.0% | 136 of 220 | Silver | 98.6% | 97.7% | 99.7% | 96.6% | 96.7% | - | Adopt Workflow and remediation automation on 35 accounts |
 | Northwind (mock) | 480,000 | 72.6% | 29 of 121 | Bronze | 92.0% | 90.1% | 97.3% | 92.7% | 89.4% | - | Give unowned findings an owner and a decision (13) |
 | Fabrikam Labs (mock) | 96,000 | 37.7% | 0 of 27 | Bronze | 90.0% | 81.5% | 94.1% | 64.9% | 75.7% | - | Give unowned findings an owner and a decision (11) |
 

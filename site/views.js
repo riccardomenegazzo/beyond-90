@@ -177,7 +177,7 @@ function stakeAndDecay({ dash, go }) {
 function attention({ result, dash, score }) {
   const out = [], o = score.outcomes, u = score.universe;
   const ob = dash.onboarding;
-  if (ob && (ob.listed_but_broken.length || ob.stalled.length)) out.push({ kind: ob.listed_but_broken.length ? "bad" : "warn", title: ob.listed_but_broken.length ? `${ob.listed_but_broken.length} connector(s) counted as connected are failing` : `${ob.stalled.length} ${score.terms.units} stuck in onboarding`, text: ob.waves[0] ? `Unblock first: ${ob.waves[0].title} (${ob.waves[0].count}).` : "", go: "onboarding", cta: "See onboarding" });
+  if (ob && (ob.listed_but_broken.length || ob.stalled.length)) out.push({ kind: ob.listed_but_broken.length ? "bad" : "warn", title: ob.listed_but_broken.length ? `${ob.listed_but_broken.length} connector(s) counted as connected are failing` : `${ob.stalled.length} ${ob.stalled.length === 1 ? score.terms.unit : score.terms.units} stuck in onboarding`, text: ob.waves[0] ? `Unblock first: ${ob.waves[0].title} (${ob.waves[0].count}).` : "", go: "onboarding", cta: "See onboarding" });
   if (ob && ob.secrets.some((x) => x.days_left <= 14)) out.push({ kind: "warn", title: "A connector secret expires within two weeks", text: ob.secrets.filter((x) => x.days_left <= 14).map((x) => `${x.connector} (${x.expires_on})`).join(", "), go: "onboarding" });
   const late = score.relationship?.reliability?.overdue_open || [];
   if (late.length) out.unshift({ kind: "bad", title: `${late.length} promise${late.length === 1 ? "" : "s"} to the customer ${late.length === 1 ? "is" : "are"} overdue`, text: "Keep the date, or tell them early that it will move.", go: "commitments", cta: "Open promises" });
@@ -912,7 +912,7 @@ export function onboardingView({ dash, score, result, engine }) {
   const gap = o.listed_but_broken.length ? h("div", { class: "card callout bad" }, h("h2", { text: `${o.listed_but_broken.length} ${o.listed_but_broken.length === 1 ? score.terms.unit + " is" : units + " are"} counted as connected, but the connector is failing` }),
     h("p", { text: `L1 says ${pct(o.listed_l1)}; connectors that actually work say ${pct(o.healthy_l1)}. ${o.listed_but_broken.join(", ")}.` })) : null;
   const noDetail = o.has_detail ? null : h("div", { class: "card callout" }, h("h2", { text: "Add connectors.csv for the full diagnosis" }),
-    h("p", { text: "Without it, onboarding is read from accounts.csv alone: discovered or connected. With one row per connector (status, the error the platform shows, dates, scope, how it signs in), each account gets a stage, a cause, an owner and a fix. See docs/onboarding.md." }));
+    h("p", { text: `Without it, onboarding is read from accounts.csv alone: discovered or connected. With one row per connector (status, the error the platform shows, dates, scope, how it signs in), each ${score.terms.unit} gets a stage, a cause, an owner and a fix. See docs/onboarding.md.` }));
 
   const waves = o.waves.length ? h("div", { class: "waves" }, o.waves.map((w, i) => h("details", { class: "wave" },
     h("summary", {}, h("span", { class: "agn", text: String(i + 1) }), h("span", { class: "wt" }, h("b", { text: w.title }), h("small", { class: "block", text: `${w.count} ${w.count === 1 ? score.terms.unit : units} · about ${w.hours} h · ${w.owner}` })),
@@ -948,7 +948,7 @@ export function onboardingView({ dash, score, result, engine }) {
     { sub: "Rotate early, and move to a role, federation or certificate where there is nothing to expire." }) : null;
   const sec = card("Connector security review", o.security.length ? h("ul", { class: "checks" }, o.security.map((x) => h("li", {}, chip(x.severity, SEC_KIND[x.severity]),
     h("span", {}, h("b", { text: `${x.connector}: ${x.title}` }), h("small", { class: "block", text: `${x.stride}. ${x.fix}` }))))) : h("p", { class: "note", text: o.has_detail ? "Every connector reads only and signs in without a long-lived secret." : "Needs connectors.csv (auth and privilege columns)." }),
-    { sub: "The connectors are an attack surface of their own: they hold standing access to every account. Read-only and secret-free is the goal." });
+    { sub: `The connectors are an attack surface of their own: they hold standing access to every ${score.terms.unit}. Read-only and secret-free is the goal.` });
 
   const dl = o.delta;
   const since = dl ? card(`Since ${dl.since}`, h("div", {},
@@ -965,7 +965,7 @@ export function onboardingView({ dash, score, result, engine }) {
     h("span", { class: "note", text: "What is done, what waits on whose team, and the read-only commands to check. No internal scores." }));
   return h("div", {},
     head, share, gap, noDetail, since,
-    h("div", { class: "col2" }, card("Where accounts stop", funnel(o.funnel), { sub: o.has_detail ? `Median ${o.time_to_deploy.median ?? "n/a"} days from discovery to a deployed connector (90th percentile ${o.time_to_deploy.p90 ?? "n/a"}); ${o.time_to_first_scan.median ?? "n/a"} days from deployment to the first scan.` : "From accounts.csv only." }),
+    h("div", { class: "col2" }, card(`Where ${score.terms.units} stop`, funnel(o.funnel), { sub: o.has_detail ? `Median ${o.time_to_deploy.median ?? "n/a"} days from discovery to a deployed connector (90th percentile ${o.time_to_deploy.p90 ?? "n/a"}); ${o.time_to_first_scan.median ?? "n/a"} days from deployment to the first scan.` : "From accounts.csv only." }),
       card("Unblock in this order", waves, { sub: "Grouped by cause and ordered by accounts unblocked per hour. Causes fixed once for the organization come first when they hold many back.",
         actions: h("button", { class: "btn small", type: "button", text: "Download plan", onclick: () => saveBlob(result.onboarding_markdown, "beyond90-onboarding.md", "text/markdown") }) })),
     card("Every " + score.terms.unit + ", by stage", h("div", {},
@@ -975,7 +975,8 @@ export function onboardingView({ dash, score, result, engine }) {
         csvButton("beyond90-onboarding.csv", [{ key: "id", label: "id" }, { key: "provider", label: "provider" }, { key: "stage", label: "stage" }, { key: "issue", label: "cause" }, { key: "days_in_stage", label: "days_at_stage" }, { key: "owner", label: "owner" }, { key: "error", label: "error" }], () => t.rows())),
       t.el)),
     h("div", { class: "col2" }, h("div", {}, ext, secrets), sec),
-    h("div", { class: "col2" }, triageCard(engine), preflightCard(engine)));
+    // the error catalogue and the kickoff checklist know public clouds and Kubernetes only: shown for that profile alone
+    (!score.provenance || !score.provenance.profile || score.provenance.profile === "cnapp") ? h("div", { class: "col2" }, triageCard(engine), preflightCard(engine)) : null);
 }
 
 function commands(list) {
