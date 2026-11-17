@@ -1584,6 +1584,7 @@ export function estateView({ estate, openLine, go }) {
   const mapCard = card("The estate", h("div", {}, estateMap(e, open), legend), { sub: "Each ring is a product line: how much of what was sold really works. Dashed circles are lines not in place yet. Select one to open it." });
   const risks = e.risks.length ? card("Where one line puts another at risk", h("ul", { class: "flags" }, e.risks.map((r) =>
     h("li", { class: "bad" }, h("b", { text: `${shortName(r.from, r.from_label)} ${pct(r.from_yield)}, ${shortName(r.to, r.to_label).toLowerCase()} ${pct(r.to_yield)}` }), h("span", { text: cap(r.why) + "." }),
+      r.step ? h("span", { class: "jhow", text: `First step: ${r.step} (+${r.points.toFixed(1)} pts)` }) : null,
       h("button", { class: "link", type: "button", text: `Open ${shortName(r.to, r.to_label).toLowerCase()}`, onclick: () => openLine(e.lines.find((l) => l.profile === r.to).key) })))),
   { sub: "What the customer bought works; what it depends on does not yet. These are the conversations that protect the renewal." }) : null;
   const heat = (v) => `background:color-mix(in srgb,var(--heat) ${Math.round(Math.max(0, Math.min(1, (v - 0.5) / 0.5)) * 55)}%,transparent)`;
@@ -1640,7 +1641,7 @@ export function workshopView({ workshop: w, catalog, list, answer, rename, setSc
     h("div", { class: "btnrow" }, name, h("button", { class: "btn small", type: "button", text: "Save the name", onclick: act(() => rename(name.value)) })),
     list.length > 1 ? h("div", { class: "btnrow" }, pick, h("button", { class: "btn small", type: "button", text: "Open", onclick: act(() => openWorkshop(pick.value)) })) : null,
     h("div", { class: "btnrow" }, h("button", { class: "btn small", type: "button", text: "New workshop", onclick: act(() => newWorkshop()) })),
-    scopeRow, say),
+    scopeRow, h("p", { class: "note", text: "In the meeting: select an answer and the next question is selected for you; the keys 1 to 4 answer it (Solved, Partly, A real gap, Nobody knows)." }), say),
   { sub: "Choose the product lines in scope, then record what the customer says to each question. Nothing leaves this browser; it is sealed when you set a passphrase." });
 
   // progress, kept current as answers come in
@@ -1658,7 +1659,7 @@ export function workshopView({ workshop: w, catalog, list, answer, rename, setSc
     const drawHead = () => {
       const st = WS.lineState(catalog, p, cur.answers);
       head.replaceChildren(h("b", { text: line.label }), h("span", { class: "muted", text: `${st.answered} of ${st.total}` }),
-        st.answered ? h("span", { class: "wspain " + (st.pain >= 0.6 ? "hi" : st.pain >= 0.35 ? "mid" : "lo"), text: `${painPct(st.pain)} pain` }) : null);
+        st.answered ? h("span", { class: "wspain " + (st.pain >= 0.6 ? "hi" : st.pain >= 0.35 ? "mid" : "lo"), text: `${painPct(st.pain)} missing` }) : null);
     };
     drawHead();
     const items = line.questions.map((q, i) => {
@@ -1671,10 +1672,21 @@ export function workshopView({ workshop: w, catalog, list, answer, rename, setSc
           h("div", { class: "wsqtext" }, h("span", { class: "wsstage s-" + q.stage, text: STAGE_TAG[q.stage] || q.stage }), h("span", { text: q.q }), q.why ? h("small", { class: "muted", text: q.why }) : null),
           h("div", { class: "wsans", role: "group", "aria-label": `Answer to: ${q.q}` }, Object.entries(WS.ANSWERS).map(([k, v]) =>
             h("button", { type: "button", class: "wsopt o-" + k, "aria-pressed": String(!!ans && ans.a === k), text: v.label,
-              onclick: act(async () => { const again = ans && ans.a === k; cur = await answer(p, i, again ? "" : k, again ? "" : note.value); draw(); drawHead(); drawProg(); }) }))),
+              onclick: act(async () => {
+                const again = ans && ans.a === k; cur = await answer(p, i, again ? "" : k, again ? "" : note.value); draw(); drawHead(); drawProg();
+                // in a meeting the next question is the next thing to ask: select it, so the keys 1 to 4 answer it
+                const next = again ? null : li.nextElementSibling;
+                (next ? next.querySelector(".wsopt") : li.querySelector(`.o-${k}`)).focus();
+              }) }))),
           ans ? note : null);
       };
       draw();
+      // keys 1 to 4 answer the question that has the focus (and do not switch views, as digits do elsewhere)
+      li.addEventListener("keydown", (e) => {
+        if (e.ctrlKey || e.metaKey || e.altKey || e.target.tagName === "INPUT" || !/^[1-4]$/.test(e.key)) return;
+        e.preventDefault(); e.stopPropagation();
+        li.querySelectorAll(".wsopt")[Number(e.key) - 1].click();
+      });
       return li;
     });
     const st = WS.lineState(catalog, p, cur.answers);
@@ -1687,7 +1699,7 @@ export function workshopView({ workshop: w, catalog, list, answer, rename, setSc
 export function hurtView({ workshop: w, catalog, go, startPov }) {
   const res = WS.assess(catalog, w);
   const say = h("p", { class: "note", role: "status" });
-  if (!res.answered) return card("Where it hurts", h("div", {}, h("p", { class: "note first", text: "Nothing recorded yet. Answer a few questions in the workshop and this page shows where the pain is, where to start and what to find out next." }),
+  if (!res.answered) return card("Where to start", h("div", {}, h("p", { class: "note first", text: "Nothing recorded yet. Answer a few questions in the workshop and this page shows where to start, what is still missing on each line and what to find out next." }),
     h("button", { class: "btn", type: "button", text: "Open the questions", onclick: () => go("workshop") })));
   const order = res.land ? [res.land.profile, ...w.scope.filter((p) => p !== res.land.profile)] : [...w.scope];
   const heard = res.lines.filter((l) => l.answered);
@@ -1695,17 +1707,17 @@ export function hurtView({ workshop: w, catalog, go, startPov }) {
     links: catalog.links.filter(([a, b]) => order.includes(a) && order.includes(b)).map(([a, b, why]) => ({ from: a, to: b, why, state: res.land && a === res.land.profile ? "grow" : "ok" })) };
   const map = estateMap(pseudo, (n) => go("workshop", { open: n.profile }), {
     value: (l) => l.pain, tone: (v) => (v >= 0.6 ? "weak" : v >= 0.35 ? "mid" : "strong"), sub: (l) => `${l.answered} of ${l.total}`, cls: "painmap",
-    say: (n, l) => (l ? `${n.label}: ${painPct(l.pain)} pain from ${l.answered} answers.` : `${n.label}: not discussed yet.`), label: `${w.customer}: where it hurts, by product line` });
+    say: (n, l) => (l ? `${n.label}: ${painPct(l.pain)} still missing, from ${l.answered} answers.` : `${n.label}: not discussed yet.`), label: `${w.customer}: what is still missing, by product line` });
   const hero = h("section", { class: "card estatehero" },
     res.land ? h("div", { class: "ehead" }, h("div", { class: "ereal" }, h("small", { text: "Start here" }), h("b", { class: "wsland", text: res.land.label })))
       : h("p", { class: "tline", text: res.waiting },),
-    res.land ? h("p", { class: "tline", text: `${painPct(res.land.pain)} pain from ${res.land.answered} answers: ${nOf(res.land.gaps.length, "real gap")}, ${res.land.partly.length} partly solved${res.land.unknowns.length ? `, ${res.land.unknowns.length} nobody could answer` : ""}.` }) : null,
+    res.land ? h("p", { class: "tline", text: `${painPct(res.land.pain)} still missing, from ${res.land.answered} answers: ${nOf(res.land.gaps.length, "real gap")}, ${res.land.partly.length} partly solved${res.land.unknowns.length ? `, ${res.land.unknowns.length} nobody could answer` : ""}.` }) : null,
     h("ul", { class: "elines" }, res.lines.map((l) => h("li", {}, h("span", { class: "en", text: shortName(l.profile, l.label) }),
-      h("span", { class: "ebar", title: `${l.label}: ${l.answered ? painPct(l.pain) + " pain" : "not discussed"}` }, h("i", { class: "er" + (l.pain >= 0.6 ? " weak" : ""), style: `width:${(l.pain * 100).toFixed(1)}%` })),
+      h("span", { class: "ebar", title: `${l.label}: ${l.answered ? painPct(l.pain) + " still missing" : "not discussed"}` }, h("i", { class: "er" + (l.pain >= 0.6 ? " weak" : ""), style: `width:${(l.pain * 100).toFixed(1)}%` })),
       h("b", { text: l.answered ? painPct(l.pain) : "—" })))),
-    h("p", { class: "note", text: "Pain: real gaps count fully, partly solved half, \"nobody knows\" most of the way; answers on business value count double." }));
-  const mapCard = card("Where it hurts", h("div", {}, map, h("ul", { class: "elegend" }, h("li", { class: "grow", text: "where the first line leads" }), h("li", { class: "ok", text: "lines that work together" }))),
-    { sub: "Each ring is a product line in scope, filled by how much it hurts. Dashed circles have not been discussed yet. Select one to open its questions." });
+    h("p", { class: "note", text: "How much is missing: real gaps count fully, partly solved half, \"nobody knows\" most of the way; answers on business value count double." }));
+  const mapCard = card("What is still missing", h("div", {}, map, h("ul", { class: "elegend" }, h("li", { class: "grow", text: "where the first line leads" }), h("li", { class: "ok", text: "lines that work together" }))),
+    { sub: "Each ring is a product line in scope, filled by how much is still missing there, from the customer's answers. Dashed circles have not been discussed yet. Select one to open its questions." });
   const out = [h("div", { class: "col2 estatetop" }, hero, mapCard)];
   if (res.land) {
     const reasons = [...res.land.gaps, ...res.land.partly].slice(0, 4);
@@ -1715,8 +1727,8 @@ export function hurtView({ workshop: w, catalog, go, startPov }) {
       h("div", { class: "btnrow" }, h("button", { class: "btn", type: "button", text: "Start the proof of value", onclick: async () => { try { await startPov(res); } catch (e) { say.textContent = e.message; } } })), say),
     { sub: "What the customer said that points here, and the proof that would settle it." }));
     if (res.expand.length) out.push(card("Then", h("ol", { class: "enext wsthen" }, res.expand.map((e) => h("li", {}, h("span", { class: "eline", text: shortName(e.profile, e.label) }),
-      h("span", { text: e.why ? cap(e.why) + "." : "Pain heard here too." }), h("b", { class: e.pain >= 0.6 ? "neg" : "", text: e.answered ? `${painPct(e.pain)} pain` : "not discussed" })))),
-    { sub: "The path after the first line: what it leads to, and how much the customer said each one hurts." }));
+      h("span", { text: e.why ? cap(e.why) + "." : "Something is missing here too." }), h("b", { class: e.pain >= 0.6 ? "neg" : "", text: e.answered ? `${painPct(e.pain)} missing` : "not discussed" })))),
+    { sub: "The path after the first line: what it leads to, and how much is still missing on each, from the customer's answers." }));
   }
   if (res.unknowns.length) {
     const text = res.unknowns.map((u) => `- ${u.label}: ${u.q}`).join("\n");

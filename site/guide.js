@@ -53,10 +53,11 @@ export const WORKSHOP_NAV = [
   { question: "The meeting", views: [
     { id: "workshop", label: "Questions", icon: "prep", tip: "The discovery questions for each product line in scope. Record what the customer says: solved, partly, a real gap, or nobody knows." },
     { id: "journey", label: "The journey", icon: "planview", tip: "Yes, this is possible: what would need to be true, the first step towards each condition and how each step is validated, from today to where the customer could be." },
-    { id: "hurt", label: "Where it hurts", icon: "outlook", tip: "Where the pain is, which line to start with and why, the path after it, and what to find out before the next meeting." },
+    { id: "hurt", label: "Where to start", icon: "outlook", tip: "Which line to start with and why, how much is still missing on each line, the path after it, and what to find out before the next meeting." },
     { id: "wspov", label: "Proof of value", icon: "maturity", tip: "The proof of value for the first line: criteria agreed before it starts, sessions, results. Kept in this browser." },
   ] },
   { question: "Documents to share", views: [
+    { id: "readout", label: "Customer readout", icon: "doc", tip: "A page for the customer: what we heard, what would need to be true, the first steps and how each is proven. No internal scores. Download it to send, print or show at the next meeting." },
     { id: "wsummary", label: "Meeting summary", icon: "doc", tip: "What we heard, where we propose to start, what comes after and what is still open: the note to send after the meeting." },
   ] },
 ];

@@ -206,7 +206,7 @@ export function summaryMarkdown(catalog, w, res) {
   out.push("## What we heard", "");
   for (const l of res.lines) {
     if (!l.answered) continue;
-    out.push(`### ${l.label} (${Math.round(l.pain * 100)}% pain, ${l.answered} of ${l.total} answered)`, "");
+    out.push(`### ${l.label} (${Math.round(l.pain * 100)}% still missing, ${l.answered} of ${l.total} answered)`, "");
     const say = (q, tag) => `- **${tag}:** ${q.q}${q.note ? ` — ${q.note}` : ""}`;
     for (const q of l.gaps) out.push(say(q, "Gap"));
     for (const q of l.partly) out.push(say(q, "Partly"));
@@ -235,4 +235,95 @@ export function summaryMarkdown(catalog, w, res) {
   }
   out.push("_Prepared with Beyond 90. The questions come from its product profiles; nothing in this note left the browser it was written in._", "");
   return out.join("\n");
+}
+
+// ------------------------------------------------------------------ the readout: a page for the customer
+
+const esc = (v) => String(v == null ? "" : v).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+const TODAY_WORDS = { gap: "Not yet in place", partly: "Partly in place", unknown: "To find out together" };
+
+/**
+ * The discovery readout: one page to send to the customer, or to show on the screen at the next meeting. It speaks the
+ * customer's language (no pain scores, no internal stage codes) and keeps the same rigour: what we heard, what would need
+ * to be true, the first steps, how each step is proven, and what is still open. Every piece of text is escaped; the page
+ * has no scripts and loads nothing.
+ */
+export function readoutHtml(catalog, w, res, { preparedBy = "", today = "" } = {}) {
+  const j = journey(catalog, w, res);
+  const heard = res.lines.filter((l) => l.answered);
+  const css = `
+    @page{size:A4;margin:16mm}
+    *{box-sizing:border-box}
+    body{margin:0;font:15px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#142029;background:#fff}
+    main{max-width:820px;margin:0 auto;padding:40px 32px 56px}
+    header.top{border-bottom:3px solid #0f766e;padding-bottom:18px;margin-bottom:26px}
+    header.top p{margin:0;color:#43515b}
+    h1{font-size:30px;line-height:1.15;margin:6px 0 10px;letter-spacing:-.01em}
+    h2{font-size:20px;margin:34px 0 10px;color:#0b5f59}
+    h3{font-size:16px;margin:20px 0 6px}
+    .lead{font-size:19px;font-weight:600;color:#0b5f59;margin:0 0 6px}
+    .stake{border-left:4px solid #0f766e;background:#f1f6f5;padding:10px 14px;margin:14px 0;border-radius:0 8px 8px 0}
+    .stake small{display:block;color:#43515b;font-size:12.5px;font-weight:700}
+    .stats{display:flex;gap:28px;margin:14px 0 4px}
+    .stats div b{display:block;font-size:26px;line-height:1.1}
+    .stats div span{font-size:12.5px;color:#43515b}
+    ol.steps{list-style:none;padding:0;margin:0;counter-reset:s}
+    ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 48px;break-inside:avoid}
+    ol.steps>li::before{content:counter(s);position:absolute;left:0;top:0;width:32px;height:32px;border-radius:50%;background:#0f766e;color:#fff;display:grid;place-items:center;font-weight:800}
+    ol.steps>li>h3{margin:4px 0 6px}
+    .why{color:#43515b;margin:0 0 8px}
+    table{width:100%;border-collapse:collapse;margin:6px 0}
+    th,td{text-align:left;vertical-align:top;padding:7px 8px;border-bottom:1px solid #dfe5e8;font-size:14px}
+    th{font-size:12px;color:#43515b;font-weight:700}
+    td.st{white-space:nowrap;font-size:12.5px;color:#43515b}
+    .done{color:#1b7a4c;font-size:14px;margin:6px 0}
+    .proof{background:#f4f6f8;border-radius:8px;padding:8px 12px;margin:8px 0 0;font-size:14px}
+    .proof b{font-size:12.5px;color:#43515b}
+    ul{margin:6px 0;padding-left:20px}
+    .heard li{margin:3px 0}
+    .heard q{color:#43515b}
+    footer{margin-top:40px;padding-top:12px;border-top:1px solid #dfe5e8;color:#5f6c76;font-size:12.5px}
+    @media print{main{padding:0}h2{break-after:avoid}}`;
+  const out = [`<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">`,
+    `<title>${esc(w.customer)}: discovery readout</title><style>${css}</style></head><body><main>`,
+    `<header class="top"><p>Discovery readout${today ? `, ${esc(today)}` : ""}</p><h1>${esc(w.customer)}: where we could go together</h1>`,
+    `<p>From our conversation${heard.length ? ` on ${esc(heard.map((l) => l.label.toLowerCase()).join(", "))}` : ""}. It is meant to be corrected: tell us what we misheard.</p></header>`];
+  if (j) {
+    out.push(`<p class="lead">Yes, this is possible.</p><p>Here is what would need to be true, how we would get there, and how each step would be proven before the next one starts.</p>`);
+    out.push(`<div class="stats"><div><b>${j.need}</b><span>things to make true</span></div><div><b>${j.done}</b><span>already true today</span></div><div><b>${j.unknown}</b><span>to find out together</span></div></div>`);
+    if (j.impact.length) out.push(`<div class="stake"><small>What is at stake, in your words</small>${j.impact.map((x) => `&ldquo;${esc(x)}&rdquo;`).join("<br>")}</div>`);
+    out.push(`<h2>The journey</h2><ol class="steps">`);
+    for (const st of j.steps) {
+      out.push(`<li><h3>${esc(st.title)}</h3>`);
+      if (st.why) out.push(`<p class="why">${esc(st.why.charAt(0).toUpperCase() + st.why.slice(1))}.</p>`);
+      if (st.conditions.length) {
+        out.push(`<table><thead><tr><th>What would need to be true</th><th>Today</th><th>First step</th></tr></thead><tbody>`);
+        for (const c of st.conditions) out.push(`<tr><td>${esc(c.need)}${c.note ? `<br><q>${esc(c.note)}</q>` : ""}</td><td class="st">${TODAY_WORDS[c.status]}</td><td>${esc(c.how)}</td></tr>`);
+        out.push(`</tbody></table>`);
+      }
+      if (st.already.length) out.push(`<p class="done"><b>Already true:</b> ${esc(st.already.join(". "))}.</p>`);
+      if (st.validate.length) out.push(`<div class="proof"><b>How we would prove it</b><ul>${st.validate.map((v) => `<li>${esc(v)}.</li>`).join("")}</ul></div>`);
+      out.push(`</li>`);
+    }
+    out.push(`</ol>`);
+  } else {
+    out.push(`<p class="lead">We are still listening.</p><p>${esc(res.waiting)}</p>`);
+  }
+  if (heard.length) {
+    out.push(`<h2>What we heard</h2>`);
+    for (const l of heard) {
+      const said = [...l.gaps, ...l.partly, ...l.unknowns, ...l.solved].filter((q) => q.note);
+      const working = l.solved.map((q) => q.need || q.q);
+      out.push(`<h3>${esc(l.label)}</h3><ul class="heard">`);
+      for (const q of said) out.push(`<li>${esc(q.q)} <q>${esc(q.note)}</q></li>`);
+      if (working.length) out.push(`<li>Working well: ${esc(working.join("; "))}.</li>`);
+      if (!said.length && !working.length) out.push(`<li>${l.answered} question${l.answered === 1 ? "" : "s"} discussed.</li>`);
+      out.push(`</ul>`);
+    }
+  }
+  if (res.unknowns.length) {
+    out.push(`<h2>For our next meeting</h2><ul>${res.unknowns.map((u) => `<li>${esc(u.q)} <span style="color:#5f6c76">(${esc(u.label.toLowerCase())})</span></li>`).join("")}</ul>`);
+  }
+  out.push(`<footer>${preparedBy ? `Prepared by ${esc(preparedBy)}. ` : ""}Written from our conversation in the browser where it was recorded; nothing was sent anywhere to produce it.</footer></main></body></html>`);
+  return out.join("");
 }

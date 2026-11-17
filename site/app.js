@@ -472,6 +472,7 @@ const VIEWS = {
   bookreport: { kind: "html", key: "book_html", file: "beyond90-book.html", type: "text/html" },
   workshop: { kind: "view", view: "workshopView" }, journey: { kind: "view", view: "journeyView" }, hurt: { kind: "view", view: "hurtView" }, wspov: { kind: "view", view: "povView" },
   wsummary: { kind: "md", key: "summary_markdown", file: "beyond90-discovery.md", type: "text/markdown" },
+  readout: { kind: "html", key: "readout_html", file: "discovery-readout.html", type: "text/html" },
   estate: { kind: "view", view: "estateView" }, estategrow: { kind: "view", view: "growView" },
   estateplan: { kind: "md", key: "plan_markdown", file: "beyond90-account-plan.md", type: "text/markdown" },
 };
@@ -599,7 +600,7 @@ function paintRoles() {
 function markTab() { for (const b of document.querySelectorAll("#tabs [data-tab], #tabs [data-pin], #mobilebar [data-go]")) b.toggleAttribute("aria-current", (b.dataset.tab || b.dataset.pin || b.dataset.go) === state.tab); }
 
 const current = () => tabDefs.find((t) => t.id === state.tab) || tabDefs[0];
-const payload = () => (state.workshop && !state.result && !state.book && !state.estate && currentWorkshop() ? { summary_markdown: WSHOP.summaryMarkdown(state.wcat, currentWorkshop(), WSHOP.assess(state.wcat, currentWorkshop())) } : state.estate ? state.estate : state.mode === "book" || state.book ? state.book : state.result);
+const payload = () => (state.workshop && !state.result && !state.book && !state.estate && currentWorkshop() ? workshopDocs() : state.estate ? state.estate : state.mode === "book" || state.book ? state.book : state.result);
 
 function selectTab(name, extra) {
   state.tab = name;
@@ -832,6 +833,10 @@ function showWorkshop(tab) {
   state.tab = tab || "workshop";
   renderNav(WORKSHOP_NAV, w.customer);
   selectTab(state.tab);
+}
+function workshopDocs() {
+  const w = currentWorkshop(), res = WSHOP.assess(state.wcat, w);
+  return { summary_markdown: WSHOP.summaryMarkdown(state.wcat, w, res), readout_html: WSHOP.readoutHtml(state.wcat, w, res, { today: longDate(todayIso()) }) };
 }
 function workshopContext() {
   const w = currentWorkshop(), cat = state.wcat, today = todayIso();

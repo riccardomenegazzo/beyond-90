@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { ANSWERS, makeWorkshop, validWorkshop, acceptWorkshops, mergeWorkshops, setAnswer, rename, setScope, lineState, assess, journey, summaryMarkdown, MAX_WORKSHOPS } from "../workshop.js";
+import { ANSWERS, makeWorkshop, validWorkshop, acceptWorkshops, mergeWorkshops, setAnswer, rename, setScope, lineState, assess, journey, summaryMarkdown, readoutHtml, MAX_WORKSHOPS } from "../workshop.js";
 
 const CAT = JSON.parse(readFileSync(new URL("./workshop-catalog.json", import.meta.url), "utf-8"));
 const D = "2026-11-17";
@@ -148,4 +148,23 @@ test("the journey turns every gap into a condition with a first step, and keeps 
   assert.ok(then.length >= 1 && then[0].why, "the next steps say why they follow");
   assert.equal(j.need, j.steps.reduce((n, s) => n + s.conditions.length, 0));
   assert.equal(j.done, j.steps.reduce((n, s) => n + s.already.length, 0));
+});
+
+test("the customer readout speaks the customer's language and escapes everything it was given", () => {
+  let w = mk({ customer: "<img src=x onerror=alert(1)> & Co" });
+  w = fill(w, "dr-backup", ["gap", "solved", "gap", "partly", "gap", "unknown"]);
+  w = setAnswer(w, "dr-backup", 0, "gap", "<script>steal()</script> 2M a day", D);
+  const html = readoutHtml(CAT, w, assess(CAT, w), { today: "17 November 2026" });
+  assert.match(html, /^<!DOCTYPE html>/);
+  assert.ok(!/<script/i.test(html) && !/onerror=alert/.test(html.replace(/&lt;img[^]*?&gt;/g, "")), "nothing the customer typed becomes markup");
+  assert.match(html, /&lt;script&gt;steal\(\)&lt;\/script&gt; 2M a day/);
+  assert.match(html, /&lt;img src=x onerror=alert\(1\)&gt; &amp; Co: where we could go together/);
+  assert.match(html, /Yes, this is possible\./);
+  assert.match(html, /What would need to be true/);
+  assert.match(html, /How we would prove it/);
+  assert.match(html, /For our next meeting/);
+  assert.ok(!/pain|L[1-4] |gap\b/i.test(html.replace(/<style>[^]*?<\/style>/, "").replace(/<[^>]+>/g, " ")), "no internal scores or stage codes");
+  assert.ok(!/https?:\/\//.test(html), "the page loads nothing");
+  const early = readoutHtml(CAT, mk(), assess(CAT, mk()));
+  assert.match(early, /We are still listening/);
 });

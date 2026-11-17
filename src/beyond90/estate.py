@@ -129,7 +129,8 @@ def _risks(lines: list[dict[str, Any]]) -> list[dict[str, Any]]:
             continue
         out.append({"from": src, "to": dst, "from_label": a["label"], "to_label": b["label"], "from_yield": a["yield"], "to_yield": b["yield"],
                     "why": why, "text": f"{a['label']} is at {pct(a['yield'])}, but {_lower(b['label'])} is at {pct(b['yield'])}: {why}.",
-                    "gap": a["yield"] - b["yield"]})
+                    "gap": a["yield"] - b["yield"], "step": (b["top_action"] or {}).get("title", ""),
+                    "points": (b["top_action"] or {}).get("points", 0.0)})
     out.sort(key=lambda r: -r["gap"])
     return out
 
@@ -191,7 +192,7 @@ def render_plan_markdown(e: dict[str, Any]) -> str:
     out.append("")
     if e["risks"]:
         out += ["## Where one line puts another at risk", ""]
-        out += [f"- {r['text']}" for r in e["risks"]]
+        out += [f"- {r['text']}" + (f" First step: {r['step']} (+{r['points']:.1f} pts on {_lower(r['to_label'])})." if r["step"] else "") for r in e["risks"]]
         out.append("")
     if e["whitespace"]:
         out += ["## Where to grow next", ""]

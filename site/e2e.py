@@ -680,6 +680,19 @@ def main(site: str) -> int:
             for i, a in enumerate(ans):
                 d.locator(".wsq").nth(i).get_by_role("button", name=label[a], exact=True).click()
                 page.wait_for_selector(f"#ws-{prof} .wsq:nth-child({i + 1}) .wsopt.o-{a}[aria-pressed=true]")
+        # in a meeting: the next question is selected after an answer, and the keys 1 to 4 answer it
+        d = page.locator("#ws-dbaas")
+        if d.get_attribute("open") is None:
+            d.locator("summary").click()
+        d.locator(".wsq").nth(0).get_by_role("button", name="Partly", exact=True).click()
+        page.wait_for_selector("#ws-dbaas .wsq:nth-child(1) .o-partly[aria-pressed=true]")
+        page.keyboard.press("3")
+        page.wait_for_selector("#ws-dbaas .wsq:nth-child(2) .o-gap[aria-pressed=true]")
+        check(state_tab(page) == "workshop" and page.evaluate("document.activeElement.closest('.wsq') === document.querySelector('#ws-dbaas .wsq:nth-child(3)')"),
+              "after an answer the next question is selected, and a digit answers it instead of switching views")
+        for i in (1, 0):
+            d.locator(".wsq").nth(i).locator(".wsopt[aria-pressed=true]").click()     # pressing again clears: back to the two lines above
+            page.wait_for_selector(f"#ws-dbaas .wsq:nth-child({i + 1}) .wsopt[aria-pressed=true]", state="detached")
         note = page.locator("#ws-dr-backup .wsq").first.locator("input[type=text]")
         note.fill("A day down is about 2M in lost orders")
         note.press("Tab")
@@ -697,6 +710,11 @@ def main(site: str) -> int:
         page.get_by_role("button", name="Start the proof of value").click()
         page.wait_for_selector("#view .promise")
         check(state_tab(page) == "wspov" and "immutable copy" in page.inner_text("#view"), "starting the proof of value carries the first line's own criteria")
+        page.click("[data-tab=readout]")
+        readout = page.frame_locator("#report").locator("body")
+        check("Yes, this is possible." in readout.inner_text() and "What would need to be true" in readout.inner_text() and "pain" not in readout.inner_text().lower(),
+              "the customer readout says what is possible, in the customer's language")
+        check(page.frame_locator("#report").locator("script").count() == 0, "and runs nothing")
         page.click("[data-tab=wsummary]")
         check("Discovery: Kestrel Logistics" in page.inner_text("#doc") and "To find out before the next meeting" in page.inner_text("#doc"), "the meeting summary is ready to send")
         page.reload()
@@ -716,6 +734,7 @@ def main(site: str) -> int:
         check(page.locator("#view .elink.risk").count() >= 1 and page.locator("#view .elink.grow").count() >= 1, "and links coloured by risk and by what comes next")
         check(page.locator("#view .heatcell").count() == 16 and "of 14 clusters" in page.inner_text("#view") and "of 10 sites" in page.inner_text("#view"), "each line is counted in its own units")
         check("Platform 71.9%, recovery 42.8%" in page.inner_text("#view"), "a solid line leaning on a weak one is called out")
+        check("First step:" in page.inner_text("#view .flags"), "with the first step on the weak line")
         page.locator("#view .enode.absent").first.focus()
         page.keyboard.press("Enter")
         page.wait_for_selector("#view .card.grow.focus")

@@ -2,6 +2,13 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.84.0
+
+- **Customer readout.** A page for the customer, from the discovery workshop: "Yes, this is possible", what would need to be true, where they are today and the first step for each, how each step would be proven, what we heard and what to settle at the next meeting. In the customer's language (no scores, no stage codes), with what is at stake in their own words. Download it to send or print, or show it on screen; it has no scripts, loads nothing, and everything typed is escaped.
+- **Built for the meeting itself.** After an answer the next question is selected, and the keys 1 to 4 answer it (Solved, Partly, A real gap, Nobody knows) without switching views.
+- **Where to start**, not where it hurts: the workshop's second view now speaks of what is still missing on each line rather than of pain, in line with the journey.
+- **Estate:** each line that puts another at risk now comes with the first step on the weak line and what it is worth, in the view and in the account plan.
+
 ## 0.83.0
 
 - **The journey: from "can we?" to "what would need to be true?".** A new view in the discovery workshop opens on "Yes, this is possible." and turns the answers into a path: agree what success looks like, prove it on the first line, then the lines it leads to. Every gap or unknown becomes a condition to make true, with where the customer is today (in their words), the first step towards it and how the step is validated; what is already true is shown too, and what is at stake heads the page.

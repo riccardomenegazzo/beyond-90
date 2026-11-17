@@ -129,3 +129,11 @@ def test_the_page_tests_use_the_shipped_questions() -> None:
     c = estate.workshop_catalog()
     for profile, line in fixture["lines"].items():
         assert line == c["lines"][profile], f"site/test/workshop-catalog.json is stale for {profile}"
+
+
+def test_each_risk_comes_with_the_first_step_on_the_weak_line() -> None:
+    e = estate.analyze_estate_dir(HALDEN)
+    by = {ln["profile"]: ln for ln in e["lines"]}
+    for r in e["risks"]:
+        assert r["step"] == by[r["to"]]["top_action"]["title"] and r["points"] > 0
+    assert "First step:" in e["plan_markdown"]
