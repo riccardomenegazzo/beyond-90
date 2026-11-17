@@ -2,6 +2,12 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.89.0
+
+- **The plan by date.** Dated conditions in the journey are listed by month, and **Add to a calendar** downloads them as an .ics file, one all-day event each, for Outlook, Google Calendar or Apple Calendar. Made in the page; nothing is sent.
+- **From the estate to discovery.** Each line in "Where to grow" can start a discovery workshop with the same customer on that line: land and expand in one click.
+- **Prepared by.** A workshop can carry the name of who prepared it, and the customer readout is signed with it.
+
 ## 0.88.0
 
 - **The journey becomes a mutual plan.** Each condition can be given who makes it true (us, the customer, or together) and by when. Owners and dates show in the customer readout ("Who, by when") and in the meeting summary, and survive a changed answer or figure. When presenting, they show as text.

@@ -58,6 +58,7 @@ export function validWorkshop(w) {
     if (v.who != null && !(v.who in WHO)) return false;
     if (v.by != null && !(isDate(v.by) && v.by >= w.created_on)) return false;
   }
+  if (w.prepared_by != null && (typeof w.prepared_by !== "string" || w.prepared_by.length > 80)) return false;
   const m = /^ws\|(\d{4}-\d{2}-\d{2})\|([a-z0-9]+)$/.exec(w.id || "");
   return !!m && m[1] === w.created_on && NONCE.test(m[2]);
 }
@@ -130,6 +131,15 @@ export function rename(w, customer, today) {
   const name = text(customer, 200);
   if (!name) throw new Error("Say who the workshop is with.");
   return changed(w, { customer: name }, today);
+}
+
+/** Who prepared the workshop, for the readout's footer; empty removes it. */
+export function setPreparedBy(w, name, today) {
+  const n = text(name, 80);
+  const next = { ...w };
+  delete next.prepared_by;
+  if (n) next.prepared_by = n;
+  return changed(next, {}, today);
 }
 
 export function setScope(w, scope, today) {
@@ -422,6 +432,48 @@ export function readoutHtml(catalog, w, res, { preparedBy = "", today = "" } = {
   if (res.unknowns.length) {
     out.push(`<h2>For our next meeting</h2><ul>${res.unknowns.map((u) => `<li>${esc(u.q)} <span style="color:#5f6c76">(${esc(u.label.toLowerCase())})</span></li>`).join("")}</ul>`);
   }
-  out.push(`<footer>${preparedBy ? `Prepared by ${esc(preparedBy)}. ` : ""}Written from our conversation in the browser where it was recorded; nothing was sent anywhere to produce it.</footer></main></body></html>`);
+  const by = preparedBy || w.prepared_by || "";
+  out.push(`<footer>${by ? `Prepared by ${esc(by)}. ` : ""}Written from our conversation in the browser where it was recorded; nothing was sent anywhere to produce it.</footer></main></body></html>`);
   return out.join("");
+}
+
+// ------------------------------------------------------------------ the plan in a calendar
+
+/** The dated conditions, earliest first: what each side said it would make true, and by when. */
+export function datedPlan(j) {
+  if (!j) return [];
+  return j.steps.flatMap((st) => st.conditions.filter((c) => c.by).map((c) => ({ ...c, step: st.title })))
+    .sort((a, b) => cmp(a.by, b.by) || cmp(a.need, b.need));
+}
+
+const icsText = (v) => String(v).replace(/\\/g, "\\\\").replace(/;/g, "\;").replace(/,/g, "\\,").replace(/\r?\n/g, "\\n");
+const octets = (t) => new TextEncoder().encode(t).length;
+// lines longer than 75 octets are folded, as the calendar format asks
+function fold(line) {
+  const out = [];
+  let rest = line;
+  while (octets(rest) > 74) {
+    let cut = 74;
+    while (octets(rest.slice(0, cut)) > 74) cut--;
+    out.push(rest.slice(0, cut));
+    rest = " " + rest.slice(cut);
+  }
+  out.push(rest);
+  return out.join("\r\n");
+}
+
+/** One all-day event per dated condition, for any calendar. Nothing in it but what the plan says. */
+export function planIcs(w, j, stamp) {
+  const dt = (d) => d.replace(/-/g, "");
+  const next = (d) => { const x = new Date(d + "T00:00:00Z"); x.setUTCDate(x.getUTCDate() + 1); return x.toISOString().slice(0, 10).replace(/-/g, ""); };
+  const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Beyond 90//Discovery plan//EN", "CALSCALE:GREGORIAN", "METHOD:PUBLISH"];
+  for (const c of datedPlan(j)) {
+    lines.push("BEGIN:VEVENT", `UID:${w.id.replace(/\|/g, "-")}-${c.profile}-${c.index}@beyond90`, `DTSTAMP:${stamp}`,
+      `DTSTART;VALUE=DATE:${dt(c.by)}`, `DTEND;VALUE=DATE:${next(c.by)}`,
+      fold(`SUMMARY:${icsText(`${w.customer}: ${c.need}`)}`),
+      fold(`DESCRIPTION:${icsText(`${c.step}. First step: ${c.how}.${c.who ? ` Owner: ${WHO[c.who].toLowerCase()}.` : ""}`)}`),
+      "END:VEVENT");
+  }
+  lines.push("END:VCALENDAR");
+  return lines.join("\r\n") + "\r\n";
 }

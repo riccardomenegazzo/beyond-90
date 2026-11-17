@@ -239,3 +239,32 @@ test("a condition can carry who makes it true and by when, shown in the summary 
   assert.equal(setPlan(w, "dr-backup", 2, "", "", D).answers["dr-backup#2"].who, undefined);
   assert.deepEqual(Object.keys(WHO), ["us", "customer", "together"]);
 });
+
+test("the dated plan goes to a calendar file that any calendar reads", async () => {
+  const m = await import("../workshop.js");
+  let w = m.makeWorkshop({ customer: "Acme; Rivers, Inc", scope: ["dr-backup"], createdOn: D, nonce: "abc123" });
+  w = fill(w, "dr-backup", ["gap", "solved", "gap", "partly", "gap"]);
+  w = m.setPlan(w, "dr-backup", 4, "us", "2026-12-15", D);
+  w = m.setPlan(w, "dr-backup", 2, "together", "2026-11-30", D);
+  const j = m.journey(CAT, w, m.assess(CAT, w));
+  assert.deepEqual(m.datedPlan(j).map((c) => c.by), ["2026-11-30", "2026-12-15"]);
+  const ics = m.planIcs(w, j, "20261118T000000Z");
+  assert.ok(ics.startsWith("BEGIN:VCALENDAR\r\n") && ics.endsWith("END:VCALENDAR\r\n"));
+  assert.equal((ics.match(/BEGIN:VEVENT/g) || []).length, 2);
+  assert.match(ics, /DTSTART;VALUE=DATE:20261130\r\nDTEND;VALUE=DATE:20261201/);
+  assert.match(ics, /SUMMARY:Acme\; Rivers\\, Inc: /, "commas and semicolons are escaped");
+  for (const line of ics.split("\r\n")) assert.ok(new TextEncoder().encode(line).length <= 75, line);
+  assert.ok(!/\n(?<!\r\n)/.test(ics.replace(/\r\n/g, "")), "every line ends with CRLF");
+  assert.equal(m.planIcs(w, null, "20261118T000000Z").includes("VEVENT"), false);
+});
+
+test("who prepared the workshop signs the readout", async () => {
+  const m = await import("../workshop.js");
+  let w = m.setPreparedBy(mk(), "  Riccardo  ", D);
+  assert.equal(w.prepared_by, "Riccardo");
+  assert.ok(validWorkshop(w));
+  assert.match(m.readoutHtml(CAT, w, m.assess(CAT, w)), /Prepared by Riccardo\./);
+  assert.equal(m.setPreparedBy(w, "", D).prepared_by, undefined);
+  assert.equal(validWorkshop({ ...w, prepared_by: "x".repeat(81) }), false);
+  assert.equal(validWorkshop({ ...w, prepared_by: 5 }), false);
+});

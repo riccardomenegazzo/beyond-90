@@ -630,7 +630,7 @@ function selectTab(name, extra) {
 
 function context() {
   if (state.workshop && !state.result && !state.book && !state.estate) return workshopContext();
-  if (state.estate) return { estate: state.estate, present, go: (tab, extra) => selectTab(tab, extra), openLine: (key, tab = "today") => { state.mode = "single"; state.files = { ...state.groups[key] }; state.estate = null; state.tab = tab; renderLoaded(); run(); } };
+  if (state.estate) return { estate: state.estate, present, startWorkshop: (c, scope) => startWorkshopFor(c, scope).catch((e) => say(e.message)), go: (tab, extra) => selectTab(tab, extra), openLine: (key, tab = "today") => { state.mode = "single"; state.files = { ...state.groups[key] }; state.estate = null; state.tab = tab; renderLoaded(); run(); } };
   if (state.book) return { book: state.book, povs: state.povs, savePov, removePov, today: todayIso(), advisories: state.advisories, openCustomer: (key, tab = "prep") => { state.mode = "single"; state.files = { ...state.groups[key] }; state.book = null; state.tab = tab; renderLoaded(); run(); } };
   const r = state.result;
   if (r && state.parsedFor !== r) { state.parsed = JSON.parse(r.score_json); state.parsedFor = r; }
@@ -822,6 +822,13 @@ async function openExampleWorkshop() {
   state.workshop = w.id; state.result = null; state.book = null; state.estate = null;
   showWorkshop("journey");
 }
+/** From the estate: a workshop with this customer on the lines it does not run yet. */
+async function startWorkshopFor(customer, scope) {
+  await workshopCatalog();
+  const w = await keepWorkshop(WSHOP.makeWorkshop({ customer, scope, createdOn: todayIso() }));
+  state.workshop = w.id; state.result = null; state.book = null; state.estate = null;
+  showWorkshop("workshop");
+}
 async function removeWorkshop(id) {
   await store.workshopRemove(id);
   await refreshWorkshops();
@@ -883,6 +890,7 @@ function workshopContext() {
     answer: async (profile, i, a, note) => { const next = await edit((x) => WSHOP.setAnswer(x, profile, i, a, note, today)); const r = WSHOP.assess(cat, next); fillHead(next.customer, `Discovery workshop, started ${longDate(next.created_on)}`, r.coverage); return next; },
     worth: async (profile, i, amount, per) => edit((x) => WSHOP.setWorth(x, profile, i, amount, per, today)),
     plan: async (profile, i, who, by) => edit((x) => WSHOP.setPlan(x, profile, i, who, by, today)),
+    preparedBy: async (name) => edit((x) => WSHOP.setPreparedBy(x, name, today)),
     rename: async (name) => { await edit((x) => WSHOP.rename(x, name, today)); showWorkshop("workshop"); },
     setScope: async (scope) => { await edit((x) => WSHOP.setScope(x, scope, today)); showWorkshop("workshop"); },
     newWorkshop, openWorkshop, removeWorkshop, presets: WSHOP.PRESETS.map((p) => ({ ...p, scope: p.scope.filter((x) => cat.lines[x]) })).filter((p) => p.scope.length),

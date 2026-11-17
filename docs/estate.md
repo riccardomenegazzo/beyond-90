@@ -32,7 +32,7 @@ The start page has the example, "One customer, every line": Halden Group, an inv
 ## What you get
 
 - **Estate:** the headline, the usual number struck through next to what really works, one bar per line; the map, with the first line of the family in the middle and the others around it; red links where a solid line leans on a weak one, dashed links to the lines that could come next; the next action on each line; the four stages of every line in one table.
-- **Where to grow:** each missing line with why it follows, the opening question (from that profile's discovery questions) and a proof to offer (from its proof-of-value criteria).
+- **Where to grow:** each missing line with why it follows, the opening question (from that profile's discovery questions) and a proof to offer (from its proof-of-value criteria), and a button that starts a discovery workshop with the same customer on that line.
 - **Account plan:** all of it as a document to paste into a CRM, a shared drive or an email.
 
 Select a line, on the map or in the table, to open its own report: Today, actions, call prep, proof of value.

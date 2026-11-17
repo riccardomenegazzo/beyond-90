@@ -1607,7 +1607,7 @@ export function estateView({ estate, openLine, go, present }) {
   card("Every line, four stages", dataTable({ columns: cols, rows: e.lines, label: "Lines", pageSize: 50 }).el));
 }
 
-export function growView({ estate, focus }) {
+export function growView({ estate, focus, startWorkshop }) {
   const e = estate;
   if (!e.whitespace.length) return card("Where to grow", h("p", { class: "note first", text: `${e.customer} already runs every line of the ${e.family} portfolio. Growth here is depth: the next action on each line.` }));
   const items = e.whitespace.map((w, i) => h("section", { class: "card grow" + (focus === w.profile ? " focus" : ""), id: "grow-" + w.profile },
@@ -1617,7 +1617,8 @@ export function growView({ estate, focus }) {
       : h("p", { class: "note", text: "Nothing in place leads here yet: worth a question, not a proposal." }),
     w.opener ? h("div", { class: "growask" }, h("small", { text: "Open with" }), h("q", { text: w.opener.q }), h("span", { class: "note", text: w.opener.why }),
       h("button", { class: "btn small", type: "button", text: "Copy the question", onclick: (ev) => copyText(w.opener.q).then((ok) => { ev.target.textContent = ok ? "Copied" : "Not copied"; }) })) : null,
-    w.proof ? h("div", { class: "growproof" }, h("small", { text: "A proof to offer" }), h("p", { text: w.proof.text + "." }), h("span", { class: "note", text: "How: " + w.proof.how })) : null));
+    w.proof ? h("div", { class: "growproof" }, h("small", { text: "A proof to offer" }), h("p", { text: w.proof.text + "." }), h("span", { class: "note", text: "How: " + w.proof.how })) : null,
+    startWorkshop ? h("div", { class: "btnrow" }, h("button", { class: "btn", type: "button", text: "Start a discovery workshop on this line", onclick: () => startWorkshop(e.customer, [w.profile]) })) : null));
   if (focus) requestAnimationFrame(() => { const el = document.getElementById("grow-" + focus); if (el) el.scrollIntoView({ block: "start" }); });
   return h("div", {}, h("p", { class: "note first", text: `The lines ${e.customer} does not run yet, in the order they follow from what it already runs. A line that several solid lines lead to comes first.` }), items);
 }
@@ -1626,7 +1627,7 @@ export function growView({ estate, focus }) {
 const STAGE_TAG = { value: "Value", L1: "L1 connected", L2: "L2 seen", L3: "L3 switched on", L4: "L4 decided" };
 const painPct = (v) => `${Math.round(v * 100)}%`;
 
-export function workshopView({ workshop: w, catalog, list, answer, worth, rename, setScope, newWorkshop, openWorkshop, removeWorkshop, presets = [], go, focus }) {
+export function workshopView({ workshop: w, catalog, list, answer, worth, rename, preparedBy, setScope, newWorkshop, openWorkshop, removeWorkshop, presets = [], go, focus }) {
   const say = h("p", { class: "note", role: "status" });
   const act = (fn) => async (...a) => { try { await fn(...a); say.textContent = ""; } catch (e) { say.textContent = e.message; } };
   let cur = w;
@@ -1641,6 +1642,11 @@ export function workshopView({ workshop: w, catalog, list, answer, worth, rename
       onclick: act(async () => { const next = cur.scope.includes(p) ? cur.scope.filter((x) => x !== p) : [...cur.scope, p]; await setScope(next); }) })))));
   const meeting = card("The meeting", h("div", { class: "wsmeet" },
     h("div", { class: "btnrow" }, name, h("button", { class: "btn small", type: "button", text: "Save the name", onclick: act(() => rename(name.value)) })),
+    preparedBy ? (() => {
+      const me = h("input", { type: "text", maxlength: 80, value: w.prepared_by || "", placeholder: "Your name, as the readout should sign it", "aria-label": "Prepared by" });
+      me.addEventListener("change", act(() => preparedBy(me.value)));
+      return h("div", { class: "btnrow" }, me);
+    })() : null,
     list.length > 1 ? h("div", { class: "btnrow" }, pick, h("button", { class: "btn small", type: "button", text: "Open", onclick: act(() => openWorkshop(pick.value)) })) : null,
     h("div", { class: "btnrow" }, h("button", { class: "btn small", type: "button", text: "New workshop", onclick: act(() => newWorkshop()) }),
       h("button", { class: "btn small danger", type: "button", text: "Delete this workshop", onclick: act(async () => {
@@ -1777,7 +1783,7 @@ export function journeyView({ workshop: w, catalog, go, startPov, present, plan 
     const who = h("select", { "aria-label": `Who makes this true: ${c.need}` }, h("option", { value: "", text: "Who?" }), Object.entries(WS.WHO).map(([k, v]) => h("option", { value: k, text: v })));
     who.value = c.who;
     const by = h("input", { type: "date", value: c.by, min: w.created_on, "aria-label": `By when: ${c.need}` });
-    const save = async () => { try { await plan(c.profile, c.index, who.value, by.value); paint(who.value, by.value); say.textContent = ""; } catch (e) { say.textContent = e.message; } };
+    const save = async () => { try { const next = await plan(c.profile, c.index, who.value, by.value); paint(who.value, by.value); say.textContent = ""; if (next) drawCalendar(next); } catch (e) { say.textContent = e.message; } };
     who.addEventListener("change", save); by.addEventListener("change", save);
     paint(c.who, c.by);
     return h("span", { class: "jplan" }, who, by, shown);
@@ -1803,6 +1809,28 @@ export function journeyView({ workshop: w, catalog, go, startPov, present, plan 
     st.already.length ? h("p", { class: "jalready" }, h("small", { text: "Already true" }), h("span", { text: st.already.join(". ") + "." })) : null,
     st.validate.length ? h("div", { class: "growproof" }, h("small", { text: "Validated by" }), h("ul", {}, st.validate.map((v) => h("li", { text: v + "." })))) : null,
     st.kind === "prove" ? h("div", { class: "btnrow" }, h("button", { class: "btn", type: "button", text: "Start the proof of value", onclick: async () => { try { await startPov(res); } catch (e) { say.textContent = e.message; } } }), say) : null)));
+  // the plan by date, redrawn whenever an owner or a date changes above
+  const calBody = h("div", {});
+  const month = (d) => new Date(d + "T00:00:00Z").toLocaleDateString("en-GB", { month: "long", year: "numeric", timeZone: "UTC" });
+  const datedItem = (c) => h("li", {}, h("span", { class: "jdate", text: c.by.slice(8) }),
+    h("span", {}, h("b", { text: c.need }), h("small", { class: "muted", text: c.step + (c.who ? `. Owner: ${WS.WHO[c.who].toLowerCase()}` : "") })));
+  function drawCalendar(cw) {
+    const cj = WS.journey(catalog, cw, WS.assess(catalog, cw));
+    const dated = WS.datedPlan(cj);
+    if (!dated.length) {
+      put(calBody, h("p", { class: "note first", text: "Give a condition an owner and a date above, and the plan appears here by month, ready to add to a calendar." }));
+      return;
+    }
+    const byMonth = dated.reduce((m, c) => { (m[month(c.by)] = m[month(c.by)] || []).push(c); return m; }, {});
+    const months = Object.entries(byMonth).map(([m, list]) => h("div", { class: "jmonth" }, h("h3", { text: m }), h("ul", { class: "jdated" }, list.map(datedItem))));
+    const fileName = `${cw.customer.replace(/[^A-Za-z0-9]+/g, "-").replace(/^-|-$/g, "").toLowerCase() || "discovery"}-plan.ics`;
+    const calButton = h("button", { class: "btn small", type: "button", text: "Add to a calendar (.ics)",
+      onclick: () => saveBlob(WS.planIcs(cw, cj, new Date().toISOString().replace(/[-:]/g, "").slice(0, 15) + "Z"), fileName, "text/calendar"),
+      "data-tip": "One all-day event per dated condition, for Outlook, Google Calendar or Apple Calendar. Made here; nothing is sent." });
+    put(calBody, months, h("div", { class: "btnrow" }, calButton));
+  }
+  drawCalendar(w);
+  const calendar = card("The plan by date", calBody, { sub: "The dated conditions, earliest first: what each side said it would make true, and by when." });
   const dest = card("Where it can go", h("p", { class: "note first", text: `With these steps done, ${w.customer} runs ${j.destination.join(", then ").toLowerCase()} with every condition above made true, validated as it went rather than promised up front.` }));
-  return h("div", {}, presentBtn(present), hero, steps, dest);
+  return h("div", {}, presentBtn(present), hero, steps, calendar, dest);
 }

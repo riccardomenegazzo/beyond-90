@@ -972,3 +972,8 @@ body.presenting .jconds li b{font-size:17px}
 .jplanv{font-size:13px;font-weight:700;color:var(--ink2)}
 body:not(.presenting) .jplanv{display:none}
 body.presenting .jplan select,body.presenting .jplan input{display:none}
+.jmonth h3{margin:6px 0 6px;font-size:15px;color:var(--ink2)}
+.jdated{list-style:none;margin:0 0 8px;padding:0;display:grid;gap:6px}
+.jdated li{display:grid;grid-template-columns:44px minmax(0,1fr);gap:12px;align-items:start}
+.jdated li>span:last-child{display:grid}
+.jdate{display:grid;place-items:center;height:40px;border-radius:10px;background:var(--accent-soft);color:var(--accent-text);font-weight:800;font-size:16px}
