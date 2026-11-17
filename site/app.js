@@ -21,6 +21,7 @@ import { h as el_, s as svg_, saveBlob, copyText, setExitGate, csvCell, icon, in
 import { CUSTOMER_NAV, BOOK_NAV, FAQ, GLOSSARY, TOUR } from "./guide.js";
 import { navBadges, stageBars, togglePin, pinnedViews } from "./nav.js";
 import * as KEYS from "./keys.js";
+import { nextStep, answers } from "./next.js";
 import { nOf, verb } from "./words.js";
 
 // Another site could frame this page and steer clicks on it; the app only runs as the top-level page.
@@ -582,7 +583,11 @@ function context() {
 function renderView(t) {
   const host = $("view");
   try {
-    host.replaceChildren(V[t.view]({ ...context(), focus: state.focus }));
+    const ctx = { ...context(), focus: state.focus };
+    host.replaceChildren(V[t.view](ctx));
+    const ns = state.book ? null : nextStep(t.id, ctx);
+    if (ns) host.append(el_("aside", { class: "nextstep", "aria-label": "Next step" }, el_("p", {}, el_("b", { text: "Next: " }), el_("span", { text: ns.text })),
+      el_("button", { class: "btn", type: "button", text: ns.cta, onclick: () => selectTab(ns.go, ns.open ? { open: ns.open } : undefined) })));
   } catch (e) {
     host.replaceChildren(el_("p", { class: "note", text: "This view could not be drawn: " + e.message }));
   }
@@ -1281,6 +1286,8 @@ function commands() {
   const go = (id, label) => ({ label: "Go to " + label, hint: "view", run: () => selectTab(id) });
   return [
     { label: "Analyse", hint: "action", when: () => !$("run").disabled, run: () => run() },
+    ...(hasResult() && !state.book ? answers({ dash: state.result.dashboard, score: state.parsed || JSON.parse(state.result.score_json), done: doneFor(state.result) })
+      .map((x) => ({ label: x.label, find: x.find, hint: "this customer", run: () => selectTab(x.go, x.open ? { open: x.open } : undefined) })) : []),
     { label: "Open the example customer", hint: "example", when: () => !$("demo").disabled, run: () => loadDemo().then(() => run()) },
     { label: "Open the example book (3 customers)", hint: "example", when: () => !$("demo-book").disabled, run: () => loadDemoBook().then(() => run()) },
     ...tabDefs.map((t) => go(t.id, t.label)),
@@ -1309,7 +1316,7 @@ function copySummary() {
 const pal = { el: $("palette"), q: $("palette-q"), list: $("palette-list"), items: [], at: 0 };
 function paintPalette() {
   const q = pal.q.value.trim().toLowerCase();
-  pal.items = rank(q, commands(), (c) => c.label);
+  pal.items = rank(q, commands(), (c) => (c.find ? `${c.label} ${c.find}` : c.label));
   pal.at = Math.min(pal.at, Math.max(0, pal.items.length - 1));
   pal.list.replaceChildren(...pal.items.map((c, i) => {
     const li = el_("li", { role: "option", "aria-selected": String(i === pal.at) }, el_("span", { text: c.label }), el_("small", { text: c.hint }));

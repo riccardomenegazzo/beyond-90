@@ -72,3 +72,15 @@ test("ranking by accounts finished puts the action that completes the most first
   const acts = [{ id: "pts", effect: 4, hours: 1, unlocks: 0 }, { id: "fin", effect: 1, hours: 9, unlocks: 9 }, { id: "mid", effect: 2, hours: 2, unlocks: 3 }];
   assert.deepEqual(rankActions(acts, "finish").map((a) => a.id), ["fin", "mid", "pts"]);
 });
+
+import { preview } from "../today.js";
+test("the preview adds the effect and raises the stage so the product still holds", () => {
+  const bars = [{ id: "L1", value: 0.9 }, { id: "L4", value: 0.8 }];
+  const p = preview(bars, 0.72, { leak: "L4", effect: 3.6 });
+  assert.ok(Math.abs(p.yield - 0.756) < 1e-9 && Math.abs(p.delta - 0.036) < 1e-9);
+  assert.equal(p.stage, "L4");
+  assert.ok(Math.abs(p.stageValue - 0.84) < 1e-9);
+  assert.ok(Math.abs(0.9 * p.stageValue - p.yield) < 1e-9);     // the stages still multiply to the new Yield
+  assert.equal(preview(bars, 0.99, { leak: "L1", effect: 5 }).yield, 1);
+  assert.equal(preview(bars, 0.7, null), null);
+});

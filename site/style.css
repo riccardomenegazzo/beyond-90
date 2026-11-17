@@ -793,3 +793,20 @@ body:not(.has-files) .runbar{display:none}
 .mplan li.st-done .mp-w b{color:var(--ink2);font-weight:600}
 @media (max-width:560px){.mplan li{grid-template-columns:1fr auto}.mp-d{grid-column:1 / -1}}
 .winform{margin:0 0 14px;gap:10px 16px}
+
+/* ================================================================ live preview on Today (0.79): point at an action, see where it lands */
+.sb-track{position:relative}
+.sb-track i{position:relative;z-index:1}
+.sb-track .ghost{position:absolute;inset:0 auto 0 0;z-index:0;width:0;background:var(--accent);opacity:.35;transition:width .25s ease}
+.stagebars li.moving .sb-v{color:var(--accent-text)}
+.stagebars li.moving .sb-l{font-weight:700;color:var(--ink)}
+.tprev{font-family:var(--display);font-weight:800;font-size:clamp(28px,6vw,44px);color:#a7f3d0;letter-spacing:-.03em;opacity:0;transition:opacity .2s ease;font-variant-numeric:tabular-nums}
+.previewing .tprev{opacity:1}
+.opprow{transition:transform .15s ease}
+.previewing .opprow:not(:hover):not(:focus-within){opacity:.6}
+@media (prefers-reduced-motion:reduce){.sb-track .ghost,.tprev,.opprow{transition:none}}
+/* the next step at the foot of a view (0.79) */
+.nextstep{display:flex;align-items:center;gap:16px;margin:28px 0 8px;padding:16px 18px;border-radius:16px;background:color-mix(in srgb,var(--accent) 9%,var(--surface));border:1px solid color-mix(in srgb,var(--accent) 30%,var(--line))}
+.nextstep p{flex:1;margin:0;min-width:0}
+.nextstep .btn{flex:none}
+@media (max-width:640px){.nextstep{flex-direction:column;align-items:stretch}}

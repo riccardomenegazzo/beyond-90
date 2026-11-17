@@ -2,6 +2,12 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.79.0
+
+- **See an action's effect before you take it.** On Today, pointing at an action (or moving to it with the keyboard) shows where Yield would land next to the number ("72.6% → 76.6%"), and the stage it works on grows in place with its new value. The stage rises so the four stages still multiply to the new Yield. The other actions dim while you look.
+- **Every view ends with the next step.** One suggestion at the foot of the view, worked out from the data, with a button that goes there already filtered: from Overview, "Most accounts stop first at L3 (42 of 121)"; from Onboarding, the accounts not connected; from Prep a call, the promises past their date when there are some; from Findings, the action that gives the waiting findings an owner.
+- **The search box answers.** `/` or Ctrl+K now lists what the data says next to the views: "2 promises are overdue", "42 accounts stop at L3 switched on", "11 critical findings are open", the first actions. Short words find them ("late", "L3", "risk", "unowned"), and each opens where it is, filtered.
+
 ## 0.78.0
 
 - **No more "finding(s)".** A scan of every view of two example customers found about twenty kinds of counted noun written with "(s)" ("13 finding(s)", "1 accepted risk(s) reach", "4 account(s) connected"), and a few "1 findings" and "1 days". Every one now agrees with its number, verbs included ("1 critical finding has no owner", "3 connector secrets expire"), in the engine (`beyond90.words`) and in the page (`words.js`). A test fails if a counted "(s)" comes back.

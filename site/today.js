@@ -71,3 +71,14 @@ export function funnelSegments(e) {
     .concat(["L1", "L2", "L3", "L4"].map((k) => ({ id: k, label: names[k], n: (e.first_break || {})[k] || 0 })));
   return segs.filter((s) => s.n > 0).map((s) => ({ ...s, share: s.n / e.total }));
 }
+
+/**
+ * What one action would do, for a live preview: Yield after it (its estimated effect added, capped at 100%), and the
+ * stage it works on raised so that the four stages still multiply to the new Yield (L' = L × Y' / Y).
+ */
+export function preview(bars, y, action) {
+  if (!action || !Number.isFinite(y) || y <= 0) return null;
+  const after = Math.min(1, y + (Number(action.effect) || 0) / 100);
+  const stage = (bars || []).find((b) => b.id === action.leak);
+  return { yield: after, delta: after - y, stage: stage ? stage.id : null, stageValue: stage ? Math.min(1, stage.value * after / y) : null };
+}

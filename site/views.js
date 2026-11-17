@@ -10,7 +10,7 @@ import * as A from "./asks.js";
 import * as SLA from "./sla.js";
 import * as SC from "./scorecard.js";
 import { connections } from "./graph.js";
-import { headline, firstMinute, rankActions, chainText, doneSummary, funnelSegments } from "./today.js";
+import { headline, firstMinute, rankActions, chainText, doneSummary, funnelSegments, preview } from "./today.js";
 import { stageBars } from "./nav.js";
 import { accountsFirst, accountsAnswer, whyAccount, findingsFirst, findingsAnswer, whyFinding } from "./triage.js";
 import { gauge, waterfall, lineChart, contributions, timeline, shareBar, funnel, STAGE, STAGE_NAME } from "./charts.js";
@@ -50,17 +50,19 @@ export function todayView({ result, dash, score, go, history = [], done = new Se
     return h("div", { class: "trend" }, h("svg", { viewBox: `0 0 ${W} ${H}`, width: W, height: H, role: "img", "aria-label": `Yield over ${pts_.length} snapshots` }, h("polyline", { points: xy.map((p) => p.join(",")).join(" "), fill: "none", stroke: "#5eead4", "stroke-width": 2.5, "stroke-linejoin": "round", "stroke-linecap": "round" })),
       h("small", { text: `${delta >= 0 ? "+" : ""}${(delta * 100).toFixed(1)} pts over ${pts_.length} snapshots` }));
   })() : null;
+  // the live preview: pointing at an action shows where Yield would land, and the stage it works on grows in place
+  const tprev = h("span", { class: "tprev", "aria-hidden": "true" });
   const hero = h("section", { class: "card todayhero" },
-    h("div", { class: "todayscore" }, h("span", { class: "tnum", text: pct(score.yield) }), h("span", { class: "tcap", text: "Yield" }), trend),
+    h("div", { class: "todayscore" }, h("span", { class: "tnum", text: pct(score.yield) }), tprev, h("span", { class: "tcap", text: "Yield" }), trend),
     h("p", { class: "tline", text: headline({ customer: result.customer, yield: score.yield, target: score.target && score.target.value, stages: score.stages, openActions: dash.actions.length }) }));
 
   // where it leaks: the four stages as bars, the weakest one marked, the multiplication written out
   const bars = stageBars(score);
   const o = dash.outlook || {};
   const leak = card("Where it leaks", h("div", {},
-    h("ul", { class: "stagebars" }, bars.map((b) => h("li", { class: b.weakest ? "weak" : "" },
+    h("ul", { class: "stagebars" }, bars.map((b) => h("li", { class: b.weakest ? "weak" : "", dataset: { stage: b.id } },
       h("span", { class: "sb-id", text: b.id }), h("span", { class: "sb-l", text: b.label }),
-      h("span", { class: "sb-track", "aria-hidden": "true" }, h("i", { style: `width:${Math.max(2, b.value * 100).toFixed(1)}%` })),
+      h("span", { class: "sb-track", "aria-hidden": "true" }, h("i", { class: "ghost" }), h("i", { style: `width:${Math.max(2, b.value * 100).toFixed(1)}%` })),
       h("b", { class: "sb-v", text: pct(b.value) })))),
     h("p", { class: "chain", text: chainText(bars, score.yield) }),
     (() => {
@@ -83,7 +85,32 @@ export function todayView({ result, dash, score, go, history = [], done = new Se
   const left = dash.actions.filter((a) => !done.has(a.id));
   const doneBtn = (a, isDone) => h("button", { type: "button", class: "donebtn", "aria-pressed": String(isDone), "aria-label": `${isDone ? "Undo done" : "Mark done"}: ${a.title}`,
     text: isDone ? "Undo" : "Mark done", onclick: () => markDone(a.id, !isDone) });
-  const paint = () => list.replaceChildren(...(left.length ? rankActions(left, mode).map((a) => h("div", { class: "opprow" },
+  const show = (a) => {
+    const p = preview(bars, score.yield, a);
+    const root = list.closest(".today");
+    if (!p || !root) return;
+    tprev.textContent = `→ ${pct(p.yield)}`;
+    root.classList.add("previewing");
+    for (const li of root.querySelectorAll(".stagebars li")) {
+      const g = li.querySelector(".ghost"), v = li.querySelector(".sb-v"), on = li.dataset.stage === p.stage;
+      if (!v.dataset.orig) v.dataset.orig = v.textContent;
+      li.classList.toggle("moving", on);
+      g.style.width = on ? `${(p.stageValue * 100).toFixed(1)}%` : "0";
+      v.textContent = on ? pct(p.stageValue) : v.dataset.orig;
+    }
+  };
+  const hide = () => {
+    const root = list.closest(".today");
+    tprev.textContent = "";
+    if (!root) return;
+    root.classList.remove("previewing");
+    for (const li of root.querySelectorAll(".stagebars li")) {
+      const v = li.querySelector(".sb-v");
+      li.classList.remove("moving"); li.querySelector(".ghost").style.width = "0";
+      if (v.dataset.orig) v.textContent = v.dataset.orig;
+    }
+  };
+  const paint = () => list.replaceChildren(...(left.length ? rankActions(left, mode).map((a) => h("div", { class: "opprow", onmouseenter: () => show(a), onmouseleave: hide, onfocusin: () => show(a), onfocusout: hide },
     h("button", { type: "button", class: "opp", onclick: () => go("actions", { open: a.id }) },
       h("span", { class: "stagepip", style: `border-color:${STAGE[a.leak] || "var(--accent)"}`, text: a.leak }),
       h("span", { class: "opp-t" }, h("b", { text: a.title }), h("small", { text: `${a.owner}, due ${a.due}, about ${a.hours.toFixed(1)} h` + (a.unlocks ? `, finishes ${a.unlocks} ${a.unlocks === 1 ? score.terms.unit : score.terms.units}` : "") })),
