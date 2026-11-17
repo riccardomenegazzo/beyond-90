@@ -653,6 +653,17 @@ def cmd_portfolio(args: argparse.Namespace) -> int:
     return 1 if pf.errors and args.strict else 0
 
 
+def cmd_estate(args: argparse.Namespace) -> int:
+    from .estate import analyze_estate_dir
+    res = analyze_estate_dir(args.root)
+    if not res["ok"]:
+        for e in res["errors"]:
+            print("error:", e, file=sys.stderr)
+        return 2
+    _emit(json.dumps(res, indent=2, ensure_ascii=False) if args.format == "json" else res["plan_markdown"], args.out)
+    return 1 if res["errors"] and args.strict else 0
+
+
 def _config(args: argparse.Namespace) -> Config:
     from .connect import ConfigError, load_config
     try:
@@ -1046,6 +1057,13 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--out")
     sp.set_defaults(func=cmd_portfolio)
 
+    sp = sub.add_parser("estate", help="one customer across several product lines: each sub-directory is one line, on its own profile")
+    sp.add_argument("root", help="directory containing one sub-directory per product line of the same customer")
+    sp.add_argument("--format", choices=["markdown", "json"], default="markdown")
+    sp.add_argument("--strict", action="store_true", help="exit 1 if any line is invalid")
+    sp.add_argument("--out")
+    sp.set_defaults(func=cmd_estate)
+
     sp = sub.add_parser("check-config", help="validate a pipeline configuration and show what it will read and reach; touches nothing")
     sp.add_argument("config")
     sp.set_defaults(func=cmd_check_config)
@@ -1068,7 +1086,7 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("config")
     sp.add_argument("--at", default="05:17", help="time of day in UTC, HH:MM")
     sp.add_argument("--every", choices=["hour", "day", "week"], default="day")
-    sp.add_argument("--install-from", default="beyond90", help='pip requirement for the workflow, e.g. "beyond90 @ git+https://github.com/OWNER/beyond-90@v0.80.0"')
+    sp.add_argument("--install-from", default="beyond90", help='pip requirement for the workflow, e.g. "beyond90 @ git+https://github.com/OWNER/beyond-90@v0.81.0"')
     sp.add_argument("--out")
     sp.set_defaults(func=cmd_schedule)
 

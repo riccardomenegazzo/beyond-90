@@ -18,7 +18,7 @@ import * as Vault from "./vault.js";
 import * as V from "./views.js";
 import { createPrivacy } from "./privacy.js";
 import { h as el_, s as svg_, saveBlob, copyText, setExitGate, csvCell, icon, initTips, info } from "./ui.js";
-import { CUSTOMER_NAV, BOOK_NAV, FAQ, GLOSSARY, TOUR } from "./guide.js";
+import { CUSTOMER_NAV, BOOK_NAV, ESTATE_NAV, FAQ, GLOSSARY, TOUR } from "./guide.js";
 import { navBadges, stageBars, togglePin, pinnedViews } from "./nav.js";
 import * as KEYS from "./keys.js";
 import { nextStep, answers } from "./next.js";
@@ -87,10 +87,13 @@ async function boot() {
   await refreshHistory();
 }
 
+const multiMode = () => state.mode === "book" || state.mode === "estate";
+const multi = () => state.book || state.estate;
+
 function refreshRun() {
-  const have = state.mode === "book" ? Object.keys(state.groups).length : Object.keys(state.files).length;
+  const have = multiMode() ? Object.keys(state.groups).length : Object.keys(state.files).length;
   $("run").disabled = state.running || !(state.engine && state.engine.version && have);
-  $("demo-book").disabled = $("demo-endpoint").disabled = !(state.engine && state.engine.version);
+  $("demo-book").disabled = $("demo-endpoint").disabled = $("demo-estate").disabled = !(state.engine && state.engine.version);
   for (const b of document.querySelectorAll("[data-demo]")) b.disabled = !(state.engine && state.engine.version);
 }
 
@@ -155,7 +158,8 @@ async function addFiles(entries) {
   const customers = [...byDir.entries()].filter(([, f]) => "customer.toml" in f);
   state.files = {}; state.groups = {};                 // a new selection replaces the old one, it never mixes customers
   if (customers.length >= 2) {
-    state.mode = "book";
+    // Folders on different profiles are one customer's product lines, not a book of like customers
+    state.mode = new Set(customers.map(([, f]) => profileOf(f))).size > 1 ? "estate" : "book";
     for (const [dir, f] of customers) state.groups[uniqueKey(lastSegment(dir), state.groups)] = f;
   } else {
     state.mode = "single";
@@ -181,10 +185,10 @@ function uniqueKey(key, taken) {
 const fromInput = (list) => [...list].map((file) => ({ file, path: file.webkitRelativePath || file.name }));
 
 function renderLoaded() {
-  document.body.classList.toggle("has-files", state.mode === "book" ? Object.keys(state.groups || {}).length > 0 : Object.keys(state.files || {}).length > 0);
+  document.body.classList.toggle("has-files", multiMode() ? Object.keys(state.groups || {}).length > 0 : Object.keys(state.files || {}).length > 0);
   const ul = $("loaded");
   ul.replaceChildren();
-  const labels = state.mode === "book"
+  const labels = multiMode()
     ? Object.entries(state.groups).map(([k, f]) => `${k} (${Object.keys(f).length} files)`)
     : Object.keys(state.files).sort();
   for (const t of labels) {
@@ -193,10 +197,11 @@ function renderLoaded() {
     li.textContent = t;
     ul.append(li);
   }
-  const what = state.mode === "book" ? `${Object.keys(state.groups).length} customers` : W.peekCustomer(state.files).customer || "these files";
+  const what = state.mode === "estate" ? estateName() : state.mode === "book" ? `${Object.keys(state.groups).length} customers` : W.peekCustomer(state.files).customer || "these files";
   $("run").textContent = labels.length ? `Analyse ${what}` : "Analyse";
   if (state.mode === "book") say(`${Object.keys(state.groups).length} customers found: analyse them together to plan your week across the book.`);
-  state.result = null; state.book = null;
+  if (state.mode === "estate") say(`${estateName()} on ${nOf(Object.keys(state.groups).length, "product line")}: analyse them together to see the whole customer.`);
+  state.result = null; state.book = null; state.estate = null;
   setStep(labels.length ? 2 : 1);
   refreshRun();
 }
@@ -244,6 +249,16 @@ async function loadDemoEndpoint() {
   say("Example loaded: a made-up endpoint-protection customer.");
 }
 
+async function loadDemoEstate() {
+  say("Loading the example estate…");
+  state.mode = "estate"; state.files = {};
+  state.groups = await (await fetch("./demo-estate.json")).json();
+  renderLoaded();
+}
+
+const profileOf = (files) => (/^\s*profile\s*=\s*"([^"\n]*)"/m.exec(files["customer.toml"] || "") || [])[1] || "cnapp";
+const estateName = () => W.peekCustomer(Object.values(state.groups)[0] || {}).customer || "this customer";
+
 async function loadDemoBook() {
   say("Loading the example book…");
   state.mode = "book"; state.files = {};
@@ -265,6 +280,7 @@ function options() {
 
 async function run(compareId) {
   if (state.mode === "book") return runBook();
+  if (state.mode === "estate") return runEstate();
   state.running = true;
   $("cancel").hidden = false;
   refreshRun();
@@ -276,7 +292,7 @@ async function run(compareId) {
     if (base) opts.since_files = base.files;
     const res = await state.engine.json("analyze", { files: state.files, options: opts });
     if (!res.ok) return showErrors(res.errors);
-    state.result = res; state.book = null; privacy.learn(res);
+    state.result = res; state.book = null; state.estate = null; privacy.learn(res);
     state.compareId = base ? base.id : "";
     say(res.warnings.length ? `${nOf(res.warnings.length, "warning")}: ` + res.warnings.join("; ") : "");
     showResults();
@@ -302,7 +318,7 @@ async function runBook() {
       hours: Number($("bookhours").value) || 30, week_hours: Number($("bookhours").value) || 30, weeks: o.weeks, realization: o.realization, weighting: $("weighting").value,
       ...(state.advisories ? { advisories: state.advisories } : {}) } });
     if (!res.ok) return showErrors(res.errors);
-    state.book = res; state.result = null; privacy.learn(res);
+    state.book = res; state.result = null; state.estate = null; privacy.learn(res);
     const skipped = Object.keys(res.errors || {});
     say(skipped.length ? `${nOf(skipped.length, "customer")} skipped because their data is invalid: ${skipped.join(", ")}.` : "");
     showBook();
@@ -314,6 +330,40 @@ async function runBook() {
     $("cancel").hidden = true;
     refreshRun();
   }
+}
+
+async function runEstate() {
+  state.running = true;
+  $("cancel").hidden = false;
+  refreshRun();
+  say("Scoring each product line on its own profile…");
+  try {
+    const res = await state.engine.json("estate", { groups: state.groups });
+    if (!res.ok) return showErrors(res.errors);
+    state.estate = res; state.result = null; state.book = null;
+    const skipped = Object.keys(res.errors || {});
+    say(skipped.length ? `${nOf(skipped.length, "line")} skipped because their data is invalid: ${skipped.join(", ")}.` : "");
+    showEstate();
+  } catch (e) {
+    if (e.cancelled) say("Cancelled. The engine was restarted.");
+    else showErrors(["Unexpected error: " + e.message]);
+  } finally {
+    state.running = false;
+    $("cancel").hidden = true;
+    refreshRun();
+  }
+}
+
+function showEstate() {
+  const e = state.estate;
+  fillHead(e.customer, `${nOf(e.lines.length, "product line")}, data as of ${e.as_of}`, e.yield);
+  $("kpis").replaceChildren(kpi(pct(e.yield), "Estate Yield", "yield"), kpi(String(e.lines.length), "Lines in place"), kpi(String(e.whitespace.length), "Lines to open"));
+  $("worktools").hidden = true;
+  $("saved-note").textContent = "";
+  $("book-table").hidden = true;
+  state.tab = "estate";
+  renderNav(ESTATE_NAV, e.customer);
+  selectTab(state.tab);
 }
 
 function showBook() {
@@ -419,6 +469,8 @@ const VIEWS = {
   portfolio: { kind: "md", key: "portfolio_markdown", file: "beyond90-portfolio.md", type: "text/markdown" },
   book: { kind: "md", key: "book_markdown", file: "beyond90-book.md", type: "text/markdown" },
   bookreport: { kind: "html", key: "book_html", file: "beyond90-book.html", type: "text/html" },
+  estate: { kind: "view", view: "estateView" }, estategrow: { kind: "view", view: "growView" },
+  estateplan: { kind: "md", key: "plan_markdown", file: "beyond90-account-plan.md", type: "text/markdown" },
 };
 let tabDefs = [];
 
@@ -465,7 +517,7 @@ async function markDone(id, on) {
   renderView(current());
 }
 function navSignals() {
-  if (state.book || !state.result) return { badges: {}, bars: [] };
+  if (multi() || !state.result) return { badges: {}, bars: [] };
   const r = state.result;
   if (state.parsedFor !== r) { state.parsed = JSON.parse(r.score_json); state.parsedFor = r; }
   const left = r.dashboard.actions.filter((a) => !doneFor(r).has(a.id));
@@ -473,7 +525,7 @@ function navSignals() {
 }
 function pulseCard(bars) {
   const r = state.result;
-  if (!r || state.book) return null;
+  if (!r || multi()) return null;
   return el_("button", { type: "button", class: "pulse", "aria-label": `Yield ${pct(r.yield)}. Open Today`, onclick: () => selectTab("today") },
     el_("span", { class: "pulse-top" }, ring(r.yield, 40), el_("span", {}, el_("b", { class: "pulse-v", text: pct(r.yield) }), el_("small", { text: "Yield, the four stages multiplied" }))),
     el_("span", { class: "pulse-bars" }, bars.map((b) => el_("span", { class: "pbar" + (b.weakest ? " weak" : ""), title: `${b.id} ${b.label}: ${pct(b.value)}` },
@@ -483,18 +535,20 @@ function renderNav(groups, title) {
   navGroups = groups; navTitle = title;
   // "Accounts" reads "Clusters" or "Tenants" when that is what the customer's profile counts
   // A profile may give a shorter "menu" word when its units are long ("Databases" for "database environments")
-  const terms = !state.book && state.result ? JSON.parse(state.result.score_json).terms || {} : {};
+  const terms = !multi() && state.result ? JSON.parse(state.result.score_json).terms || {} : {};
   const units = terms.menu || terms.units || "";
   const named = (v) => (v.id === "accounts" && units && units !== "accounts" ? { ...v, label: units[0].toUpperCase() + units.slice(1) } : v);
   if (units && units !== "accounts") groups = groups.map((g) => ({ ...g, views: g.views.map(named) }));
   tabDefs = groups.flatMap((g) => g.views.map((v) => ({ ...v, ...VIEWS[v.id], group: g.question })));   // every view stays reachable, whatever the role
+  // the phone bar offers only the views this mode has (a book or an estate has no Today, Actions or Call of its own)
+  for (const b of document.querySelectorAll("#mobilebar [data-go]")) b.hidden = !tabDefs.some((t) => t.id === b.dataset.go) && b.dataset.go !== "menu";
   $("workspace").hidden = false;
   document.body.classList.add("has-work");
   $("ws-title").textContent = title;
   paintRoles();
   const { badges, bars } = navSignals();
   const closed = new Set(readList("beyond90.navclosed"));
-  const { main, more } = groups === BOOK_NAV ? { main: groups, more: [] } : shape(groups, savedRole());
+  const { main, more } = groups === BOOK_NAV || groups === ESTATE_NAV ? { main: groups, more: [] } : shape(groups, savedRole());
   const badge = (id) => badges[id] ? el_("span", { class: "nbadge t-" + badges[id].tone, title: badges[id].label }, el_("span", { "aria-hidden": "true", text: badges[id].n > 99 ? "99+" : String(badges[id].n) }), el_("span", { class: "sr", text: `, ${badges[id].n} waiting` })) : null;
   const label = (v) => [icon(v.icon), el_("span", { class: "nlabel", text: v.label }), badge(v.id)];
   const btn = (v) => el_("button", { type: "button", dataset: { tab: v.id }, "data-tip": v.tip, onclick: () => selectTab(v.id) }, ...label(v));
@@ -542,7 +596,7 @@ function paintRoles() {
 function markTab() { for (const b of document.querySelectorAll("#tabs [data-tab], #tabs [data-pin], #mobilebar [data-go]")) b.toggleAttribute("aria-current", (b.dataset.tab || b.dataset.pin || b.dataset.go) === state.tab); }
 
 const current = () => tabDefs.find((t) => t.id === state.tab) || tabDefs[0];
-const payload = () => (state.mode === "book" || state.book ? state.book : state.result);
+const payload = () => (state.estate ? state.estate : state.mode === "book" || state.book ? state.book : state.result);
 
 function selectTab(name, extra) {
   state.tab = name;
@@ -571,6 +625,7 @@ function selectTab(name, extra) {
 }
 
 function context() {
+  if (state.estate) return { estate: state.estate, go: (tab, extra) => selectTab(tab, extra), openLine: (key, tab = "today") => { state.mode = "single"; state.files = { ...state.groups[key] }; state.estate = null; state.tab = tab; renderLoaded(); run(); } };
   if (state.book) return { book: state.book, povs: state.povs, savePov, removePov, today: todayIso(), advisories: state.advisories, openCustomer: (key, tab = "prep") => { state.mode = "single"; state.files = { ...state.groups[key] }; state.book = null; state.tab = tab; renderLoaded(); run(); } };
   const r = state.result;
   if (r && state.parsedFor !== r) { state.parsed = JSON.parse(r.score_json); state.parsedFor = r; }
@@ -587,7 +642,7 @@ function renderView(t) {
   try {
     const ctx = { ...context(), focus: state.focus };
     host.replaceChildren(V[t.view](ctx));
-    const ns = state.book ? null : nextStep(t.id, ctx);
+    const ns = multi() ? null : nextStep(t.id, ctx);
     if (ns) host.append(el_("aside", { class: "nextstep", "aria-label": "Next step" }, el_("p", {}, el_("b", { text: "Next: " }), el_("span", { text: ns.text })),
       el_("button", { class: "btn", type: "button", text: ns.cta, onclick: () => selectTab(ns.go, ns.open ? { open: ns.open } : undefined) })));
   } catch (e) {
@@ -1071,6 +1126,7 @@ $("demo").addEventListener("click", loadDemo);
 paintRoles();
 $("try-now").addEventListener("click", async () => { $("try-now").disabled = true; try { await loadDemo(); await run(); } finally { $("try-now").disabled = false; } });
 $("demo-book").addEventListener("click", loadDemoBook);
+$("demo-estate").addEventListener("click", loadDemoEstate);
 $("demo-endpoint").addEventListener("click", loadDemoEndpoint);
 $("keys-open").addEventListener("click", () => showKeys());
 // Phone with a customer open: the sharing level and the theme move from the crowded top bar into the menu sheet.
@@ -1288,10 +1344,11 @@ function commands() {
   const go = (id, label) => ({ label: "Go to " + label, hint: "view", run: () => selectTab(id) });
   return [
     { label: "Analyse", hint: "action", when: () => !$("run").disabled, run: () => run() },
-    ...(hasResult() && !state.book ? answers({ dash: state.result.dashboard, score: state.parsed || JSON.parse(state.result.score_json), done: doneFor(state.result) })
+    ...(hasResult() && !multi() ? answers({ dash: state.result.dashboard, score: state.parsed || JSON.parse(state.result.score_json), done: doneFor(state.result) })
       .map((x) => ({ label: x.label, find: x.find, hint: "this customer", run: () => selectTab(x.go, x.open ? { open: x.open } : undefined) })) : []),
     { label: "Open the example customer", hint: "example", when: () => !$("demo").disabled, run: () => loadDemo().then(() => run()) },
     { label: "Open the example book (3 customers)", hint: "example", when: () => !$("demo-book").disabled, run: () => loadDemoBook().then(() => run()) },
+    { label: "Open the example estate (one customer, four product lines)", hint: "example", when: () => !$("demo-estate").disabled, run: () => loadDemoEstate().then(() => run()) },
     ...tabDefs.map((t) => go(t.id, t.label)),
     { label: "Go to Start", hint: "place", run: () => showPlace("start") },
     { label: "Go to Saved", hint: "place", run: () => showPlace("saved") },
@@ -1338,7 +1395,7 @@ $("open-palette").addEventListener("click", openPalette);
 document.addEventListener("keydown", (e) => {
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") { e.preventDefault(); pal.el.open ? pal.el.close() : openPalette(); return; }
   const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName || "") || pal.el.open;
-  if (!typing && !e.ctrlKey && !e.metaKey && !e.altKey && /^[1-9]$/.test(e.key) && (hasResult() || state.book)) {
+  if (!typing && !e.ctrlKey && !e.metaKey && !e.altKey && /^[1-9]$/.test(e.key) && (hasResult() || multi())) {
     const t = tabDefs[Number(e.key) - 1]; if (t) selectTab(t.id);
     return;
   }
@@ -1349,7 +1406,7 @@ document.addEventListener("keydown", (e) => {
   if (!a) return;
   if (a.help) { e.preventDefault(); showKeys(); return; }
   if (a.search) { e.preventDefault(); openPalette(); return; }
-  if (!(hasResult() || state.book)) return;
+  if (!(hasResult() || multi())) return;
   const ids = [...document.querySelectorAll("#tabs [data-tab]")].map((b) => b.dataset.tab);
   const to = a.go ? (tabDefs.some((t) => t.id === a.go) ? a.go : null) : KEYS.stepView(ids, state.tab, a.step);
   if (to) { e.preventDefault(); selectTab(to); }
@@ -1476,8 +1533,8 @@ function endTour() {
   const offer = $("tour-offer"); if (offer) offer.remove();
 }
 async function startTour() {
-  if (!state.result && !state.book) { await loadDemo(); await run(); }
-  if (!state.result && !state.book) return;
+  if (!state.result && !multi()) { await loadDemo(); await run(); }
+  if (!state.result && !multi()) return;
   if (state.place !== "work") selectTab(state.tab);
   tour.steps = TOUR.filter((t) => { const e = document.querySelector(t.target); return e && e.getClientRects().length; });
   tour.at = 0;

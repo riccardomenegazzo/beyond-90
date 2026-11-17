@@ -70,6 +70,17 @@ def shoot(site: Path, out: Path) -> None:
                     pg.wait_for_timeout(600)
                     pg.screenshot(path=str(out / name))
 
+            pg.click(".rail [data-place=start]")
+            pg.click("#demo-estate")
+            pg.wait_for_selector("#loaded li:nth-child(4)")
+            pg.click("#run")
+            pg.wait_for_selector("#view .estatemap", timeout=180_000)
+            pg.wait_for_timeout(600)
+            pg.screenshot(path=str(out / "app-estate.png"))
+            pg.click("#tabs [data-tab=estategrow]")
+            pg.wait_for_timeout(500)
+            pg.screenshot(path=str(out / "app-grow.png"))
+
             phone = b.new_context(**p.devices["Pixel 7"], color_scheme="light")
             phone.add_init_script(INIT)
             mp = phone.new_page()

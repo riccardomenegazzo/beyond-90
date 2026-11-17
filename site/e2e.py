@@ -26,7 +26,7 @@ from playwright.sync_api import sync_playwright
 
 # Controls live in places (Start, Saved, Help); the test opens the place before using one, as a person would.
 PLACE_OF = {
-    **dict.fromkeys(("open-starter", "open-mapper", "map-file", "map-body", "map-check", "map-use", "map-cancel", "map-notes", "demo", "demo-book", "demo-endpoint", "demo-saas", "demo-ai", "demo-identity", "demo-siem", "demo-hci", "demo-objstore", "demo-dbaas", "demo-files", "demo-k8s", "demo-dr", "latest-adv", "demo-adv", "clear-adv", "adv-status", "run", "cancel",
+    **dict.fromkeys(("open-starter", "open-mapper", "map-file", "map-body", "map-check", "map-use", "map-cancel", "map-notes", "demo", "demo-book", "demo-estate", "demo-endpoint", "demo-saas", "demo-ai", "demo-identity", "demo-siem", "demo-hci", "demo-objstore", "demo-dbaas", "demo-files", "demo-k8s", "demo-dr", "latest-adv", "demo-adv", "clear-adv", "adv-status", "run", "cancel",
                      "weeks", "hours", "real", "quarter", "bookhours", "weighting", "loaded", "status"), "start"),
     **dict.fromkeys(("demo-prev", "export", "forget", "vault-on", "vault-unlock", "vault-lock", "vault-off", "vault-state",
                      "vault-warn", "ws-status", "history-body", "device-qr", "send-work", "history-empty", "hist-table", "trend", "autosave", "personal", "privacy-body", "restore-in", "restore-out", "restore-note", "erase-result"), "saved"),
@@ -660,7 +660,31 @@ def main(site: str) -> int:
         page.wait_for_selector("#view .promises li:has-text('cannot be deleted or overwritten')")
         check(page.locator("#view .suggest li").count() == n_sug - 1, "and one click adds a suggested test to the success criteria, and takes it off the suggestions")
 
+        # one customer, every product line: each line on its own profile, the estate on one map
+        page.click(".rail [data-place=start]")
+        page.click("#demo-estate")
+        page.wait_for_selector("#loaded li:nth-child(4)")
+        check("Halden Group" in page.inner_text("#run"), "the estate demo is one customer, not a book")
+        run_and_wait()
+        page.wait_for_selector("#view .estatemap")
+        check(page.locator("#view .enode").count() == 6 and page.locator("#view .enode.absent").count() == 2, "the estate map draws the whole family, with the two lines not in place dashed")
+        check(page.locator("#view .elink.risk").count() >= 1 and page.locator("#view .elink.grow").count() >= 1, "and links coloured by risk and by what comes next")
+        check(page.locator("#view .heatcell").count() == 16 and "of 14 clusters" in page.inner_text("#view") and "of 10 sites" in page.inner_text("#view"), "each line is counted in its own units")
+        check("Platform 71.9%, recovery 42.8%" in page.inner_text("#view"), "a solid line leaning on a weak one is called out")
+        page.locator("#view .enode.absent").first.focus()
+        page.keyboard.press("Enter")
+        page.wait_for_selector("#view .card.grow.focus")
+        check(page.locator("#view .card.grow").count() == 2 and "Open with" in page.inner_text("#view"), "a missing line opens where to grow, with the first question to ask")
+        page.click("[data-tab=estateplan]")
+        check("Account plan: Halden Group" in page.inner_text("#doc") and "Questions for the next meeting" in page.inner_text("#doc"), "the account plan is ready to share")
+        page.click("[data-tab=estate]")
+        page.locator("#view tbody tr").first.get_by_role("button", name="Open").click()
+        page.wait_for_selector("#run:not([disabled])", state="attached", timeout=180_000)
+        page.wait_for_selector("#view .todayhero", timeout=180_000)
+        check("Halden Group" in page.inner_text("#reshead") and page.locator("[data-tab=estate]").count() == 0, "opening a line shows that line's own report")
+
         # a whole book: several customers, one budget of hours
+        page.click(".rail [data-place=start]")
         page.click("#demo-book")
         page.wait_for_selector("#loaded li:nth-child(3)")
         run_and_wait()
@@ -1031,6 +1055,14 @@ def main(site: str) -> int:
                 bad += [f"work: {v}" for v in audit()]
                 apage.click("[data-tab=connections]")
                 bad += [f"connections: {v}" for v in audit()]
+                apage.click(".rail [data-place=start]")
+                apage.click("#demo-estate")
+                apage.wait_for_selector("#loaded li:nth-child(4)")
+                apage.click("#run")
+                apage.wait_for_selector("#view .estatemap", timeout=180_000)
+                bad += [f"estate: {v}" for v in audit()]
+                apage.click("[data-tab=estategrow]")
+                bad += [f"grow: {v}" for v in audit()]
                 apage.hover("#open-palette")
                 apage.wait_for_selector("#tip:not([hidden])")
                 bad += [f"tooltip: {v}" for v in audit()]

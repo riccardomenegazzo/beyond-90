@@ -55,8 +55,8 @@ CUSTOMERS = {
 }
 
 
-def build(profile: str, out: Path) -> None:
-    c = CUSTOMERS[profile]
+def build(profile: str, out: Path, c: dict | None = None) -> None:
+    c = c or CUSTOMERS[profile]
     r = random.Random(c["seed"])
     types = json.loads((DATA / profile / "resource_types.json").read_text())
     mods = json.loads((DATA / profile / "modules.json").read_text())["modules"]
@@ -128,9 +128,26 @@ def build(profile: str, out: Path) -> None:
         '[settings]\nceiling_version = "2026.4"\nbaseline_ceiling = "2026.1"\n')
 
 
+# One customer seen across four lines of an infrastructure portfolio: the platform is solid, recovery is not,
+# and two lines (containers, object storage) are not there yet. Opened with `beyond90 estate examples/estates/halden-group`.
+ESTATE = {"name": "Halden Group (mock)", "dir": "halden-group", "lines": {
+    "hci": {"arr": 240000, "seed": 5101, "count": 14, "connect": 0.97, "seen": 0.98, "on": 0.9, "own": 0.93, "decide": 0.95},
+    "dbaas": {"arr": 110000, "seed": 5102, "count": 12, "connect": 0.9, "seen": 0.95, "on": 0.8, "own": 0.88, "decide": 0.9},
+    "file-storage": {"arr": 70000, "seed": 5103, "count": 8, "connect": 0.92, "seen": 0.96, "on": 0.82, "own": 0.88, "decide": 0.92},
+    "dr-backup": {"arr": 90000, "seed": 5104, "count": 10, "connect": 0.8, "seen": 0.9, "on": 0.66, "own": 0.8, "decide": 0.85},
+}}
+
+
+def build_estate() -> None:
+    for profile, over in ESTATE["lines"].items():
+        c = {**CUSTOMERS[profile], **over, "name": ESTATE["name"]}
+        build(profile, HERE / "estates" / ESTATE["dir"] / profile, c)
+
+
 def main() -> None:
     for profile, c in CUSTOMERS.items():
         build(profile, HERE / "profiles" / profile / c["dir"])
+    build_estate()
 
 
 if __name__ == "__main__":

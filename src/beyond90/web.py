@@ -391,6 +391,36 @@ def _shared_causes(summary: dict[str, Any]) -> list[dict[str, Any]]:
     return sorted((e for e in seen.values() if len(e["customers"]) >= 2), key=lambda e: (-len(e["customers"]), -e["accounts"], e["issue"]))
 
 
+def analyze_estate(groups: Mapping[str, Mapping[str, str]]) -> dict[str, Any]:
+    """One customer across several product lines: each folder is one line, scored on its own profile."""
+    from . import estate
+
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        taken: set[str] = set()
+        names: dict[str, str] = {}
+        for key in sorted(groups):
+            if "customer.toml" not in {Path(n).name for n in groups[key]}:
+                continue
+            slug = _slug(key, taken)
+            names[slug] = key
+            (root / slug).mkdir()
+            _write(root / slug, groups[key])
+        res = estate.analyze_estate_dir(root)
+        res["version"] = __version__
+        if not res["ok"]:
+            res["errors"] = [m.replace(str(root) + "/", "") for m in res["errors"]]
+        else:
+            res["errors"] = {names.get(k, k): [m.replace(str(root) + "/", "") for m in v] for k, v in res["errors"].items()}
+            for ln in res["lines"]:
+                ln["key"] = names.get(ln["key"], ln["key"])
+        return res
+
+
+def analyze_estate_json(groups_json: str) -> str:
+    return json.dumps(analyze_estate(json.loads(groups_json)), ensure_ascii=False)
+
+
 def analyze_book_json(groups_json: str, options_json: str = "{}") -> str:
     return json.dumps(analyze_book(json.loads(groups_json), **json.loads(options_json)), ensure_ascii=False)
 

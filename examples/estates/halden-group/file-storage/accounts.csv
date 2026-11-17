@@ -1,0 +1,9 @@
+id,provider,sources,connected,owner,last_spend,status,in_plan,created_at
+file-storage-01,on_premises,billing;org,true,security-ops,2500,active,true,2026-08-14
+file-storage-02,remote_office,billing;org;sso,true,security-ops,7200,active,true,2025-02-02
+file-storage-03,on_premises,billing;org;sso,true,it-service-desk,8000,active,true,2026-02-07
+file-storage-04,on_premises,billing;org;sso,true,records-office,3500,active,true,2026-08-30
+file-storage-05,remote_office,billing;org,true,branch-it,400,active,false,2025-10-01
+file-storage-06,on_premises,billing;sso,true,security-ops,300,active,true,2026-01-20
+file-storage-07,remote_office,billing;org,true,records-office,7500,active,true,2026-08-11
+file-storage-08,on_premises,billing;org;sso,true,records-office,1000,active,true,2025-01-01

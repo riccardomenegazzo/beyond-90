@@ -1,0 +1,6 @@
+id,name,has_assets,active_users,sso,role_scoped,last_access_review
+infra-ops,Infra Ops,true,4,true,true,2026-05-28
+store-it,Store It,true,0,true,true,2026-06-24
+backup-team,Backup Team,true,6,true,false,2026-03-06
+security-ops,Security Ops,true,5,true,false,2026-06-06
+erp-team,Erp Team,true,2,false,false,2026-06-17

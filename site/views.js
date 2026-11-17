@@ -1,5 +1,5 @@
 // The dashboard views. Each takes a context {result, dash, score, engine, files, options, go} and returns a Node.
-import { h, chip, pct, pts, num, cap, dataTable, chipFilter, searchBox, toCsv, saveBlob, copyText } from "./ui.js";
+import { h, s as svgEl, chip, pct, pts, num, cap, dataTable, chipFilter, searchBox, toCsv, saveBlob, copyText } from "./ui.js";
 import { recap } from "./recap.js";
 import { OUTCOMES } from "./outcomes.js";
 import { newCall, callOutput } from "./callmode.js";
@@ -703,7 +703,7 @@ export function renewalView({ score, dash, result, recordOutcome, go }) {
 // ------------------------------------------------------------------ portfolio
 export function bookView({ book, openCustomer }) {
   const cs = book.customers, totalArr = cs.reduce((a, c) => a + c.arr, 0);
-  const heat = (v) => `background:color-mix(in srgb,var(--accent) ${Math.round(Math.max(0, Math.min(1, (v - 0.5) / 0.5)) * 55)}%,transparent)`;
+  const heat = (v) => `background:color-mix(in srgb,var(--heat) ${Math.round(Math.max(0, Math.min(1, (v - 0.5) / 0.5)) * 55)}%,transparent)`;
   const cols = [
     { key: "name", label: "Customer", render: (c) => h("b", { text: c.name }) },
     { key: "arr", label: "ARR", num: true, render: (c) => h("span", {}, num(c.arr), h("i", { class: "arrbar", style: `width:${(c.arr / Math.max(...cs.map((x) => x.arr))) * 60}px` })) },
@@ -714,7 +714,7 @@ export function bookView({ book, openCustomer }) {
     { key: "hours", label: "Hours", num: true, render: (c) => c.hours.toFixed(0) },
     { key: "level", label: "Level", render: (c) => h("span", { class: "levelbadge small lv-" + c.level, text: cap(c.level) }) },
     { key: "critical_open", label: "Critical open", num: true },
-    { key: "open", label: "", render: (c) => h("button", { class: "btn small", type: "button", text: "Open", onclick: () => openCustomer(c.key) }) },
+    { key: "open", label: "Report", render: (c) => h("button", { class: "btn small", type: "button", text: "Open", onclick: () => openCustomer(c.key) }) },
   ];
   const worst = [...cs].sort((a, b) => a.yield - b.yield)[0], gain = [...cs].sort((a, b) => (b.planned_yield - b.yield) * b.arr - (a.planned_yield - a.yield) * a.arr)[0];
   return h("div", {},
@@ -1522,4 +1522,95 @@ export function scorecardView({ result, dash, score, engine, today }) {
     { sub: "One page a customer can show their own buyers or auditors. It names no finding, account or person. It is tied to the exact input files by a fingerprint." }),
     card("Check a fingerprint", h("div", {}, h("label", {}, "Fingerprint", paste), verdict),
     { sub: "Load the same input files, paste the fingerprint from a scorecard you were given, and see whether it matches. It proves the numbers came from those files, not that the files are true." }));
+}
+
+// ------------------------------------------------------------------ one customer, every product line
+const SHORT = { hci: "Platform", dbaas: "Databases", "file-storage": "Files", "object-storage": "Objects", "kubernetes-platform": "Kubernetes", "dr-backup": "Recovery",
+  cnapp: "Cloud", identity: "Identity", saas: "SaaS", siem: "Monitoring", endpoint: "Endpoint", ai: "AI" };
+const shortName = (p, label) => SHORT[p] || label.split(" ")[0];
+
+/** The estate as a map: the first line of the family in the middle, the others around it, the links between them coloured by what they say. */
+function estateMap(estate, onNode) {
+  const W = 560, H = 380, cx = W / 2, cy = H / 2 + 6, R = 150, nodes = estate.map;
+  const byProfile = Object.fromEntries(estate.lines.map((l) => [l.profile, l]));
+  const pos = {};
+  nodes.forEach((n, i) => {
+    if (i === 0) { pos[n.profile] = [cx, cy]; return; }
+    const a = -Math.PI / 2 + ((i - 1) / (nodes.length - 1)) * 2 * Math.PI;
+    pos[n.profile] = [cx + R * 1.32 * Math.cos(a), cy + R * Math.sin(a)];
+  });
+  const edges = estate.links.filter((l) => pos[l.from] && pos[l.to]).map((l) => {
+    const [x1, y1] = pos[l.from], [x2, y2] = pos[l.to];
+    return svgEl("line", { x1, y1, x2, y2, class: "elink " + l.state }, svgEl("title", {}, `${l.state === "risk" ? "At risk: " : l.state === "grow" ? "Next: " : ""}${l.why}`));
+  });
+  const r = 40, c = 2 * Math.PI * r;
+  const dots = nodes.map((n) => {
+    const [x, y] = pos[n.profile], ln = byProfile[n.profile];
+    const tone = !ln ? "absent" : ln.yield < 0.6 ? "weak" : ln.yield < 0.7 ? "mid" : "strong";
+    const g = svgEl("g", { class: "enode " + tone, transform: `translate(${x.toFixed(1)},${y.toFixed(1)})`, tabindex: 0, role: "button",
+      "aria-label": ln ? `${n.label}: Yield ${pct(ln.yield)}. Open this line.` : `${n.label}: not in place yet. See why it could be next.` },
+      svgEl("circle", { r, class: "ebg" }),
+      ln ? svgEl("circle", { r, class: "earc", "stroke-dasharray": `${(Math.max(0.01, ln.yield) * c).toFixed(1)} ${c.toFixed(1)}`, transform: "rotate(-90)" }) : null,
+      svgEl("text", { y: ln ? -2 : 4, class: "eval" }, ln ? pct(ln.yield).replace(/\.\d%$/, "%") : "+"),
+      ln ? svgEl("text", { y: 15, class: "esub" }, ln.naive != null ? `not ${pct(ln.naive).replace(/\.\d%$/, "%")}` : "") : null,
+      svgEl("text", { y: r + 18, class: "ename" }, shortName(n.profile, n.label)));
+    const go = () => onNode(n, ln);
+    g.addEventListener("click", go);
+    g.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(); } });
+    return g;
+  });
+  return svgEl("svg", { viewBox: `0 0 ${W} ${H + 24}`, class: "estatemap", role: "group", "aria-label": `${estate.customer}: ${estate.lines.length} lines in place, ${estate.whitespace.length} to open` }, edges, dots);
+}
+
+export function estateView({ estate, openLine, go }) {
+  const e = estate, open = (n, ln) => (ln ? openLine(ln.key) : go("estategrow", { open: n.profile }));
+  const gap = e.naive != null ? e.naive - e.yield : null;
+  const hero = h("section", { class: "card estatehero" },
+    h("div", { class: "ehead" },
+      e.naive != null ? h("div", { class: "eusual" }, h("small", { text: "The usual number" }), h("s", { text: pct(e.naive) })) : null,
+      h("div", { class: "ereal" }, h("small", { text: "What really works, across the estate" }), h("b", { text: pct(e.yield) }))),
+    h("p", { class: "tline", text: e.headline }),
+    h("ul", { class: "elines" }, e.lines.map((l) => h("li", {}, h("span", { class: "en", text: shortName(l.profile, l.label) }),
+      h("span", { class: "ebar", title: `${l.label}: ${pct(l.yield)} really works${l.naive != null ? `, ${pct(l.naive)} on the usual number` : ""}` },
+        l.naive != null ? h("i", { class: "eu", style: `width:${(l.naive * 100).toFixed(1)}%` }) : null,
+        h("i", { class: "er" + (l.yield < 0.6 ? " weak" : ""), style: `width:${(l.yield * 100).toFixed(1)}%` })),
+      h("b", { text: pct(l.yield) })))),
+    gap != null ? h("p", { class: "note", text: `${(gap * 100).toFixed(0)} points between the two numbers. ${e.arr_below ? `${num(e.arr_below)} of ARR sits on lines below 60%.` : ""}` }) : null);
+  const legend = h("ul", { class: "elegend" }, h("li", { class: "risk", text: "a solid line leaning on a weak one" }), h("li", { class: "grow", text: "the next line it leads to" }), h("li", { class: "ok", text: "both in place" }));
+  const mapCard = card("The estate", h("div", {}, estateMap(e, open), legend), { sub: "Each ring is a product line: how much of what was sold really works. Dashed circles are lines not in place yet. Select one to open it." });
+  const risks = e.risks.length ? card("Where one line puts another at risk", h("ul", { class: "flags" }, e.risks.map((r) =>
+    h("li", { class: "bad" }, h("b", { text: `${shortName(r.from, r.from_label)} ${pct(r.from_yield)}, ${shortName(r.to, r.to_label).toLowerCase()} ${pct(r.to_yield)}` }), h("span", { text: cap(r.why) + "." }),
+      h("button", { class: "link", type: "button", text: `Open ${shortName(r.to, r.to_label).toLowerCase()}`, onclick: () => openLine(e.lines.find((l) => l.profile === r.to).key) })))),
+  { sub: "What the customer bought works; what it depends on does not yet. These are the conversations that protect the renewal." }) : null;
+  const heat = (v) => `background:color-mix(in srgb,var(--heat) ${Math.round(Math.max(0, Math.min(1, (v - 0.5) / 0.5)) * 55)}%,transparent)`;
+  const cols = [
+    { key: "label", label: "Line", render: (l) => h("b", { text: l.label }) },
+    { key: "arr", label: "ARR", num: true, render: (l) => num(l.arr) },
+    ...["L1", "L2", "L3", "L4"].map((k) => ({ key: k, label: k + " " + STAGE_NAME[k], num: true, sort: (l) => l.stages[k], render: (l) => h("span", { class: "heatcell" + (l.weakest === k ? " weakest" : ""), style: heat(l.stages[k]), text: pct(l.stages[k]) }) })),
+    { key: "yield", label: "Yield", num: true, render: (l) => h("b", { text: pct(l.yield) }) },
+    { key: "naive", label: "Usual number", num: true, render: (l) => (l.naive != null ? pct(l.naive) : "—") },
+    { key: "through", label: "End to end", num: true, sort: (l) => (l.total ? l.through / l.total : -1), render: (l) => (l.total ? `${l.through} of ${nOf(l.total, l.unit, l.units)}` : "—") },
+    { key: "open", label: "Report", render: (l) => h("button", { class: "btn small", type: "button", text: "Open", "aria-label": `Open ${l.label}`, onclick: () => openLine(l.key) }) },
+  ];
+  const next = card("The next move on each line", h("ul", { class: "enext" }, e.lines.filter((l) => l.top_action).map((l) =>
+    h("li", {}, h("span", { class: "eline", text: shortName(l.profile, l.label) }), h("span", { text: l.top_action.title }), h("b", { class: "pos", text: `+${l.top_action.points.toFixed(1)} pts` })))),
+  { sub: "The action with the biggest effect on each line's Yield, from its own playbooks." });
+  return h("div", {}, h("div", { class: "col2 estatetop" }, hero, mapCard), risks, h("div", { class: "col2" }, next,
+    card("Reading the estate", h("p", { class: "note first", text: "Each line is scored on its own profile, in its own units: clusters, database environments, sites. The estate figure weights each line by its ARR. A pale column across lines is a process problem, not a product one." }))),
+  card("Every line, four stages", dataTable({ columns: cols, rows: e.lines, label: "Lines", pageSize: 50 }).el));
+}
+
+export function growView({ estate, focus }) {
+  const e = estate;
+  if (!e.whitespace.length) return card("Where to grow", h("p", { class: "note first", text: `${e.customer} already runs every line of the ${e.family} portfolio. Growth here is depth: the next action on each line.` }));
+  const items = e.whitespace.map((w, i) => h("section", { class: "card grow" + (focus === w.profile ? " focus" : ""), id: "grow-" + w.profile },
+    h("header", { class: "cardhead" }, h("h2", {}, h("span", { class: "growrank", text: String(i + 1) }), w.label)),
+    h("p", { class: "note first", text: w.description }),
+    w.reasons.length ? h("ul", { class: "growwhy" }, w.reasons.map((r) => h("li", {}, h("b", { text: `${r.from_label} runs here (${pct(r.strength)})` }), h("span", { text: cap(r.why) + "." }))))
+      : h("p", { class: "note", text: "Nothing in place leads here yet: worth a question, not a proposal." }),
+    w.opener ? h("div", { class: "growask" }, h("small", { text: "Open with" }), h("q", { text: w.opener.q }), h("span", { class: "note", text: w.opener.why }),
+      h("button", { class: "btn small", type: "button", text: "Copy the question", onclick: (ev) => copyText(w.opener.q).then((ok) => { ev.target.textContent = ok ? "Copied" : "Not copied"; }) })) : null,
+    w.proof ? h("div", { class: "growproof" }, h("small", { text: "A proof to offer" }), h("p", { text: w.proof.text + "." }), h("span", { class: "note", text: "How: " + w.proof.how })) : null));
+  if (focus) requestAnimationFrame(() => { const el = document.getElementById("grow-" + focus); if (el) el.scrollIntoView({ block: "start" }); });
+  return h("div", {}, h("p", { class: "note first", text: `The lines ${e.customer} does not run yet, in the order they follow from what it already runs. A line that several solid lines lead to comes first.` }), items);
 }

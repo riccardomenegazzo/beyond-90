@@ -2,6 +2,15 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.81.0
+
+- **One customer, every product line.** Drop a folder whose sub-folders are the same customer on different profiles (platform, databases, files, recovery…) and it opens as an estate, not a book. Each line is scored on its own profile and in its own units; the estate shows what really works across them, weighted by ARR, next to the usual number. See [docs/estate.md](docs/estate.md).
+- **The estate map.** The first line of the family in the middle, the others around it. Red links where a solid line leans on a weak one ("the platform is at 71.9%, recovery at 42.8%: losing a site would still mean rebuilding by hand"); dashed links to the lines the customer could run next. Select a ring to open that line's report, or a dashed circle to see why it could come next.
+- **Where to grow.** The missing lines of the family, in the order they follow from what already runs, each with the reason, the question that opens the conversation and a proof to offer.
+- **Account plan.** The whole estate as a document: lines in place, risks between them, where to grow, the questions for the next meeting. Also `beyond90 estate <folder>` on the command line.
+- New example: Halden Group (mock), one customer on four infrastructure lines, from the start page.
+- Heat cells keep their contrast in the dark theme; the phone bar shows only the views the open mode has.
+
 ## 0.80.0
 
 - **Four new kinds of product, for infrastructure portfolios.** `dbaas` (database platform as a service: provisioning, patching, point-in-time recovery, masked clones), `file-storage` (scale-out file storage: snapshots, ransomware detection, audit, permission review, tiering), `kubernetes-platform` (managed clusters: upgrades, workload backup, admission policy, cost per team) and `dr-backup` (recovery objectives, tested failover, immutable and isolated copies). With `hci` and `object-storage`, a presales or account team covering a whole infrastructure portfolio can run every line on the same method. All vendor-neutral.

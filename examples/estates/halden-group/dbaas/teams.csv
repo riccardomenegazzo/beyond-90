@@ -1,0 +1,6 @@
+id,name,has_assets,active_users,sso,role_scoped,last_access_review
+dba-team,Dba Team,true,6,false,false,2026-07-28
+clinical-apps,Clinical Apps,true,6,false,true,2026-07-31
+data-platform,Data Platform,true,1,true,false,2026-01-18
+security-ops,Security Ops,true,0,true,true,2026-05-02
+dev-tools,Dev Tools,true,5,false,true,2026-08-11

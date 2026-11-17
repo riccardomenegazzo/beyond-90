@@ -49,6 +49,16 @@ export const CUSTOMER_NAV = [
   ] },
 ];
 
+export const ESTATE_NAV = [
+  { question: "The whole customer", views: [
+    { id: "estate", label: "Estate", icon: "layers", tip: "Every product line of this customer side by side: what is really working, where one line puts another at risk." },
+    { id: "estategrow", label: "Where to grow", icon: "outlook", tip: "The lines this customer does not run yet, in the order they follow from what it already runs, with the first question to ask." },
+  ] },
+  { question: "Documents to share", views: [
+    { id: "estateplan", label: "Account plan", icon: "doc", tip: "The account plan in Markdown: lines in place, risks between them, where to grow and the questions for the next meeting." },
+  ] },
+];
+
 export const BOOK_NAV = [
   { question: "Your week", views: [
     { id: "week", label: "This week", icon: "week", tip: "Which customers to contact this week, in order, with the reason and the call prepared." },

@@ -1,0 +1,41 @@
+id,account_id,severity,exposure,opened_at,closed_at,owner,decision,decision_reason,expiry,previous_severity,severity_changed_at,verified_at,reopened,closed_by
+x-001,file-storage-05,medium,internal,2026-09-03,2026-09-14,branch-it,accepted_risk,business process depends on it,2026-11-20,,,,,automated
+x-002,file-storage-01,medium,internal,2026-10-12,,,,,,,,,,
+x-003,file-storage-05,low,internet,2026-10-10,,,,,,,,,,
+x-004,file-storage-06,medium,internal,2026-08-21,,,,,,,,,,
+x-005,file-storage-04,low,internet,2026-09-03,,records-office,accepted_risk,business process depends on it,2026-12-20,,,,,
+x-006,file-storage-07,medium,internal,2026-09-09,,it-service-desk,accepted_risk,business process depends on it,2026-12-10,,,,,
+x-007,file-storage-08,low,internal,2026-07-16,2026-08-10,records-office,fix,,,,,,,manual
+x-008,file-storage-04,medium,internet,2026-10-01,,branch-it,fix,,,,,,,
+x-009,file-storage-05,low,internet,2026-10-02,,records-office,accepted_risk,business process depends on it,2027-02-04,,,,,
+x-010,file-storage-08,high,internal,2026-07-30,2026-07-31,branch-it,accepted_risk,business process depends on it,2026-12-11,,,,,assisted
+x-011,file-storage-01,low,internet,2026-08-04,2026-08-26,finance-it,fix,,,,,,,assisted
+x-012,file-storage-05,high,internet,2026-09-04,2026-09-19,security-ops,fix,,,,,,,assisted
+x-013,file-storage-02,medium,internet,2026-10-26,,finance-it,fix,,,,,,,
+x-014,file-storage-03,medium,internet,2026-09-10,,branch-it,accepted_risk,business process depends on it,2027-01-24,,,,,
+x-015,file-storage-04,high,internal,2026-10-22,,it-service-desk,fix,,,,,,,
+x-016,file-storage-07,low,internet,2026-08-27,2026-08-29,it-service-desk,fix,,,,,,,automated
+x-017,file-storage-03,critical,internet,2026-07-27,,finance-it,fix,,,,,,,
+x-018,file-storage-04,critical,internet,2026-07-23,2026-07-26,security-ops,accepted_risk,business process depends on it,2027-01-24,,,,,manual
+x-019,file-storage-08,low,internet,2026-10-10,,branch-it,fix,,,,,,,
+x-020,file-storage-02,medium,internet,2026-07-28,,branch-it,fix,,,,,,,
+x-021,file-storage-03,medium,internal,2026-10-13,,finance-it,accepted_risk,business process depends on it,2026-11-22,,,,,
+x-022,file-storage-03,high,internal,2026-07-06,2026-07-12,security-ops,accepted_risk,business process depends on it,2026-12-10,,,,,assisted
+x-023,file-storage-03,low,internet,2026-07-22,2026-08-07,,,,,,,,,automated
+x-024,file-storage-06,low,internal,2026-09-28,2026-10-15,branch-it,fix,,,,,,,assisted
+x-025,file-storage-02,low,internal,2026-08-21,2026-09-10,it-service-desk,accepted_risk,business process depends on it,2027-01-20,,,,,assisted
+x-026,file-storage-03,medium,internet,2026-07-11,,finance-it,fix,,,,,,,
+x-027,file-storage-04,low,internal,2026-08-21,2026-08-27,security-ops,fix,,,,,,,manual
+x-028,file-storage-07,critical,internet,2026-07-23,2026-08-07,,,,,,,,,assisted
+x-029,file-storage-04,critical,internet,2026-08-29,,records-office,fix,,,,,,,
+x-030,file-storage-08,medium,internal,2026-10-14,,,,,,,,,,
+x-031,file-storage-07,low,internet,2026-08-05,2026-08-17,it-service-desk,fix,,,,,,,automated
+x-032,file-storage-03,high,internal,2026-07-29,2026-08-14,,,,,,,,,automated
+x-033,file-storage-08,low,internet,2026-09-18,2026-09-29,it-service-desk,fix,,,,,,,automated
+x-034,file-storage-07,high,internet,2026-08-29,,security-ops,fix,,,,,,,
+x-035,file-storage-07,low,internet,2026-10-28,,branch-it,fix,,,,,,,
+x-036,file-storage-02,low,internet,2026-08-08,,records-office,accepted_risk,business process depends on it,2026-11-28,,,,,
+x-037,file-storage-06,medium,internet,2026-08-15,2026-09-04,finance-it,fix,,,,,,,assisted
+x-038,file-storage-05,medium,internet,2026-08-17,2026-08-28,it-service-desk,accepted_risk,business process depends on it,2027-01-19,,,,,manual
+x-039,file-storage-05,high,internal,2026-09-16,2026-09-24,security-ops,accepted_risk,business process depends on it,2027-02-01,,,,,assisted
+x-040,file-storage-03,medium,internal,2026-09-26,,it-service-desk,accepted_risk,business process depends on it,2027-02-26,,,,,

@@ -810,3 +810,73 @@ body:not(.has-files) .runbar{display:none}
 .nextstep p{flex:1;margin:0;min-width:0}
 .nextstep .btn{flex:none}
 @media (max-width:640px){.nextstep{flex-direction:column;align-items:stretch}}
+
+/* ---------- one customer, every product line */
+.demos{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (max-width:1100px){.demos{grid-template-columns:1fr}}
+.estatetop{align-items:stretch}
+.estatehero{background:var(--navy);color:#eef3f8;border:0;box-shadow:0 24px 48px -24px rgba(12,26,42,.6);display:grid;align-content:start;gap:14px;padding:30px 28px;border-radius:22px}
+.estatehero .ehead{display:flex;flex-wrap:wrap;gap:12px 36px;align-items:flex-end}
+.estatehero small{display:block;font-size:13px;color:#c5d2e1;margin-bottom:4px}
+.estatehero .eusual s{font-size:40px;font-weight:700;color:#8fa0b3;text-decoration-color:#f07a6e;text-decoration-thickness:3px}
+.estatehero .ereal b{font-size:clamp(48px,7vw,72px);font-weight:800;letter-spacing:-.04em;line-height:1;color:#5eead4;font-variant-numeric:tabular-nums}
+.estatehero .tline{font-size:18px;line-height:1.5;margin:0;color:#eef3f8}
+.estatehero .note{color:#c5d2e1;margin:0}
+.estatemap{width:100%;height:auto;max-height:440px;display:block}
+.elink{stroke:var(--line);stroke-width:2}
+.elink.risk{stroke:var(--bad);stroke-width:3.5}
+.elink.grow{stroke:var(--accent);stroke-width:2.5;stroke-dasharray:6 6}
+.elink.ok{stroke:color-mix(in srgb,var(--ink) 22%,transparent)}
+.enode{cursor:pointer;outline:none}
+.enode .ebg{fill:var(--surface);stroke:var(--line);stroke-width:7}
+.enode .earc{fill:none;stroke:var(--accent);stroke-width:7;stroke-linecap:round}
+.enode.weak .earc{stroke:var(--bad)}
+.enode.mid .earc{stroke:var(--warn)}
+.enode.absent .ebg{stroke:var(--accent);stroke-width:2;stroke-dasharray:5 5;fill:var(--accent-soft)}
+.enode .eval{text-anchor:middle;font-size:19px;font-weight:800;fill:var(--ink);font-variant-numeric:tabular-nums}
+.enode.absent .eval{fill:var(--accent-text);font-size:26px;font-weight:600}
+.enode .esub{text-anchor:middle;font-size:10.5px;fill:var(--muted);text-decoration:line-through}
+.enode .ename{text-anchor:middle;font-size:13.5px;font-weight:700;fill:var(--ink)}
+.enode:hover .ebg,.enode:focus-visible .ebg{stroke:var(--accent-text)}
+.enode:focus-visible .ename{text-decoration:underline}
+.elegend{list-style:none;display:flex;flex-wrap:wrap;gap:6px 18px;margin:6px 0 0;padding:0;font-size:13px;color:var(--ink2)}
+.elegend li::before{content:"";display:inline-block;width:22px;height:0;border-top:3px solid var(--line);vertical-align:middle;margin-right:7px}
+.elegend li.risk::before{border-top-color:var(--bad)}
+.elegend li.grow::before{border-top:3px dashed var(--accent)}
+.elegend li.ok::before{border-top-color:color-mix(in srgb,var(--ink) 30%,transparent)}
+.heatcell.weakest{box-shadow:inset 0 0 0 2px var(--warn)}
+.enext{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.enext li{display:grid;grid-template-columns:96px minmax(0,1fr) auto;gap:10px;align-items:baseline;padding:8px 0;border-top:1px solid var(--line)}
+.enext li:first-child{border-top:0}
+.enext .eline{font-weight:700;color:var(--ink2);font-size:13.5px}
+.enext b.pos{color:var(--pos);font-variant-numeric:tabular-nums}
+.card.grow{display:grid;gap:12px}
+.card.grow.focus{box-shadow:0 0 0 2px var(--accent)}
+.growrank{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--accent-soft);color:var(--accent-text);font-size:14px;margin-right:10px;vertical-align:2px}
+.growwhy{margin:0;padding-left:18px;display:grid;gap:6px}
+.growwhy li span{display:block;color:var(--ink2)}
+.growask,.growproof{border-radius:12px;padding:12px 14px;display:grid;gap:6px}
+.growask{background:var(--accent-soft)}
+.growproof{background:var(--sunk)}
+.growask small,.growproof small{font-weight:700;color:var(--ink2)}
+.growask q{font-size:17px;font-weight:600;line-height:1.45}
+.growask .btn{justify-self:start}
+.growproof p{margin:0}
+@media (max-width:700px){.enext li{grid-template-columns:1fr auto}.enext .eline{grid-column:1/-1}.estatehero .eusual s{font-size:30px}}
+.enode .ename{paint-order:stroke;stroke:var(--surface);stroke-width:4px;stroke-linejoin:round}
+.elines{list-style:none;margin:4px 0 0;padding:0;display:grid;gap:9px}
+.elines li{display:grid;grid-template-columns:90px minmax(0,1fr) 54px;gap:12px;align-items:center;font-size:14px}
+.elines .en{color:#c5d2e1}
+.elines b{text-align:right;font-variant-numeric:tabular-nums}
+.ebar{position:relative;height:10px;border-radius:6px;background:rgba(255,255,255,.08)}
+.ebar i{position:absolute;left:0;top:0;bottom:0;border-radius:6px}
+.ebar .eu{background:rgba(197,210,225,.22)}
+.ebar .er{background:#5eead4}
+.ebar .er.weak{background:#f59e8b}
+/* heat cells: a deep tint in dark themes, so their light text keeps its contrast */
+:root{--heat:var(--accent)}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--heat:#0b5f59}}
+:root[data-theme=dark]{--heat:#0b5f59}
+/* the phone bar shares its width among the buttons the mode has */
+body.has-work .mobilebar{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:1fr}
+.mobilebar button[hidden]{display:none}

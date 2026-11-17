@@ -93,6 +93,10 @@ def build(out: Path, pyodide: Path, feed: Optional[Path] = None, font: Path = FO
     book = {p.name: {q.name: q.read_text(encoding="utf-8") for q in sorted(p.iterdir()) if q.suffix in (".csv", ".toml")}
             for p in sorted(DEMO.parent.iterdir()) if p.is_dir()}
     (out / "demo-book.json").write_text(json.dumps(book, ensure_ascii=False), encoding="utf-8")
+    estate_dir = ROOT / "examples" / "estates" / "halden-group"
+    estate = {p.name: {q.name: q.read_text(encoding="utf-8") for q in sorted(p.iterdir()) if q.suffix in (".csv", ".toml")}
+              for p in sorted(estate_dir.iterdir()) if p.is_dir()}
+    (out / "demo-estate.json").write_text(json.dumps(estate, ensure_ascii=False), encoding="utf-8")
     ep = {p.name: p.read_text(encoding="utf-8") for p in sorted(DEMO_ENDPOINT.iterdir()) if p.suffix in (".csv", ".toml")}
     (out / "demo-endpoint.json").write_text(json.dumps(ep, ensure_ascii=False), encoding="utf-8")
     for key, folder in DEMO_PROFILES.items():

@@ -1,0 +1,15 @@
+id,provider,sources,connected,owner,last_spend,status,in_plan,created_at
+hci-01,remote_office,billing;sso,true,security-ops,3400,active,false,2025-10-25
+hci-02,edge,billing;org,true,security-ops,4900,active,true,2026-04-17
+hci-03,on_premises,billing;org,false,backup-team,6900,active,true,2026-01-31
+hci-04,on_premises,billing;org;sso,true,backup-team,3000,active,true,2025-05-05
+hci-05,on_premises,billing;org,true,infra-platform,6400,active,true,2025-06-27
+hci-06,hybrid_cloud,billing;org;sso,true,datacenter-ops,6100,active,false,2024-12-29
+hci-07,hybrid_cloud,billing;org;sso,true,infra-platform,6800,active,false,2025-07-20
+hci-08,hybrid_cloud,billing;org;sso,true,security-ops,2700,active,false,2025-03-17
+hci-09,on_premises,billing;org;sso,false,infra-platform,5900,active,false,2024-12-02
+hci-10,on_premises,billing,true,plant-it,4700,active,true,2024-12-07
+hci-11,hybrid_cloud,billing;org,true,plant-it,6000,active,true,2025-03-29
+hci-12,hybrid_cloud,billing;org;sso,true,backup-team,3900,active,true,2025-01-18
+hci-13,hybrid_cloud,billing;org;sso,true,infra-platform,5800,active,false,2025-10-28
+hci-14,edge,billing;org;sso,true,backup-team,4700,active,true,2025-07-13

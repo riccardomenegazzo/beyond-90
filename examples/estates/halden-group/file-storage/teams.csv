@@ -1,0 +1,6 @@
+id,name,has_assets,active_users,sso,role_scoped,last_access_review
+it-service-desk,It Service Desk,true,4,true,true,2026-08-05
+records-office,Records Office,true,0,false,false,2026-06-15
+finance-it,Finance It,true,1,false,true,2026-07-06
+security-ops,Security Ops,true,5,true,false,2026-06-14
+branch-it,Branch It,true,1,true,true,2026-08-29
