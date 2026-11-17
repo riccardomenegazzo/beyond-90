@@ -27,7 +27,7 @@ sys.path.insert(0, str(ROOT / "site"))
 from build_site import icon, write_manifest  # noqa: E402
 
 NAME = "Beyond 90"
-DESCRIPTION = "Customer health for cloud security teams: where each customer stands and what to do next. Your data never leaves the browser."
+DESCRIPTION = "Adoption and discovery for people who sell and support infrastructure and security products. Data never leaves the browser."
 SIZES = (16, 32, 48, 128)
 # The page's own policy, minus what an extension cannot or need not have: no blob: workers (the engine starts from its
 # own file) and nothing from any other origin. The browser enforces it on every extension page and worker.

@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/riccardomenegazzo/beyond-90/actions/workflows/ci.yml/badge.svg)](https://github.com/riccardomenegazzo/beyond-90/actions/workflows/ci.yml) [![CodeQL](https://github.com/riccardomenegazzo/beyond-90/actions/workflows/codeql.yml/badge.svg)](https://github.com/riccardomenegazzo/beyond-90/actions/workflows/codeql.yml) [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/riccardomenegazzo/beyond-90/badge)](https://scorecard.dev/viewer/?uri=github.com/riccardomenegazzo/beyond-90)
 
-**An adoption score for security products that multiplies instead of averaging, and tells you what to do next.** Open source, vendor-neutral, and it runs in your browser: customer data never leaves it.
+**An adoption score that multiplies instead of averaging, and tells you what to do next: from the first discovery meeting to the renewal.** For the people who sell and support infrastructure and security products. Open source, vendor-neutral, and it runs in your browser: customer data never leaves it.
 
 ![Today: the Yield, where it leaks, how many accounts pass every stage, and the three actions that move it most](docs/img/hero-today.png)
 
@@ -30,13 +30,14 @@ Nobody lied. Each team reported its own step. [Why multiply, and why both number
 - **Shows what waiting costs:** every drop already dated in the data (secrets, accepted risks, deadlines), and what the work of a quarter was worth.
 - **Writes for the customer:** a CISO one-pager, an executive QBR and slides, a status page, all through a preview that can swap names for aliases.
 - **Works across a book of customers:** this week's priorities, shared patterns, and one budget of hours where it gains most.
-- **Starts before there is any data:** a discovery workshop records what a prospect says to each product line's questions, shows where it hurts and where to start, and opens the proof of value with that line's own criteria ([docs/workshop.md](docs/workshop.md)).
+- **Starts before there is any data:** a discovery workshop records what a prospect says to each product line's questions and turns it into a journey: "yes, this is possible", what would need to be true, the first step towards each condition and the test that proves it. It ends in a readout for the customer and a proof of value with that line's own criteria ([docs/workshop.md](docs/workshop.md)).
 - **Sees one customer across a whole portfolio:** every product line on its own profile, where one line puts another at risk, and which line comes next with the question that opens it ([docs/estate.md](docs/estate.md)).
-- **Fits the product you support:** profiles for cloud security, endpoint, SaaS, AI, identity, SIEM, hyperconverged infrastructure, object storage, databases, file storage, Kubernetes platforms and disaster recovery, or your own in JSON.
+- **Fits the product you support:** profiles for cloud security, endpoint, SaaS, AI, identity, SIEM, hyperconverged infrastructure, object storage, databases, file storage, Kubernetes platforms, disaster recovery and platform migration, or your own in JSON.
 - **Installs as an app** on a phone or a computer, works offline, and accepts files shared from mail.
 
 | | |
 |---|---|
+| ![The journey, from a discovery workshop](docs/img/app-journey.png) | ![One customer across every product line](docs/img/app-estate.png) |
 | ![Prep a call](docs/img/app-prep.png) | ![Accounts](docs/img/app-accounts.png) |
 | ![Proof of value](docs/img/app-pov.png) | ![On a phone](docs/img/app-phone.png) |
 

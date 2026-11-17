@@ -186,7 +186,7 @@ def write_app_manifest(out: Path) -> None:
         (out / name).write_bytes(icon(size, bg, scale))
     doc = {"name": "Beyond 90", "short_name": "Beyond 90", "id": "./", "start_url": "./index.html", "scope": "./", "display": "standalone",
            "background_color": "#f3f5f9", "theme_color": "#2e46c8", "lang": "en", "dir": "ltr", "categories": ["business", "productivity"],
-           "description": "Customer health for cloud security teams: where each customer stands and what to do next. Your data never leaves the device.",
+           "description": "Adoption and discovery for the people who sell and support infrastructure and security products: where each customer stands, what would need to be true, and what to do next. Your data never leaves the device.",
            "icons": [{"src": "icons/app-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
                      {"src": "icons/app-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
                      {"src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}],
