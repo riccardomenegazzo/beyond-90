@@ -27,8 +27,14 @@ def test_value_questions_open_and_the_weakest_stage_follows():
     assert sorted(x["q"] for x in qs) == sorted(x["q"] for x in cat.discovery)
 
 
-def test_the_command_prints_a_numbered_list_and_says_when_there_are_none(capsys):
+def test_the_command_prints_a_numbered_list_and_says_when_there_are_none(capsys, tmp_path):
     assert main(["discovery", str(ROOT / "examples" / "profiles" / "hci" / "granite-hci")]) == 0
     out = capsys.readouterr().out
     assert out.startswith("# Questions for Granite Manufacturing") and "\n1. " in out and "\n8. " in out
-    assert main(["discovery", str(ROOT / "examples" / "profiles" / "identity" / "harbor-identity")]) == 1
+    # a custom catalogue without discovery.json: the command says so instead of printing nothing
+    import shutil
+    custom = tmp_path / "catalogue"
+    custom.mkdir()
+    for name in ("resource_types.json", "modules.json", "playbooks.json"):
+        shutil.copy(ROOT / "src" / "beyond90" / "data" / name, custom / name)
+    assert main(["discovery", str(ROOT / "examples" / "portfolio" / "northwind"), "--catalogue-dir", str(custom)]) == 1
