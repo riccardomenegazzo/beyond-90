@@ -2,6 +2,12 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.77.0
+
+- **A front page that explains itself.** The README opens with one sentence, a picture of Today, the three numbers on the example customer (the usual 92%, Yield 72.6%, 29 of 121 accounts end to end), the three ways to try it, and what it does in eight lines, with four pictures. The longer text follows under "In depth".
+- **Pictures that cannot go stale.** `scripts/screenshots.py` takes every picture in the README and the docs from the built site, with the invented example data, plus a social card for the repository. All pictures now show the current design.
+- "1 connector counted as connected is failing", not "1 connector(s)".
+
 ## 0.76.0
 
 - **Every profile reads in its own words.** A walk through the hyperconverged example found cloud wording left over; it is gone. The Accounts view is named after the profile's units in the menu and the title ("Clusters", "Tenants"); onboarding says "Where clusters stop" and names the "cluster owner"; the call prep counts clusters, not accounts. The connector error explainer and the kickoff checklist, which know public clouds and Kubernetes only, show for the cloud security profile alone.

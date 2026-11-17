@@ -34,3 +34,7 @@ The browser app (`site/`) has no build step beyond `site/build_site.py`. Lint it
 ## Reporting security issues
 
 See [SECURITY.md](SECURITY.md).
+
+## Pictures in the README and the docs
+
+They are taken from the built site, never by hand, so they show the app as it is: build the site, then run `python3 scripts/screenshots.py _site docs/img` (needs Playwright with Chromium). Every customer in them is the invented example data. The script also writes `social-card.png` for the repository's social preview.

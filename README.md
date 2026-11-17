@@ -2,20 +2,47 @@
 
 [![CI](https://github.com/riccardomenegazzo/beyond-90/actions/workflows/ci.yml/badge.svg)](https://github.com/riccardomenegazzo/beyond-90/actions/workflows/ci.yml) [![CodeQL](https://github.com/riccardomenegazzo/beyond-90/actions/workflows/codeql.yml/badge.svg)](https://github.com/riccardomenegazzo/beyond-90/actions/workflows/codeql.yml) [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/riccardomenegazzo/beyond-90/badge)](https://scorecard.dev/viewer/?uri=github.com/riccardomenegazzo/beyond-90)
 
-**An adoption score that cannot be flattered, a roadmap that tells you the dip before it happens, and an honest answer to "did the customer improve, or did the bar move?"**
+**An adoption score for security products that multiplies instead of averaging, and tells you what to do next.** Open source, vendor-neutral, and it runs in your browser: customer data never leaves it.
 
-## In one minute
+![Today: the Yield, where it leaks, how many accounts pass every stage, and the three actions that move it most](docs/img/hero-today.png)
 
-A customer says "we are at 90%". Usually that means 90% of the accounts someone remembered to list. Beyond 90 checks the whole path from account to fix, with independent counts, and tells you what to do next.
+A customer says "we're at 92%". That usually means 92% of the accounts someone planned for are connected. Beyond 90 follows each account through four stages and counts the whole path:
 
-- **What it gives you:** one honest score (Yield), the three actions that move it most, a prepared call, and a quarterly review a security lead will read.
-- **Try it:** open the [live page](https://riccardomenegazzo.github.io/beyond-90/) and press the demo button. The customer is invented, and nothing leaves your browser.
-- **Run it on your computer:** download `beyond90-local-<version>.zip` from [Releases](https://github.com/riccardomenegazzo/beyond-90/releases), unzip, run `python3 start.py`. Only Python is needed, and nothing depends on the public site. [Details](docs/self-hosting.md).
-- **Use it from the command line:** clone the repository, run `pip install .`, then `beyond90 score examples/portfolio/northwind`. For your own customer, start with `beyond90 init acme`.
-- **Who it is for:** technical account managers, solutions architects and sales engineers. It is not tied to one vendor.
-- **What it is not:** an independent audit. The security review was done by the author. See [Honest limits](#honest-limits).
+| On the example customer (invented) | |
+|---|---|
+| The usual number: planned accounts connected | 92% |
+| **Yield**: connected × assets seen × capabilities on × findings decided | **72.6%** |
+| **End to end**: accounts that pass all four, no partial credit | **29 of 121** |
 
-The rest of this page goes deeper.
+Nobody lied. Each team reported its own step. [Why multiply, and why both numbers](docs/why-multiply.md).
+
+## Try it
+
+- **In the browser, nothing to install:** open the [live page](https://riccardomenegazzo.github.io/beyond-90/) and press "See it on an example". Your files are read inside the tab and kept on your device.
+- **On your own computer, without the public site:** download `beyond90-local-<version>.zip` from [Releases](https://github.com/riccardomenegazzo/beyond-90/releases), unzip, run `python3 start.py`. Only Python is needed. [Details](docs/self-hosting.md).
+- **From the command line:** `pip install .` in a clone, then `beyond90 score examples/portfolio/northwind`. For your own customer: `beyond90 init acme`.
+
+## What it does
+
+- **Ranks the next actions** by points, by hours, or by how many accounts each one finishes; mark them done and newer data checks that the work landed.
+- **Prepares the call:** agenda, what you owe, discovery questions starting from the customer's weakest stage, and a recap afterwards.
+- **Runs a proof of value:** success criteria a sponsor can sign (suggested per kind of product), sessions, evidence, and a dated mutual plan to signature.
+- **Shows what waiting costs:** every drop already dated in the data (secrets, accepted risks, deadlines), and what the work of a quarter was worth.
+- **Writes for the customer:** a CISO one-pager, an executive QBR and slides, a status page, all through a preview that can swap names for aliases.
+- **Works across a book of customers:** this week's priorities, shared patterns, and one budget of hours where it gains most.
+- **Fits the product you support:** profiles for cloud security, endpoint, SaaS, AI, identity, SIEM, hyperconverged infrastructure and object storage, or your own in JSON.
+- **Installs as an app** on a phone or a computer, works offline, and accepts files shared from mail.
+
+| | |
+|---|---|
+| ![Prep a call](docs/img/app-prep.png) | ![Accounts](docs/img/app-accounts.png) |
+| ![Proof of value](docs/img/app-pov.png) | ![On a phone](docs/img/app-phone.png) |
+
+## Security and privacy, in short
+
+The engine is plain Python (standard library only) compiled to run in the page. A strict Content Security Policy forbids outgoing requests, and tests fail the build if the code ever tries one. Saved data can be sealed with a passphrase (AES-256-GCM) and erased per customer. The limits are written down: the review is the author's, not an independent audit. See the [threat model](docs/threat-model.md) and [privacy](docs/privacy.md).
+
+## In depth
 
 Most adoption reporting stops at "90% of accounts connected" (or sites, tenants, organizations: whatever your product connects). That number leaves out units nobody planned for, asset types the product never inventoried, controls that are switched off and findings nobody owns. Beyond 90 measures the whole pipeline against independent denominators, turns every gap into an action, and then goes further than a dashboard can.
 
