@@ -91,3 +91,29 @@ test("the invented desk is four valid prospects at four stages, dated around tod
   const items = agenda(ex.workshops, ex.povs, CAT, D);
   assert.ok(items.some((i) => i.late) && items.some((i) => !i.late), "something late and something due");
 });
+
+import { risksOf } from "../desk.js";
+
+test("what could stop a deal is read from what is recorded, the risks that can lose it first", () => {
+  const today = "2026-11-20";
+  const pov = { sponsor: "", end: "2026-11-24", start: "2026-11-10", stage: "running", criteria: [{ text: "A", status: "met" }, { text: "B", status: "open" }], readiness: [{ done: false }], updated_on: today };
+  const pr = { open: 1, ready: 0, ready_total: 1, verdict: "in progress", not_met: 0 };
+  const w = { answers: {}, updated_on: today };
+  const res = { raised: [{ prove: "Something not in the proof" }], unknowns: [{}, {}, {}] };
+  const r = risksOf({ w, p: pov, res, pr, stage: "proof", overdue: 2, today });
+  const text = r.map((x) => x.text).join(" | ");
+  assert.equal(r[0].level, "high");
+  assert.match(text, /2 agreed conditions are late/);
+  assert.match(text, /No sponsor named/);
+  assert.match(text, /ends in 4 days with 1 criterion not yet tried/);
+  assert.match(text, /1 concern the customer raised is not in the proof of value/);
+  assert.match(text, /first-day checklist/);
+  assert.match(text, /Nothing is at stake/);
+  assert.match(text, /Finance has no case for change/);
+  assert.match(text, /3 questions nobody could answer/);
+  const calm = risksOf({ w: { answers: { "x#1": { a: "gap", note: "", amount: 5, per: "day" } }, updated_on: today, case: { stay_run: 1, move_run: 1 } },
+    p: { ...pov, sponsor: "Dana", end: "2026-12-30", criteria: [{ text: "Something not in the proof", status: "open" }], readiness: [] }, res: { raised: [{ prove: "Something not in the proof" }], unknowns: [] },
+    pr: { ...pr, ready_total: 0 }, stage: "proof", overdue: 0, today });
+  assert.deepEqual(calm, []);
+  assert.match(risksOf({ w: { answers: {}, updated_on: "2026-10-01" }, p: null, res: { raised: [], unknowns: [] }, pr: null, stage: "discovery", overdue: 0, today }).map((x) => x.text).join(), /Not touched for 50 days/);
+});

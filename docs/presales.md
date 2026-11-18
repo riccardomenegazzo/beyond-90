@@ -7,6 +7,14 @@ A pre-sales engineer carries many prospects at once, each at a different point: 
 ## The desk
 
 - **Where each prospect stands.** Every discovery workshop and every proof of value kept in this browser becomes an opportunity, placed at its stage: discovery (still listening), journey agreed (we know where to start and what would need to be true), proof of value (planned or running), decision (the result is with the customer). Stopped ones are set apart.
+- **What could stop a deal.** Read from what is already recorded, the risks that can lose a deal on their own first:
+  - conditions agreed and now late;
+  - a proof of value with no sponsor to sign it;
+  - a proof ending within a week with tests not yet tried;
+  - concerns the customer raised that are not in the proof;
+  - a proof that ended not met.
+
+  Then what to watch: a proof with no end date or with its first-day checklist open, nothing at stake in the customer's words, no case for change for finance, a sizing sketch still on the defaults, questions nobody could answer, a prospect not touched for three weeks. Each says what to do, and opens the prospect where it stands. The Monday note lists the risks that can lose a deal; the CSV carries them all.
 - **This week and next.** The dated conditions from every journey, and the start and end of every proof of value, for the next two weeks; what is late comes first.
 - **Opportunities.** One row per prospect: its stage, the line to start with, how much of the discovery is done, what is at stake in the customer's own figures, how the proof is going, and the next thing to do (what is late first, then what the proof needs, then the next dated condition). Open one to carry on where it stands: its questions, its journey or its proof of value.
 - **For the account team.** The Monday note, in Markdown: where each opportunity stands, what is late, what is next. And the pipeline as a CSV for a forecast call or a CRM import; cells a spreadsheet would run as formulas are defused.

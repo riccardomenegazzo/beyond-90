@@ -6,6 +6,7 @@
 // the account team. Pure functions over plain records; the page and the tests share them.
 
 import { assess, journey, datedPlan, exampleWorkshop, makeWorkshop, setAnswer, setPlan, setWorth } from "./workshop.js";
+import { hasCase } from "./valuecase.js";
 import { progress, makePov, setCriterion, edit as editPov } from "./pov.js";
 
 export const STAGES = [
@@ -19,6 +20,41 @@ const cmp = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
 const days = (a, b) => Math.round((Date.parse(b + "T00:00:00Z") - Date.parse(a + "T00:00:00Z")) / 86400000);
 
 /** One opportunity per customer name: its newest workshop and newest proof of value, read together. */
+/**
+ * What could stop this deal, read from what is already recorded; each says what to do. "high" first: it can lose the deal
+ * on its own. Nothing is guessed: no figure, no sponsor or no date counts only where the stage needs one.
+ */
+export function risksOf({ w, p, res, pr, stage, overdue, today }) {
+  const out = [];
+  const add = (level, text) => out.push({ level, text });
+  const later = stage === "proof" || stage === "decision";
+  if (overdue) add("high", `${overdue} agreed condition${overdue === 1 ? " is" : "s are"} late: agree a new date with its owner, or say why it slipped.`);
+  if (p) {
+    if (!String(p.sponsor || "").trim()) add("high", "No sponsor named for the proof of value: nobody is there to sign the result.");
+    if (stage === "proof" && !p.end) add("watch", "The proof of value has no end date: a test without one drifts.");
+    if (stage === "proof" && p.end && pr.open) {
+      const left = days(today, p.end);
+      if (left <= 7) add("high", `The proof of value ends ${left < 0 ? `${-left} day${left === -1 ? "" : "s"} ago` : left === 0 ? "today" : `in ${left} day${left === 1 ? "" : "s"}`} with ${pr.open} criteri${pr.open === 1 ? "on" : "a"} not yet tried.`);
+    }
+    const notReady = pr.ready_total - pr.ready;
+    if (stage === "proof" && p.start && p.start <= today && notReady) add("watch", `${notReady} item${notReady === 1 ? "" : "s"} of the first-day checklist ${notReady === 1 ? "is" : "are"} not done.`);
+    if (stage === "decision" && (pr.verdict === "not met" || pr.not_met)) add("high", `The proof of value ended ${pr.verdict}: agree with the sponsor what it means before the decision.`);
+  }
+  if (w && res) {
+    const inProof = new Set(p ? p.criteria.filter((c) => c.status !== "dropped").map((c) => String(c.text).trim().toLowerCase()) : []);
+    const raised = res.raised || [];
+    const outside = raised.filter((o) => !inProof.has(String(o.prove).trim().toLowerCase()));
+    if (p && outside.length) add("high", `${outside.length} concern${outside.length === 1 ? "" : "s"} the customer raised ${outside.length === 1 ? "is" : "are"} not in the proof of value: add ${outside.length === 1 ? "it" : "them"} as criteria.`);
+    if ((stage === "journey" || later) && !Object.values(w.answers).some((a) => a.amount != null)) add("watch", "Nothing is at stake in the customer's words yet: ask what a day without it would cost.");
+    if (later && !(w.case && hasCase(w.case))) add("watch", "Finance has no case for change yet: ask for the cost of staying and of moving.");
+    if (later && w.inventory && !w.sizing) add("watch", "The sizing sketch still uses the defaults: agree the assumptions with the customer.");
+    if (res.unknowns.length >= 3) add("watch", `${res.unknowns.length} questions nobody could answer: book the people who can.`);
+  }
+  const touched = [w && w.updated_on, p && p.updated_on].filter(Boolean).sort().pop();
+  if (touched && days(touched, today) > 21) add("watch", `Not touched for ${days(touched, today)} days.`);
+  return out.sort((a, b) => (a.level === b.level ? 0 : a.level === "high" ? -1 : 1));
+}
+
 export function pipeline(workshops, povs, catalog, today) {
   const by = new Map();
   const slot = (name) => { if (!by.has(name)) by.set(name, { customer: name, workshops: [], povs: [] }); return by.get(name); };
@@ -58,6 +94,7 @@ export function pipeline(workshops, povs, catalog, today) {
       pov_verdict: pr ? pr.verdict : "", pov_met: pr ? pr.met : 0, pov_total: pr ? pr.total : 0,
       pov_end: p ? p.end || "" : "", pov_days_left: p && p.end ? days(today, p.end) : null,
       overdue: overdue.length, next, example: isExampleId(w && w.id) || isExampleId(p && p.id),
+      risks: stopped ? [] : risksOf({ w, p, res, pr, stage, overdue: overdue.length, today }),
     });
   }
   // furthest along first, then the most recently touched
@@ -104,6 +141,12 @@ export function weeklyMarkdown(opps, items, today) {
     for (const i of soon) out.push(`- ${i.on}, **${i.customer}**: ${i.what}${i.who ? ` (owner: ${i.who})` : ""}`);
     out.push("");
   }
+  const risky = opps.filter((o) => !o.stopped && o.risks.some((r) => r.level === "high"));
+  if (risky.length) {
+    out.push("## What could stop a deal", "");
+    for (const o of risky) for (const r of o.risks.filter((x) => x.level === "high")) out.push(`- **${o.customer}**: ${r.text}`);
+    out.push("");
+  }
   for (const s of STAGES) {
     const list = opps.filter((o) => o.stage === s.id && !o.stopped);
     if (!list.length) continue;
@@ -125,8 +168,8 @@ const csvCell = (v) => { const t = String(v == null ? "" : v); const safe = /^[=
 
 /** The pipeline as a sheet, for a CRM import or a forecast call. Cells that a spreadsheet would run as formulas are defused. */
 export function pipelineCsv(opps) {
-  const head = ["customer", "stage", "start_with", "answered", "questions", "at_stake", "unknowns", "conditions_to_make_true", "already_true", "proof_met", "proof_criteria", "proof_ends", "next", "updated_on"];
-  const rows = opps.map((o) => [o.customer, o.stopped ? "stopped" : o.stage, o.land, o.answered, o.total, o.stakes.join("; "), o.unknowns, o.need, o.done, o.pov_met, o.pov_total, o.pov_end, o.next, o.updated_on]);
+  const head = ["customer", "stage", "start_with", "answered", "questions", "at_stake", "unknowns", "conditions_to_make_true", "already_true", "proof_met", "proof_criteria", "proof_ends", "next", "risks", "updated_on"];
+  const rows = opps.map((o) => [o.customer, o.stopped ? "stopped" : o.stage, o.land, o.answered, o.total, o.stakes.join("; "), o.unknowns, o.need, o.done, o.pov_met, o.pov_total, o.pov_end, o.next, (o.risks || []).map((r) => r.text).join(" "), o.updated_on]);
   return [head, ...rows].map((r) => r.map(csvCell).join(",")).join("\r\n") + "\r\n";
 }
 

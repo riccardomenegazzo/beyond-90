@@ -2187,10 +2187,20 @@ export function deskView({ workshops, povs, catalog, today, openOpp, newWorkshop
     { key: "stakes", label: "At stake", render: (o) => o.stakes.join(", ") || "—" },
     { key: "pov", label: "Proof", num: true, sort: (o) => (o.pov_total ? o.pov_met / o.pov_total : -1), render: (o) => (o.pov_total ? `${o.pov_met} of ${o.pov_total} met` : "—") },
     { key: "next", label: "Next", render: (o) => h("span", { class: o.overdue ? "neg" : "", text: o.next || "—" }) },
+    { key: "risks", label: "To watch", num: true, sort: (o) => o.risks.filter((r) => r.level === "high").length * 10 + o.risks.length,
+      render: (o) => (o.risks.length ? h("span", { class: "deskrisk" + (o.risks.some((r) => r.level === "high") ? " high" : ""), title: o.risks.map((r) => r.text).join("\n"), text: String(o.risks.length) }) : "—") },
     { key: "open", label: "Open", render: (o) => (o.workshop ? h("button", { class: "btn small", type: "button", text: "Open", "aria-label": `Open ${o.customer}`, onclick: () => openOpp(o) }) : h("small", { class: "muted", text: o.example ? "an invented proof" : "from its analysis" })) },
   ];
   const table = dataTable({ columns: cols, rows: opps, label: "Opportunities", pageSize: 50 });
   const md = DESK.weeklyMarkdown(opps, items, today);
+  // what could stop a deal: the risks that can lose one on their own first, each with what to do, and the way back to it
+  const flagged = opps.filter((o) => !o.stopped && o.risks.length);
+  const riskCard = flagged.length ? card("What could stop a deal", h("ul", { class: "deskrisks" }, flagged.flatMap((o) => o.risks.map((r) => ({ o, r })))
+    .sort((x, y) => (x.r.level === y.r.level ? 0 : x.r.level === "high" ? -1 : 1)).slice(0, 12).map(({ o, r }) => h("li", { class: r.level },
+      h("span", { class: "chip2 " + (r.level === "high" ? "bad" : "warn"), text: r.level === "high" ? "Can lose it" : "Watch" }),
+      h("span", {}, h("b", { text: o.customer }), " ", h("span", { text: r.text })),
+      o.workshop ? h("button", { class: "btn small", type: "button", text: "Open", "aria-label": `Open ${o.customer}`, onclick: () => openOpp(o) }) : null))),
+  { sub: "Read from what is recorded: late conditions, a proof without a sponsor or ending with tests not tried, concerns left out of the proof, no figures for finance. Each says what to do." }) : null;
   const docs = card("For the account team", h("div", {},
     h("p", { class: "note first", text: "The Monday note: where each opportunity stands, what is late, what is next. And the pipeline as a sheet for a forecast call or a CRM import." }),
     h("div", { class: "btnrow" },
@@ -2198,5 +2208,5 @@ export function deskView({ workshops, povs, catalog, today, openOpp, newWorkshop
       h("button", { class: "btn small", type: "button", text: "Download it (.md)", onclick: () => saveBlob(md, `presales-update-${today}.md`, "text/markdown") }),
       h("button", { class: "btn small", type: "button", text: "Pipeline (.csv)", onclick: () => saveBlob(DESK.pipelineCsv(opps), `presales-pipeline-${today}.csv`, "text/csv") })))
   );
-  return h("div", {}, hero, h("div", { class: "card deskfunnelcard" }, funnelRow), h("div", { class: "col2" }, agendaCard, docs), card("Opportunities", table.el, { sub: "Furthest along first. Open one to carry on: its questions, its journey, its proof of value." }));
+  return h("div", {}, hero, h("div", { class: "card deskfunnelcard" }, funnelRow), riskCard, h("div", { class: "col2" }, agendaCard, docs), card("Opportunities", table.el, { sub: "Furthest along first. Open one to carry on: its questions, its journey, its proof of value." }));
 }

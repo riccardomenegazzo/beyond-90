@@ -2,6 +2,17 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.97.0
+
+- **What could stop a deal, on the presales desk.** Read from what is already recorded, with what to do about each. The risks that can lose a deal on their own come first:
+  - conditions agreed and now late;
+  - a proof of value with no sponsor;
+  - a proof ending within a week with tests not yet tried;
+  - concerns the customer raised that are not in the proof;
+  - a proof that ended not met.
+
+  Then what to watch: no end date, an open first-day checklist, nothing at stake in the customer's words, no case for change, sizing on the defaults, unanswered questions, a prospect not touched for three weeks. Each opportunity shows how many risks it carries; the Monday note lists the ones that can lose a deal; the pipeline CSV carries them all.
+
 ## 0.96.0
 
 - **Handover to delivery.** From a discovery workshop and its proof of value, the note the delivery team reads before the kickoff:
