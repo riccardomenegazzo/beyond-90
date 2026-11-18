@@ -20,5 +20,12 @@
       "text": "The same security policy applies to a workload in the data centre and in the cloud",
       "how": "Move a workload and check that its policy follows it."
     }
+  ],
+  "readiness": [
+    "A cloud account and landing zone approved by the cloud team",
+    "Network link between data centre and cloud sized and tested",
+    "The data residency rule and the evidence compliance expects",
+    "A test application that may move, with its owner",
+    "Budget and a cost alert for the test capacity"
   ]
 }

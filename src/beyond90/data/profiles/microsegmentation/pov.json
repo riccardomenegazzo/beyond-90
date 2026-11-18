@@ -1,0 +1,31 @@
+{
+  "criteria": [
+    {
+      "text": "The traffic of a business application is mapped, and its owner confirms nothing is missing",
+      "how": "Watch one application's flows for a week and review the map with its owner"
+    },
+    {
+      "text": "An application policy enforced after a monitoring period breaks nothing, and blocks a connection it should block",
+      "how": "Monitor, then enforce, then try a connection the application does not need"
+    },
+    {
+      "text": "A machine flagged as compromised is quarantined in one step and can still be reached for forensics",
+      "how": "Quarantine a test machine and open a forensic session to it"
+    },
+    {
+      "text": "Test and production cannot reach each other, and the report shows it",
+      "how": "Try a connection across environments and read the isolation report"
+    },
+    {
+      "text": "A machine keeps its policy when it moves or fails over to another site",
+      "how": "Migrate or fail over a labelled test machine and repeat a blocked connection"
+    }
+  ],
+  "readiness": [
+    "The applications in scope chosen, with their owners",
+    "A labelling scheme agreed: application, environment, role",
+    "Security agrees on a monitoring period before anything is enforced",
+    "A test machine allowed to be quarantined",
+    "Who to call if a policy blocks something it should not"
+  ]
+}

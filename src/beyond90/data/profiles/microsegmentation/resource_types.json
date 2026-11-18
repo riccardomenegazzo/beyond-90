@@ -1,0 +1,35 @@
+{
+  "version": "2026.4",
+  "description": "Network microsegmentation: environments whose machines are labelled by application and environment, with east-west traffic seen first, then limited by policy, and a way to quarantine a compromised machine.",
+  "terms": {
+    "estate": "segmentation",
+    "unit": "environment",
+    "units": "environments",
+    "menu": "Environments"
+  },
+  "types": {
+    "labelled_vm": "Machines labelled by application, environment and role",
+    "app_policy": "Policies that allow only the traffic an application needs",
+    "isolation_policy": "Policies that keep whole environments apart",
+    "quarantine_policy": "Policies that isolate a machine suspected of compromise",
+    "flow_view": "Views of the traffic actually flowing between machines"
+  },
+  "expected": {
+    "datacenter": [
+      "labelled_vm",
+      "app_policy",
+      "isolation_policy",
+      "quarantine_policy",
+      "flow_view"
+    ],
+    "cloud": [
+      "labelled_vm",
+      "app_policy",
+      "flow_view"
+    ],
+    "branch": [
+      "labelled_vm",
+      "isolation_policy"
+    ]
+  }
+}

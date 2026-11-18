@@ -8,6 +8,7 @@
 // in the browser's store, sealed when a passphrase is set, and erased with the customer.
 
 import { validSummary, notesFor, fmt } from "./inventory.js";
+import { validAssumptions, sketch, sketchMarkdown } from "./sizing.js";
 
 export const ANSWERS = {
   solved: { label: "Solved", weight: 0 },
@@ -62,6 +63,7 @@ export function validWorkshop(w) {
   }
   if (w.prepared_by != null && (typeof w.prepared_by !== "string" || w.prepared_by.length > 80)) return false;
   if (w.inventory != null && !validSummary(w.inventory)) return false;
+  if (w.sizing != null && !validAssumptions(w.sizing)) return false;
   const m = /^ws\|(\d{4}-\d{2}-\d{2})\|([a-z0-9]+)$/.exec(w.id || "");
   return !!m && m[1] === w.created_on && NONCE.test(m[2]);
 }
@@ -148,6 +150,17 @@ export function setInventory(w, summary, today) {
   return changed(next, {}, today);
 }
 
+/** The assumptions of the sizing sketch, as the presales engineer set them with the customer; null goes back to the defaults. */
+export function setSizing(w, assumptions, today) {
+  const next = { ...w };
+  delete next.sizing;
+  if (assumptions) {
+    if (!validAssumptions(assumptions)) throw new Error("One of the sizing assumptions is out of range.");
+    next.sizing = assumptions;
+  }
+  return changed(next, {}, today);
+}
+
 /** What the inventory says about one question, if anything. */
 export const factFor = (w, profile, index) => (w.inventory && profile === "platform-migration" ? notesFor(w.inventory)[index] || "" : "");
 
@@ -170,7 +183,7 @@ export function setScope(w, scope, today) {
 
 /** Conversations a workshop often starts from, each with the lines that usually come up in it. */
 export const PRESETS = [
-  { id: "resilience", label: "Resilience and ransomware", scope: ["hci", "dr-backup", "object-storage", "file-storage"] },
+  { id: "resilience", label: "Resilience and ransomware", scope: ["hci", "dr-backup", "object-storage", "file-storage", "microsegmentation"] },
   { id: "migration", label: "Leaving a virtualisation platform", scope: ["platform-migration", "hci", "dr-backup", "dbaas"] },
   { id: "modernise", label: "Modernising applications", scope: ["kubernetes-platform", "dbaas", "hci", "object-storage"] },
   { id: "ai", label: "AI on our own infrastructure", scope: ["private-ai", "kubernetes-platform", "object-storage", "hci"] },
@@ -264,6 +277,7 @@ export function assess(catalog, w) {
     unknowns: lines.flatMap((l) => l.unknowns.map((q) => ({ ...q, profile: l.profile, label: l.label }))),
     waiting: land ? "" : `Answer at least ${MIN_ANSWERED} questions on a line to see where to start.`,
     proof: land && catalog.lines[land.profile] ? catalog.lines[land.profile].proof : [],
+    readiness: land && catalog.lines[land.profile] ? catalog.lines[land.profile].readiness || [] : [],
   };
 }
 
@@ -321,7 +335,11 @@ export function journey(catalog, w, res) {
 /** The note to send after the meeting: what we heard, where it hurts, the proposal, and what is still open. */
 export function summaryMarkdown(catalog, w, res) {
   const out = [`# Discovery: ${w.customer}`, "", `Workshop started ${w.created_on}, last updated ${w.updated_on}. ${res.answered} of ${res.total} questions answered across ${res.lines.length} product line${res.lines.length === 1 ? "" : "s"}.`, ""];
-  if (w.inventory) out.push("## Where they start from", "", inventoryLine(w.inventory), "");
+  if (w.inventory) {
+    out.push("## Where they start from", "", inventoryLine(w.inventory), "");
+    const sk = sketch(w.inventory, w.sizing || {});
+    if (sk.ok) out.push(sketchMarkdown(sk), "");
+  }
   out.push("## What we heard", "");
   for (const l of res.lines) {
     if (!l.answered) continue;

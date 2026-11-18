@@ -55,6 +55,27 @@
       "why": "A silent missed recovery point is discovered on the worst day.",
       "need": "A replication that falls behind reaches a named owner",
       "how": "Alert on missed recovery points with an owner and a response"
+    },
+    {
+      "stage": "L2",
+      "q": "Which workloads can lose no data at all, which can lose minutes, and which can lose hours?",
+      "why": "Zero, minutes and hours need different replication, distances and costs.",
+      "need": "Every workload sits in a recovery tier (zero, minutes, hours) with the replication that matches it",
+      "how": "Group workloads into recovery tiers with the business and pick the replication for each"
+    },
+    {
+      "stage": "L2",
+      "q": "How far back must you be able to go, and how close together must the recovery points be?",
+      "why": "Keeping every point forever costs storage; keeping too few loses the point you need after ransomware went unnoticed for days.",
+      "need": "Retention is agreed per tier: recent recovery points close together, older ones further apart",
+      "how": "Agree a retention scheme, for example hourly for a day, daily for a week, weekly for a month"
+    },
+    {
+      "stage": "L3",
+      "q": "Which machines must come back together, in the same state and in a set order: an application with its database, say?",
+      "why": "Recovering machines one by one, from different moments, breaks applications that depend on each other.",
+      "need": "Applications that depend on each other are protected as a group and recovered in a set order",
+      "how": "Group dependent machines, snapshot each group together, and write the power-on order into the plan"
     }
   ]
 }

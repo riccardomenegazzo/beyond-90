@@ -55,6 +55,13 @@
       "why": "Without an owner, hybrid becomes two estates.",
       "need": "A named owner decides placement and reviews cloud cost monthly",
       "how": "Name the owner and set a monthly review"
+    },
+    {
+      "stage": "L3",
+      "q": "Could a small cluster in the cloud wait for a disaster, and grow only when one happens?",
+      "why": "Paying for a full second site that sits idle is what makes recovery expensive.",
+      "need": "A small standing cluster in the cloud grows at failover, and the time it takes to grow has been tested",
+      "how": "Size the smallest standing cluster and time adding servers during a test failover"
     }
   ]
 }

@@ -19,6 +19,18 @@
     {
       "text": "The recovery test produces a report an auditor accepts as evidence",
       "how": "Show the report to the customer's audit or compliance contact."
+    },
+    {
+      "text": "An application and its database come back together, from the same moment, in the planned order",
+      "how": "Recover a grouped application in test mode and check its consistency and start order"
     }
+  ],
+  "readiness": [
+    "Recovery point and time agreed for the workloads in the test",
+    "A target site or cloud with enough capacity for the test failover",
+    "An isolated test network so the failover does not touch production",
+    "Address, DNS and firewall changes for the recovery site listed",
+    "An administrator account to try to delete the copies with, agreed with security",
+    "Who starts the test, who watches it, and who signs the result"
   ]
 }

@@ -43,7 +43,7 @@ export const READINESS_TEMPLATES = [
   "An owner is named for each result",
 ];
 
-export function makePov({ customer, sponsor = "", champion = "", start = "", end = "", createdOn, nonce = "", criteria = null, problem = "", outOfScope = "" }) {
+export function makePov({ customer, sponsor = "", champion = "", start = "", end = "", createdOn, nonce = "", criteria = null, problem = "", outOfScope = "", readiness = null }) {
   const name = text(customer, 200);
   if (!name) throw new Error("Say who the proof of value is for.");
   if (!isDate(createdOn)) throw new Error("A plan needs the date it was made.");
@@ -57,7 +57,9 @@ export function makePov({ customer, sponsor = "", champion = "", start = "", end
   })).filter((c) => c.text);
   return {
     id: `${name}|${createdOn}|${n}`, customer: name, sponsor: text(sponsor, 100), champion: text(champion, 100), start, end, stage: "planned",
-    criteria: list, sessions: [], readiness: READINESS_TEMPLATES.map((t, i) => ({ id: `r${i + 1}`, text: t, done: false })),
+    // the kind of product's own checklist first, then the steps every proof needs; at most 20, no repeats
+    criteria: list, sessions: [], readiness: [...new Set([...(readiness || []).map((t) => text(t, 200)).filter(Boolean), ...READINESS_TEMPLATES])].slice(0, MAX_CRITERIA)
+      .map((t, i) => ({ id: `r${i + 1}`, text: t, done: false })),
     problem: text(problem, 300), out_of_scope: text(outOfScope, 300), signed_off_on: "", first_value_on: "",
     summary: "", created_on: createdOn, updated_on: createdOn,
   };

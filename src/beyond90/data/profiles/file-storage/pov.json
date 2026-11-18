@@ -20,5 +20,12 @@
       "text": "Cold data moves to cheaper storage with no change for users, and the saving is shown",
       "how": "Tier one share and open its old files from a client."
     }
+  ],
+  "readiness": [
+    "A test share with representative data, cleared by its owner",
+    "Directory service and DNS entries for the file server and each of its nodes",
+    "A safe encryption simulator approved by security",
+    "Client machines for Windows and NFS tests",
+    "Who must be told when the ransomware test runs"
   ]
 }

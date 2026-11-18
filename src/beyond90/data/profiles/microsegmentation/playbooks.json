@@ -1,0 +1,14 @@
+{
+  "playbooks": {
+    "l1_connect_account": {
+      "title": "Turn on traffic visibility where nobody sees east-west traffic",
+      "why": "Machines talk to each other in these environments, but nobody sees which talk to which, so nothing can be limited and an attacker moves freely.",
+      "steps": [
+        "List the environments and the network segments in each.",
+        "Turn on traffic visibility for each, without enforcing anything.",
+        "Confirm the flows between machines show for each environment."
+      ],
+      "success": "Every environment in scope shows its east-west traffic."
+    }
+  }
+}

@@ -928,12 +928,13 @@ function workshopContext() {
     plan: async (profile, i, who, by) => edit((x) => WSHOP.setPlan(x, profile, i, who, by, today)),
     preparedBy: async (name) => edit((x) => WSHOP.setPreparedBy(x, name, today)),
     inventory: async (summary) => { await edit((x) => WSHOP.setInventory(x, summary, today)); showWorkshop("workshop"); },
+    sizing: async (assumptions) => edit((x) => WSHOP.setSizing(x, assumptions, today)),
     rename: async (name) => { await edit((x) => WSHOP.rename(x, name, today)); showWorkshop("workshop"); },
     setScope: async (scope) => { await edit((x) => WSHOP.setScope(x, scope, today)); showWorkshop("workshop"); },
     newWorkshop, openWorkshop, removeWorkshop, presets: WSHOP.PRESETS.map((p) => ({ ...p, scope: p.scope.filter((x) => cat.lines[x]) })).filter((p) => p.scope.length),
     startPov: async (r) => {
       const p = POV.makePov({ customer: w.customer, createdOn: today, problem: `Heard in discovery on ${r.land.label.toLowerCase()}: ${r.land.gaps.map((q) => q.q).join(" ")}`.slice(0, 300),
-        criteria: r.proof.slice(0, 4).map((c) => ({ text: c.text, target: c.how })) });
+        criteria: r.proof.slice(0, 4).map((c) => ({ text: c.text, target: c.how })), readiness: r.readiness });
       await store.povPut([p], true); await refreshPovs(); selectTab("wspov");
     },
     // the proof-of-value view, for this prospect, with the first line's own criteria as suggestions

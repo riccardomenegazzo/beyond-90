@@ -39,7 +39,7 @@ Select a line, on the map or in the table, to open its own report: Today, action
 
 ## How it decides
 
-- **Families.** `infrastructure` (platform, databases, file storage, object storage, Kubernetes platform, disaster recovery) and `security` (cloud, identity, SaaS, monitoring, endpoint, AI). The estate is compared with the family most of its lines belong to.
+- **Families.** `infrastructure` (platform, databases, disaster recovery, hybrid cloud, object storage, file storage, virtual desktops, Kubernetes platform, private AI, network microsegmentation, platform migration) and `security` (cloud, identity, SaaS, monitoring, endpoint, AI). The estate is compared with the family most of its lines belong to.
 - **Links.** A short list of statements true of any vendor, in `src/beyond90/estate.py`: "point-in-time recovery protects a database, not the site it runs on". A link is a **risk** when its source line is at 70% or more and its target is below 60%, and a **next line** when its target is not in place.
 - **Order of the next lines.** A missing line that several solid lines lead to comes first; a missing line nothing leads to still shows, last, as a question rather than a proposal.
 - **The estate figure** weights each line's Yield by its ARR. Lines are never added up in units: clusters and database environments do not mix.

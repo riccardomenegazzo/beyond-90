@@ -31,6 +31,27 @@ It shows the machines and how many run, vCPU and memory in use, storage used or 
 
 It is a starting point for a sizing tool, not a sizing. The file is read in the page and not kept: only totals and cluster names are stored with the workshop, never machine names. "Try it with an invented export" loads a made-up one.
 
+## A first sizing sketch
+
+Once the inventory is read, **A first sizing sketch** turns it into a server count with assumptions agreed in the meeting: growth over the platform's life, vCPU per physical core, memory overcommit, how data is protected, the share of data no longer written to, data reduction counted, how full storage may get, spare servers, and what one server holds. Each step of the arithmetic is shown, with what decided the count (compute, memory or storage) and how full each would be with the spare servers out.
+
+How data is protected follows the rules of distributed storage:
+
+| Protection | Raw capacity per usable TiB | Survives | At least |
+|---|---|---|---|
+| Two copies | 2x | one failure | 3 servers |
+| Three copies | 3x | two failures | 5 servers |
+| Erasure coding, 4 data + 1 parity on cold data, two copies on the rest | 1.25x on cold data | one failure | 6 servers |
+| Erasure coding, 4 data + 2 parity on cold data, three copies on the rest | 1.5x on cold data | two failures | 8 servers |
+
+Erasure coding applies only to data that is no longer written to, so its cost is blended with the share of cold data; a parity strip needs one server more than its width, so it can be rebuilt after a failure. Storage is kept below 75% of the capacity left after losing a server by default: that is where a platform should warn, well before it would stop accepting writes.
+
+Design notes follow the assumptions: keep the servers alike (the capacity left after a failure is set by the largest one), spread copies across racks only with at least three of them, evenly filled, measure data reduction on the customer's own data before counting it, and check a high vCPU ratio against the CPU ready time the current platform shows.
+
+![A first sizing sketch: the server count, what decides it, and each step of the arithmetic](img/app-sizing.png)
+
+It is a sketch, to agree the order of magnitude and the assumptions with the customer, not a sizing: the vendor's sizing tool, with the measured workload, has the last word. The assumptions are kept with the workshop and shown in the meeting summary.
+
 ## How "still missing" is counted
 
 For each line, a real gap counts 1, nobody knows 0.6 (not knowing is itself a finding), partly 0.5 and solved 0; answers to business-value questions count double. What is still missing is that sum over the most it could be for the questions answered. The line to start with is the one with the most still missing, weighted a little by how much of it was explored, so a line heard about twice does not beat one explored in eight questions.

@@ -1,0 +1,60 @@
+{
+  "questions": [
+    {
+      "stage": "value",
+      "q": "If an attacker took one server today, how many others could it reach?",
+      "why": "Lateral movement is how one compromised machine becomes a breach.",
+      "need": "The reach of one compromised server is known, and limited to what its application needs",
+      "how": "Map what one critical server can reach today and agree what it should reach"
+    },
+    {
+      "stage": "value",
+      "q": "Which audit or regulation asks you to separate environments, and how do you prove it today?",
+      "why": "Evidence for auditors turns a security wish into a budget line.",
+      "need": "The separation required by audit is known, with the evidence it needs",
+      "how": "List the requirements and the evidence each auditor expects"
+    },
+    {
+      "stage": "L1",
+      "q": "Can you see which machines talk to which inside the data centre?",
+      "why": "Policies cannot be written for traffic nobody can see.",
+      "need": "East-west traffic is visible for every environment in scope",
+      "how": "Turn on traffic visibility, without enforcing anything, for each environment"
+    },
+    {
+      "stage": "L2",
+      "q": "Are machines labelled by application, environment and role, or only known by their address?",
+      "why": "Policies written on addresses break when machines move; policies on labels follow them.",
+      "need": "Machines carry labels that policies can use, kept up to date by their owners",
+      "how": "Agree a labelling scheme and label the applications in scope"
+    },
+    {
+      "stage": "L3",
+      "q": "Are test and production kept apart, or only on different address ranges?",
+      "why": "Address ranges are not a control; an isolation policy is.",
+      "need": "Environments are isolated by policy, and the isolation is tested",
+      "how": "Write isolation policies between environments and test a blocked connection"
+    },
+    {
+      "stage": "L3",
+      "q": "Could you isolate a machine suspected of compromise in a minute, and still investigate it?",
+      "why": "Containment time decides how far an attacker gets.",
+      "need": "A suspect machine can be quarantined in one step, with forensic access kept",
+      "how": "Prepare quarantine policies and rehearse one on a test machine"
+    },
+    {
+      "stage": "L3",
+      "q": "Do security policies follow a machine when it moves or fails over to another site?",
+      "why": "A recovery site without the same policies is an open door during the worst day.",
+      "need": "Policies follow workloads across hosts, sites and failover",
+      "how": "Test a policy before and after a migration and a failover"
+    },
+    {
+      "stage": "L4",
+      "q": "Who decides on a blocked connection that an application needs, and how quickly?",
+      "why": "Enforcement without an owner turns into exceptions nobody reviews.",
+      "need": "A named owner reviews blocked connections and exceptions, with a response time",
+      "how": "Name the owner and agree how requests for new flows are handled"
+    }
+  ]
+}

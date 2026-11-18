@@ -14,9 +14,9 @@ A pre-sales engineer carries many prospects at once, each at a different point: 
 
 ## The path through one prospect
 
-1. **[Discovery workshop](workshop.md):** the questions for each product line in scope, the customer's answers in one click, their words and figures, and their VM inventory read in the page.
+1. **[Discovery workshop](workshop.md):** the questions for each product line in scope, the customer's answers in one click, their words and figures, their VM inventory read in the page, and a first sizing sketch with the assumptions agreed in the room.
 2. **The journey:** "yes, this is possible", what would need to be true, the first step for each condition and who does it by when; a readout for the customer and a calendar file for the plan.
-3. **Proof of value:** opened with the first line's own criteria; sessions, results and the mutual plan.
+3. **Proof of value:** opened with the first line's own criteria and the checklist for its first day (addresses, DNS and NTP, switch ports, supported hardware, the failures to test); sessions, results and the mutual plan.
 4. **After the sale:** the [estate](estate.md) shows, line by line, what really works and where to grow, and starts a new workshop on the next line.
 
 Everything stays in this browser, sealed when a passphrase is set, and erased with the customer.

@@ -55,6 +55,13 @@
       "why": "Observability without an owner is a dashboard nobody reads.",
       "need": "A failure at night is seen by someone who acts",
       "how": "Route cluster alerts to a named owner"
+    },
+    {
+      "stage": "L2",
+      "q": "Which clusters need to run directly on physical servers, for GPUs, latency or the edge?",
+      "why": "Some workloads cannot afford a virtualisation layer; the same operations should still apply to them.",
+      "need": "Clusters on physical servers are managed with the same lifecycle, policies and storage as the virtualised ones",
+      "how": "List the workloads that need physical servers and include them in the platform's scope"
     }
   ]
 }

@@ -55,6 +55,13 @@
       "why": "Cost without an owner grows unchecked.",
       "need": "AI usage and cost per team are reviewed by a named owner",
       "how": "Meter usage per team and review it monthly"
+    },
+    {
+      "stage": "L1",
+      "q": "Which parts of the business already use generative AI, through which services, and with which data?",
+      "why": "Shadow AI is the first estate to bring under governance.",
+      "need": "AI use across the business is known: who uses which models and services, with which data",
+      "how": "Survey teams and network logs for AI services already in use"
     }
   ]
 }

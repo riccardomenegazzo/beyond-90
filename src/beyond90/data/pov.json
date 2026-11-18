@@ -20,5 +20,11 @@
       "text": "The security lead can answer \"what is exposed to the internet right now?\" in under five minutes",
       "how": "Ask the question live and time it."
     }
+  ],
+  "readiness": [
+    "Read-only access to the cloud accounts in scope, and who approves it",
+    "The accounts or subscriptions in scope listed",
+    "Security, legal and procurement steps known",
+    "Who receives the findings, by team"
   ]
 }

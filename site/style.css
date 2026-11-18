@@ -1013,3 +1013,22 @@ ol.deskfunnel{list-style:none;margin:0;padding:0;display:grid;grid-template-colu
 /* plain buttons on the dark hero keep their text readable, hovered or not */
 .estatehero .btn:not(.primary){background:#fff;color:#0d1b2a;border-color:#fff}
 .estatehero .btn:not(.primary):hover,.estatehero .btn:not(.primary):focus-visible{background:#e3f4f0;color:#0d1b2a;border-color:#5eead4}
+
+/* ---------- sizing sketch */
+.sz{display:grid;gap:14px}
+.szout{display:grid;gap:12px}
+.szhead{display:flex;gap:14px;align-items:center}
+.szhead>b{font-size:52px;font-weight:800;line-height:1;color:var(--accent-text);font-variant-numeric:tabular-nums}
+.szhead>span{display:grid}
+.szhead strong{font-size:18px}
+.szhead small{color:var(--ink2)}
+.szuse{list-style:none;margin:0;padding:0;display:grid;gap:6px;max-width:520px}
+.szuse li{display:grid;grid-template-columns:80px minmax(0,1fr) 60px;gap:10px;align-items:center;font-size:14px}
+.szuse li.szlabel{display:block;font-size:12.5px;font-weight:700;color:var(--ink2)}
+.szuse b{text-align:right;font-variant-numeric:tabular-nums}
+.szsteps{margin:0;padding-left:20px;display:grid;gap:4px;font-size:14px;color:var(--ink2)}
+.szassume>summary{cursor:pointer;font-weight:700;font-size:14px}
+.szgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;margin-top:10px}
+.szf{display:grid;gap:4px;font-size:13px;color:var(--ink2)}
+.szf.wide{grid-column:1/-1}
+.szf input,.szf select{font-size:14px}

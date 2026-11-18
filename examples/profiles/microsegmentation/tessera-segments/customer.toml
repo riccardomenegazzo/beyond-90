@@ -1,0 +1,10 @@
+[customer]
+name = "Tessera Insurance (mock)"
+tier = "enterprise"
+arr = 85000
+as_of = 2026-10-31
+profile = "microsegmentation"
+
+[settings]
+ceiling_version = "2026.4"
+baseline_ceiling = "2026.1"

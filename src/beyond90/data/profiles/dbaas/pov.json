@@ -20,5 +20,12 @@
       "text": "A database server failure leaves the clustered database available with no manual step",
       "how": "Stop the primary node during a test load and watch the service continue."
     }
+  ],
+  "readiness": [
+    "A copy of a production database cleared for the test, or a representative one",
+    "Database engine versions and licences in scope listed",
+    "A DBA and an application team ready to try self-service",
+    "The columns to mask agreed with the data owner",
+    "Backup target and retention for the test"
   ]
 }

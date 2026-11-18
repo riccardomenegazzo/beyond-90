@@ -55,6 +55,27 @@
       "why": "Alerts without an owner turn into noise, then into outages.",
       "need": "A platform alert at night reaches someone who acts",
       "how": "Route platform alerts to a named on-call owner"
+    },
+    {
+      "stage": "L2",
+      "q": "Which failures must the platform ride through without stopping: a disk, a server, a whole rack, a room?",
+      "why": "The answer decides how many copies of the data are kept and where they are placed.",
+      "need": "The failures to survive are agreed, and every copy of the data sits in a different place for each of them",
+      "how": "Agree the failure domains (server, rack, room) and how many copies each group of workloads needs"
+    },
+    {
+      "stage": "L3",
+      "q": "How full are storage and hosts today, and how much room is kept free for a server failure and for growth?",
+      "why": "A platform run at the edge cannot rebuild after a failure, and the next purchase arrives as an emergency.",
+      "need": "Capacity is planned with room to rebuild after a failure and to grow, with alerts before it runs short",
+      "how": "Measure today's use, keep a server's worth of room free, and set alerts at two thresholds"
+    },
+    {
+      "stage": "L3",
+      "q": "Which workloads need the fastest storage, and which can live on cheaper capacity?",
+      "why": "Separating hot from cold data, and deciding where to compress or deduplicate, is where cost and performance are won.",
+      "need": "Workloads are grouped by the performance they need, with data reduction used where it pays off",
+      "how": "Group workloads by performance tier and agree where compression and deduplication apply"
     }
   ]
 }

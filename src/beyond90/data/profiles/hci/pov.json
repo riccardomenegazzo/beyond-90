@@ -23,6 +23,18 @@
     {
       "text": "The capacity forecast names the month the cluster runs out of storage, and the team agrees with it",
       "how": "Compare the forecast with the team's own estimate and growth plan."
+    },
+    {
+      "text": "After a server is lost, the platform rebuilds every missing copy on its own, and the time it took is recorded",
+      "how": "Power off a server under load, watch the rebuild complete without operator action, and note its duration"
     }
+  ],
+  "readiness": [
+    "IP addresses agreed: per server for the host, the platform's controller and out-of-band management, plus a cluster address and a data services address",
+    "DNS and NTP reachable from every server",
+    "Switch ports, VLANs and uplinks agreed with the network team, with two switches for redundancy",
+    "The servers in the test checked against the platform's supported hardware list",
+    "Test workloads chosen, with their owners, and a way to generate load",
+    "The failures to test agreed: a disk, a server, a network link"
   ]
 }

@@ -20,5 +20,12 @@
       "text": "GPU usage and cost per team are shown for the month",
       "how": "Show the usage view to two team leads."
     }
+  ],
+  "readiness": [
+    "GPU servers or capacity for the test, with drivers supported",
+    "One use case, its owner and its data, cleared by the data office",
+    "The users with different rights for the retrieval test",
+    "The model or models allowed for the test",
+    "Where prompts and responses may be logged, and for how long"
   ]
 }

@@ -1,0 +1,8 @@
+id,provider,sources,connected,owner,last_spend,status,in_plan,created_at
+microsegmentation-01,datacenter,billing;org;sso,true,security-ops,4700,active,true,2025-01-12
+microsegmentation-02,datacenter,billing;org;sso,true,security-ops,5900,active,true,2025-07-04
+microsegmentation-03,datacenter,billing;org,true,app-owners,4400,active,true,2026-02-26
+microsegmentation-04,datacenter,billing;org,true,infra-ops,4500,active,false,2025-11-17
+microsegmentation-05,datacenter,billing;org;sso,true,app-owners,1800,active,true,2025-10-07
+microsegmentation-06,branch,billing;org;sso,true,network-security,2900,active,true,2026-10-17
+microsegmentation-07,datacenter,billing;org;sso,true,app-owners,2400,active,true,2026-10-26

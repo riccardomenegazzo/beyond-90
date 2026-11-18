@@ -28,7 +28,7 @@ from .words import n_of
 # The lines a portfolio is drawn from. A customer's estate is compared with the family most of its lines belong to.
 FAMILIES: dict[str, list[str]] = {
     # The order is also the map's: the first line sits in the middle, the others go round it so that linked lines are near.
-    "infrastructure": ["hci", "dbaas", "dr-backup", "hybrid-cloud", "object-storage", "file-storage", "euc", "kubernetes-platform", "private-ai", "platform-migration"],
+    "infrastructure": ["hci", "dbaas", "dr-backup", "hybrid-cloud", "object-storage", "file-storage", "euc", "kubernetes-platform", "private-ai", "microsegmentation", "platform-migration"],
     "security": ["cnapp", "identity", "saas", "siem", "endpoint", "ai"],
 }
 
@@ -36,7 +36,7 @@ LABELS: dict[str, str] = {
     "hci": "Platform (hyperconverged)", "dbaas": "Databases as a service", "file-storage": "File storage",
     "object-storage": "Object storage", "kubernetes-platform": "Kubernetes platform", "dr-backup": "Disaster recovery and backup",
     "cnapp": "Cloud security", "identity": "Identity security", "saas": "SaaS security", "siem": "Security monitoring",
-    "endpoint": "Endpoint protection", "ai": "AI security", "platform-migration": "Platform migration", "private-ai": "AI on own infrastructure", "hybrid-cloud": "Hybrid and sovereign cloud", "euc": "Virtual desktops",
+    "endpoint": "Endpoint protection", "ai": "AI security", "platform-migration": "Platform migration", "private-ai": "AI on own infrastructure", "hybrid-cloud": "Hybrid and sovereign cloud", "euc": "Virtual desktops", "microsegmentation": "Network microsegmentation",
 }
 
 # (from, to, why): once the first line runs, the second follows. Read as "because <from> is in place, <why>".
@@ -64,6 +64,10 @@ LINKS: list[tuple[str, str, str]] = [
     ("platform-migration", "hybrid-cloud", "some workloads can move to a cloud cluster first, buying time for the data centre"),
     ("euc", "dr-backup", "desktops are how people work during an outage, so they belong in the recovery plan"),
     ("euc", "file-storage", "user profiles and shared drives need fast, protected file storage"),
+    ("hci", "microsegmentation", "workloads on the platform can be separated by labels, without re-addressing the network"),
+    ("microsegmentation", "dr-backup", "a recovery site needs the same policies, or it becomes the way in"),
+    ("dr-backup", "microsegmentation", "a compromised machine must be contained before it is recovered, or the recovery brings the attacker back"),
+    ("euc", "microsegmentation", "desktops are where attacks start, and should reach only what their users need"),
     ("cnapp", "identity", "cloud findings keep leading back to identities nobody governs"),
     ("cnapp", "siem", "cloud detections need somewhere to be correlated and answered"),
     ("identity", "saas", "the same identities sign in to business applications nobody reviews"),
@@ -240,7 +244,7 @@ def workshop_catalog() -> dict[str, Any]:
             continue
         lines[profile] = {"label": label(profile, cat), "description": cat.description, "units": cat.terms["units"],
                           "questions": [{"stage": q["stage"], "q": q["q"], "why": q.get("why", ""), "need": q.get("need", ""), "how": q.get("how", "")} for q in cat.discovery],
-                          "proof": [{"text": c["text"], "how": c.get("how", "")} for c in cat.pov_criteria]}
+                          "proof": [{"text": c["text"], "how": c.get("how", "")} for c in cat.pov_criteria], "readiness": list(cat.pov_readiness)}
     families = {name: [p for p in members if p in lines] for name, members in FAMILIES.items()}
     return {"families": families, "links": [list(x) for x in LINKS if x[0] in lines and x[1] in lines], "lines": lines}
 

@@ -97,6 +97,7 @@ class Catalogue:
         use_cases: Optional[dict[str, str]] = None,
         pov_criteria: Optional[list[dict[str, str]]] = None,
         discovery: Optional[list[dict[str, str]]] = None,
+        pov_readiness: Optional[list[str]] = None,
     ) -> None:
         self.resource_types = resource_types
         self.expected = expected
@@ -109,6 +110,7 @@ class Catalogue:
         self.description = description
         self.use_cases = use_cases or {}
         self.pov_criteria = pov_criteria or []
+        self.pov_readiness = pov_readiness or []   # what must be in place before a proof of value starts (pov.json)
         self.discovery = discovery or []          # questions to ask the customer, each tied to a stage (discovery.json)   # suggested proof of value criteria for this kind of product (pov.json)
         self.rubric = rubric or {"levels": ["bronze", "silver", "gold"], "checks": []}
 
@@ -149,7 +151,10 @@ class Catalogue:
         digest = hashlib.sha256(name.encode() + b"".join(normalize(f.read_bytes()) for f in [*files, *pb_files, rubric_file])).hexdigest()
         rubric = json.loads(rubric_file.read_text(encoding="utf-8"))
         pov_file = base / "pov.json"   # never inherited from the base: another kind of product proves other things
-        pov = [{"text": str(c["text"]), "how": str(c.get("how", ""))} for c in json.loads(pov_file.read_text(encoding="utf-8"))["criteria"]] if pov_file.exists() else []
+        pov_doc = json.loads(pov_file.read_text(encoding="utf-8")) if pov_file.exists() else {}
+        pov = [{"text": str(c["text"]), "how": str(c.get("how", ""))} for c in pov_doc.get("criteria", [])]
+        # what must be in place before the first day of a proof of value for this kind of product
+        pov_readiness = [str(x) for x in pov_doc.get("readiness", [])]
         disc_file = base / "discovery.json"   # never inherited either: another product has other questions
         # "need" says what would have to be true, "how" the first step towards it: the question turned into a path
         discovery = [{"stage": str(x["stage"]), "q": str(x["q"]), "why": str(x.get("why", "")), **{k: str(x[k]) for k in ("need", "how") if x.get(k)}}
@@ -208,7 +213,7 @@ class Catalogue:
             unknown = [t for t in types if t not in rt["types"]]
             if unknown:
                 raise ValueError(f"catalogue: provider {provider} expects undefined types {unknown}")
-        return cls(rt["types"], rt["expected"], modules, playbooks, rt["version"], digest, name if directory else profile, rt.get("terms"), rt.get("description", ""), rubric, mods.get("use_cases", {}), pov, discovery)
+        return cls(rt["types"], rt["expected"], modules, playbooks, rt["version"], digest, name if directory else profile, rt.get("terms"), rt.get("description", ""), rubric, mods.get("use_cases", {}), pov, discovery, pov_readiness)
 
     def expected_types(self, provider: str) -> list[str]:
         return list(self.expected.get(provider, []))

@@ -12,6 +12,7 @@ import * as SC from "./scorecard.js";
 import * as WS from "./workshop.js";
 import * as INV from "./inventory.js";
 import * as DESK from "./desk.js";
+import * as SZ from "./sizing.js";
 import { connections } from "./graph.js";
 import { headline, firstMinute, rankActions, chainText, doneSummary, funnelSegments, preview } from "./today.js";
 import { stageBars } from "./nav.js";
@@ -1530,7 +1531,7 @@ export function scorecardView({ result, dash, score, engine, today }) {
 }
 
 // ------------------------------------------------------------------ one customer, every product line
-const SHORT = { "platform-migration": "Migration", "private-ai": "AI", "hybrid-cloud": "Hybrid cloud", euc: "Desktops", hci: "Platform", dbaas: "Databases", "file-storage": "Files", "object-storage": "Objects", "kubernetes-platform": "Kubernetes", "dr-backup": "Recovery",
+const SHORT = { "platform-migration": "Migration", "private-ai": "AI", "hybrid-cloud": "Hybrid cloud", euc: "Desktops", microsegmentation: "Segmentation", hci: "Platform", dbaas: "Databases", "file-storage": "Files", "object-storage": "Objects", "kubernetes-platform": "Kubernetes", "dr-backup": "Recovery",
   cnapp: "Cloud", identity: "Identity", saas: "SaaS", siem: "Monitoring", endpoint: "Endpoint", ai: "AI" };
 const shortName = (p, label) => SHORT[p] || label.split(" ")[0];
 
@@ -1630,7 +1631,7 @@ export function growView({ estate, focus, startWorkshop }) {
 const STAGE_TAG = { value: "Value", L1: "L1 connected", L2: "L2 seen", L3: "L3 switched on", L4: "L4 decided" };
 const painPct = (v) => `${Math.round(v * 100)}%`;
 
-export function workshopView({ workshop: w, catalog, list, answer, worth, rename, preparedBy, setScope, inventory, newWorkshop, openWorkshop, removeWorkshop, presets = [], go, focus }) {
+export function workshopView({ workshop: w, catalog, list, answer, worth, rename, preparedBy, setScope, inventory, sizing, newWorkshop, openWorkshop, removeWorkshop, presets = [], go, focus }) {
   const say = h("p", { class: "note", role: "status" });
   const act = (fn) => async (...a) => { try { await fn(...a); say.textContent = ""; } catch (e) { say.textContent = e.message; } };
   let cur = w;
@@ -1723,7 +1724,7 @@ export function workshopView({ workshop: w, catalog, list, answer, worth, rename
     return h("details", { class: "card wsline", id: "ws-" + p, open: focus === p || (!focus && (li === 0 || (st.answered > 0 && st.answered < st.total))) ? "" : null }, h("summary", {}, head), h("ol", { class: "wslist" }, items));
   });
   if (focus) requestAnimationFrame(() => { const el = document.getElementById("ws-" + focus); if (el) el.scrollIntoView({ block: "start" }); });
-  return h("div", {}, meeting, inventory ? inventoryCard(w, inventory) : null, h("div", { class: "card wsprogcard" }, prog), lines);
+  return h("div", {}, meeting, inventory ? inventoryCard(w, inventory) : null, w.inventory && sizing ? sizingCard(w, sizing) : null, h("div", { class: "card wsprogcard" }, prog), lines);
 }
 
 /** The customer's VM inventory: read in the page, kept as totals, shown as the numbers a sizing starts from. */
@@ -1761,6 +1762,56 @@ function inventoryCard(w, inventory) {
     h("div", { class: "btnrow" }, h("label", { class: "btn small filebtn" }, "Read a newer export", file),
       h("button", { class: "btn small", type: "button", text: "Remove the inventory", onclick: async () => { try { await inventory(null); } catch (e) { say.textContent = e.message; } } })), say),
   { sub: `Read on ${s.imported_on}. Totals only; the file itself was not kept.` });
+}
+
+/** A first sizing sketch from the inventory: the arithmetic of a whiteboard, every assumption editable, not a sizing. */
+function sizingCard(w, sizing) {
+  const a = SZ.clean(w.sizing || {});
+  const say = h("p", { class: "note", role: "status" });
+  const out = h("div", { class: "szout" });
+  const fields = [
+    ["growth_pct", "Growth over the platform's life", "%"], ["vcpu_per_core", "vCPU per physical core", ":1"], ["reduction", "Data reduction counted", ":1"],
+    ["cold_pct", "Data no longer written to (for erasure coding)", "%"], ["fill_pct", "Keep storage below, after a failure", "%"], ["spare_nodes", "Spare servers for failures", ""], ["node_cores", "Cores per server", ""],
+    ["node_mem_gib", "Memory per server", "GiB"], ["node_raw_tib", "Raw storage per server", "TiB"], ["overhead_cores", "Cores kept for the platform, per server", ""],
+    ["overhead_mem_gib", "Memory kept for the platform, per server", "GiB"],
+  ];
+  const inputs = {};
+  const prot = h("select", { "aria-label": "How data is protected" }, Object.entries(SZ.PROTECTION).map(([k, v]) => h("option", { value: k, text: v.label })));
+  prot.value = a.protection;
+  const current = () => {
+    const v = { protection: prot.value };
+    for (const [k] of fields) v[k] = Number(inputs[k].value);
+    return SZ.clean(v);
+  };
+  const draw = (assumptions) => {
+    const sk = SZ.sketch(w.inventory, assumptions);
+    if (!sk.ok) { put(out, h("p", { class: "note", text: sk.error })); return; }
+    const bar = (label, v) => h("li", {}, h("span", { text: label }), h("span", { class: "ebar wsbar" }, h("i", { class: "er" + (v > 90 ? " weak" : ""), style: `width:${Math.min(100, v)}%` })), h("b", { text: `${v}%` }));
+    const name = { compute: "compute", memory: "memory", storage: "storage", minimum: "the minimum for the copies" }[sk.decided];
+    put(out,
+      h("div", { class: "szhead" }, h("b", { text: String(sk.nodes) }), h("span", {}, h("strong", { text: "servers" }), h("small", { text: `decided by ${name}; compute ${sk.by.compute}, memory ${sk.by.memory}, storage ${sk.by.storage}` }))),
+      h("ul", { class: "szuse" }, h("li", { class: "szlabel", text: "With the spare servers out" }), bar("CPU", sk.use.cpu), bar("Memory", sk.use.mem), bar("Storage", sk.use.storage)),
+      h("ol", { class: "szsteps" }, sk.steps.map((t) => h("li", { text: t }))),
+      h("div", { class: "growproof" }, h("small", { text: "Design notes" }), h("ul", {}, SZ.designNotes(assumptions).map((t) => h("li", { text: t })))));
+  };
+  const save = async () => { const v = current(); draw(v); try { await sizing(v); say.textContent = ""; } catch (e) { say.textContent = e.message; } };
+  const grid = h("div", { class: "szgrid" },
+    h("label", { class: "szf wide" }, h("span", { text: "How data is protected" }), prot),
+    fields.map(([k, label, unit]) => {
+      inputs[k] = h("input", { type: "number", step: "any", value: String(a[k]), "aria-label": label });
+      inputs[k].addEventListener("change", save);
+      return h("label", { class: "szf" }, h("span", { text: label + (unit ? ` (${unit})` : "") }), inputs[k]);
+    }));
+  prot.addEventListener("change", save);
+  draw(a);
+  return card("A first sizing sketch", h("div", { class: "sz" }, out, h("details", { class: "szassume" }, h("summary", { text: "The assumptions, to agree with the customer" }), grid,
+    h("div", { class: "btnrow" }, h("button", { class: "btn small", type: "button", text: "Back to the defaults", onclick: async () => {
+      for (const [k] of fields) inputs[k].value = String(SZ.DEFAULTS[k]);
+      prot.value = SZ.DEFAULTS.protection;
+      draw(SZ.DEFAULTS);
+      try { await sizing(null); } catch (e) { say.textContent = e.message; }
+    } }))), say),
+  { sub: "The arithmetic before the sizing tool: how many servers the inventory needs, which resource decides, and what it runs at with a server down. Every assumption is open; it is not a sizing." });
 }
 
 export function hurtView({ workshop: w, catalog, go, startPov }) {

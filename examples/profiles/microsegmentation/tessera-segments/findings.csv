@@ -1,0 +1,41 @@
+id,account_id,severity,exposure,opened_at,closed_at,owner,decision,decision_reason,expiry,previous_severity,severity_changed_at,verified_at,reopened,closed_by
+x-001,microsegmentation-03,medium,internet,2026-07-16,,,,,,,,,,
+x-002,microsegmentation-05,high,internet,2026-09-22,,compliance,fix,,,,,,,
+x-003,microsegmentation-07,high,internet,2026-08-13,2026-08-16,infra-ops,fix,,,,,,,automated
+x-004,microsegmentation-03,medium,internal,2026-10-21,,,,,,,,,,
+x-005,microsegmentation-02,critical,internet,2026-07-06,2026-08-03,compliance,accepted_risk,business process depends on it,2026-12-25,,,,,assisted
+x-006,microsegmentation-06,low,internet,2026-09-25,,security-ops,fix,,,,,,,
+x-007,microsegmentation-03,medium,internet,2026-07-20,2026-07-24,compliance,accepted_risk,business process depends on it,2026-12-12,,,,,automated
+x-008,microsegmentation-05,low,internal,2026-08-06,,app-owners,accepted_risk,business process depends on it,2026-12-06,,,,,
+x-009,microsegmentation-04,medium,internet,2026-07-13,2026-07-16,network-security,fix,,,,,,,automated
+x-010,microsegmentation-04,medium,internal,2026-08-21,2026-09-06,app-owners,,,,,,,,automated
+x-011,microsegmentation-05,medium,internet,2026-10-08,,app-owners,fix,,,,,,,
+x-012,microsegmentation-06,medium,internal,2026-07-06,,security-ops,fix,,,,,,,
+x-013,microsegmentation-02,low,internet,2026-09-27,2026-10-20,network-security,fix,,,,,,,manual
+x-014,microsegmentation-04,high,internet,2026-10-02,,infra-ops,accepted_risk,business process depends on it,2027-02-28,,,,,
+x-015,microsegmentation-04,medium,internal,2026-08-16,,,,,,,,,,
+x-016,microsegmentation-07,low,internet,2026-07-26,2026-08-21,network-security,accepted_risk,business process depends on it,2027-01-21,,,,,assisted
+x-017,microsegmentation-06,medium,internal,2026-08-07,,security-ops,fix,,,,,,,
+x-018,microsegmentation-04,high,internet,2026-10-08,,network-security,,,,,,,,
+x-019,microsegmentation-04,high,internet,2026-10-26,,network-security,fix,,,,,,,
+x-020,microsegmentation-05,low,internal,2026-09-09,,network-security,fix,,,,,,,
+x-021,microsegmentation-03,medium,internal,2026-09-09,2026-10-06,,,,,,,,,automated
+x-022,microsegmentation-06,critical,internet,2026-10-23,,,,,,,,,,
+x-023,microsegmentation-02,medium,internal,2026-07-26,,app-owners,accepted_risk,business process depends on it,2027-01-20,,,,,
+x-024,microsegmentation-02,medium,internet,2026-07-21,2026-07-23,infra-ops,fix,,,,,,,manual
+x-025,microsegmentation-05,medium,internal,2026-09-11,,network-security,fix,,,,,,,
+x-026,microsegmentation-07,medium,internet,2026-09-04,2026-09-17,compliance,accepted_risk,business process depends on it,2027-01-25,,,,,manual
+x-027,microsegmentation-02,high,internet,2026-09-28,,network-security,fix,,,,,,,
+x-028,microsegmentation-04,medium,internet,2026-10-03,,infra-ops,,,,,,,,
+x-029,microsegmentation-02,medium,internal,2026-08-06,2026-08-09,,,,,,,,,automated
+x-030,microsegmentation-02,high,internal,2026-09-14,2026-10-04,network-security,fix,,,,,,,automated
+x-031,microsegmentation-05,low,internet,2026-09-13,2026-09-21,app-owners,fix,,,,,,,assisted
+x-032,microsegmentation-01,low,internet,2026-08-09,2026-08-14,network-security,fix,,,,,,,automated
+x-033,microsegmentation-06,medium,internet,2026-08-13,,app-owners,accepted_risk,business process depends on it,2027-02-28,,,,,
+x-034,microsegmentation-04,low,internal,2026-08-29,2026-09-18,,,,,,,,,assisted
+x-035,microsegmentation-05,high,internal,2026-09-07,,,,,,,,,,
+x-036,microsegmentation-06,high,internal,2026-09-02,2026-09-16,security-ops,fix,,,,,,,manual
+x-037,microsegmentation-03,medium,internal,2026-09-01,,network-security,accepted_risk,business process depends on it,2026-11-28,,,,,
+x-038,microsegmentation-03,low,internet,2026-10-06,,network-security,fix,,,,,,,
+x-039,microsegmentation-03,low,internal,2026-09-20,2026-10-10,,,,,,,,,manual
+x-040,microsegmentation-05,low,internal,2026-10-20,,infra-ops,,,,,,,,

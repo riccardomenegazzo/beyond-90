@@ -1,0 +1,180 @@
+{
+  "use_cases": {
+    "see": "See the traffic between machines",
+    "contain": "Contain an attacker who got in",
+    "separate": "Keep environments apart",
+    "prove": "Prove it to auditors"
+  },
+  "modules": [
+    {
+      "id": "traffic_visibility",
+      "name": "Traffic between machines seen and mapped",
+      "category": "cloud",
+      "since": "2025.1",
+      "providers": [
+        "datacenter",
+        "cloud",
+        "branch"
+      ],
+      "requires_any": [],
+      "on_connect": true,
+      "use_case": "see",
+      "csf": [
+        "identify"
+      ]
+    },
+    {
+      "id": "labels",
+      "name": "Machines labelled by application, environment and role",
+      "category": "cloud",
+      "since": "2025.1",
+      "providers": [
+        "datacenter",
+        "cloud",
+        "branch"
+      ],
+      "requires_any": [
+        "labelled_vm"
+      ],
+      "on_connect": false,
+      "use_case": "see",
+      "csf": [
+        "identify"
+      ]
+    },
+    {
+      "id": "environment_isolation",
+      "name": "Production, test and regulated environments kept apart",
+      "category": "defend",
+      "since": "2025.1",
+      "providers": [
+        "datacenter",
+        "cloud",
+        "branch"
+      ],
+      "requires_any": [
+        "isolation_policy"
+      ],
+      "on_connect": false,
+      "use_case": "separate",
+      "csf": [
+        "protect"
+      ]
+    },
+    {
+      "id": "app_policies_monitor",
+      "name": "Application policies watched before they are enforced",
+      "category": "defend",
+      "since": "2025.2",
+      "providers": [
+        "datacenter",
+        "cloud",
+        "branch"
+      ],
+      "requires_any": [
+        "app_policy",
+        "flow_view"
+      ],
+      "on_connect": false,
+      "use_case": "contain",
+      "csf": [
+        "detect"
+      ]
+    },
+    {
+      "id": "app_policies_enforced",
+      "name": "Application policies enforced, allowing only what is needed",
+      "category": "defend",
+      "since": "2025.2",
+      "providers": [
+        "datacenter",
+        "cloud",
+        "branch"
+      ],
+      "requires_any": [
+        "app_policy"
+      ],
+      "on_connect": false,
+      "use_case": "contain",
+      "csf": [
+        "protect"
+      ]
+    },
+    {
+      "id": "quarantine",
+      "name": "One-click quarantine of a suspect machine, with a forensic option",
+      "category": "defend",
+      "since": "2025.2",
+      "providers": [
+        "datacenter",
+        "cloud",
+        "branch"
+      ],
+      "requires_any": [
+        "quarantine_policy"
+      ],
+      "on_connect": false,
+      "use_case": "contain",
+      "csf": [
+        "respond"
+      ]
+    },
+    {
+      "id": "policies_follow_workloads",
+      "name": "Policies that follow machines when they move or fail over",
+      "category": "defend",
+      "since": "2025.3",
+      "providers": [
+        "datacenter",
+        "cloud"
+      ],
+      "requires_any": [
+        "labelled_vm",
+        "app_policy"
+      ],
+      "on_connect": false,
+      "use_case": "separate",
+      "csf": [
+        "protect"
+      ]
+    },
+    {
+      "id": "policy_evidence",
+      "name": "Reports of policies and blocked traffic for auditors",
+      "category": "cloud",
+      "since": "2026.1",
+      "providers": [
+        "datacenter",
+        "cloud",
+        "branch"
+      ],
+      "requires_any": [
+        "app_policy"
+      ],
+      "on_connect": false,
+      "use_case": "prove",
+      "csf": [
+        "identify"
+      ]
+    },
+    {
+      "id": "security_tool_feed",
+      "name": "Blocked and unusual flows sent to the security team's tools",
+      "category": "cloud",
+      "since": "2025.3",
+      "providers": [
+        "datacenter",
+        "cloud",
+        "branch"
+      ],
+      "requires_any": [
+        "flow_view"
+      ],
+      "on_connect": false,
+      "use_case": "see",
+      "csf": [
+        "detect"
+      ]
+    }
+  ]
+}

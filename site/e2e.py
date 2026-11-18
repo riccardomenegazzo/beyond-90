@@ -24,9 +24,11 @@ from pathlib import Path
 
 from playwright.sync_api import sync_playwright
 
+ROOT = Path(__file__).resolve().parent.parent
+
 # Controls live in places (Start, Saved, Help); the test opens the place before using one, as a person would.
 PLACE_OF = {
-    **dict.fromkeys(("open-starter", "open-mapper", "map-file", "map-body", "map-check", "map-use", "map-cancel", "map-notes", "demo", "demo-book", "demo-estate", "open-workshop", "demo-endpoint", "demo-saas", "demo-ai", "demo-identity", "demo-siem", "demo-hci", "demo-objstore", "demo-dbaas", "demo-files", "demo-k8s", "demo-dr", "demo-migration", "demo-privateai", "demo-hybrid", "demo-euc", "latest-adv", "demo-adv", "clear-adv", "adv-status", "run", "cancel",
+    **dict.fromkeys(("open-starter", "open-mapper", "map-file", "map-body", "map-check", "map-use", "map-cancel", "map-notes", "demo", "demo-book", "demo-estate", "open-workshop", "demo-endpoint", "demo-saas", "demo-ai", "demo-identity", "demo-siem", "demo-hci", "demo-objstore", "demo-dbaas", "demo-files", "demo-k8s", "demo-dr", "demo-migration", "demo-privateai", "demo-hybrid", "demo-euc", "demo-microseg", "latest-adv", "demo-adv", "clear-adv", "adv-status", "run", "cancel",
                      "weeks", "hours", "real", "quarter", "bookhours", "weighting", "loaded", "status"), "start"),
     **dict.fromkeys(("demo-prev", "export", "forget", "vault-on", "vault-unlock", "vault-lock", "vault-off", "vault-state",
                      "vault-warn", "ws-status", "history-body", "device-qr", "send-work", "history-empty", "hist-table", "trend", "autosave", "personal", "privacy-body", "restore-in", "restore-out", "restore-note", "erase-result"), "saved"),
@@ -701,7 +703,8 @@ def main(site: str) -> int:
         fig.fill("2,000,000")
         fig.press("Tab")
         page.wait_for_timeout(300)
-        check("16 of 32 questions answered" in page.inner_text("#view .wsprog"), "progress follows the answers")
+        in_scope = sum(len(json.loads((ROOT / "src/beyond90/data/profiles" / p / "discovery.json").read_text())["questions"]) for p in ("hci", "dbaas", "dr-backup", "hybrid-cloud"))
+        check(f"16 of {in_scope} questions answered" in page.inner_text("#view .wsprog"), "progress follows the answers")
         page.get_by_role("button", name="See the journey").click()
         page.wait_for_selector("#view ol.journey")
         check("Yes, this is possible." in page.inner_text("#view .jhero") and "2M in lost orders" in page.inner_text("#view .jhero"), "the journey opens on what is possible, with what is at stake in the customer's words")
@@ -730,6 +733,7 @@ def main(site: str) -> int:
         check(page.locator("#view .flags li").count() == 2, "what nobody could answer becomes the list for the next meeting")
         page.get_by_role("button", name="Start the proof of value").click()
         page.wait_for_selector("#view .promise")
+        check("Recovery point and time agreed for the workloads in the test" in page.inner_text("#view"), "the proof of value starts with the first line's own checklist")
         check(state_tab(page) == "wspov" and "immutable copy" in page.inner_text("#view"), "starting the proof of value carries the first line's own criteria")
         page.click("[data-tab=readout]")
         readout = page.frame_locator("#report").locator("body")
@@ -758,6 +762,18 @@ def main(site: str) -> int:
         check("2,000,000 per day" in page.inner_text("#view .jhero") and "Kestrel Logistics" in page.inner_text("#reshead") and page.locator("#view .jstep").count() >= 3,
               "the example opens on its journey, with figures and notes")
         check("Where they start from" in page.inner_text("#view .jhero") and "620 virtual machines" in page.inner_text("#view .jhero"), "the example comes with an invented inventory")
+        page.click("[data-tab=workshop]")
+        page.wait_for_selector("#view .szhead")
+        before = int(page.inner_text("#view .szhead > b"))
+        page.locator("#view details.szassume summary").click()
+        ratio = page.locator("#view input[aria-label='vCPU per physical core']")
+        ratio.fill("8")
+        ratio.dispatch_event("change")
+        page.wait_for_timeout(300)
+        after = int(page.inner_text("#view .szhead > b"))
+        check(before > 3 and after < before and "decided by" in page.inner_text("#view .szhead"), "a first sizing sketch follows the assumptions agreed with the customer")
+        page.click("[data-tab=journey]")
+        page.wait_for_selector("#view ol.journey")
         page.get_by_role("button", name="Present", exact=True).click()
         page.wait_for_selector("body.presenting")
         check(not page.is_visible("#rail") and page.is_visible("#view .jhero") and page.is_visible("#present-exit"), "presenting shows the journey alone, with a way back")
@@ -780,7 +796,7 @@ def main(site: str) -> int:
         check("Halden Group" in page.inner_text("#run"), "the estate demo is one customer, not a book")
         run_and_wait()
         page.wait_for_selector("#view .estatemap")
-        check(page.locator("#view .enode").count() == 10 and page.locator("#view .enode.absent").count() == 6, "the estate map draws the whole family, with the lines not in place dashed")
+        check(page.locator("#view .enode").count() == 11 and page.locator("#view .enode.absent").count() == 7, "the estate map draws the whole family, with the lines not in place dashed")
         check(page.locator("#view .elink.risk").count() >= 1 and page.locator("#view .elink.grow").count() >= 1, "and links coloured by risk and by what comes next")
         check(page.locator("#view .heatcell").count() == 16 and "of 14 clusters" in page.inner_text("#view") and "of 10 sites" in page.inner_text("#view"), "each line is counted in its own units")
         check("Platform 71.9%, recovery 42.8%" in page.inner_text("#view"), "a solid line leaning on a weak one is called out")
@@ -788,7 +804,7 @@ def main(site: str) -> int:
         page.locator("#view .enode.absent").first.focus()
         page.keyboard.press("Enter")
         page.wait_for_selector("#view .card.grow.focus")
-        check(page.locator("#view .card.grow").count() == 6 and "Open with" in page.inner_text("#view"), "a missing line opens where to grow, with the first question to ask")
+        check(page.locator("#view .card.grow").count() == 7 and "Open with" in page.inner_text("#view"), "a missing line opens where to grow, with the first question to ask")
         page.locator("#view .card.grow.focus").get_by_role("button", name="Start a discovery workshop on this line").click()
         page.wait_for_selector("#view .wsq")
         check("Halden Group" in page.inner_text("#reshead") and page.locator("#view details.wsline").count() == 1, "a line to grow starts a discovery workshop with the same customer, on that line")

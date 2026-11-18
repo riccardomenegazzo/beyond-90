@@ -20,5 +20,12 @@
       "text": "Each team sees what its namespaces use and cost for the month",
       "how": "Show the cost view to two team leads."
     }
+  ],
+  "readiness": [
+    "Cluster sizes and node pools for the test agreed",
+    "A container registry and the approved images",
+    "A stateful test application with its volumes",
+    "The admission policies to prove agreed with security",
+    "Git repository and access for the GitOps test"
   ]
 }

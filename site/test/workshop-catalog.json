@@ -90,6 +90,27 @@
      "why": "Alerts without an owner turn into noise, then into outages.",
      "need": "A platform alert at night reaches someone who acts",
      "how": "Route platform alerts to a named on-call owner"
+    },
+    {
+     "stage": "L2",
+     "q": "Which failures must the platform ride through without stopping: a disk, a server, a whole rack, a room?",
+     "why": "The answer decides how many copies of the data are kept and where they are placed.",
+     "need": "The failures to survive are agreed, and every copy of the data sits in a different place for each of them",
+     "how": "Agree the failure domains (server, rack, room) and how many copies each group of workloads needs"
+    },
+    {
+     "stage": "L3",
+     "q": "How full are storage and hosts today, and how much room is kept free for a server failure and for growth?",
+     "why": "A platform run at the edge cannot rebuild after a failure, and the next purchase arrives as an emergency.",
+     "need": "Capacity is planned with room to rebuild after a failure and to grow, with alerts before it runs short",
+     "how": "Measure today's use, keep a server's worth of room free, and set alerts at two thresholds"
+    },
+    {
+     "stage": "L3",
+     "q": "Which workloads need the fastest storage, and which can live on cheaper capacity?",
+     "why": "Separating hot from cold data, and deciding where to compress or deduplicate, is where cost and performance are won.",
+     "need": "Workloads are grouped by the performance they need, with data reduction used where it pays off",
+     "how": "Group workloads by performance tier and agree where compression and deduplication apply"
     }
    ],
    "proof": [
@@ -116,7 +137,19 @@
     {
      "text": "The capacity forecast names the month the cluster runs out of storage, and the team agrees with it",
      "how": "Compare the forecast with the team's own estimate and growth plan."
+    },
+    {
+     "text": "After a server is lost, the platform rebuilds every missing copy on its own, and the time it took is recorded",
+     "how": "Power off a server under load, watch the rebuild complete without operator action, and note its duration"
     }
+   ],
+   "readiness": [
+    "IP addresses agreed: per server for the host, the platform's controller and out-of-band management, plus a cluster address and a data services address",
+    "DNS and NTP reachable from every server",
+    "Switch ports, VLANs and uplinks agreed with the network team, with two switches for redundancy",
+    "The servers in the test checked against the platform's supported hardware list",
+    "Test workloads chosen, with their owners, and a way to generate load",
+    "The failures to test agreed: a disk, a server, a network link"
    ]
   },
   "dr-backup": {
@@ -179,6 +212,27 @@
      "why": "A silent missed recovery point is discovered on the worst day.",
      "need": "A replication that falls behind reaches a named owner",
      "how": "Alert on missed recovery points with an owner and a response"
+    },
+    {
+     "stage": "L2",
+     "q": "Which workloads can lose no data at all, which can lose minutes, and which can lose hours?",
+     "why": "Zero, minutes and hours need different replication, distances and costs.",
+     "need": "Every workload sits in a recovery tier (zero, minutes, hours) with the replication that matches it",
+     "how": "Group workloads into recovery tiers with the business and pick the replication for each"
+    },
+    {
+     "stage": "L2",
+     "q": "How far back must you be able to go, and how close together must the recovery points be?",
+     "why": "Keeping every point forever costs storage; keeping too few loses the point you need after ransomware went unnoticed for days.",
+     "need": "Retention is agreed per tier: recent recovery points close together, older ones further apart",
+     "how": "Agree a retention scheme, for example hourly for a day, daily for a week, weekly for a month"
+    },
+    {
+     "stage": "L3",
+     "q": "Which machines must come back together, in the same state and in a set order: an application with its database, say?",
+     "why": "Recovering machines one by one, from different moments, breaks applications that depend on each other.",
+     "need": "Applications that depend on each other are protected as a group and recovered in a set order",
+     "how": "Group dependent machines, snapshot each group together, and write the power-on order into the plan"
     }
    ],
    "proof": [
@@ -201,7 +255,19 @@
     {
      "text": "The recovery test produces a report an auditor accepts as evidence",
      "how": "Show the report to the customer's audit or compliance contact."
+    },
+    {
+     "text": "An application and its database come back together, from the same moment, in the planned order",
+     "how": "Recover a grouped application in test mode and check its consistency and start order"
     }
+   ],
+   "readiness": [
+    "Recovery point and time agreed for the workloads in the test",
+    "A target site or cloud with enough capacity for the test failover",
+    "An isolated test network so the failover does not touch production",
+    "Address, DNS and firewall changes for the recovery site listed",
+    "An administrator account to try to delete the copies with, agreed with security",
+    "Who starts the test, who watches it, and who signs the result"
    ]
   },
   "dbaas": {
@@ -287,6 +353,13 @@
      "text": "A database server failure leaves the clustered database available with no manual step",
      "how": "Stop the primary node during a test load and watch the service continue."
     }
+   ],
+   "readiness": [
+    "A copy of a production database cleared for the test, or a representative one",
+    "Database engine versions and licences in scope listed",
+    "A DBA and an application team ready to try self-service",
+    "The columns to mask agreed with the data owner",
+    "Backup target and retention for the test"
    ]
   },
   "object-storage": {
@@ -376,6 +449,13 @@
      "text": "The monthly cost for the customer's real volume and access pattern is known before signature, egress and requests included",
      "how": "Replay a month of the customer's usage figures through the price list and agree the total with finance."
     }
+   ],
+   "readiness": [
+    "A test bucket and the application or backup job that will write to it",
+    "Object lock retention for the test agreed",
+    "Network path and throughput between writers and the storage",
+    "The residency rule for the test data",
+    "A restore to time, with its target agreed"
    ]
   }
  }

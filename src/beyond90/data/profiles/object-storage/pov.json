@@ -24,5 +24,12 @@
       "text": "The monthly cost for the customer's real volume and access pattern is known before signature, egress and requests included",
       "how": "Replay a month of the customer's usage figures through the price list and agree the total with finance."
     }
+  ],
+  "readiness": [
+    "A test bucket and the application or backup job that will write to it",
+    "Object lock retention for the test agreed",
+    "Network path and throughput between writers and the storage",
+    "The residency rule for the test data",
+    "A restore to time, with its target agreed"
   ]
 }

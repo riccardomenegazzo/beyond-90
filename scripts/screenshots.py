@@ -108,11 +108,24 @@ def shoot(site: Path, out: Path) -> None:
             pg.wait_for_timeout(500)
             pg.screenshot(path=str(out / "app-hurt.png"))
 
+            # the invented example: its inventory, and a first sizing sketch from it
+            pg.click(".rail [data-place=start]")
+            pg.click("#demo-workshop")
+            pg.wait_for_selector("#view ol.journey")
+            pg.click("#tabs [data-tab=workshop]")
+            pg.wait_for_selector("#view .szhead")
+            pg.locator("#view .szhead").scroll_into_view_if_needed()
+            pg.evaluate("window.scrollBy(0, -90)")
+            pg.wait_for_timeout(300)
+            pg.screenshot(path=str(out / "app-sizing.png"))
+
             # the presales desk, filled with invented prospects at four stages
             pg.click(".rail [data-place=start]")
             pg.locator("#hero-roles [data-role=se]").click()
             pg.click("#desk-btn")
             pg.wait_for_selector("#desk-body .deskhero")
+            if pg.get_by_role("button", name="Remove the invented examples").count():
+                pg.get_by_role("button", name="Remove the invented examples").click()     # the example workshop above
             pg.get_by_role("button", name="Fill it with invented examples").click()
             pg.wait_for_selector("#desk-body :text('Pietra Bank')")
             pg.wait_for_timeout(400)

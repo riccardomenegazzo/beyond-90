@@ -20,5 +20,12 @@
       "text": "The cost per user per month is known and compared with today's",
       "how": "Compute the figure with the customer's own numbers."
     }
+  ],
+  "readiness": [
+    "A pilot user group with its applications",
+    "A golden image to start from",
+    "Profiles and file shares reachable",
+    "Remote access path and strong sign-in in place",
+    "A logon-time baseline from today's desktops"
   ]
 }

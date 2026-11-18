@@ -55,6 +55,13 @@
       "why": "Detection without an owner does not stop anything.",
       "need": "A file server alert is looked at quickly by someone named",
       "how": "Route alerts to an owner with a response time"
+    },
+    {
+      "stage": "L3",
+      "q": "How much of the file data has not been opened in a year?",
+      "why": "Cold files moved to cheaper object storage free the fast tier without users noticing.",
+      "need": "Cold file data is known and moves to cheaper storage by policy, with users still finding it where it was",
+      "how": "Run a file age analysis and set a tiering policy for data untouched for a year"
     }
   ]
 }
