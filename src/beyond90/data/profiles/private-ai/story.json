@@ -1,0 +1,40 @@
+{
+  "audiences": {
+    "executive": "Put AI to work on your own data at a cost you can predict, under your control, and turn pilots into services the business uses.",
+    "technical": "Models, GPUs, data and agents run as a governed platform: endpoints per team, permissions on retrieval, limits on what agents may call and spend.",
+    "financial": "Cost counted per finished piece of work, not per token; owned capacity for steady work, hosted models where they earn their price."
+  },
+  "people": [
+    "Whoever owns AI in the business: the programme sponsor",
+    "A business owner with a use case and its data",
+    "Infrastructure and operations, who will run the GPUs",
+    "Platform engineers and developers who will build on it",
+    "Security and data protection"
+  ],
+  "objections": [
+    {
+      "says": "We already use a hosted AI service: why run our own?",
+      "clarify": "What does one finished piece of work cost today, and which data cannot leave?",
+      "answer": "Keep hosted models where they earn their price; run steady or sensitive work on your own capacity, behind the same access point.",
+      "prove": "Run one use case on a hosted model and on a self-hosted one, and compare what each finished piece of work costs."
+    },
+    {
+      "says": "We have no GPUs, and they are hard to get.",
+      "clarify": "Which use cases need GPUs now, and could any start on rented capacity?",
+      "answer": "Start where capacity exists, rented or owned, on the same platform, and move as hardware arrives.",
+      "prove": "Serve a model on the capacity available within the test window and record its throughput."
+    },
+    {
+      "says": "Our AI projects never get past the pilot.",
+      "clarify": "What stopped the last one: data, security, cost or operations?",
+      "answer": "Make what production needs the test: access control, cost limits, monitoring and an owner.",
+      "prove": "Take one pilot to a governed endpoint, with access control, cost limits and monitoring, used by real users."
+    },
+    {
+      "says": "Agents could do anything with our data.",
+      "clarify": "Which tools and data should an agent reach, and who approves new ones?",
+      "answer": "Give each agent a list of tools and data it may use, a spending limit, and a record of every call.",
+      "prove": "Block an agent from a tool it is not allowed to use and show the record of the attempt."
+    }
+  ]
+}

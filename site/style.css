@@ -1032,3 +1032,20 @@ ol.deskfunnel{list-style:none;margin:0;padding:0;display:grid;grid-template-colu
 .szf{display:grid;gap:4px;font-size:13px;color:var(--ink2)}
 .szf.wide{grid-column:1/-1}
 .szf input,.szf select{font-size:14px}
+/* Prepare: the line for each audience, who to bring, objections with the question to ask first */
+.tellit{display:grid;grid-template-columns:max-content 1fr;gap:6px 16px;margin:10px 0 14px}
+.tellit dt{font-weight:700;color:var(--ink2);font-size:13.5px;padding-top:2px}
+.tellit dd{margin:0;font-size:15.5px;line-height:1.5}
+.objtitle{font-size:15px;margin:16px 0 8px}
+.objs{list-style:none;margin:0 0 12px;padding:0;display:grid;gap:10px}
+.obj{border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:grid;gap:8px}
+.obj.on{border-color:var(--accent);box-shadow:inset 3px 0 0 var(--accent)}
+.objhead{display:flex;gap:12px;align-items:flex-start;justify-content:space-between}
+.objsays{font-weight:600;font-size:15.5px;line-height:1.45}
+.objraise{flex:none}
+.objraise[aria-pressed=true]{background:var(--accent-btn);border-color:var(--accent-btn);color:#fff}
+.objraise[aria-pressed=true]:hover{background:var(--accent-btn);filter:brightness(1.08)}
+.objdl{display:grid;grid-template-columns:max-content 1fr;gap:4px 14px;margin:0;font-size:14px}
+.objdl dt{font-weight:700;color:var(--ink2)}
+.objdl dd{margin:0}
+@media (max-width:700px){.tellit,.objdl{grid-template-columns:1fr}.tellit dd,.objdl dd{margin-bottom:6px}.objhead{flex-direction:column}}

@@ -1,0 +1,40 @@
+{
+  "audiences": {
+    "executive": "Know how long the business can be down and how much data it can lose, and prove it recovers within that, ransomware included.",
+    "technical": "Recovery objectives per application, protection by policy, dependent applications recovered together and in order, tested without touching production.",
+    "financial": "Pay for the recovery each application needs, not the same for all; no full recovery site sitting idle at full cost."
+  },
+  "people": [
+    "The business owner who can put a number on a day down",
+    "The backup and recovery team",
+    "Security, for ransomware and copies that cannot be changed",
+    "Owners of the most critical applications",
+    "Audit or compliance, if recovery tests must be evidenced"
+  ],
+  "objections": [
+    {
+      "says": "We already have backups.",
+      "clarify": "When did you last restore a whole application, and how long did it take?",
+      "answer": "Backups are copies; recovery is a tested time. Start from the time the business needs and test against it.",
+      "prove": "Restore a whole application in a test and time it against its agreed objective."
+    },
+    {
+      "says": "A second site is too expensive.",
+      "clarify": "Which applications really need minutes, and which can wait hours?",
+      "answer": "Tier the applications: few need a standing copy elsewhere; the rest can recover from cheaper storage or a site that grows when needed.",
+      "prove": "Recover one application from each tier and record the time, and what keeping it ready costs."
+    },
+    {
+      "says": "Testing recovery would disrupt production.",
+      "clarify": "What made past tests disruptive: the network, the people, the data?",
+      "answer": "Test on an isolated network, from copies, while production keeps running.",
+      "prove": "Run a test failover on an isolated network in working hours, with no impact on production."
+    },
+    {
+      "says": "Ransomware would encrypt the backups too.",
+      "clarify": "Can an administrator account delete or change backups today?",
+      "answer": "Keep copies that nobody can change or delete for a set time, administrators included, and check they are clean before recovering.",
+      "prove": "Try to delete a locked copy with an administrator account, then recover from it."
+    }
+  ]
+}

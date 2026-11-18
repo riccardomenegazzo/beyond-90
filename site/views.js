@@ -1857,6 +1857,49 @@ export function hurtView({ workshop: w, catalog, go, startPov }) {
   return h("div", {}, out);
 }
 
+/** Before and during the meeting: the line in one sentence for each audience, who to bring, and the objections to expect,
+ *  each with the question to ask before answering, the answer, and how to prove it. Raised objections go to the proof. */
+export function wsPrepView({ workshop: w, catalog, raise, go }) {
+  const res = WS.assess(catalog, w);
+  const told = WS.stories(catalog, w, res);
+  if (!told.length) return card("Prepare", h("p", { class: "note first", text: "The product lines in scope do not come with messages or objections yet. Add a story.json to their profiles to see them here." }));
+  const count = h("b", { text: String((w.raised || []).length) });
+  const summary = h("p", { class: "tline" }, count, " raised so far. Each one raised goes to the customer readout as something to prove, and into the proof of value when it starts.");
+  const say = h("p", { class: "note", role: "status" });
+  const hero = h("section", { class: "card" }, h("h2", { text: "Prepare the conversation" }),
+    h("p", { class: "note first", text: res.land ? `Starting with ${res.land.label.toLowerCase()}, from what the customer said. Mark an objection when the customer raises it: ask the question first, then answer.` : "For every line in scope. Mark an objection when the customer raises it: ask the question first, then answer." }),
+    summary, say);
+  const block = (t) => {
+    const text = [...Object.entries(t.audiences).map(([k, v]) => `${WS.AUDIENCE_WORDS[k]}: ${v}`), t.people.length ? `Who to involve: ${t.people.join("; ")}.` : ""].filter(Boolean).join("\n");
+    const objs = h("ol", { class: "objs" }, t.objections.map((o) => {
+      const btn = h("button", { class: "btn small objraise", type: "button", "aria-pressed": String(o.raised), text: o.raised ? "Raised" : "They raised it",
+        "aria-label": `${o.raised ? "Raised" : "Mark as raised"}: ${o.says}`,
+        onclick: async () => {
+          const on = btn.getAttribute("aria-pressed") !== "true";
+          try {
+            const next = await raise(t.profile, o.index, on);
+            btn.setAttribute("aria-pressed", String(on)); btn.textContent = on ? "Raised" : "They raised it";
+            btn.setAttribute("aria-label", `${on ? "Raised" : "Mark as raised"}: ${o.says}`);
+            btn.closest("li").classList.toggle("on", on);
+            count.textContent = String(((next && next.raised) || []).length);
+            say.textContent = on ? "Marked as raised: it is now in the readout and will be in the proof of value." : "No longer marked as raised.";
+          } catch (e) { say.textContent = e.message; }
+        } });
+      return h("li", { class: o.raised ? "obj on" : "obj" },
+        h("div", { class: "objhead" }, h("q", { class: "objsays", text: o.says }), btn),
+        h("dl", { class: "objdl" }, h("dt", { text: "Ask first" }), h("dd", { text: o.clarify }), h("dt", { text: "Answer" }), h("dd", { text: o.answer }), h("dt", { text: "Prove it" }), h("dd", { text: o.prove })));
+    }));
+    return card(t.land ? `${t.label}: start here` : t.label, h("div", {},
+      Object.keys(t.audiences).length ? h("dl", { class: "tellit" }, Object.entries(t.audiences).flatMap(([k, v]) => [h("dt", { text: WS.AUDIENCE_WORDS[k] }), h("dd", { text: v })])) : null,
+      t.people.length ? h("div", { class: "growproof" }, h("small", { text: "Who to have in the room" }), h("ul", {}, t.people.map((x) => h("li", { text: x })))) : null,
+      t.objections.length ? h("h3", { class: "objtitle", text: `Objections to expect (${t.objections.length})` }) : null, t.objections.length ? objs : null,
+      h("div", { class: "btnrow" }, h("button", { class: "btn small", type: "button", text: "Copy the messages", onclick: (ev) => copyText(text).then((ok) => { ev.target.textContent = ok ? "Copied" : "Not copied"; }) }),
+        h("button", { class: "btn small", type: "button", text: "Open its questions", onclick: () => go("workshop", { open: t.profile }) }))),
+    { sub: "The line in one sentence for each audience, who to bring, and what the customer is likely to push back on." });
+  };
+  return h("div", {}, hero, ...told.map(block));
+}
+
 const STATUS_TODAY = { gap: "Today: a real gap", partly: "Today: partly", unknown: "Today: nobody knows yet" };
 
 /** From "can we?" to "what would need to be true?": the path from today to where the customer could be, step by step. */

@@ -1,0 +1,33 @@
+{
+  "audiences": {
+    "executive": "Databases delivered in minutes to the teams that need them, protected and patched to one standard.",
+    "technical": "Provisioning, cloning, patching and point-in-time recovery for each engine, as self-service within guardrails.",
+    "financial": "Fewer full copies of production data, licences counted where databases actually run, less DBA time on routine work."
+  },
+  "people": [
+    "The DBA team lead",
+    "Development teams asking for databases",
+    "Security, for masked copies of production data",
+    "Licensing, for database licences"
+  ],
+  "objections": [
+    {
+      "says": "Our DBAs will not give up control.",
+      "clarify": "Which tasks do they want to keep, and which take their time today?",
+      "answer": "They set the standards and approve; routine provisioning, patching and cloning become self-service within those standards.",
+      "prove": "A developer gets a masked copy of a production database in minutes, under a policy the DBAs set."
+    },
+    {
+      "says": "Our databases are too critical to move.",
+      "clarify": "Which ones, on which engines and versions, and with which recovery objective?",
+      "answer": "Start with test and development copies, then the less critical, with recovery tested at each step.",
+      "prove": "Restore a database to a point in time chosen by the DBA, and check it."
+    },
+    {
+      "says": "We would need new licences.",
+      "clarify": "How are database licences counted today, and on how many cores?",
+      "answer": "Count licences against where databases will run; consolidating can reduce the cores to license.",
+      "prove": "Compare the cores the databases need on the new platform with the cores licensed today."
+    }
+  ]
+}

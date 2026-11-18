@@ -19,6 +19,10 @@
     {
       "text": "The same security policy applies to a workload in the data centre and in the cloud",
       "how": "Move a workload and check that its policy follows it."
+    },
+    {
+      "text": "The cost of the test footprint is compared on demand, reserved and against existing commitments, with per-core licences included",
+      "how": "Price the same footprint three ways and review it with finance"
     }
   ],
   "readiness": [

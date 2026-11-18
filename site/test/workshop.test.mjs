@@ -294,3 +294,47 @@ function CAT_WITH_MIGRATION() {
   const q = JSON.parse(readFileSync(new URL("../../src/beyond90/data/profiles/platform-migration/discovery.json", import.meta.url), "utf-8")).questions;
   return { ...CAT, lines: { ...CAT.lines, "platform-migration": { label: "Platform migration", units: "sites", questions: q, proof: [{ text: "A group moves", how: "Move it" }] } } };
 }
+
+import { setRaised, stories, raisedObjections } from "../workshop.js";
+
+test("objections the customer raises are kept, checked on import, and carried to the summary and the readout", () => {
+  let w = makeWorkshop({ customer: "Acme (mock)", scope: ["hci", "dr-backup"], createdOn: "2026-11-01", nonce: "abcdef" });
+  assert.ok(CAT.lines.hci.story.objections.length >= 3, "the fixture carries the line's story");
+  w = setRaised(w, "hci", 2, true, "2026-11-02");
+  w = setRaised(w, "dr-backup", 0, true, "2026-11-02");
+  assert.deepEqual(w.raised, ["hci#2", "dr-backup#0"]);
+  assert.equal(validWorkshop(w), true);
+  const r = raisedObjections(CAT, w);
+  assert.equal(r.length, 2);
+  assert.equal(r[0].says, CAT.lines.hci.story.objections[2].says);
+  const res = assess(CAT, w);
+  assert.equal(res.raised.length, 2);
+  assert.match(summaryMarkdown(CAT, w, res), /## Concerns they raised/);
+  assert.match(readoutHtml(CAT, w, res), /What you asked us to prove/);
+  // raising twice keeps one; un-raising the last removes the field
+  w = setRaised(w, "hci", 2, true, "2026-11-02");
+  assert.equal(w.raised.filter((k) => k === "hci#2").length, 1);
+  w = setRaised(setRaised(w, "hci", 2, false, "2026-11-03"), "dr-backup", 0, false, "2026-11-03");
+  assert.equal("raised" in w, false);
+  assert.equal(validWorkshop(w), true);
+  // what a crafted workspace file could carry is refused
+  for (const bad of [[], ["hci#12"], ["HCI#1"], ["hci#1", "hci#1"], [7], "hci#1", Array.from({ length: 41 }, (_, i) => `l${i}#1`)]) {
+    assert.equal(validWorkshop({ ...w, raised: bad }), false, JSON.stringify(bad).slice(0, 40));
+  }
+  assert.throws(() => setRaised(w, "../x", 1, true, "2026-11-03"));
+  // an objection of a line no longer in scope, or no longer in the profile, is not shown
+  assert.equal(raisedObjections(CAT, { ...w, raised: ["object-storage#0", "hci#7"] }).length, 0);
+});
+
+test("stories put the line to start with first, and the summary tells it for each audience", () => {
+  let w = makeWorkshop({ customer: "Acme (mock)", scope: ["hci", "dr-backup"], createdOn: "2026-11-01", nonce: "abcdef" });
+  for (let i = 0; i < 4; i++) w = setAnswer(w, "dr-backup", i, "gap", "", "2026-11-02");
+  const res = assess(CAT, w);
+  assert.equal(res.land.profile, "dr-backup");
+  const told = stories(CAT, w, res);
+  assert.deepEqual(told.map((t) => t.profile), ["dr-backup", "hci"]);
+  assert.ok(told[0].land && told[0].audiences.executive && told[0].people.length);
+  const md = summaryMarkdown(CAT, w, res);
+  assert.match(md, /## How to tell it: disaster recovery and backup/i);
+  assert.match(md, /\*\*For finance:\*\*/);
+});

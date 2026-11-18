@@ -1,0 +1,40 @@
+{
+  "audiences": {
+    "executive": "Use the public cloud for what it does best (leaving a data centre, a disaster, a peak) without rewriting applications or retraining teams.",
+    "technical": "The same platform and operations in the data centre and in the cloud; machines move without new addresses; one set of policies.",
+    "financial": "Spend existing cloud commitments, rent capacity while hardware is late or scarce, and keep a small standing footprint that grows only when needed."
+  },
+  "people": [
+    "The owner of the cloud strategy and its commitments",
+    "The cloud platform or landing-zone team",
+    "Network and security",
+    "Finance, for commitments and reserved pricing",
+    "Licensing, for software counted per core"
+  ],
+  "objections": [
+    {
+      "says": "Our strategy is cloud native: we will rewrite the applications.",
+      "clarify": "Which applications, by when, and what runs until then?",
+      "answer": "Move first without rewriting, then modernise the ones worth it at their own pace, in the same place.",
+      "prove": "Move a test application as it is and run it in the cloud with its current tools."
+    },
+    {
+      "says": "Running our own platform in the cloud costs more than native services.",
+      "clarify": "Compared on which price, on demand or reserved, and with which licences counted per core?",
+      "answer": "Compare the total for the same footprint, with reserved pricing, existing commitments and per-core licences included.",
+      "prove": "Cost the test footprint on demand and reserved, licences included, beside the native estimate."
+    },
+    {
+      "says": "We are waiting for new hardware anyway.",
+      "clarify": "When will it arrive, and what is blocked until then?",
+      "answer": "Run what is on hold in the cloud now, on the same platform, and decide whether it comes back once the servers arrive.",
+      "prove": "Deploy a cloud cluster and run a blocked workload on it within the test window."
+    },
+    {
+      "says": "Our data must stay in the country.",
+      "clarify": "Which data, under which rule, and does it cover backups and logs?",
+      "answer": "Choose the region or sovereign cloud by the rule, and show where every copy lives.",
+      "prove": "Show where every copy of a test dataset lives, backups included, and that nothing leaves the region."
+    }
+  ]
+}

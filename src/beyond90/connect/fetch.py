@@ -66,7 +66,7 @@ def _parse(body: bytes, fmt: str, records: str, delimiter: str = ",") -> list[An
     try:
         doc = json.loads(body.decode("utf-8-sig"))
     except (UnicodeDecodeError, ValueError, RecursionError) as e:
-        raise FetchError(f"the response is not valid JSON: {type(e).__name__}") from e
+        raise FetchError(f"the response is not valid JSON: {type(e).__name__} ({'empty' if not body else f'{len(body)} bytes'})") from e
     node = get_path(doc, records) if records else doc
     if node is None:
         raise FetchError(f"no records at path {records!r} in the response")

@@ -472,7 +472,7 @@ const VIEWS = {
   portfolio: { kind: "md", key: "portfolio_markdown", file: "beyond90-portfolio.md", type: "text/markdown" },
   book: { kind: "md", key: "book_markdown", file: "beyond90-book.md", type: "text/markdown" },
   bookreport: { kind: "html", key: "book_html", file: "beyond90-book.html", type: "text/html" },
-  workshop: { kind: "view", view: "workshopView" }, journey: { kind: "view", view: "journeyView" }, hurt: { kind: "view", view: "hurtView" }, wspov: { kind: "view", view: "povView" },
+  wsprep: { kind: "view", view: "wsPrepView" }, workshop: { kind: "view", view: "workshopView" }, journey: { kind: "view", view: "journeyView" }, hurt: { kind: "view", view: "hurtView" }, wspov: { kind: "view", view: "povView" },
   wsummary: { kind: "md", key: "summary_markdown", file: "beyond90-discovery.md", type: "text/markdown" },
   readout: { kind: "html", key: "readout_html", file: "discovery-readout.html", type: "text/html" },
   estate: { kind: "view", view: "estateView" }, estategrow: { kind: "view", view: "growView" },
@@ -929,12 +929,14 @@ function workshopContext() {
     preparedBy: async (name) => edit((x) => WSHOP.setPreparedBy(x, name, today)),
     inventory: async (summary) => { await edit((x) => WSHOP.setInventory(x, summary, today)); showWorkshop("workshop"); },
     sizing: async (assumptions) => edit((x) => WSHOP.setSizing(x, assumptions, today)),
+    raise: async (profile, i, on) => edit((x) => WSHOP.setRaised(x, profile, i, on, today)),
     rename: async (name) => { await edit((x) => WSHOP.rename(x, name, today)); showWorkshop("workshop"); },
     setScope: async (scope) => { await edit((x) => WSHOP.setScope(x, scope, today)); showWorkshop("workshop"); },
     newWorkshop, openWorkshop, removeWorkshop, presets: WSHOP.PRESETS.map((p) => ({ ...p, scope: p.scope.filter((x) => cat.lines[x]) })).filter((p) => p.scope.length),
     startPov: async (r) => {
       const p = POV.makePov({ customer: w.customer, createdOn: today, problem: `Heard in discovery on ${r.land.label.toLowerCase()}: ${r.land.gaps.map((q) => q.q).join(" ")}`.slice(0, 300),
-        criteria: r.proof.slice(0, 4).map((c) => ({ text: c.text, target: c.how })), readiness: r.readiness });
+        // the line's own tests, then what the customer asked us to prove
+        criteria: [...r.proof.slice(0, 4).map((c) => ({ text: c.text, target: c.how })), ...(r.raised || []).slice(0, 4).map((o) => ({ text: o.prove, target: `Raised by the customer: "${o.says}"` }))], readiness: r.readiness });
       await store.povPut([p], true); await refreshPovs(); selectTab("wspov");
     },
     // the proof-of-value view, for this prospect, with the first line's own criteria as suggestions

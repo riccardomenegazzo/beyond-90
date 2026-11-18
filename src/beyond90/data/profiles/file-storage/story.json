@@ -1,0 +1,33 @@
+{
+  "audiences": {
+    "executive": "One place for shared files that recovers quickly from ransomware and shows who touched what.",
+    "technical": "Scale-out file services with snapshots, audit, ransomware detection, and cold data moved to cheaper storage.",
+    "financial": "Fewer file servers and filers to renew; cold data on cheaper storage by policy."
+  },
+  "people": [
+    "The owner of file services or storage",
+    "Security, for audit and ransomware",
+    "A business team with large shares",
+    "The desktop team, for profiles and home drives"
+  ],
+  "objections": [
+    {
+      "says": "Our filer works: why change it?",
+      "clarify": "When is it up for renewal, and how long would a restore after ransomware take today?",
+      "answer": "Compare at renewal on recovery, audit and cost, not on features alone.",
+      "prove": "Restore a share after a simulated encryption and time it."
+    },
+    {
+      "says": "Moving shares means downtime and broken paths.",
+      "clarify": "How do users reach the shares today, and which paths are written into scripts or applications?",
+      "answer": "Keep the names users reach, copy in the background, and cut over in a short window.",
+      "prove": "Move a test share, cut over in a set window, and check users reach it by the same name."
+    },
+    {
+      "says": "We cannot even see what is in the shares.",
+      "clarify": "What would you want answered: who accessed what, what is old, what is sensitive?",
+      "answer": "Start with an analysis of access and age: it guides cleanup, tiering and permissions.",
+      "prove": "Produce an access and age report on a test share and act on one finding."
+    }
+  ]
+}

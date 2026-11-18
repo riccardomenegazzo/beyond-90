@@ -62,6 +62,34 @@
       "why": "Paying for a full second site that sits idle is what makes recovery expensive.",
       "need": "A small standing cluster in the cloud grows at failover, and the time it takes to grow has been tested",
       "how": "Size the smallest standing cluster and time adding servers during a test failover"
+    },
+    {
+      "stage": "value",
+      "q": "Which cloud providers do you already have commitments with, and how much of them is unused?",
+      "why": "Unused commitments are budget already spent: workloads that consume them cost less than they seem.",
+      "need": "The cloud commitments in place are known, with what is left and until when",
+      "how": "List the commitments per provider, with what each has left"
+    },
+    {
+      "stage": "L1",
+      "q": "Which projects are on hold because servers are late or not yet priced?",
+      "why": "A project on hold for servers is the clearest case for capacity that can be rented within days.",
+      "need": "Projects on hold for hardware are listed, with what each month of delay costs",
+      "how": "List the projects on hold and the date their servers are expected"
+    },
+    {
+      "stage": "L2",
+      "q": "Which software is licensed per core, and where would it cost least to run?",
+      "why": "Operating system and database licences can change the cost of a cloud more than the servers do.",
+      "need": "Per-core licences are counted for every place a workload could run",
+      "how": "Count the licensed cores for operating systems and databases, workload by workload"
+    },
+    {
+      "stage": "L3",
+      "q": "Does the cloud provider fund assessments or migrations for this move, and has anyone asked?",
+      "why": "Provider programmes can pay for part of a move, and are easier to get early than late.",
+      "need": "Funding available from the provider is known and requested at the start",
+      "how": "Ask the provider's account team which programmes apply, before the plan is fixed"
     }
   ]
 }

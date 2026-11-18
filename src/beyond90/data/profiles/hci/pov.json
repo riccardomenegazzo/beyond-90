@@ -27,6 +27,10 @@
     {
       "text": "After a server is lost, the platform rebuilds every missing copy on its own, and the time it took is recorded",
       "how": "Power off a server under load, watch the rebuild complete without operator action, and note its duration"
+    },
+    {
+      "text": "Performance is tested with many machines and disks at once, against the current platform's baseline and a pass mark agreed beforehand",
+      "how": "Run the customer's own load test, not one machine with one disk, and compare with the baseline"
     }
   ],
   "readiness": [
@@ -35,6 +39,7 @@
     "Switch ports, VLANs and uplinks agreed with the network team, with two switches for redundancy",
     "The servers in the test checked against the platform's supported hardware list",
     "Test workloads chosen, with their owners, and a way to generate load",
-    "The failures to test agreed: a disk, a server, a network link"
+    "The failures to test agreed: a disk, a server, a network link",
+    "If existing storage arrays are to be used: their model and software version, and the servers' boot devices, checked against the supported list"
   ]
 }

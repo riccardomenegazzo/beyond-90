@@ -76,6 +76,13 @@
       "why": "Separating hot from cold data, and deciding where to compress or deduplicate, is where cost and performance are won.",
       "need": "Workloads are grouped by the performance they need, with data reduction used where it pays off",
       "how": "Group workloads by performance tier and agree where compression and deduplication apply"
+    },
+    {
+      "stage": "L4",
+      "q": "Could a tested platform update be pre-approved as routine and run during the working day?",
+      "why": "Updates that need a weekend get postponed, and a platform that falls behind becomes a risk.",
+      "need": "Tested platform updates are pre-approved and run during the working day, without downtime",
+      "how": "Agree with change management a pre-approved path for tested updates"
     }
   ]
 }

@@ -62,6 +62,55 @@
       "why": "Shadow AI is the first estate to bring under governance.",
       "need": "AI use across the business is known: who uses which models and services, with which data",
       "how": "Survey teams and network logs for AI services already in use"
+    },
+    {
+      "stage": "value",
+      "q": "Who owns AI in the business, and is the programme followed by the board?",
+      "why": "The owner of the AI programme decides what gets built and funded; infrastructure follows.",
+      "need": "The AI programme has a named owner, goals the board follows, and a seat for infrastructure",
+      "how": "Find out who sponsors AI and bring them a concrete use case"
+    },
+    {
+      "stage": "value",
+      "q": "Is AI cost measured per finished piece of work rather than per token, and could the model behind an application be swapped without code changes?",
+      "why": "Cheaper tokens can still make a dearer result if a model needs many more of them; and a model wired into code cannot follow better offers.",
+      "need": "Each use case has a known cost per finished piece of work, and applications reach models through one shared endpoint, so the model can change",
+      "how": "Cost one use case end to end on two models, and put a shared endpoint between applications and models"
+    },
+    {
+      "stage": "L1",
+      "q": "Where do your models run today (a hosted service, a public cloud, a GPU cloud, your own data centre), and how is each paid for?",
+      "why": "Each place is billed differently: per token, per hour, or owned; the mix decides the cost.",
+      "need": "Every place models run is known, with how it is billed",
+      "how": "List each model in use, where it runs and how it is paid for"
+    },
+    {
+      "stage": "L2",
+      "q": "Which AI work is at which stage: answers from your documents, coding assistants, applications with agents, agents that run on their own?",
+      "why": "Each stage needs more control than the last; where each team is says what to build first.",
+      "need": "Each AI initiative is placed at its stage, with the controls that stage needs",
+      "how": "Place each initiative at its stage, with its owner"
+    },
+    {
+      "stage": "L3",
+      "q": "How will GPUs be shared between teams, with limits, isolation and usage per team?",
+      "why": "Scarce GPUs without quotas go to whoever asks first, and nobody can see who uses what.",
+      "need": "GPUs are shared with quotas, isolation and metering per team",
+      "how": "Agree quotas per team and turn on usage metering"
+    },
+    {
+      "stage": "L3",
+      "q": "Must any of it run disconnected from the internet, or to a hardening standard?",
+      "why": "Air-gapped and hardened deployments change how models, updates and support reach the platform.",
+      "need": "Use cases that need an air gap or a hardening standard are known and planned for",
+      "how": "List the use cases that need an air gap or a hardening standard"
+    },
+    {
+      "stage": "L4",
+      "q": "How much new data will each AI pipeline create, and where will it live and be protected?",
+      "why": "Embeddings, checkpoints and logs multiply the data; unplanned, they fill the fastest storage.",
+      "need": "The data each pipeline creates is sized, placed and protected",
+      "how": "Estimate the data each pipeline creates and give it a place and a protection policy"
     }
   ]
 }

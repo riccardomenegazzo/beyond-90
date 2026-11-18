@@ -76,6 +76,34 @@
       "why": "Moving a database like for like is fast; rebuilding it is the moment to fix versions, layout and licences.",
       "need": "Every database server has a decision: move as it is, or rebuild on purpose",
       "how": "Review each database server with its DBA and decide move or rebuild"
+    },
+    {
+      "stage": "value",
+      "q": "What will be visibly better for users and the business after the move, beyond a different platform?",
+      "why": "A move that changes nothing visible is judged only by its cost and its disruption.",
+      "need": "Each wave brings an improvement the business can see, named before it starts",
+      "how": "Agree one visible improvement per wave with its application owner"
+    },
+    {
+      "stage": "L3",
+      "q": "Who checks each application after its move, and against which baseline?",
+      "why": "Without a baseline, \"it feels slower\" cannot be answered, and sign-off drifts.",
+      "need": "Every application has an owner who tests it against a baseline taken before the move, then signs off or rolls back",
+      "how": "Take performance baselines before the first wave and name who signs off each application"
+    },
+    {
+      "stage": "L3",
+      "q": "Will machines get their labels as they move, so protection and security apply on arrival?",
+      "why": "Labelling after the move leaves a window in which machines run unprotected.",
+      "need": "Machines are labelled as they move, and protection and security policies apply on arrival",
+      "how": "Map labels to policies before the first wave and put labelling in the runbook"
+    },
+    {
+      "stage": "L4",
+      "q": "What comes after the move: which services should the platform offer in one, two and three years?",
+      "why": "The plan after the migration is where the platform pays back; without one, the move stops at a replacement.",
+      "need": "A dated plan for the services after the migration is agreed, with an owner",
+      "how": "Write the next services (self-service, databases, containers, recovery) into a dated roadmap"
     }
   ]
 }

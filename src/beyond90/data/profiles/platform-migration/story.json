@@ -1,0 +1,40 @@
+{
+  "audiences": {
+    "executive": "Leave the current platform on your own timeline, with each application owner signing off its move, and come out with a better service, not just a new platform.",
+    "technical": "Moves in waves, each with a runbook, a rollback and a check against a baseline; policies applied as machines arrive; addresses kept.",
+    "financial": "The cost of change weighed against the next renewal and the hardware that can stay; the return is in what runs better afterwards, not only in licences."
+  },
+  "people": [
+    "The sponsor who owns the decision and the renewal date",
+    "Application owners, who sign off each move",
+    "The network and storage teams",
+    "Change management and the service desk",
+    "Finance, for the renewal and the hardware still being paid for"
+  ],
+  "objections": [
+    {
+      "says": "A migration is a risk we cannot take this year.",
+      "clarify": "Which applications carry the risk, and what does staying through the next renewal cost?",
+      "answer": "Start with the wave that teaches the most for the least risk, with a rollback written before anything moves.",
+      "prove": "Move a test wave with its runbook, and roll one machine back on purpose."
+    },
+    {
+      "says": "It changes nothing for the business: the same machines on another platform.",
+      "clarify": "What would be visibly better for users or the business after the move?",
+      "answer": "Tie each wave to an improvement people can see: protection on arrival, self-service, faster changes, updates in working hours.",
+      "prove": "Show one visible improvement working on the migrated test wave, signed off by its owner."
+    },
+    {
+      "says": "We cannot change IP addresses or our tools.",
+      "clarify": "Which tools must keep working (backup, monitoring, security), and which addresses are written into applications?",
+      "answer": "Keep the addresses and integrate the tools that stay; re-addressing is not a condition of the move.",
+      "prove": "Migrate test machines without changing their addresses, and see them in the current monitoring and backup tools."
+    },
+    {
+      "says": "Our team has no time to run a migration.",
+      "clarify": "Who would do the work today, and in which change windows?",
+      "answer": "Plan waves that fit the windows, automate the repetitive steps, and agree who does what among the customer, a partner and us.",
+      "prove": "Time a test wave end to end and build the plan from that time, not from estimates."
+    }
+  ]
+}

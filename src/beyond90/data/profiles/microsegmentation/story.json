@@ -1,0 +1,33 @@
+{
+  "audiences": {
+    "executive": "Limit how far an attacker can get once inside, and prove to auditors that environments are kept apart.",
+    "technical": "See east-west traffic first, label machines by application, then allow only what each application needs; quarantine in one step.",
+    "financial": "Fewer internal firewalls and rule reviews; an incident contained before it becomes a recovery."
+  },
+  "people": [
+    "Network security",
+    "Application owners, who know what their applications need",
+    "The security operations team",
+    "Compliance or audit"
+  ],
+  "objections": [
+    {
+      "says": "Microsegmentation projects never finish.",
+      "clarify": "Where did past ones stall: mapping traffic, writing rules, or finding owners?",
+      "answer": "Start with visibility and one boundary between environments, then one application at a time, watched before enforced.",
+      "prove": "Map one application's traffic and enforce its policy after a monitoring period, without breaking it."
+    },
+    {
+      "says": "Enforcing rules will break applications.",
+      "clarify": "Which applications are the most fragile, and who answers for them?",
+      "answer": "Run policies in monitoring mode first; enforce only what has been seen and agreed with the owner.",
+      "prove": "Run a policy in monitoring mode for a week, review what it would have blocked with the owner, then enforce it."
+    },
+    {
+      "says": "Our firewalls already do this.",
+      "clarify": "Do they see traffic between machines on the same network, and follow machines when they move?",
+      "answer": "Keep the perimeter firewalls; add policies that sit with each machine and move with it.",
+      "prove": "Block a connection between two machines on the same network, move one of them, and try again."
+    }
+  ]
+}

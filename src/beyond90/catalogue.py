@@ -81,6 +81,32 @@ class Playbook:
     we_commit: str = ""           # what the TAM promises to bring, with a date
 
 
+AUDIENCES = ("executive", "technical", "financial")
+OBJECTION_KEYS = ("says", "clarify", "answer", "prove")
+
+
+def read_story(path: Path) -> dict[str, Any]:
+    """story.json: the line in one sentence per audience, who to involve, and the objections to expect, each with
+    the question to ask before answering, the answer, and how to prove it. Checked here, so the page can trust it."""
+    doc = json.loads(path.read_text(encoding="utf-8"))
+    bad = f"catalogue: {path}: "
+    aud = doc.get("audiences", {})
+    if not isinstance(aud, dict) or not set(aud) <= set(AUDIENCES) or not all(isinstance(v, str) and 0 < len(v) <= 240 for v in aud.values()):
+        raise ValueError(bad + "audiences are executive, technical and financial, each one sentence of at most 240 characters")
+    people = doc.get("people", [])
+    if not isinstance(people, list) or len(people) > 6 or not all(isinstance(v, str) and 0 < len(v) <= 160 for v in people):
+        raise ValueError(bad + "people is a list of at most 6 roles, each at most 160 characters")
+    objections = doc.get("objections", [])
+    if not isinstance(objections, list) or len(objections) > 8:
+        raise ValueError(bad + "at most 8 objections")
+    for o in objections:
+        if not isinstance(o, dict) or set(o) != set(OBJECTION_KEYS) or not all(isinstance(o[k], str) and 0 < len(o[k]) <= 240 for k in OBJECTION_KEYS):
+            raise ValueError(bad + "each objection has says, clarify, answer and prove, each at most 240 characters")
+        if len(o["prove"]) > 200:     # it becomes a success criterion of the proof of value, which holds 200
+            raise ValueError(bad + "an objection's proof is at most 200 characters")
+    return {"audiences": {k: aud[k] for k in AUDIENCES if k in aud}, "people": list(people), "objections": [{k: o[k] for k in OBJECTION_KEYS} for o in objections]}
+
+
 class Catalogue:
     def __init__(
         self,
@@ -98,6 +124,7 @@ class Catalogue:
         pov_criteria: Optional[list[dict[str, str]]] = None,
         discovery: Optional[list[dict[str, str]]] = None,
         pov_readiness: Optional[list[str]] = None,
+        story: Optional[dict[str, Any]] = None,
     ) -> None:
         self.resource_types = resource_types
         self.expected = expected
@@ -110,6 +137,7 @@ class Catalogue:
         self.description = description
         self.use_cases = use_cases or {}
         self.pov_criteria = pov_criteria or []
+        self.story = story or {}                   # how to tell it to each audience, who to involve, objections to expect (story.json)
         self.pov_readiness = pov_readiness or []   # what must be in place before a proof of value starts (pov.json)
         self.discovery = discovery or []          # questions to ask the customer, each tied to a stage (discovery.json)   # suggested proof of value criteria for this kind of product (pov.json)
         self.rubric = rubric or {"levels": ["bronze", "silver", "gold"], "checks": []}
@@ -161,6 +189,8 @@ class Catalogue:
                      for x in json.loads(disc_file.read_text(encoding="utf-8"))["questions"]] if disc_file.exists() else []
         if any(x["stage"] not in ("value", "L1", "L2", "L3", "L4") for x in discovery):
             raise ValueError(f"catalogue: {disc_file}: each question's stage is value, L1, L2, L3 or L4")
+        story_file = base / "story.json"   # never inherited: each kind of product is told, and challenged, its own way
+        story = read_story(story_file) if story_file.exists() else {}
         validate_rubric(rubric)
         rt = json.loads(files[0].read_text(encoding="utf-8"))
         mods = json.loads(files[1].read_text(encoding="utf-8"))
@@ -213,7 +243,7 @@ class Catalogue:
             unknown = [t for t in types if t not in rt["types"]]
             if unknown:
                 raise ValueError(f"catalogue: provider {provider} expects undefined types {unknown}")
-        return cls(rt["types"], rt["expected"], modules, playbooks, rt["version"], digest, name if directory else profile, rt.get("terms"), rt.get("description", ""), rubric, mods.get("use_cases", {}), pov, discovery, pov_readiness)
+        return cls(rt["types"], rt["expected"], modules, playbooks, rt["version"], digest, name if directory else profile, rt.get("terms"), rt.get("description", ""), rubric, mods.get("use_cases", {}), pov, discovery, pov_readiness, story)
 
     def expected_types(self, provider: str) -> list[str]:
         return list(self.expected.get(provider, []))

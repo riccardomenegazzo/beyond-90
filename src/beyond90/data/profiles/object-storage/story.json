@@ -1,0 +1,33 @@
+{
+  "audiences": {
+    "executive": "Backups and records that must not change kept safe from deletion, at low cost, in the country you choose.",
+    "technical": "S3-compatible buckets with object lock, replication, tenants and encryption keys under your control.",
+    "financial": "Cheaper per terabyte than block or file for backups and archives, with no charge for reading back data kept on premises."
+  },
+  "people": [
+    "The backup owner",
+    "Application teams that write to S3",
+    "Security, for keys and immutability",
+    "Compliance, for retention rules"
+  ],
+  "objections": [
+    {
+      "says": "We will just use a public cloud bucket.",
+      "clarify": "How much is read back each month, and must the data stay in the country?",
+      "answer": "Compare the total, including reads and transfer out, and where the data must live.",
+      "prove": "Model the monthly cost of the test dataset, read-back included, here and in a public bucket."
+    },
+    {
+      "says": "On premises, an administrator can always delete.",
+      "clarify": "Who can delete today, and what would an auditor accept as proof?",
+      "answer": "Use a retention lock that no account can lift before it expires, and show it.",
+      "prove": "Try to delete a locked object with the most powerful administrator account."
+    },
+    {
+      "says": "Our backup software may not support it.",
+      "clarify": "Which product and version, and which features: lock, tiering?",
+      "answer": "Check the compatibility of the exact versions in use, and test them.",
+      "prove": "Run a backup and a restore with the customer's own backup software against a locked bucket."
+    }
+  ]
+}

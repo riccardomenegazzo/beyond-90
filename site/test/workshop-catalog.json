@@ -111,6 +111,13 @@
      "why": "Separating hot from cold data, and deciding where to compress or deduplicate, is where cost and performance are won.",
      "need": "Workloads are grouped by the performance they need, with data reduction used where it pays off",
      "how": "Group workloads by performance tier and agree where compression and deduplication apply"
+    },
+    {
+     "stage": "L4",
+     "q": "Could a tested platform update be pre-approved as routine and run during the working day?",
+     "why": "Updates that need a weekend get postponed, and a platform that falls behind becomes a risk.",
+     "need": "Tested platform updates are pre-approved and run during the working day, without downtime",
+     "how": "Agree with change management a pre-approved path for tested updates"
     }
    ],
    "proof": [
@@ -141,6 +148,10 @@
     {
      "text": "After a server is lost, the platform rebuilds every missing copy on its own, and the time it took is recorded",
      "how": "Power off a server under load, watch the rebuild complete without operator action, and note its duration"
+    },
+    {
+     "text": "Performance is tested with many machines and disks at once, against the current platform's baseline and a pass mark agreed beforehand",
+     "how": "Run the customer's own load test, not one machine with one disk, and compare with the baseline"
     }
    ],
    "readiness": [
@@ -149,8 +160,48 @@
     "Switch ports, VLANs and uplinks agreed with the network team, with two switches for redundancy",
     "The servers in the test checked against the platform's supported hardware list",
     "Test workloads chosen, with their owners, and a way to generate load",
-    "The failures to test agreed: a disk, a server, a network link"
-   ]
+    "The failures to test agreed: a disk, a server, a network link",
+    "If existing storage arrays are to be used: their model and software version, and the servers' boot devices, checked against the supported list"
+   ],
+   "story": {
+    "audiences": {
+     "executive": "One platform for every application, run by a smaller team, that grows a server at a time instead of in a refresh every five years.",
+     "technical": "Compute, storage and networking managed as one, upgraded without downtime, with protection and security set by policy.",
+     "financial": "Capacity bought when it is needed, not years ahead; fewer tools and contracts to renew; hardware still supported stays in use."
+    },
+    "people": [
+     "The infrastructure lead who runs the current platform",
+     "The storage and network owners, whose work changes",
+     "An application owner with a workload to test",
+     "Whoever signs the next refresh or renewal"
+    ],
+    "objections": [
+     {
+      "says": "This is fine for small sites, not for our core applications.",
+      "clarify": "Which applications, and what do they need: latency, throughput, capacity?",
+      "answer": "Agree the numbers that matter for those applications and test them, rather than argue about architecture.",
+      "prove": "Run the agreed workload mix, many machines and disks at once, against the current platform's baseline."
+     },
+     {
+      "says": "The platform's own services take resources away from our workloads.",
+      "clarify": "Is the concern resources reserved, resources actually used, or licences counted on them?",
+      "answer": "Separate what is allocated from what is consumed, and size with the platform's own services counted from the start.",
+      "prove": "Measure consumption under the agreed load and compare the usable capacity with the sizing sketch."
+     },
+     {
+      "says": "We have just bought new storage arrays.",
+      "clarify": "Until when are they supported, and which workloads must stay on them?",
+      "answer": "Keep them where they still make sense: compute can move first, and data can follow when the arrays reach the end of support.",
+      "prove": "Run test machines on the new platform with their disks still on the existing array, at the agreed performance."
+     },
+     {
+      "says": "Our storage team would have nothing left to do.",
+      "clarify": "Is this about people, skills, or control over data protection?",
+      "answer": "Their work moves from looking after arrays to setting protection, capacity and recovery policies for the whole platform.",
+      "prove": "Have the storage team run a restore and a capacity forecast themselves during the test."
+     }
+    ]
+   }
   },
   "dr-backup": {
    "label": "Disaster recovery and backup",
@@ -268,7 +319,47 @@
     "Address, DNS and firewall changes for the recovery site listed",
     "An administrator account to try to delete the copies with, agreed with security",
     "Who starts the test, who watches it, and who signs the result"
-   ]
+   ],
+   "story": {
+    "audiences": {
+     "executive": "Know how long the business can be down and how much data it can lose, and prove it recovers within that, ransomware included.",
+     "technical": "Recovery objectives per application, protection by policy, dependent applications recovered together and in order, tested without touching production.",
+     "financial": "Pay for the recovery each application needs, not the same for all; no full recovery site sitting idle at full cost."
+    },
+    "people": [
+     "The business owner who can put a number on a day down",
+     "The backup and recovery team",
+     "Security, for ransomware and copies that cannot be changed",
+     "Owners of the most critical applications",
+     "Audit or compliance, if recovery tests must be evidenced"
+    ],
+    "objections": [
+     {
+      "says": "We already have backups.",
+      "clarify": "When did you last restore a whole application, and how long did it take?",
+      "answer": "Backups are copies; recovery is a tested time. Start from the time the business needs and test against it.",
+      "prove": "Restore a whole application in a test and time it against its agreed objective."
+     },
+     {
+      "says": "A second site is too expensive.",
+      "clarify": "Which applications really need minutes, and which can wait hours?",
+      "answer": "Tier the applications: few need a standing copy elsewhere; the rest can recover from cheaper storage or a site that grows when needed.",
+      "prove": "Recover one application from each tier and record the time, and what keeping it ready costs."
+     },
+     {
+      "says": "Testing recovery would disrupt production.",
+      "clarify": "What made past tests disruptive: the network, the people, the data?",
+      "answer": "Test on an isolated network, from copies, while production keeps running.",
+      "prove": "Run a test failover on an isolated network in working hours, with no impact on production."
+     },
+     {
+      "says": "Ransomware would encrypt the backups too.",
+      "clarify": "Can an administrator account delete or change backups today?",
+      "answer": "Keep copies that nobody can change or delete for a set time, administrators included, and check they are clean before recovering.",
+      "prove": "Try to delete a locked copy with an administrator account, then recover from it."
+     }
+    ]
+   }
   },
   "dbaas": {
    "label": "Databases as a service",
@@ -360,7 +451,40 @@
     "A DBA and an application team ready to try self-service",
     "The columns to mask agreed with the data owner",
     "Backup target and retention for the test"
-   ]
+   ],
+   "story": {
+    "audiences": {
+     "executive": "Databases delivered in minutes to the teams that need them, protected and patched to one standard.",
+     "technical": "Provisioning, cloning, patching and point-in-time recovery for each engine, as self-service within guardrails.",
+     "financial": "Fewer full copies of production data, licences counted where databases actually run, less DBA time on routine work."
+    },
+    "people": [
+     "The DBA team lead",
+     "Development teams asking for databases",
+     "Security, for masked copies of production data",
+     "Licensing, for database licences"
+    ],
+    "objections": [
+     {
+      "says": "Our DBAs will not give up control.",
+      "clarify": "Which tasks do they want to keep, and which take their time today?",
+      "answer": "They set the standards and approve; routine provisioning, patching and cloning become self-service within those standards.",
+      "prove": "A developer gets a masked copy of a production database in minutes, under a policy the DBAs set."
+     },
+     {
+      "says": "Our databases are too critical to move.",
+      "clarify": "Which ones, on which engines and versions, and with which recovery objective?",
+      "answer": "Start with test and development copies, then the less critical, with recovery tested at each step.",
+      "prove": "Restore a database to a point in time chosen by the DBA, and check it."
+     },
+     {
+      "says": "We would need new licences.",
+      "clarify": "How are database licences counted today, and on how many cores?",
+      "answer": "Count licences against where databases will run; consolidating can reduce the cores to license.",
+      "prove": "Compare the cores the databases need on the new platform with the cores licensed today."
+     }
+    ]
+   }
   },
   "object-storage": {
    "label": "Object storage",
@@ -456,7 +580,40 @@
     "Network path and throughput between writers and the storage",
     "The residency rule for the test data",
     "A restore to time, with its target agreed"
-   ]
+   ],
+   "story": {
+    "audiences": {
+     "executive": "Backups and records that must not change kept safe from deletion, at low cost, in the country you choose.",
+     "technical": "S3-compatible buckets with object lock, replication, tenants and encryption keys under your control.",
+     "financial": "Cheaper per terabyte than block or file for backups and archives, with no charge for reading back data kept on premises."
+    },
+    "people": [
+     "The backup owner",
+     "Application teams that write to S3",
+     "Security, for keys and immutability",
+     "Compliance, for retention rules"
+    ],
+    "objections": [
+     {
+      "says": "We will just use a public cloud bucket.",
+      "clarify": "How much is read back each month, and must the data stay in the country?",
+      "answer": "Compare the total, including reads and transfer out, and where the data must live.",
+      "prove": "Model the monthly cost of the test dataset, read-back included, here and in a public bucket."
+     },
+     {
+      "says": "On premises, an administrator can always delete.",
+      "clarify": "Who can delete today, and what would an auditor accept as proof?",
+      "answer": "Use a retention lock that no account can lift before it expires, and show it.",
+      "prove": "Try to delete a locked object with the most powerful administrator account."
+     },
+     {
+      "says": "Our backup software may not support it.",
+      "clarify": "Which product and version, and which features: lock, tiering?",
+      "answer": "Check the compatibility of the exact versions in use, and test them.",
+      "prove": "Run a backup and a restore with the customer's own backup software against a locked bucket."
+     }
+    ]
+   }
   }
  }
 }

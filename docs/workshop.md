@@ -23,6 +23,20 @@ The rest of Beyond 90 reads what a customer runs. The first meetings with a pros
 
 ![Where to start: the first line, what is still missing and the path after](img/app-hurt.png)
 
+## Prepare: the message, the people, the objections
+
+**Prepare** gives each line in scope, the line to start with first:
+
+- **The line in one sentence for each audience:** the executive (what changes for the business), the technical team (how it works and is run), and finance (what it costs and saves, and when).
+- **Who to have in the room:** the roles whose work, budget or risk the line touches.
+- **The objections to expect,** each with the question to **ask first** (an objection is often about something else: an investment just made, a team's role, a test that went badly), the **answer**, and how to **prove** it.
+
+When the customer raises one, mark it. It goes to the customer readout under "What you asked us to prove", to the meeting summary under "Concerns they raised", and into the proof of value as a success criterion when it starts from the workshop. The meeting summary also tells the first line's story for each audience, for the account team.
+
+![Prepare: the line for each audience, who to bring, and the objections with the question to ask first](img/app-prepare.png)
+
+The messages, people and objections come with the product profiles (`story.json`) and are written for kinds of product, with no vendor named. Which objections were raised is kept with the workshop, like the answers.
+
 ## Their inventory
 
 In a conversation about moving off a virtualisation platform, the first numbers come from an inventory export. Under **Their inventory**, read the CSV of the sheet that lists one virtual machine per row (the vInfo sheet of a common inventory tool saved as CSV, or a hand-made sheet with columns such as name, vcpus, memory_gb, disk_gb, os, cluster). Columns are matched by name and units read from them (MiB or GiB); templates are left out.

@@ -1,0 +1,33 @@
+{
+  "audiences": {
+    "executive": "Desktops and applications people can use from anywhere, quickly, without the data leaving the data centre.",
+    "technical": "Images, profiles and pools managed centrally, with logon time watched and capacity that grows for peaks.",
+    "financial": "Fewer laptops to secure and refresh; capacity for the peak paid for only when the peak comes."
+  },
+  "people": [
+    "The end-user computing team",
+    "A representative group of users",
+    "Security, for remote access",
+    "The service desk"
+  ],
+  "objections": [
+    {
+      "says": "Users hate virtual desktops: they are slow.",
+      "clarify": "Which users and applications, and what was measured?",
+      "answer": "Measure logon and application times for real users, and agree the target before the test.",
+      "prove": "Measure the logon time of a group of real users against the agreed target."
+    },
+    {
+      "says": "Our designers and engineers cannot work on virtual desktops.",
+      "clarify": "Which applications, and how many users?",
+      "answer": "Give them GPU-backed desktops sized for their applications, and test with their own work.",
+      "prove": "A designer does a real task on a GPU-backed desktop and signs off the experience."
+    },
+    {
+      "says": "Desktops in one data centre are a single point of failure.",
+      "clarify": "What happens to users today if the site is down?",
+      "answer": "Plan a second site or cloud capacity for desktops, with profiles replicated.",
+      "prove": "Fail a test pool over and have users log on at the other site."
+    }
+  ]
+}

@@ -24,6 +24,7 @@ const MAX_ANSWERS = 400, MAX_SCOPE = 12;
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 const NONCE = /^[a-z0-9]{6,12}$/;
 const KEY = /^[a-z0-9-]{1,40}#\d{1,2}$/;
+const RAISED = /^[a-z0-9-]{1,40}#\d$/, MAX_RAISED = 40;     // an objection the customer raised: its line and its place in the line's story
 const PROFILE = /^[a-z0-9-]{1,40}$/;
 const cmp = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
 const text = (v, max) => String(v == null ? "" : v).replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim().slice(0, max);
@@ -64,6 +65,7 @@ export function validWorkshop(w) {
   if (w.prepared_by != null && (typeof w.prepared_by !== "string" || w.prepared_by.length > 80)) return false;
   if (w.inventory != null && !validSummary(w.inventory)) return false;
   if (w.sizing != null && !validAssumptions(w.sizing)) return false;
+  if (w.raised != null && !(Array.isArray(w.raised) && w.raised.length && w.raised.length <= MAX_RAISED && w.raised.every((k) => typeof k === "string" && RAISED.test(k)) && new Set(w.raised).size === w.raised.length)) return false;
   const m = /^ws\|(\d{4}-\d{2}-\d{2})\|([a-z0-9]+)$/.exec(w.id || "");
   return !!m && m[1] === w.created_on && NONCE.test(m[2]);
 }
@@ -160,6 +162,45 @@ export function setSizing(w, assumptions, today) {
   }
   return changed(next, {}, today);
 }
+
+/** Mark an objection as raised by the customer, or not: it then has to be answered, and proven. */
+export function setRaised(w, profile, index, on, today) {
+  const key = `${profile}#${index}`;
+  if (!RAISED.test(key) || !Number.isInteger(index) || index < 0) throw new Error("Not an objection of this workshop.");
+  const now = (w.raised || []).filter((k) => k !== key);
+  if (on) {
+    if (now.length >= MAX_RAISED) throw new Error(`At most ${MAX_RAISED} objections can be marked as raised.`);
+    now.push(key);
+  }
+  const next = { ...w };
+  delete next.raised;
+  if (now.length) next.raised = now;
+  return changed(next, {}, today);
+}
+
+/** How each line in scope is told and challenged: the line to start with first. Only lines whose profile ships a story. */
+export function stories(catalog, w, res) {
+  const land = res && res.land ? res.land.profile : "";
+  const order = [...w.scope].sort((a, b) => (b === land) - (a === land));
+  const raised = new Set(w.raised || []);
+  return order.filter((p) => catalog.lines[p] && catalog.lines[p].story && (catalog.lines[p].story.objections || []).length + Object.keys(catalog.lines[p].story.audiences || {}).length)
+    .map((p) => {
+      const st = catalog.lines[p].story;
+      return { profile: p, label: catalog.lines[p].label, land: p === land, audiences: st.audiences || {}, people: st.people || [],
+        objections: (st.objections || []).map((o, i) => ({ ...o, index: i, key: `${p}#${i}`, raised: raised.has(`${p}#${i}`) })) };
+    });
+}
+
+/** The objections the customer raised, with how each will be answered and proven; unknown ones (a profile changed) are skipped. */
+export function raisedObjections(catalog, w) {
+  return (w.raised || []).map((k) => {
+    const [p, i] = k.split("#");
+    const line = catalog.lines[p], o = line && line.story && (line.story.objections || [])[Number(i)];
+    return o && w.scope.includes(p) ? { profile: p, label: line.label, index: Number(i), ...o } : null;
+  }).filter(Boolean);
+}
+
+export const AUDIENCE_WORDS = { executive: "For the executive", technical: "For the technical team", financial: "For finance" };
 
 /** What the inventory says about one question, if anything. */
 export const factFor = (w, profile, index) => (w.inventory && profile === "platform-migration" ? notesFor(w.inventory)[index] || "" : "");
@@ -278,6 +319,7 @@ export function assess(catalog, w) {
     waiting: land ? "" : `Answer at least ${MIN_ANSWERED} questions on a line to see where to start.`,
     proof: land && catalog.lines[land.profile] ? catalog.lines[land.profile].proof : [],
     readiness: land && catalog.lines[land.profile] ? catalog.lines[land.profile].readiness || [] : [],
+    raised: raisedObjections(catalog, w),
   };
 }
 
@@ -366,6 +408,19 @@ export function summaryMarkdown(catalog, w, res) {
     });
   }
   if (!j) out.push("## Where to start", "", res.waiting, "");
+  const raised = res.raised || [];
+  if (raised.length) {
+    out.push("## Concerns they raised", "");
+    for (const o of raised) out.push(`- **"${o.says}"** (${o.label}). Our answer: ${o.answer} To prove it: ${o.prove}`);
+    out.push("");
+  }
+  const told = res.land ? stories(catalog, w, res).find((x) => x.land) : null;
+  if (told && Object.keys(told.audiences).length) {
+    out.push(`## How to tell it: ${told.label.toLowerCase()}`, "");
+    for (const [k, v] of Object.entries(told.audiences)) out.push(`- **${AUDIENCE_WORDS[k]}:** ${v}`);
+    if (told.people.length) out.push(`- **Who to involve next:** ${told.people.join("; ")}.`);
+    out.push("");
+  }
   if (res.unknowns.length) {
     out.push("## To find out before the next meeting", "");
     for (const u of res.unknowns) out.push(`- ${u.label}: ${u.q}`);
@@ -476,6 +531,12 @@ export function readoutHtml(catalog, w, res, { preparedBy = "", today = "" } = {
       if (!said.length && !working.length) out.push(`<li>${l.answered} question${l.answered === 1 ? "" : "s"} discussed.</li>`);
       out.push(`</ul>`);
     }
+  }
+  const raised = res.raised || [];
+  if (raised.length) {
+    out.push(`<h2>What you asked us to prove</h2><table><thead><tr><th>Your concern</th><th>How we would prove it</th></tr></thead><tbody>`);
+    for (const o of raised) out.push(`<tr><td>&ldquo;${esc(o.says)}&rdquo;</td><td>${esc(o.prove)}</td></tr>`);
+    out.push(`</tbody></table>`);
   }
   if (res.unknowns.length) {
     out.push(`<h2>For our next meeting</h2><ul>${res.unknowns.map((u) => `<li>${esc(u.q)} <span style="color:#5f6c76">(${esc(u.label.toLowerCase())})</span></li>`).join("")}</ul>`);

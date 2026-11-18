@@ -107,6 +107,13 @@ def shoot(site: Path, out: Path) -> None:
             pg.click("#tabs [data-tab=hurt]")
             pg.wait_for_timeout(500)
             pg.screenshot(path=str(out / "app-hurt.png"))
+            pg.click("#tabs [data-tab=wsprep]")
+            pg.wait_for_selector("#view .objs")
+            pg.locator("#view .obj").nth(3).get_by_role("button").click()
+            pg.wait_for_selector("#view .obj.on")
+            pg.evaluate("(() => { const c = document.querySelectorAll('#view .card')[1]; const m = document.getElementById('main'); const top = c.getBoundingClientRect().top; (m && m.scrollHeight > m.clientHeight ? m : document.scrollingElement).scrollBy(0, top - 76); })()")
+            pg.wait_for_timeout(300)
+            pg.screenshot(path=str(out / "app-prepare.png"))
 
             # the invented example: its inventory, and a first sizing sketch from it
             pg.click(".rail [data-place=start]")

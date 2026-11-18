@@ -19,6 +19,10 @@
     {
       "text": "The dependency map shows every connection of a sample application, confirmed by its owner",
       "how": "Review one application's map with its owner and look for anything missing."
+    },
+    {
+      "text": "A test wave follows its runbook end to end: go or no-go, cutover in its window, owner sign-off against the baseline, and a rehearsed rollback",
+      "how": "Run one wave as if it were production, with the go or no-go meeting and the sign-off"
     }
   ],
   "readiness": [
@@ -28,6 +32,8 @@
     "Data seeding scheduled so the cutover falls within a week of it",
     "The rollback path written down before the first move",
     "Backup and monitoring ready to watch the migrated machines",
-    "Licences and support dates of the current platform known"
+    "Licences and support dates of the current platform known",
+    "Servers to reuse checked against the new platform's supported list: model, generation, boot device and network cards",
+    "Performance baselines taken for the applications in the test wave"
   ]
 }

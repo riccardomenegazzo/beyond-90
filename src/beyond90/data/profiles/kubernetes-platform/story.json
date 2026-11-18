@@ -1,0 +1,33 @@
+{
+  "audiences": {
+    "executive": "Teams ship applications faster on a platform that is upgraded, secured and backed up the same way everywhere.",
+    "technical": "Clusters created and upgraded from one place, with storage, backup, policies and cost per team, on virtual machines or physical servers.",
+    "financial": "Fewer separate clusters and tools; cost per team visible; the same platform in the data centre and the cloud."
+  },
+  "people": [
+    "The platform engineering lead",
+    "A development team with an application to run",
+    "Security, for policies and images",
+    "Operations, for upgrades and backup"
+  ],
+  "objections": [
+    {
+      "says": "We already run open-source Kubernetes ourselves.",
+      "clarify": "How long does an upgrade take you, and who does it?",
+      "answer": "Keep an open distribution; take away the toil of lifecycle, storage and backup.",
+      "prove": "Upgrade a test cluster with running workloads, and record the time and the impact."
+    },
+    {
+      "says": "We use the cloud provider's managed Kubernetes.",
+      "clarify": "Which clusters must also run on premises or at the edge?",
+      "answer": "Manage clusters in every place with one set of policies and the same tools.",
+      "prove": "Apply one policy to a cluster on premises and one in the cloud, from the same place."
+    },
+    {
+      "says": "Stateful applications do not belong on Kubernetes.",
+      "clarify": "Which ones, and what do they need: storage performance, backup, recovery?",
+      "answer": "Give them persistent storage and application-aware backup, and test recovery.",
+      "prove": "Back up a stateful application, delete its namespace, and restore it."
+    }
+  ]
+}

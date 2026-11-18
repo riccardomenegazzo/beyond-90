@@ -2,6 +2,16 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.93.0
+
+- **Prepare the conversation.** A new view in the discovery workshop gives, for each line in scope (the line to start with first), the message in one sentence for the executive, the technical team and finance, who to have in the room, and the objections to expect: each with the question to ask before answering, the answer, and how to prove it. Mark an objection when the customer raises it: it goes to the customer readout ("What you asked us to prove"), to the meeting summary ("Concerns they raised"), and into the proof of value as a success criterion. The meeting summary also tells the first line's story for each audience.
+- **Messages and objections for every infrastructure line,** vendor-neutral (`story.json` in each profile; a test keeps vendor and product names out of the infrastructure profiles).
+- **Migration as a programme, not a replacement:** what will be visibly better after the move, an owner signing off each application against a baseline, labels applied as machines move so protection and security apply on arrival, the services planned after the migration; a test wave run end to end with its go or no-go, cutover window, sign-off and rehearsed rollback; servers to reuse checked for boot device and network cards.
+- **Hybrid cloud:** existing cloud commitments, projects on hold for late servers, software licensed per core, provider funding for the move; the test footprint priced on demand, reserved and against commitments.
+- **Private AI:** who owns AI in the business, cost per finished piece of work rather than per token, where models run and how each is paid for, the stage of each initiative, GPUs shared with quotas, air-gapped use, the data each pipeline creates; tests that compare two models on cost and quality per job and change the model without changing the application.
+- **Hyperconverged:** performance tested with many machines and disks at once against a baseline; tested platform updates pre-approved and run during the working day.
+- A connector whose API answers with something that is not JSON now says whether the response was empty or how long it was.
+
 ## 0.92.0
 
 - **A first sizing sketch.** In a discovery workshop with an inventory read, a server count with the assumptions agreed with the customer (growth, vCPU per core, memory overcommit, protection, cold data, data reduction, how full storage may get, spare servers, what one server holds). Every step of the arithmetic is shown, with what decided the count and how full each resource would be with a server lost. Protection follows the rules of distributed storage: two or three copies (at least 3 or 5 servers), or erasure coding on cold data, 4+1 at 1.25x or 4+2 at 1.5x (at least 6 or 8 servers). Storage is kept below 75% of what is left after a failure. Design notes come with it: alike servers, failure domains, data reduction measured before it is counted. In the meeting summary too. A sketch to agree the order of magnitude, not a sizing.

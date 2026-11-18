@@ -1,0 +1,39 @@
+{
+  "audiences": {
+    "executive": "One platform for every application, run by a smaller team, that grows a server at a time instead of in a refresh every five years.",
+    "technical": "Compute, storage and networking managed as one, upgraded without downtime, with protection and security set by policy.",
+    "financial": "Capacity bought when it is needed, not years ahead; fewer tools and contracts to renew; hardware still supported stays in use."
+  },
+  "people": [
+    "The infrastructure lead who runs the current platform",
+    "The storage and network owners, whose work changes",
+    "An application owner with a workload to test",
+    "Whoever signs the next refresh or renewal"
+  ],
+  "objections": [
+    {
+      "says": "This is fine for small sites, not for our core applications.",
+      "clarify": "Which applications, and what do they need: latency, throughput, capacity?",
+      "answer": "Agree the numbers that matter for those applications and test them, rather than argue about architecture.",
+      "prove": "Run the agreed workload mix, many machines and disks at once, against the current platform's baseline."
+    },
+    {
+      "says": "The platform's own services take resources away from our workloads.",
+      "clarify": "Is the concern resources reserved, resources actually used, or licences counted on them?",
+      "answer": "Separate what is allocated from what is consumed, and size with the platform's own services counted from the start.",
+      "prove": "Measure consumption under the agreed load and compare the usable capacity with the sizing sketch."
+    },
+    {
+      "says": "We have just bought new storage arrays.",
+      "clarify": "Until when are they supported, and which workloads must stay on them?",
+      "answer": "Keep them where they still make sense: compute can move first, and data can follow when the arrays reach the end of support.",
+      "prove": "Run test machines on the new platform with their disks still on the existing array, at the agreed performance."
+    },
+    {
+      "says": "Our storage team would have nothing left to do.",
+      "clarify": "Is this about people, skills, or control over data protection?",
+      "answer": "Their work moves from looking after arrays to setting protection, capacity and recovery policies for the whole platform.",
+      "prove": "Have the storage team run a restore and a capacity forecast themselves during the test."
+    }
+  ]
+}

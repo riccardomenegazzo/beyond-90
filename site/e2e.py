@@ -731,17 +731,31 @@ def main(site: str) -> int:
         check("Disaster recovery and backup" in page.inner_text("#view .wsland"), "the line that hurts most is where to start")
         check(page.locator("#view .painmap .enode.absent").count() == 2 and "2M in lost orders" in page.inner_text("#view"), "lines not discussed are dashed, and the customer's own words back the choice")
         check(page.locator("#view .flags li").count() == 2, "what nobody could answer becomes the list for the next meeting")
+        # prepare: the line for each audience, who to bring, the objections; one the customer raises goes to the proof and the readout
+        page.click("[data-tab=wsprep]")
+        page.wait_for_selector("#view .objs")
+        check("Disaster recovery and backup: start here" in page.inner_text("#view") and page.locator("#view .tellit dt").count() >= 6 and "For finance" in page.inner_text("#view .tellit"),
+              "prepare starts with the line to start with, told for the executive, the technical team and finance")
+        raised = page.locator("#view .obj").filter(has_text="Ransomware would encrypt the backups too").get_by_role("button")
+        raised.click()
+        page.wait_for_selector("#view .obj.on")
+        check(raised.get_attribute("aria-pressed") == "true" and "1 raised so far" in page.inner_text("#view"), "an objection the customer raises is marked, with the question to ask first")
+        page.click("[data-tab=hurt]")
+        page.wait_for_selector("#view .painmap")
         page.get_by_role("button", name="Start the proof of value").click()
         page.wait_for_selector("#view .promise")
         check("Recovery point and time agreed for the workloads in the test" in page.inner_text("#view"), "the proof of value starts with the first line's own checklist")
         check(state_tab(page) == "wspov" and "immutable copy" in page.inner_text("#view"), "starting the proof of value carries the first line's own criteria")
+        check("Try to delete a locked copy with an administrator account, then recover from it" in page.inner_text("#view"), "and what the customer asked us to prove")
         page.click("[data-tab=readout]")
         readout = page.frame_locator("#report").locator("body")
         check("Yes, this is possible." in readout.inner_text() and "What would need to be true" in readout.inner_text() and "pain" not in readout.inner_text().lower(),
               "the customer readout says what is possible, in the customer's language")
         check(page.frame_locator("#report").locator("script").count() == 0, "and runs nothing")
+        check("What you asked us to prove" in readout.inner_text() and "Ransomware would encrypt the backups too" in readout.inner_text(), "the readout lists the concerns the customer raised, with how each will be proven")
         page.click("[data-tab=wsummary]")
         check("Discovery: Kestrel Logistics" in page.inner_text("#doc") and "To find out before the next meeting" in page.inner_text("#doc"), "the meeting summary is ready to send")
+        check("Concerns they raised" in page.inner_text("#doc") and "How to tell it" in page.inner_text("#doc"), "and says what the customer pushed back on, and how to tell the story to each audience")
         page.reload()
         page.wait_for_selector("#demo:not([disabled])", timeout=180_000)
         page.click("#open-workshop")
@@ -1261,6 +1275,11 @@ def main(site: str) -> int:
                 apage.hover("#open-palette")
                 apage.wait_for_selector("#tip:not([hidden])")
                 bad += [f"tooltip: {v}" for v in audit()]
+                apage.click("[data-tab=wsprep]")
+                apage.wait_for_selector("#view .objs")
+                apage.locator("#view .objraise").first.click()
+                apage.wait_for_selector("#view .obj.on")
+                bad += [f"prepare: {v}" for v in audit()]
                 for place in ("saved", "help"):
                     apage.click(f".rail [data-place={place}]")
                     bad += [f"{place}: {v}" for v in audit()]
