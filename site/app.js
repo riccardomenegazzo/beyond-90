@@ -930,6 +930,7 @@ function workshopContext() {
     inventory: async (summary) => { await edit((x) => WSHOP.setInventory(x, summary, today)); showWorkshop("workshop"); },
     sizing: async (assumptions) => edit((x) => WSHOP.setSizing(x, assumptions, today)),
     raise: async (profile, i, on) => edit((x) => WSHOP.setRaised(x, profile, i, on, today)),
+    waves: async (settings) => edit((x) => WSHOP.setWaves(x, settings, today)),
     rename: async (name) => { await edit((x) => WSHOP.rename(x, name, today)); showWorkshop("workshop"); },
     setScope: async (scope) => { await edit((x) => WSHOP.setScope(x, scope, today)); showWorkshop("workshop"); },
     newWorkshop, openWorkshop, removeWorkshop, presets: WSHOP.PRESETS.map((p) => ({ ...p, scope: p.scope.filter((x) => cat.lines[x]) })).filter((p) => p.scope.length),

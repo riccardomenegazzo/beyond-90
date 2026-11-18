@@ -13,6 +13,7 @@ import * as WS from "./workshop.js";
 import * as INV from "./inventory.js";
 import * as DESK from "./desk.js";
 import * as SZ from "./sizing.js";
+import * as WV from "./waves.js";
 import { connections } from "./graph.js";
 import { headline, firstMinute, rankActions, chainText, doneSummary, funnelSegments, preview } from "./today.js";
 import { stageBars } from "./nav.js";
@@ -1631,7 +1632,7 @@ export function growView({ estate, focus, startWorkshop }) {
 const STAGE_TAG = { value: "Value", L1: "L1 connected", L2: "L2 seen", L3: "L3 switched on", L4: "L4 decided" };
 const painPct = (v) => `${Math.round(v * 100)}%`;
 
-export function workshopView({ workshop: w, catalog, list, answer, worth, rename, preparedBy, setScope, inventory, sizing, newWorkshop, openWorkshop, removeWorkshop, presets = [], go, focus }) {
+export function workshopView({ workshop: w, catalog, list, answer, worth, rename, preparedBy, setScope, inventory, sizing, waves, today, newWorkshop, openWorkshop, removeWorkshop, presets = [], go, focus }) {
   const say = h("p", { class: "note", role: "status" });
   const act = (fn) => async (...a) => { try { await fn(...a); say.textContent = ""; } catch (e) { say.textContent = e.message; } };
   let cur = w;
@@ -1724,7 +1725,8 @@ export function workshopView({ workshop: w, catalog, list, answer, worth, rename
     return h("details", { class: "card wsline", id: "ws-" + p, open: focus === p || (!focus && (li === 0 || (st.answered > 0 && st.answered < st.total))) ? "" : null }, h("summary", {}, head), h("ol", { class: "wslist" }, items));
   });
   if (focus) requestAnimationFrame(() => { const el = document.getElementById("ws-" + focus); if (el) el.scrollIntoView({ block: "start" }); });
-  return h("div", {}, meeting, inventory ? inventoryCard(w, inventory) : null, w.inventory && sizing ? sizingCard(w, sizing) : null, h("div", { class: "card wsprogcard" }, prog), lines);
+  return h("div", {}, meeting, inventory ? inventoryCard(w, inventory) : null, w.inventory && sizing ? sizingCard(w, sizing) : null,
+    w.inventory && waves ? wavesCard(w, waves, today) : null, h("div", { class: "card wsprogcard" }, prog), lines);
 }
 
 /** The customer's VM inventory: read in the page, kept as totals, shown as the numbers a sizing starts from. */
@@ -1812,6 +1814,60 @@ function sizingCard(w, sizing) {
       try { await sizing(null); } catch (e) { say.textContent = e.message; }
     } }))), say),
   { sub: "The arithmetic before the sizing tool: how many servers the inventory needs, which resource decides, and what it runs at with a server down. Every assumption is open; it is not a sizing." });
+}
+
+/** A plan in waves from the inventory: a test wave, then cluster by cluster, the same steps every time. */
+function wavesCard(w, waves, today) {
+  const a = WV.cleanWaves(w.waves || {});
+  const say = h("p", { class: "note", role: "status" });
+  const out = h("div", { class: "wvout" });
+  const start = h("input", { type: "date", value: a.start, "aria-label": "First wave on" });
+  const nums = [["per_wave", "Machines per wave at most"], ["every_days", "Days between waves"], ["pilot", "Machines in the test wave (0 for none)"]];
+  const inputs = {};
+  const off = h("input", { type: "checkbox", "aria-label": "Move the powered-off machines too" });
+  off.checked = a.include_off;
+  const current = () => {
+    const v = { start: start.value || "", include_off: off.checked };
+    for (const [k] of nums) v[k] = Number(inputs[k].value);
+    return WV.cleanWaves(v);
+  };
+  const draw = (settings) => {
+    const p = WV.planWaves(w.inventory, settings, today);
+    if (!p.ok) { put(out, h("p", { class: "note", text: p.error })); ics.hidden = true; return; }
+    const name = (wv) => (wv.test ? "Test wave" : `Wave ${wv.n}`);
+    put(out,
+      h("p", { class: "tline", text: WV.wavesLine(p) }),
+      p.past ? h("p", { class: "note", text: `${INV.fmt(p.past)} machines across the waves run operating systems past general support: check that backup, monitoring and security agents support them before their wave.` }) : null,
+      h("div", { class: "tablewrap" }, h("table", { class: "wvtable" },
+        h("thead", {}, h("tr", {}, ["Date", "Wave", "Cluster", "Machines", "vCPU", "Memory GiB", "Past support"].map((t) => h("th", { scope: "col", text: t })))),
+        h("tbody", {}, p.waves.map((wv) => h("tr", { class: wv.test ? "wvtest" : "" },
+          h("td", { text: wv.date }), h("td", { text: name(wv) }), h("td", { text: wv.cluster }), h("td", { class: "n", text: INV.fmt(wv.machines) }),
+          h("td", { class: "n", text: INV.fmt(wv.vcpu) }), h("td", { class: "n", text: INV.fmt(wv.mem_gib) }), h("td", { class: "n", text: INV.fmt(wv.past) })))))));
+    ics.hidden = false;
+  };
+  // outside what is redrawn: leaving a changed field redraws the plan, and must not take the button away mid-click
+  const ics = h("button", { class: "btn small", type: "button", text: "Add the waves to a calendar (.ics)", hidden: true,
+    onclick: () => {
+      const p = WV.planWaves(w.inventory, current(), today);
+      if (p.ok) saveBlob(WV.wavesIcs(w, p, new Date().toISOString().replace(/[-:]/g, "").slice(0, 15) + "Z"), `${w.customer.replace(/[^A-Za-z0-9]+/g, "-").replace(/^-|-$/g, "").toLowerCase() || "customer"}-waves.ics`, "text/calendar");
+    } });
+  const save = async () => { const v = current(); draw(v); try { await waves(v); say.textContent = ""; } catch (e) { say.textContent = e.message; } };
+  const grid = h("div", { class: "szgrid" },
+    h("label", { class: "szf" }, h("span", { text: "First wave on" }), start),
+    nums.map(([k, label]) => {
+      inputs[k] = h("input", { type: "number", step: "1", min: "0", value: String(a[k]), "aria-label": label });
+      inputs[k].addEventListener("change", save);
+      return h("label", { class: "szf" }, h("span", { text: label }), inputs[k]);
+    }),
+    h("label", { class: "szf wvoff" }, off, h("span", { text: "Move the powered-off machines too" })));
+  start.addEventListener("change", save);
+  off.addEventListener("change", save);
+  draw(a);
+  return card("A plan in waves", h("div", { class: "sz" }, out, h("div", { class: "btnrow" }, ics),
+    h("details", { class: "szassume" }, h("summary", { text: "The settings, to agree with the customer" }), grid),
+    h("details", { class: "szassume wvrun" }, h("summary", { text: "What every wave goes through" }),
+      h("div", { class: "wvbook" }, WV.RUNBOOK.map((r) => h("div", { class: "growproof" }, h("small", { text: r.when }), h("ul", {}, r.steps.map((x) => h("li", { text: x }))))))), say),
+  { sub: "A test wave first, from the cluster that teaches the most for the least risk; then cluster by cluster, the least risky first. Clusters move whole, so machines that talk to each other inside one stay together; dependencies across clusters still have to be checked with the owners." });
 }
 
 export function hurtView({ workshop: w, catalog, go, startPov }) {

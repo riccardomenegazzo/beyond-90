@@ -15,7 +15,7 @@ A pre-sales engineer carries many prospects at once, each at a different point: 
 ## The path through one prospect
 
 1. **Prepare:** for each line in scope, the message for the executive, the technical team and finance, who to bring, and the objections to expect, each with the question to ask first, the answer and how to prove it.
-2. **[Discovery workshop](workshop.md):** the questions for each product line in scope, the customer's answers in one click, their words and figures, their VM inventory read in the page, and a first sizing sketch with the assumptions agreed in the room.
+2. **[Discovery workshop](workshop.md):** the questions for each product line in scope, the customer's answers in one click, their words and figures, their VM inventory read in the page, a first sizing sketch with the assumptions agreed in the room, and a plan in waves with dates, a test wave first.
 3. **The journey:** "yes, this is possible", what would need to be true, the first step for each condition and who does it by when; a readout for the customer and a calendar file for the plan.
 4. **Proof of value:** opened with the first line's own criteria, what the customer asked us to prove, and the checklist for its first day (addresses, DNS and NTP, switch ports, supported hardware, the failures to test); sessions, results and the mutual plan.
 5. **After the sale:** the [estate](estate.md) shows, line by line, what really works and where to grow, and starts a new workshop on the next line.

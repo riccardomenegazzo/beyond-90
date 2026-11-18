@@ -111,7 +111,7 @@ def shoot(site: Path, out: Path) -> None:
             pg.wait_for_selector("#view .objs")
             pg.locator("#view .obj").nth(3).get_by_role("button").click()
             pg.wait_for_selector("#view .obj.on")
-            pg.evaluate("(() => { const c = document.querySelectorAll('#view .card')[1]; const m = document.getElementById('main'); const top = c.getBoundingClientRect().top; (m && m.scrollHeight > m.clientHeight ? m : document.scrollingElement).scrollBy(0, top - 76); })()")
+            pg.evaluate("(() => { const c = document.querySelectorAll('#view .card')[1]; window.scrollTo({ top: c.getBoundingClientRect().top + window.scrollY - 76, behavior: 'instant' }); })()")
             pg.wait_for_timeout(300)
             pg.screenshot(path=str(out / "app-prepare.png"))
 
@@ -125,6 +125,9 @@ def shoot(site: Path, out: Path) -> None:
             pg.evaluate("window.scrollBy(0, -90)")
             pg.wait_for_timeout(300)
             pg.screenshot(path=str(out / "app-sizing.png"))
+            pg.evaluate("(() => { const c = document.querySelector('#view .wvtable').closest('.card'); window.scrollTo({ top: c.getBoundingClientRect().top + window.scrollY - 76, behavior: 'instant' }); })()")
+            pg.wait_for_timeout(300)
+            pg.screenshot(path=str(out / "app-waves.png"))
 
             # the presales desk, filled with invented prospects at four stages
             pg.click(".rail [data-place=start]")

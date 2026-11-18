@@ -66,6 +66,18 @@ Design notes follow the assumptions: keep the servers alike (the capacity left a
 
 It is a sketch, to agree the order of magnitude and the assumptions with the customer, not a sizing: the vendor's sizing tool, with the measured workload, has the last word. The assumptions are kept with the workshop and shown in the meeting summary.
 
+## A plan in waves
+
+From the same inventory, **A plan in waves** proposes how the move would run: a test wave first, from the cluster that teaches the most for the least risk, then cluster by cluster, the least risky first (fewest machines past support, smallest). Clusters move whole, so machines that talk to each other inside one stay together; dependencies across clusters still have to be checked with the application owners.
+
+The settings are agreed with the customer: the date of the first wave (two weeks out by default), the most machines in one wave, the days between waves, how many machines the test wave takes, and whether powered-off machines move or are left to retire. Each wave shows its date, cluster, machines, vCPU, memory and how many run operating systems past support, so tools and agents can be checked for them first.
+
+Every wave goes through the same steps. Before: owners named and the change approved, a performance baseline, data copied ahead, the rollback written down, backup and monitoring ready. On the day: go or no-go, cutover inside the window, each owner testing against the baseline, sign-off or rollback by the agreed time. After: labels and policies checked on every moved machine, lessons into the next wave's runbook, old machines kept off for an agreed period, then removed.
+
+**Add the waves to a calendar** downloads one event per wave. The plan is in the meeting summary, and in the customer readout under "How the move would run". Only totals and cluster names are used.
+
+![A plan in waves: a test wave, then cluster by cluster, with dates and what each wave carries](img/app-waves.png)
+
 ## How "still missing" is counted
 
 For each line, a real gap counts 1, nobody knows 0.6 (not knowing is itself a finding), partly 0.5 and solved 0; answers to business-value questions count double. What is still missing is that sum over the most it could be for the questions answered. The line to start with is the one with the most still missing, weighted a little by how much of it was explored, so a line heard about twice does not beat one explored in eight questions.

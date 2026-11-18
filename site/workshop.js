@@ -9,6 +9,8 @@
 
 import { validSummary, notesFor, fmt } from "./inventory.js";
 import { validAssumptions, sketch, sketchMarkdown } from "./sizing.js";
+import { validWaves, planWaves, wavesMarkdown, wavesLine, RUNBOOK } from "./waves.js";
+import { calendar } from "./ics.js";
 
 export const ANSWERS = {
   solved: { label: "Solved", weight: 0 },
@@ -65,6 +67,7 @@ export function validWorkshop(w) {
   if (w.prepared_by != null && (typeof w.prepared_by !== "string" || w.prepared_by.length > 80)) return false;
   if (w.inventory != null && !validSummary(w.inventory)) return false;
   if (w.sizing != null && !validAssumptions(w.sizing)) return false;
+  if (w.waves != null && !validWaves(w.waves)) return false;
   if (w.raised != null && !(Array.isArray(w.raised) && w.raised.length && w.raised.length <= MAX_RAISED && w.raised.every((k) => typeof k === "string" && RAISED.test(k)) && new Set(w.raised).size === w.raised.length)) return false;
   const m = /^ws\|(\d{4}-\d{2}-\d{2})\|([a-z0-9]+)$/.exec(w.id || "");
   return !!m && m[1] === w.created_on && NONCE.test(m[2]);
@@ -159,6 +162,17 @@ export function setSizing(w, assumptions, today) {
   if (assumptions) {
     if (!validAssumptions(assumptions)) throw new Error("One of the sizing assumptions is out of range.");
     next.sizing = assumptions;
+  }
+  return changed(next, {}, today);
+}
+
+/** The settings of the plan in waves, or null to go back to the defaults. */
+export function setWaves(w, settings, today) {
+  const next = { ...w };
+  delete next.waves;
+  if (settings) {
+    if (!validWaves(settings)) throw new Error("One of the wave settings is out of range.");
+    next.waves = settings;
   }
   return changed(next, {}, today);
 }
@@ -381,6 +395,8 @@ export function summaryMarkdown(catalog, w, res) {
     out.push("## Where they start from", "", inventoryLine(w.inventory), "");
     const sk = sketch(w.inventory, w.sizing || {});
     if (sk.ok) out.push(sketchMarkdown(sk), "");
+    const pw = planWaves(w.inventory, w.waves || {}, w.updated_on);
+    if (pw.ok) out.push(wavesMarkdown(pw), "");
   }
   out.push("## What we heard", "");
   for (const l of res.lines) {
@@ -532,6 +548,13 @@ export function readoutHtml(catalog, w, res, { preparedBy = "", today = "" } = {
       out.push(`</ul>`);
     }
   }
+  const pw = w.inventory ? planWaves(w.inventory, w.waves || {}, w.updated_on) : null;
+  if (pw && pw.ok) {
+    out.push(`<h2>How the move would run</h2><p>${esc(wavesLine(pw))} A first plan from the inventory, to adjust with the application owners.</p>`);
+    out.push(`<table><thead><tr><th>Date</th><th>Wave</th><th>Cluster</th><th>Machines</th></tr></thead><tbody>`);
+    for (const wv of pw.waves) out.push(`<tr><td class="st">${esc(wv.date)}</td><td>${wv.test ? "Test wave" : `Wave ${wv.n}`}</td><td>${esc(wv.cluster)}</td><td>${wv.machines}</td></tr>`);
+    out.push(`</tbody></table><div class="proof"><b>Every wave, the same steps</b><ul>${RUNBOOK.map((r) => `<li><b>${esc(r.when)}:</b> ${esc(r.steps.join("; "))}.</li>`).join("")}</ul></div>`);
+  }
   const raised = res.raised || [];
   if (raised.length) {
     out.push(`<h2>What you asked us to prove</h2><table><thead><tr><th>Your concern</th><th>How we would prove it</th></tr></thead><tbody>`);
@@ -555,34 +578,10 @@ export function datedPlan(j) {
     .sort((a, b) => cmp(a.by, b.by) || cmp(a.need, b.need));
 }
 
-const icsText = (v) => String(v).replace(/\\/g, "\\\\").replace(/;/g, "\;").replace(/,/g, "\\,").replace(/\r?\n/g, "\\n");
-const octets = (t) => new TextEncoder().encode(t).length;
-// lines longer than 75 octets are folded, as the calendar format asks
-function fold(line) {
-  const out = [];
-  let rest = line;
-  while (octets(rest) > 74) {
-    let cut = 74;
-    while (octets(rest.slice(0, cut)) > 74) cut--;
-    out.push(rest.slice(0, cut));
-    rest = " " + rest.slice(cut);
-  }
-  out.push(rest);
-  return out.join("\r\n");
-}
-
 /** One all-day event per dated condition, for any calendar. Nothing in it but what the plan says. */
 export function planIcs(w, j, stamp) {
-  const dt = (d) => d.replace(/-/g, "");
-  const next = (d) => { const x = new Date(d + "T00:00:00Z"); x.setUTCDate(x.getUTCDate() + 1); return x.toISOString().slice(0, 10).replace(/-/g, ""); };
-  const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Beyond 90//Discovery plan//EN", "CALSCALE:GREGORIAN", "METHOD:PUBLISH"];
-  for (const c of datedPlan(j)) {
-    lines.push("BEGIN:VEVENT", `UID:${w.id.replace(/\|/g, "-")}-${c.profile}-${c.index}@beyond90`, `DTSTAMP:${stamp}`,
-      `DTSTART;VALUE=DATE:${dt(c.by)}`, `DTEND;VALUE=DATE:${next(c.by)}`,
-      fold(`SUMMARY:${icsText(`${w.customer}: ${c.need}`)}`),
-      fold(`DESCRIPTION:${icsText(`${c.step}. First step: ${c.how}.${c.who ? ` Owner: ${WHO[c.who].toLowerCase()}.` : ""}`)}`),
-      "END:VEVENT");
-  }
-  lines.push("END:VCALENDAR");
-  return lines.join("\r\n") + "\r\n";
+  return calendar("Discovery plan", datedPlan(j).map((c) => ({
+    uid: `${w.id.replace(/\|/g, "-")}-${c.profile}-${c.index}`, date: c.by, summary: `${w.customer}: ${c.need}`,
+    description: `${c.step}. First step: ${c.how}.${c.who ? ` Owner: ${WHO[c.who].toLowerCase()}.` : ""}`,
+  })), stamp);
 }

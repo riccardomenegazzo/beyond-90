@@ -1049,3 +1049,11 @@ ol.deskfunnel{list-style:none;margin:0;padding:0;display:grid;grid-template-colu
 .objdl dt{font-weight:700;color:var(--ink2)}
 .objdl dd{margin:0}
 @media (max-width:700px){.tellit,.objdl{grid-template-columns:1fr}.tellit dd,.objdl dd{margin-bottom:6px}.objhead{flex-direction:column}}
+/* the plan in waves */
+.wvtable{width:100%;border-collapse:collapse;font-size:14px}
+.wvtable th,.wvtable td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line)}
+.wvtable th{font-size:12.5px;color:var(--ink2)}
+.wvtable td.n,.wvtable th:nth-child(n+4){text-align:right;font-variant-numeric:tabular-nums}
+.wvtable tr.wvtest td{background:var(--accent-soft);font-weight:600}
+.wvoff{display:flex;gap:8px;align-items:center;grid-column:1/-1}
+.wvbook{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));margin-top:10px}

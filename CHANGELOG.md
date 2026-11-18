@@ -2,6 +2,18 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.94.0
+
+- **A plan in waves.** From the VM inventory read in a discovery workshop:
+  - a test wave first, from the cluster that teaches the most for the least risk, then cluster by cluster, the least risky first;
+  - each wave capped in size and spaced in time, with its date, machines, vCPU, memory and how many machines run operating systems past support;
+  - settings agreed with the customer: first date, the most machines per wave, the days between waves, the size of the test wave, and whether powered-off machines move or are retired;
+  - the same steps for every wave: before (owners, approval, baseline, data copied ahead, rollback written down), on the day (go or no-go, cutover in the window, test against the baseline, sign-off or rollback), and after (policies checked, lessons into the next wave, old machines removed after an agreed period);
+  - one calendar event per wave, plus a place in the meeting summary and in the customer readout ("How the move would run").
+
+  Only totals and cluster names are used.
+- **Fixed:** calendar files now escape semicolons in text as the format requires. Before, a customer name with a semicolon could split a calendar entry.
+
 ## 0.93.0
 
 - **Prepare the conversation.** A new view in the discovery workshop gives, for each line in scope (the line to start with first), the message in one sentence for the executive, the technical team and finance, who to have in the room, and the objections to expect: each with the question to ask before answering, the answer, and how to prove it. Mark an objection when the customer raises it: it goes to the customer readout ("What you asked us to prove"), to the meeting summary ("Concerns they raised"), and into the proof of value as a success criterion. The meeting summary also tells the first line's story for each audience.

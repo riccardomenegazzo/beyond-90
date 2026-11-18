@@ -252,7 +252,7 @@ test("the dated plan goes to a calendar file that any calendar reads", async () 
   assert.ok(ics.startsWith("BEGIN:VCALENDAR\r\n") && ics.endsWith("END:VCALENDAR\r\n"));
   assert.equal((ics.match(/BEGIN:VEVENT/g) || []).length, 2);
   assert.match(ics, /DTSTART;VALUE=DATE:20261130\r\nDTEND;VALUE=DATE:20261201/);
-  assert.match(ics, /SUMMARY:Acme\; Rivers\\, Inc: /, "commas and semicolons are escaped");
+  assert.match(ics, /SUMMARY:Acme\\; Rivers\\, Inc: /, "commas and semicolons are escaped, as the calendar format asks");
   for (const line of ics.split("\r\n")) assert.ok(new TextEncoder().encode(line).length <= 75, line);
   assert.ok(!/\n(?<!\r\n)/.test(ics.replace(/\r\n/g, "")), "every line ends with CRLF");
   assert.equal(m.planIcs(w, null, "20261118T000000Z").includes("VEVENT"), false);
