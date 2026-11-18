@@ -170,6 +170,9 @@ def shoot(site: Path, out: Path) -> None:
             pg.wait_for_selector("#desk-body :text('Pietra Bank')")
             pg.wait_for_timeout(400)
             pg.screenshot(path=str(out / "app-desk.png"))
+            pg.evaluate("(() => { const c = [...document.querySelectorAll('#desk-body .card')].find((x) => x.textContent.includes('What the deals teach')); if (c) window.scrollTo({ top: c.getBoundingClientRect().top + window.scrollY - 76, behavior: 'instant' }); })()")
+            pg.wait_for_timeout(300)
+            pg.screenshot(path=str(out / "app-lessons.png"))
             pg.click(".rail [data-place=start]")
             pg.locator("#hero-roles [data-role=core]").click()
 

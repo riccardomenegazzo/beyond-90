@@ -20,6 +20,7 @@ import * as GPU from "./gpu.js";
 import * as DRS from "./drsketch.js";
 import * as NM from "./nextmeeting.js";
 import * as OBJ from "./objsketch.js";
+import * as LS from "./lessons.js";
 import { connections } from "./graph.js";
 import { headline, firstMinute, rankActions, chainText, doneSummary, funnelSegments, preview } from "./today.js";
 import { stageBars } from "./nav.js";
@@ -1356,6 +1357,22 @@ export function asksView({ result, asks, today, addAsk, setAskStatus, removeAsk 
 
 // ------------------------------------------------------------------ proof of value
 let povPick = "";
+/** How the deal ended, and why: recorded on the proof of value, read back by the desk's lessons. */
+function dealOutcomeCard(p, today, edit) {
+  const o = p.outcome || { result: "", reason: "", note: "", on: today };
+  const result = h("select", { "aria-label": "Outcome" }, [["", "Not decided yet"], ...Object.entries(P.OUTCOMES)].map(([v, t]) => h("option", { value: v, text: t })));
+  result.value = o.result;
+  const reason = h("select", { "aria-label": "Main reason" }, [["", "No reason given"], ...Object.entries(P.REASONS)].map(([v, t]) => h("option", { value: v, text: t })));
+  reason.value = o.reason;
+  const note = h("input", { type: "text", maxlength: 300, value: o.note, "aria-label": "In a sentence", placeholder: "In a sentence: what decided it" });
+  const on = h("input", { type: "date", value: o.on, "aria-label": "Decided on" });
+  return card("The outcome", h("div", {},
+    h("div", { class: "formgrid" }, h("label", {}, "Outcome", result), h("label", {}, "Main reason", reason), h("label", {}, "Decided on", on), h("label", { class: "wide2" }, "In a sentence", note)),
+    h("div", { class: "row left" }, h("button", { class: "btn small", type: "button", text: "Record the outcome",
+      onclick: edit((q) => P.setOutcome(q, result.value ? { result: result.value, reason: reason.value, note: note.value, on: on.value || today } : null, today)) }))),
+  { sub: p.outcome ? `Recorded: ${P.OUTCOMES[p.outcome.result].toLowerCase()} on ${p.outcome.on}. The desk counts it in what the deals teach.` : "Once the customer decides: won, lost or no decision, and the main reason. The desk learns from it across deals." });
+}
+
 export function povView({ result, book, povs, today, savePov, removePov, dash }) {
   const suggested = (dash && Array.isArray(dash.pov_criteria)) ? dash.pov_criteria : [];
   const customers = book ? book.customers.map((r) => r.customer) : [result.customer];
@@ -1423,6 +1440,7 @@ export function povView({ result, book, povs, today, savePov, removePov, dash })
       })(),
       card("Working sessions", h("div", {}, p.sessions.length ? h("ul", { class: "plain" }, p.sessions.map((s) => h("li", { text: `${s.on}: ${s.topic}${s.who ? ` (${s.who})` : ""}` }))) : h("p", { class: "note", text: "No sessions yet." }),
         h("div", { class: "formgrid" }, h("label", {}, "Date", sd), h("label", { class: "wide2" }, "Topic", st2), h("button", { class: "btn small", type: "button", text: "Add session", onclick: edit((q) => P.addSession(q, { on: sd.value, topic: st2.value }, today)) })))),
+      dealOutcomeCard(p, today, edit),
       card("Summary and stage", h("div", {}, h("label", {}, "Stage ", stage), summ,
         h("div", { class: "row left" }, h("button", { class: "btn small", type: "button", text: "Save summary", onclick: edit((q) => P.edit(q, { summary: summ.value.trim(), stage: stage.value }, today)) })))),
       h("div", { class: "row left" },
@@ -2297,6 +2315,28 @@ export function journeyView({ workshop: w, catalog, go, startPov, present, plan 
 const STAGE_SHORT = Object.fromEntries(DESK.STAGES.map((s) => [s.id, s.label]));
 
 /** Every prospect from discovery to decision: where each stands, what is due, what is late, the note for the account team. */
+/** What the deals teach, read from every prospect: for the engineer, a manager, enablement and the product team. */
+function lessonsView(ls, examples, title = "What the deals teach") {
+  const pct = (v) => (v == null ? "—" : `${v}%`);
+  const stats = h("div", { class: "lsstats" },
+    h("div", {}, h("b", { text: String(ls.decided) }), h("small", { text: "decided" })),
+    h("div", {}, h("b", { class: "ok", text: pct(ls.win_rate) }), h("small", { text: ls.decided ? `won (${ls.won} of ${ls.decided})` : "won: no outcome recorded yet" })),
+    h("div", {}, h("b", { text: pct(ls.technical_rate) }), h("small", { text: ls.proofs ? `proofs met (${ls.technical_wins} of ${ls.proofs})` : "proofs met: none finished yet" })),
+    h("div", {}, h("b", { text: ls.cycle.to_proof == null ? "—" : String(ls.cycle.to_proof) }), h("small", { text: "median days, first meeting to proof" })));
+  const list = (label, rows) => (rows.length ? h("div", { class: "growproof" }, h("small", { text: label }), h("ul", {}, rows)) : null);
+  const md = LS.lessonsMarkdown(ls, title);
+  return card(title, h("div", {},
+    examples ? h("p", { class: "note first", text: "Read from the invented examples: with your own prospects, only theirs count." }) : null, stats,
+    h("div", { class: "lsgrid" },
+      list("What customers push back on", ls.objections.map((o) => h("li", {}, h("span", { text: `"${o.says}"` }), h("small", { class: "muted", text: ` ${o.line.toLowerCase()}: ${o.count} prospect${o.count === 1 ? "" : "s"}${o.won + o.lost ? `, ${o.won} won, ${o.lost} not` : ""}` })))),
+      list("The gaps heard most", ls.gaps.map((g) => h("li", {}, h("span", { text: g.q }), h("small", { class: "muted", text: ` ${g.line.toLowerCase()}: ${g.count}${g.unknown ? `, ${g.unknown} where nobody knew` : ""}` })))),
+      list("When not won", ls.reasons.map((r) => h("li", { text: `${r.label}: ${r.count}` }))),
+      list("Tests not met", ls.not_met.map((t) => h("li", { text: `${t.text} (${t.count})` }))),
+      list("Where deals start", ls.lands.map((x) => h("li", { text: `${x.label}: ${x.count}` })))),
+    h("div", { class: "btnrow" }, h("button", { class: "btn small", type: "button", text: "Copy for enablement and leadership", onclick: (ev) => copyText(md).then((ok) => { ev.target.textContent = ok ? "Copied" : "Not copied"; }) }))),
+  { sub: "Across every prospect: how deals ended and why, what customers push back on, the gaps heard most, the tests not met, and how long each stage takes. Record the outcome of each proof of value to complete it." });
+}
+
 export function deskView({ workshops, povs, catalog, today, openOpp, newWorkshop, example, fillExamples, removeExamples }) {
   const opps = DESK.pipeline(workshops, povs, catalog, today);
   const items = DESK.agenda(workshops, povs, catalog, today);
@@ -2314,12 +2354,17 @@ export function deskView({ workshops, povs, catalog, today, openOpp, newWorkshop
     h("div", { class: "btnrow" }, h("button", { class: "btn primary", type: "button", text: "Start a discovery workshop", onclick: newWorkshop }),
       opps.some((o) => o.example)
         ? h("button", { class: "btn", type: "button", text: "Remove the invented examples", onclick: removeExamples })
-        : h("button", { class: "btn", type: "button", text: "Fill it with invented examples", "data-tip": "Four made-up prospects at four stages, dated around today, to see the desk at work. Remove them in one click.", onclick: fillExamples })));
+        : h("button", { class: "btn", type: "button", text: "Fill it with invented examples", "data-tip": "Made-up prospects at every stage, and two already decided, dated around today, to see the desk at work. Remove them in one click.", onclick: fillExamples })));
   if (!opps.length) {
     return h("div", {}, hero, card("Nothing here yet", h("p", { class: "note first", text: "Each discovery workshop and each proof of value you keep in this browser becomes an opportunity here, placed at its stage: discovery, journey agreed, proof of value, decision. Start one, or fill the desk with invented examples to see it at work." })));
   }
   // the funnel: a real sequence, so its stages are numbered and joined
   const funnelRow = h("ol", { class: "deskfunnel" }, f.stages.map((s) => h("li", { title: s.hint }, h("b", { text: String(s.count) }), h("span", { text: s.label }))));
+  // what the deals teach: outcomes and reasons, objections, gaps, tests not met, time per stage
+  const facts = LS.dealFacts(workshops, povs, catalog);
+  const onlyExamples = facts.length && facts.every((x) => x.example);
+  const ls = LS.lessons(facts, { includeExamples: onlyExamples });
+  const lessonsCard = ls.deals ? lessonsView(ls, onlyExamples) : null;
   const agendaCard = card("This week and next", items.length
     ? h("ul", { class: "jdated deskagenda" }, items.map((i) => h("li", { class: i.late ? "late" : "" },
       h("span", { class: "jdate", text: i.late ? "late" : i.on.slice(8) }),
@@ -2328,7 +2373,7 @@ export function deskView({ workshops, povs, catalog, today, openOpp, newWorkshop
   { sub: "Dated conditions from every journey and the start and end of every proof of value; what is late comes first." });
   const cols = [
     { key: "customer", label: "Prospect", render: (o) => h("span", {}, h("b", { text: o.customer }), o.example ? h("small", { class: "muted", text: " (example)" }) : null) },
-    { key: "stage", label: "Stage", sort: (o) => (o.stopped ? -1 : DESK.STAGES.findIndex((s) => s.id === o.stage)), render: (o) => h("span", { class: "deskstage s-" + (o.stopped ? "stopped" : o.stage), text: o.stopped ? "Stopped" : STAGE_SHORT[o.stage] }) },
+    { key: "stage", label: "Stage", sort: (o) => (o.stopped ? -1 : DESK.STAGES.findIndex((s) => s.id === o.stage)), render: (o) => h("span", { class: "deskstage s-" + (o.outcome || (o.stopped ? "stopped" : o.stage)), text: o.outcome ? DESK.OUTCOME_WORDS[o.outcome] : o.stopped ? "Stopped" : STAGE_SHORT[o.stage] }) },
     { key: "land", label: "Start with", render: (o) => o.land || "—" },
     { key: "answered", label: "Answered", num: true, sort: (o) => o.coverage, render: (o) => (o.total ? `${o.answered} of ${o.total}` : "—") },
     { key: "stakes", label: "At stake", render: (o) => o.stakes.join(", ") || "—" },
@@ -2355,5 +2400,5 @@ export function deskView({ workshops, povs, catalog, today, openOpp, newWorkshop
       h("button", { class: "btn small", type: "button", text: "Download it (.md)", onclick: () => saveBlob(md, `presales-update-${today}.md`, "text/markdown") }),
       h("button", { class: "btn small", type: "button", text: "Pipeline (.csv)", onclick: () => saveBlob(DESK.pipelineCsv(opps), `presales-pipeline-${today}.csv`, "text/csv") })))
   );
-  return h("div", {}, hero, h("div", { class: "card deskfunnelcard" }, funnelRow), riskCard, h("div", { class: "col2" }, agendaCard, docs), card("Opportunities", table.el, { sub: "Furthest along first. Open one to carry on: its questions, its journey, its proof of value." }));
+  return h("div", {}, hero, h("div", { class: "card deskfunnelcard" }, funnelRow), riskCard, lessonsCard, h("div", { class: "col2" }, agendaCard, docs), card("Opportunities", table.el, { sub: "Furthest along first. Open one to carry on: its questions, its journey, its proof of value." }));
 }

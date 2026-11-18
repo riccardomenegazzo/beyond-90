@@ -753,6 +753,8 @@ def main(site: str) -> int:
         check("Recovery point and time agreed for the workloads in the test" in page.inner_text("#view"), "the proof of value starts with the first line's own checklist")
         check(state_tab(page) == "wspov" and "immutable copy" in page.inner_text("#view"), "starting the proof of value carries the first line's own criteria")
         check("Try to delete a locked copy with an administrator account, then recover from it" in page.inner_text("#view"), "and what the customer asked us to prove")
+        check(page.locator("#view select[aria-label='Outcome'] option").count() == 4 and page.locator("#view select[aria-label='Main reason'] option").count() == 8,
+              "the proof of value can record how the deal ended, and why")
         # the handover to delivery: what was proven, agreed and asked, and the promises the delivery team inherits
         page.click("[data-tab=wsdelivery]")
         page.wait_for_selector("#view .dlpromises")
@@ -951,6 +953,10 @@ def main(site: str) -> int:
         page.wait_for_selector("#desk-body :text('Pietra Bank')")
         counts = [int(t) for t in page.locator("#desk-body .deskfunnel li b").all_inner_texts()]
         check(all(c >= 1 for c in counts) and page.locator("#desk-body .deskagenda li.late").count() >= 1, "invented examples fill every stage, with something late on the agenda")
+        check(page.locator("#desk-body .deskstage.s-won").count() == 1 and page.locator("#desk-body .deskstage.s-lost").count() == 1, "decided deals show as won or lost, off the live pipeline")
+        lessons_card = page.locator("#desk-body .card").filter(has_text="What the deals teach")
+        check(lessons_card.count() == 1 and "What customers push back on" in lessons_card.inner_text() and "Ransomware would encrypt the backups too" in lessons_card.inner_text(),
+              "what the deals teach: what customers push back on, read from every prospect")
         page.get_by_role("button", name="Remove the invented examples").click()
         page.wait_for_selector("#desk-body :text('Pietra Bank')", state="detached", timeout=60_000)   # the page's CSP forbids string evaluation
         check("Kestrel Logistics" in page.inner_text("#desk-body"), "and go away in one click, leaving real work alone")
@@ -1359,6 +1365,11 @@ def main(site: str) -> int:
                 apage.click("#desk-btn")
                 apage.wait_for_selector("#desk-body .deskfunnel")
                 bad += [f"desk: {v}" for v in audit()]
+                apage.get_by_role("button", name="Fill it with invented examples").click()
+                apage.wait_for_selector("#desk-body .deskstage.s-won")
+                bad += [f"desk with examples: {v}" for v in audit()]
+                apage.get_by_role("button", name="Remove the invented examples").click()
+                apage.wait_for_selector("#desk-body .deskstage.s-won", state="detached")
                 apage.click(".rail [data-place=start]")
                 apage.locator("#hero-roles [data-role=core]").click()
                 apage.click("#open-workshop")

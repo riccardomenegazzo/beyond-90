@@ -15,6 +15,18 @@ A pre-sales engineer carries many prospects at once, each at a different point: 
   - a proof that ended not met.
 
   Then what to watch: a proof with no end date or with its first-day checklist open, nothing at stake in the customer's words, no case for change for finance, a sizing sketch still on the defaults, questions nobody could answer, a prospect not touched for three weeks. Each says what to do, and opens the prospect where it stands. The Monday note lists the risks that can lose a deal; the CSV carries them all.
+- **What the deals teach.** Across every prospect:
+  - how deals ended (won, lost, no decision) and why, with the share won and the share of proofs of value met;
+  - what customers push back on, with how many of those deals were won;
+  - the gaps heard most (questions answered "a real gap" or "nobody knows");
+  - the tests not met;
+  - the median days from first meeting to proof, of the proof itself, and from its end to the decision;
+  - where deals start.
+
+  **Copy for enablement and leadership** gives it as Markdown, for a pipeline review, the enablement team or the product team. Record how each deal ended on its proof of value (outcome, main reason, date, a sentence) to complete it; a decided deal leaves the live pipeline and shows as won or lost. Only what the lessons need is read: no notes, no figures.
+
+![What the deals teach: outcomes, objections, gaps, tests not met and time per stage](img/app-lessons.png)
+
 - **This week and next.** The dated conditions from every journey, and the start and end of every proof of value, for the next two weeks; what is late comes first.
 - **Opportunities.** One row per prospect: its stage, the line to start with, how much of the discovery is done, what is at stake in the customer's own figures, how the proof is going, and the next thing to do (what is late first, then what the proof needs, then the next dated condition). Open one to carry on where it stands: its questions, its journey or its proof of value.
 - **For the account team.** The Monday note, in Markdown: where each opportunity stands, what is late, what is next. And the pipeline as a CSV for a forecast call or a CRM import; cells a spreadsheet would run as formulas are defused.

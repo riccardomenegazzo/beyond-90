@@ -1008,7 +1008,7 @@ ol.deskfunnel{list-style:none;margin:0;padding:0;display:grid;grid-template-colu
 .deskstage{font-size:12.5px;font-weight:700;padding:2px 9px;border-radius:999px;background:var(--sunk);color:var(--ink2);white-space:nowrap}
 .deskstage.s-journey{background:var(--accent-soft);color:var(--accent-text)}
 .deskstage.s-proof{background:color-mix(in srgb,var(--warn) 16%,transparent);color:var(--warn)}
-.deskstage.s-decision{background:color-mix(in srgb,var(--pos) 16%,transparent);color:var(--pos)}
+.deskstage.s-decision{background:color-mix(in srgb,var(--pos) 16%,transparent);color:color-mix(in srgb,var(--pos) 72%,var(--ink))}
 @media (max-width:700px){ol.deskfunnel{grid-template-columns:repeat(2,minmax(0,1fr))}}
 /* plain buttons on the dark hero keep their text readable, hovered or not */
 .estatehero .btn:not(.primary){background:#fff;color:#0d1b2a;border-color:#fff}
@@ -1098,3 +1098,15 @@ ol.deskfunnel{list-style:none;margin:0;padding:0;display:grid;grid-template-colu
 .drtiers{margin-top:10px}
 .drtable td:nth-child(-n+4),.drtable td:nth-child(6){white-space:nowrap}
 .nmday{max-width:220px;margin-bottom:10px}
+
+/* closed deals and what the deals teach */
+.deskstage.s-won{background:color-mix(in srgb,var(--pos) 18%,transparent);color:color-mix(in srgb,var(--pos) 72%,var(--ink))}
+.deskstage.s-lost,.deskstage.s-none{background:color-mix(in srgb,var(--bad) 12%,transparent);color:color-mix(in srgb,var(--bad) 80%,var(--ink))}
+.lsstats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:4px 0 14px}
+.lsstats>div{border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:grid;gap:2px}
+.lsstats b{font-size:28px;font-weight:800;line-height:1.1;color:var(--ink)}
+.lsstats b.ok{color:color-mix(in srgb,var(--pos) 72%,var(--ink))}
+.lsstats small{color:var(--ink2);font-size:13px}
+.lsgrid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));align-items:start}
+.lsgrid .growproof{margin:0;display:block}
+.lsgrid .growproof small.muted{font-weight:500}

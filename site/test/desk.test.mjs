@@ -76,7 +76,7 @@ test("an empty browser makes an empty desk, not an error", () => {
   assert.match(weeklyMarkdown([], [], D), /Discovery: 0/);
 });
 
-test("the invented desk is four valid prospects at four stages, dated around today, all marked as examples", async () => {
+test("the invented desk is valid prospects at every stage and two decided, dated around today, all marked as examples", async () => {
   const { exampleDesk, isExampleId } = await import("../desk.js");
   const { validWorkshop } = await import("../workshop.js");
   const { validPov } = await import("../pov.js");
@@ -88,6 +88,12 @@ test("the invented desk is four valid prospects at four stages, dated around tod
   assert.equal(byName["Kestrel Logistics (mock)"].stage, "proof");
   assert.equal(byName["Pietra Bank (mock)"].stage, "decision");
   assert.ok(opps.every((o) => o.example));
+  assert.equal(byName["Brina Retail (mock)"].outcome, "won");
+  assert.equal(byName["Ardesia Logistics (mock)"].outcome, "lost");
+  assert.ok(byName["Ardesia Logistics (mock)"].stopped && byName["Ardesia Logistics (mock)"].risks.length === 0, "a decided deal is off the live pipeline");
+  const f = funnel(opps);
+  assert.equal(f.won, 1);
+  assert.equal(f.lost, 1);
   const items = agenda(ex.workshops, ex.povs, CAT, D);
   assert.ok(items.some((i) => i.late) && items.some((i) => !i.late), "something late and something due");
 });

@@ -2,6 +2,19 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.103.0
+
+- **How each deal ended.** A proof of value records its outcome: won, lost or no decision, the main reason (technical fit, price, went with someone else, timing, no budget, stayed as they are, other), the date and a sentence. A decided deal leaves the live pipeline and shows as won or lost; the Monday note and the pipeline CSV say so.
+- **What the deals teach, on the presales desk.** Across every prospect:
+  - outcomes and reasons, the share won, and the share of proofs met;
+  - what customers push back on, and how those deals ended;
+  - the gaps heard most and the tests not met;
+  - the median days of each stage, and where deals start.
+
+  Copy it as Markdown for enablement and leadership. It is built from plain facts per deal: no notes, no figures.
+- **The invented desk** has two deals already decided, one won and one lost on price, and concerns raised on the others, so the lessons show at once.
+- **Fixed:** the "Decision" chip on the desk was just below the contrast ratio the text needs in the light theme.
+
 ## 0.102.0
 
 - **A first backup capacity sketch** for object storage. It covers:

@@ -5,9 +5,9 @@
 // answers the questions of a Monday morning: where is each one, what is due this week, what is late, and what do I tell
 // the account team. Pure functions over plain records; the page and the tests share them.
 
-import { assess, journey, datedPlan, exampleWorkshop, makeWorkshop, setAnswer, setPlan, setWorth } from "./workshop.js";
+import { assess, journey, datedPlan, exampleWorkshop, makeWorkshop, setAnswer, setPlan, setWorth, setRaised } from "./workshop.js";
 import { hasCase } from "./valuecase.js";
-import { progress, makePov, setCriterion, edit as editPov } from "./pov.js";
+import { progress, makePov, setCriterion, setOutcome, edit as editPov } from "./pov.js";
 
 export const STAGES = [
   { id: "discovery", label: "Discovery", hint: "Still listening: not enough answers to say where to start." },
@@ -16,6 +16,7 @@ export const STAGES = [
   { id: "decision", label: "Decision", hint: "The proof is done: the result is with the customer." },
 ];
 const STAGE_INDEX = Object.fromEntries(STAGES.map((s, i) => [s.id, i]));
+export const OUTCOME_WORDS = { won: "Won", lost: "Lost", none: "No decision" };
 const cmp = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
 const days = (a, b) => Math.round((Date.parse(b + "T00:00:00Z") - Date.parse(a + "T00:00:00Z")) / 86400000);
 
@@ -72,7 +73,9 @@ export function pipeline(workshops, povs, catalog, today) {
     if (res && res.land) stage = "journey";
     if (p && (p.stage === "planned" || p.stage === "running")) stage = "proof";
     if (p && p.stage === "done") stage = "decision";
-    const stopped = !!(p && p.stage === "stopped");
+    // closed: stopped, or with its outcome recorded (won, lost, no decision); either way off the live pipeline
+    const outcome = p && p.outcome ? p.outcome.result : "";
+    const stopped = !!(p && (p.stage === "stopped" || outcome));
     const overdue = plan.filter((c) => c.by < today);
     const upcoming = plan.filter((c) => c.by >= today);
     // the next thing to do, in the order a presales engineer would look: what is late, what the proof needs, what is next
@@ -85,7 +88,7 @@ export function pipeline(workshops, povs, catalog, today) {
     else if (stage === "journey") next = "Start the proof of value, or give the conditions an owner and a date";
     else if (res) next = res.waiting || "Ask the next questions";
     out.push({
-      customer: o.customer, stage, stopped, workshop: w ? w.id : null, pov: p ? p.id : null,
+      customer: o.customer, stage, stopped, outcome, workshop: w ? w.id : null, pov: p ? p.id : null,
       updated_on: [w && w.updated_on, p && p.updated_on].filter(Boolean).sort().pop() || "",
       coverage: res ? res.coverage : 0, answered: res ? res.answered : 0, total: res ? res.total : 0,
       land: res && res.land ? res.land.label : "", unknowns: res ? res.unknowns.length : 0,
@@ -104,7 +107,8 @@ export function pipeline(workshops, povs, catalog, today) {
 /** How many opportunities stand at each stage, stopped ones apart. */
 export function funnel(opps) {
   const live = opps.filter((o) => !o.stopped);
-  return { stages: STAGES.map((s) => ({ ...s, count: live.filter((o) => o.stage === s.id).length })), stopped: opps.length - live.length };
+  return { stages: STAGES.map((s) => ({ ...s, count: live.filter((o) => o.stage === s.id).length })), stopped: opps.filter((o) => o.stopped && !o.outcome).length,
+    won: opps.filter((o) => o.outcome === "won").length, lost: opps.filter((o) => o.outcome === "lost").length, none: opps.filter((o) => o.outcome === "none").length };
 }
 
 /** What is due in the next `span` days, and what is already late: dated conditions, and the start and end of each proof. */
@@ -128,7 +132,7 @@ export function agenda(workshops, povs, catalog, today, span = 14) {
 /** The note for the account team, Monday morning: where each opportunity stands, what is next, what is at risk. */
 export function weeklyMarkdown(opps, items, today) {
   const f = funnel(opps);
-  const out = [`# Presales update, ${today}`, "", f.stages.map((s) => `${s.label}: ${s.count}`).join(". ") + "." + (f.stopped ? ` Stopped: ${f.stopped}.` : ""), ""];
+  const out = [`# Presales update, ${today}`, "", f.stages.map((s) => `${s.label}: ${s.count}`).join(". ") + "." + (f.won + f.lost + f.none ? ` Closed: won ${f.won}, lost ${f.lost}, no decision ${f.none}.` : "") + (f.stopped ? ` Stopped: ${f.stopped}.` : ""), ""];
   const late = items.filter((i) => i.late);
   if (late.length) {
     out.push("## Late", "");
@@ -158,7 +162,9 @@ export function weeklyMarkdown(opps, items, today) {
     }
     out.push("");
   }
-  const stopped = opps.filter((o) => o.stopped);
+  const closed = opps.filter((o) => o.outcome);
+  if (closed.length) out.push("## Closed", "", ...closed.map((o) => `- ${o.customer}: ${OUTCOME_WORDS[o.outcome]}`), "");
+  const stopped = opps.filter((o) => o.stopped && !o.outcome);
   if (stopped.length) out.push("## Stopped", "", ...stopped.map((o) => `- ${o.customer}`), "");
   out.push("_From Beyond 90: workshops and proofs of value kept in this browser._", "");
   return out.join("\n");
@@ -169,7 +175,7 @@ const csvCell = (v) => { const t = String(v == null ? "" : v); const safe = /^[=
 /** The pipeline as a sheet, for a CRM import or a forecast call. Cells that a spreadsheet would run as formulas are defused. */
 export function pipelineCsv(opps) {
   const head = ["customer", "stage", "start_with", "answered", "questions", "at_stake", "unknowns", "conditions_to_make_true", "already_true", "proof_met", "proof_criteria", "proof_ends", "next", "risks", "updated_on"];
-  const rows = opps.map((o) => [o.customer, o.stopped ? "stopped" : o.stage, o.land, o.answered, o.total, o.stakes.join("; "), o.unknowns, o.need, o.done, o.pov_met, o.pov_total, o.pov_end, o.next, (o.risks || []).map((r) => r.text).join(" "), o.updated_on]);
+  const rows = opps.map((o) => [o.customer, o.outcome ? OUTCOME_WORDS[o.outcome].toLowerCase() : o.stopped ? "stopped" : o.stage, o.land, o.answered, o.total, o.stakes.join("; "), o.unknowns, o.need, o.done, o.pov_met, o.pov_total, o.pov_end, o.next, (o.risks || []).map((r) => r.text).join(" "), o.updated_on]);
   return [head, ...rows].map((r) => r.map(csvCell).join(",")).join("\r\n") + "\r\n";
 }
 
@@ -203,9 +209,11 @@ export function exampleDesk(today) {
   valle = setWorth(valle, "hybrid-cloud", 0, 900000, "year", ago(14));
   valle = setPlan(valle, "hybrid-cloud", 2, "customer", ago(4), ago(14));
   valle = setPlan(valle, "hybrid-cloud", 4, "together", shiftDay(today, 9), ago(14));
+  valle = setRaised(valle, "hybrid-cloud", 1, true, ago(14));
   // still listening: a first meeting about AI on their own infrastructure
   let orsa = makeWorkshop({ customer: "Orsa Manufacturing (mock)", scope: ["private-ai", "kubernetes-platform", "object-storage"], createdOn: ago(1), nonce: "example3" });
   ["gap", "unknown"].forEach((a, i) => { orsa = setAnswer(orsa, "private-ai", i, a, i === 0 ? "Quality inspection on the line, with images that cannot leave the plant" : "", ago(1)); });
+  orsa = setRaised(orsa, "private-ai", 0, true, ago(1));
   // decision: a proof of value finished, the result with the customer
   let pietra = makePov({ customer: "Pietra Bank (mock)", createdOn: ago(40), nonce: "example4", start: ago(30), end: ago(9),
     criteria: [{ text: "A representative application group is migrated within its window", target: "Time it end to end" },
@@ -213,5 +221,25 @@ export function exampleDesk(today) {
   pietra = setCriterion(pietra, "c1", { status: "met", evidence: "Back in service in 3 h 10 min, window 4 h" }, ago(12));
   pietra = setCriterion(pietra, "c2", { status: "met", evidence: "Rolled back in 38 minutes" }, ago(10));
   pietra = editPov(pietra, { stage: "done", summary: "Both criteria met; the migration plan goes to the steering committee." }, ago(8));
-  return { workshops: [kestrel, valle, orsa], povs: [kpov, pietra] };
+  // decided: one won on a migration, one lost on price; what the desk learns from across deals
+  let brina = makeWorkshop({ customer: "Brina Retail (mock)", scope: ["platform-migration", "hci", "dr-backup"], createdOn: ago(95), nonce: "example6" });
+  ["gap", "gap", "partly", "gap", "unknown", "gap"].forEach((a, i) => { brina = setAnswer(brina, "platform-migration", i, a, "", ago(95)); });
+  ["gap", "partly", "gap"].forEach((a, i) => { brina = setAnswer(brina, "dr-backup", i, a, "", ago(95)); });
+  brina = setRaised(setRaised(brina, "platform-migration", 0, true, ago(95)), "hci", 2, true, ago(95));
+  let bpov = makePov({ customer: brina.customer, createdOn: ago(70), nonce: "example6", start: ago(60), end: ago(40),
+    criteria: [{ text: "A representative application group is migrated within its window", target: "Time it end to end" },
+      { text: "A rollback completes within the agreed time", target: "Fail a cutover on purpose and roll back" },
+      { text: "Test machines run with their disks still on the existing array, at the agreed performance", target: "Compare with the baseline" }] });
+  for (const [id, ev] of [["c1", "Back in service in 2 h 40 min, window 4 h"], ["c2", "Rolled back in 31 minutes"], ["c3", "Within 5% of the baseline"]]) bpov = setCriterion(bpov, id, { status: "met", evidence: ev }, ago(42));
+  bpov = setOutcome(editPov(bpov, { stage: "done", sponsor: "IT director (mock)", summary: "All three criteria met; the existing arrays stay until their support ends." }, ago(40)), { result: "won", reason: "technical", note: "Keeping the arrays made the move affordable this year", on: ago(25) }, ago(25));
+  let ardesia = makeWorkshop({ customer: "Ardesia Logistics (mock)", scope: ["dr-backup", "hybrid-cloud"], createdOn: ago(120), nonce: "example7" });
+  ["gap", "gap", "gap", "unknown", "gap"].forEach((a, i) => { ardesia = setAnswer(ardesia, "dr-backup", i, a, "", ago(120)); });
+  ["gap", "partly", "unknown"].forEach((a, i) => { ardesia = setAnswer(ardesia, "hybrid-cloud", i, a, "", ago(120)); });
+  ardesia = setRaised(setRaised(ardesia, "dr-backup", 1, true, ago(120)), "hybrid-cloud", 1, true, ago(120));
+  let apov = makePov({ customer: ardesia.customer, createdOn: ago(100), nonce: "example7", start: ago(90), end: ago(75),
+    criteria: [{ text: "A business application recovers in the cloud within the agreed time", target: "Run the recovery plan in test mode" },
+      { text: "A copy an administrator cannot delete is restored", target: "Try to delete, then restore" }] });
+  apov = setCriterion(setCriterion(apov, "c1", { status: "not_met", evidence: "Recovered in 3 h, target 1 h: the cloud cluster took too long to grow" }, ago(76)), "c2", { status: "met", evidence: "Delete refused; restore in 40 minutes" }, ago(76));
+  apov = setOutcome(editPov(apov, { stage: "done", sponsor: "COO (mock)", summary: "One criterion met, one not: recovery in the cloud was too slow." }, ago(75)), { result: "lost", reason: "price", note: "A standing second site cost more than the budget for this year", on: ago(60) }, ago(60));
+  return { workshops: [kestrel, valle, orsa, brina, ardesia], povs: [kpov, pietra, bpov, apov] };
 }

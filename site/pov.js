@@ -8,6 +8,9 @@
 export const STATUSES = ["open", "met", "partly", "not_met", "dropped"];
 export const STATUS_TEXT = { open: "Not yet tried", met: "Met", partly: "Partly met", not_met: "Not met", dropped: "Dropped" };
 export const STAGES = ["planned", "running", "done", "stopped"];
+/** How the deal ended, and why: what a team learns from across its deals. */
+export const OUTCOMES = { won: "Won", lost: "Lost", none: "No decision" };
+export const REASONS = { technical: "Technical fit", price: "Price", competitor: "Went with someone else", timing: "Timing", budget: "No budget", status_quo: "Stayed as they are", other: "Other" };
 export const MAX_POVS = 500;
 const MAX_CRITERIA = 20, MAX_SESSIONS = 20;
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
@@ -68,6 +71,8 @@ export function makePov({ customer, sponsor = "", champion = "", start = "", end
 const okCriterion = (c) => !!c && typeof c === "object" && /^c\d{1,3}$/.test(c.id) && typeof c.text === "string" && c.text.length > 0 && c.text.length <= 200
   && typeof c.target === "string" && c.target.length <= 200 && STATUSES.includes(c.status) && typeof c.evidence === "string" && c.evidence.length <= 300;
 const okSession = (s) => !!s && typeof s === "object" && isDate(s.on) && typeof s.topic === "string" && s.topic.length > 0 && s.topic.length <= 120 && typeof s.who === "string" && s.who.length <= 100;
+const okOutcome = (o, created) => !!o && typeof o === "object" && !Array.isArray(o) && Object.hasOwn(OUTCOMES, o.result) && (o.reason === "" || Object.hasOwn(REASONS, o.reason))
+  && typeof o.note === "string" && o.note.length <= 300 && isDate(o.on) && o.on >= created && Object.keys(o).every((k) => ["result", "reason", "note", "on"].includes(k));
 const okReady = (r) => !!r && typeof r === "object" && /^r\d{1,3}$/.test(r.id) && typeof r.text === "string" && r.text.length > 0 && r.text.length <= 200 && typeof r.done === "boolean";
 
 export function validPov(p) {
@@ -79,6 +84,7 @@ export function validPov(p) {
   for (const k of ["problem", "out_of_scope"]) if (p[k] != null && (typeof p[k] !== "string" || p[k].length > 300)) return false;
   for (const k of ["signed_off_on", "first_value_on"]) if (p[k] != null && !(p[k] === "" || isDate(p[k]))) return false;
   if (!STAGES.includes(p.stage) || typeof p.summary !== "string" || p.summary.length > 1000) return false;
+  if (p.outcome != null && !okOutcome(p.outcome, p.created_on)) return false;
   if (!isDate(p.created_on) || !isDate(p.updated_on) || p.updated_on < p.created_on) return false;
   if (!Array.isArray(p.criteria) || p.criteria.length > MAX_CRITERIA || !p.criteria.every(okCriterion) || new Set(p.criteria.map((c) => c.id)).size !== p.criteria.length) return false;
   if (!Array.isArray(p.sessions) || p.sessions.length > MAX_SESSIONS || !p.sessions.every(okSession)) return false;
@@ -117,6 +123,18 @@ export function setWindow(p, start, end, today) {
   if (en && !isDate(en)) throw new Error("Give the end as a date, or leave it empty.");
   if (st && en && en < st) throw new Error("The end cannot be before the start.");
   return edit(p, { start: st, end: en }, today);
+}
+
+/** Record how the deal ended (won, lost, no decision), why, and when; null clears it. */
+export function setOutcome(p, outcome, today) {
+  const next = { ...p };
+  delete next.outcome;
+  if (outcome) {
+    const o = { result: outcome.result, reason: outcome.reason || "", note: text(outcome.note || "", 300), on: outcome.on || today };
+    if (!okOutcome(o, p.created_on)) throw new Error("Choose won, lost or no decision, and a date from the start of the proof onwards.");
+    next.outcome = o;
+  }
+  return edit(next, {}, today);
 }
 
 export function setCriterion(p, id, { status, evidence }, today) {
