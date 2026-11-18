@@ -213,7 +213,7 @@ export function exampleWorkshop(createdOn) {
   }
   return w;
 }
-export const isExample = (w) => /\|example1$/.test(w.id);
+export const isExample = (w) => /\|example\d$/.test(w.id);
 
 // ------------------------------------------------------------------ reading the answers
 

@@ -108,6 +108,18 @@ def shoot(site: Path, out: Path) -> None:
             pg.wait_for_timeout(500)
             pg.screenshot(path=str(out / "app-hurt.png"))
 
+            # the presales desk, filled with invented prospects at four stages
+            pg.click(".rail [data-place=start]")
+            pg.locator("#hero-roles [data-role=se]").click()
+            pg.click("#desk-btn")
+            pg.wait_for_selector("#desk-body .deskhero")
+            pg.get_by_role("button", name="Fill it with invented examples").click()
+            pg.wait_for_selector("#desk-body :text('Pietra Bank')")
+            pg.wait_for_timeout(400)
+            pg.screenshot(path=str(out / "app-desk.png"))
+            pg.click(".rail [data-place=start]")
+            pg.locator("#hero-roles [data-role=core]").click()
+
             phone = b.new_context(**p.devices["Pixel 7"], color_scheme="light")
             phone.add_init_script(INIT)
             mp = phone.new_page()

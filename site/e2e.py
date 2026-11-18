@@ -767,7 +767,7 @@ def main(site: str) -> int:
         page.click("[data-tab=workshop]")
         page.once("dialog", lambda dlg: dlg.accept())
         page.get_by_role("button", name="Delete this workshop").click()
-        page.wait_for_function("!document.querySelector('#reshead') || !document.querySelector('#reshead').innerText.includes('example')")
+        page.wait_for_timeout(500)
         page.click(".rail [data-place=start]")
         page.click("#open-workshop")
         page.wait_for_selector("#view .wsq")
@@ -807,6 +807,36 @@ def main(site: str) -> int:
         page.wait_for_selector("#run:not([disabled])", state="attached", timeout=180_000)
         page.wait_for_selector("#view .todayhero", timeout=180_000)
         check("Halden Group" in page.inner_text("#reshead") and page.locator("[data-tab=estate]").count() == 0, "opening a line shows that line's own report")
+
+        # working as a pre-sales engineer: a desk of one's own, from discovery to decision
+        page.click(".rail [data-place=start]")
+        role_before = page.evaluate("localStorage.getItem('beyond90.role') || 'core'")
+        page.locator("#hero-roles [data-role=tam]").click()
+        check(not page.is_visible("#desk-btn"), "the presales desk is not in the way of other roles")
+        page.locator("#hero-roles [data-role=se]").click()
+        check(page.is_visible("#desk-btn"), "choosing pre-sales engineer adds a desk to the menu")
+        page.click("#desk-btn")
+        page.wait_for_selector("#desk-body .deskfunnel")
+        check("Your presales desk" in page.inner_text("#desk-body") and "Kestrel Logistics" in page.inner_text("#desk-body table"), "the desk lists every prospect kept in this browser")
+        check(page.locator("#desk-body .deskfunnel li").count() == 4 and "Proof of value" in page.inner_text("#desk-body .deskfunnel"), "with the stages from discovery to decision")
+        with page.expect_download() as dl:
+            page.get_by_role("button", name="Download it (.md)").click()
+        check(Path(dl.value.path()).read_text(encoding="utf-8").startswith("# Presales update"), "and the weekly update for the account team")
+        page.get_by_role("button", name="Fill it with invented examples").click()
+        page.wait_for_selector("#desk-body :text('Pietra Bank')")
+        counts = [int(t) for t in page.locator("#desk-body .deskfunnel li b").all_inner_texts()]
+        check(all(c >= 1 for c in counts) and page.locator("#desk-body .deskagenda li.late").count() >= 1, "invented examples fill every stage, with something late on the agenda")
+        page.get_by_role("button", name="Remove the invented examples").click()
+        page.wait_for_selector("#desk-body :text('Pietra Bank')", state="detached", timeout=60_000)   # the page's CSP forbids string evaluation
+        check("Kestrel Logistics" in page.inner_text("#desk-body"), "and go away in one click, leaving real work alone")
+        page.locator("#desk-body table").get_by_role("button", name="Open Kestrel Logistics").first.click()
+        page.wait_for_selector("#view .wsq, #view ol.journey, #view .promise")
+        check("Kestrel Logistics" in page.inner_text("#reshead"), "an opportunity opens where it stands")
+        page.reload()
+        page.wait_for_selector("#desk-body .deskfunnel", timeout=180_000)
+        check(page.is_visible("#place-desk") and not page.is_visible("#place-start"), "a pre-sales engineer lands on the desk")
+        page.click(".rail [data-place=start]")
+        page.locator(f"#hero-roles [data-role={role_before}]").click()
 
         # a whole book: several customers, one budget of hours
         page.click(".rail [data-place=start]")
@@ -1196,6 +1226,15 @@ def main(site: str) -> int:
                 apage.get_by_role("button", name="Try it with an invented export").click()
                 apage.wait_for_selector("#view .invkpis")
                 bad += [f"inventory: {v}" for v in audit()]
+                apage.click(".rail [data-place=start]")
+                apage.locator("#hero-roles [data-role=se]").click()
+                apage.click("#desk-btn")
+                apage.wait_for_selector("#desk-body .deskfunnel")
+                bad += [f"desk: {v}" for v in audit()]
+                apage.click(".rail [data-place=start]")
+                apage.locator("#hero-roles [data-role=core]").click()
+                apage.click("#open-workshop")
+                apage.wait_for_selector("#view .wsq")
                 for i, ans in enumerate(("A real gap", "A real gap", "Partly")):
                     apage.locator("#view .wsq").nth(i + 1).get_by_role("button", name=ans, exact=True).click()
                 apage.click("[data-tab=journey]")

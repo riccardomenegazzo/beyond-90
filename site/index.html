@@ -38,6 +38,7 @@
 <div class="shell">
   <nav class="rail" id="rail" aria-label="Main">
     <button class="place-btn" type="button" data-place="start" data-tip="Choose a customer or your whole book, and start an analysis.">Start</button>
+    <button class="place-btn" type="button" data-place="desk" id="desk-btn" hidden data-tip="Your presales desk: every prospect from discovery to decision, what is due, what is late, and the update for the account team.">Presales desk</button>
     <button class="place-btn" type="button" data-place="saved" data-tip="Every analysis you kept, protection with a passphrase, and moving your work between devices.">Saved</button>
     <button class="place-btn" type="button" data-place="help" data-tip="Questions and answers, what each term means, and a short tour.">Help</button>
     <div class="sheet-tools" id="sheet-tools" aria-label="Settings"></div>
@@ -178,6 +179,10 @@
       <pre id="raw" class="raw" hidden></pre>
     </section>
 
+    <section class="place" id="place-desk" hidden aria-labelledby="desk-title">
+      <h1 class="sr-only" id="desk-title">Presales desk</h1>
+      <div id="desk-body"></div>
+    </section>
     <section class="place" id="history-panel" hidden aria-labelledby="hist">
       <div class="page-head">
         <h1 id="hist">Saved</h1>

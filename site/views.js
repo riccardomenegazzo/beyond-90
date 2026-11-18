@@ -11,6 +11,7 @@ import * as SLA from "./sla.js";
 import * as SC from "./scorecard.js";
 import * as WS from "./workshop.js";
 import * as INV from "./inventory.js";
+import * as DESK from "./desk.js";
 import { connections } from "./graph.js";
 import { headline, firstMinute, rankActions, chainText, doneSummary, funnelSegments, preview } from "./today.js";
 import { stageBars } from "./nav.js";
@@ -1875,4 +1876,60 @@ export function journeyView({ workshop: w, catalog, go, startPov, present, plan 
   const calendar = card("The plan by date", calBody, { sub: "The dated conditions, earliest first: what each side said it would make true, and by when." });
   const dest = card("Where it can go", h("p", { class: "note first", text: `With these steps done, ${w.customer} runs ${j.destination.join(", then ").toLowerCase()} with every condition above made true, validated as it went rather than promised up front.` }));
   return h("div", {}, presentBtn(present), hero, steps, calendar, dest);
+}
+
+// ------------------------------------------------------------------ the presales desk
+
+const STAGE_SHORT = Object.fromEntries(DESK.STAGES.map((s) => [s.id, s.label]));
+
+/** Every prospect from discovery to decision: where each stands, what is due, what is late, the note for the account team. */
+export function deskView({ workshops, povs, catalog, today, openOpp, newWorkshop, example, fillExamples, removeExamples }) {
+  const opps = DESK.pipeline(workshops, povs, catalog, today);
+  const items = DESK.agenda(workshops, povs, catalog, today);
+  const f = DESK.funnel(opps);
+  const late = items.filter((i) => i.late).length, soon = items.filter((i) => !i.late).length;
+  const when = new Date(today + "T00:00:00Z").toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" });
+  const hero = h("section", { class: "card estatehero deskhero" },
+    h("p", { class: "deskdate", text: when }),
+    h("h2", { class: "desktitle", text: "Your presales desk" }),
+    h("div", { class: "ehead jstats" },
+      h("div", {}, h("b", { text: String(opps.filter((o) => !o.stopped).length) }), h("small", { text: "open opportunities" })),
+      h("div", {}, h("b", { text: String(f.stages.find((s) => s.id === "proof").count) }), h("small", { text: "in proof of value" })),
+      h("div", {}, h("b", { class: "ok", text: String(soon) }), h("small", { text: "due in two weeks" })),
+      h("div", {}, h("b", { class: late ? "bad" : "", text: String(late) }), h("small", { text: "late" }))),
+    h("div", { class: "btnrow" }, h("button", { class: "btn primary", type: "button", text: "Start a discovery workshop", onclick: newWorkshop }),
+      opps.some((o) => o.example)
+        ? h("button", { class: "btn", type: "button", text: "Remove the invented examples", onclick: removeExamples })
+        : h("button", { class: "btn", type: "button", text: "Fill it with invented examples", "data-tip": "Four made-up prospects at four stages, dated around today, to see the desk at work. Remove them in one click.", onclick: fillExamples })));
+  if (!opps.length) {
+    return h("div", {}, hero, card("Nothing here yet", h("p", { class: "note first", text: "Each discovery workshop and each proof of value you keep in this browser becomes an opportunity here, placed at its stage: discovery, journey agreed, proof of value, decision. Start one, or fill the desk with invented examples to see it at work." })));
+  }
+  // the funnel: a real sequence, so its stages are numbered and joined
+  const funnelRow = h("ol", { class: "deskfunnel" }, f.stages.map((s) => h("li", { title: s.hint }, h("b", { text: String(s.count) }), h("span", { text: s.label }))));
+  const agendaCard = card("This week and next", items.length
+    ? h("ul", { class: "jdated deskagenda" }, items.map((i) => h("li", { class: i.late ? "late" : "" },
+      h("span", { class: "jdate", text: i.late ? "late" : i.on.slice(8) }),
+      h("span", {}, h("b", { text: `${i.customer}: ${i.what}` }), h("small", { class: "muted", text: `${i.on}${i.who ? `, owner: ${i.who}` : ""}${i.kind === "pov" ? ", proof of value" : ""}` })))))
+    : h("p", { class: "note first", text: "Nothing dated in the next two weeks. Give the conditions in a journey an owner and a date, or set the dates of a proof of value." }),
+  { sub: "Dated conditions from every journey and the start and end of every proof of value; what is late comes first." });
+  const cols = [
+    { key: "customer", label: "Prospect", render: (o) => h("span", {}, h("b", { text: o.customer }), o.example ? h("small", { class: "muted", text: " (example)" }) : null) },
+    { key: "stage", label: "Stage", sort: (o) => (o.stopped ? -1 : DESK.STAGES.findIndex((s) => s.id === o.stage)), render: (o) => h("span", { class: "deskstage s-" + (o.stopped ? "stopped" : o.stage), text: o.stopped ? "Stopped" : STAGE_SHORT[o.stage] }) },
+    { key: "land", label: "Start with", render: (o) => o.land || "—" },
+    { key: "answered", label: "Answered", num: true, sort: (o) => o.coverage, render: (o) => (o.total ? `${o.answered} of ${o.total}` : "—") },
+    { key: "stakes", label: "At stake", render: (o) => o.stakes.join(", ") || "—" },
+    { key: "pov", label: "Proof", num: true, sort: (o) => (o.pov_total ? o.pov_met / o.pov_total : -1), render: (o) => (o.pov_total ? `${o.pov_met} of ${o.pov_total} met` : "—") },
+    { key: "next", label: "Next", render: (o) => h("span", { class: o.overdue ? "neg" : "", text: o.next || "—" }) },
+    { key: "open", label: "Open", render: (o) => (o.workshop ? h("button", { class: "btn small", type: "button", text: "Open", "aria-label": `Open ${o.customer}`, onclick: () => openOpp(o) }) : h("small", { class: "muted", text: o.example ? "an invented proof" : "from its analysis" })) },
+  ];
+  const table = dataTable({ columns: cols, rows: opps, label: "Opportunities", pageSize: 50 });
+  const md = DESK.weeklyMarkdown(opps, items, today);
+  const docs = card("For the account team", h("div", {},
+    h("p", { class: "note first", text: "The Monday note: where each opportunity stands, what is late, what is next. And the pipeline as a sheet for a forecast call or a CRM import." }),
+    h("div", { class: "btnrow" },
+      h("button", { class: "btn small", type: "button", text: "Copy the weekly update", onclick: (ev) => copyText(md).then((ok) => { ev.target.textContent = ok ? "Copied" : "Not copied"; }) }),
+      h("button", { class: "btn small", type: "button", text: "Download it (.md)", onclick: () => saveBlob(md, `presales-update-${today}.md`, "text/markdown") }),
+      h("button", { class: "btn small", type: "button", text: "Pipeline (.csv)", onclick: () => saveBlob(DESK.pipelineCsv(opps), `presales-pipeline-${today}.csv`, "text/csv") })))
+  );
+  return h("div", {}, hero, h("div", { class: "card deskfunnelcard" }, funnelRow), h("div", { class: "col2" }, agendaCard, docs), card("Opportunities", table.el, { sub: "Furthest along first. Open one to carry on: its questions, its journey, its proof of value." }));
 }

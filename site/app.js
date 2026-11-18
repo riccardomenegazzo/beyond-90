@@ -13,6 +13,7 @@ import * as DONE from "./done.js";
 import * as POV from "./pov.js";
 import * as WSHOP from "./workshop.js";
 import * as INV from "./inventory.js";
+import * as DESKX from "./desk.js";
 import * as SLA from "./sla.js";
 import { ROLES, ROLE_IDS, isRole, shape } from "./roles.js";
 import * as store from "./store.js";
@@ -479,13 +480,14 @@ const VIEWS = {
 };
 let tabDefs = [];
 
-const PLACES = { start: "place-start", work: "results", saved: "history-panel", help: "place-help", errors: "errors" };
+const PLACES = { start: "place-start", desk: "place-desk", work: "results", saved: "history-panel", help: "place-help", errors: "errors" };
 function showPlace(name) {
   for (const [k, id] of Object.entries(PLACES)) $(id).hidden = k !== name;
   state.place = name;
   for (const b of document.querySelectorAll(".rail [data-place]")) b.toggleAttribute("aria-current", b.dataset.place === name);
   if (name !== "work") for (const b of document.querySelectorAll("#tabs button")) b.removeAttribute("aria-current");
   if (name === "saved") renderDeviceQr();
+  if (name === "desk") renderDesk().catch((e) => say(e.message));
   window.scrollTo({ top: 0 });
 }
 
@@ -593,6 +595,7 @@ function setRole(id) {
 }
 function paintRoles() {
   const now = savedRole();
+  $("desk-btn").hidden = !(now === "se" || now === "all");     // a pre-sales engineer gets a desk of their own
   for (const [id, host] of [["role-pick", $("role-pick")], ["hero-roles", $("hero-roles")]]) {
     if (!host) continue;
     host.replaceChildren(...(id === "hero-roles" ? [el_("span", { class: "fine", text: "I work as" })] : []), ...ROLE_IDS.map((r) => el_("button", { type: "button", class: "chip-btn", dataset: { role: r }, "aria-pressed": String(r === now), title: ROLES[r].hint, text: id === "hero-roles" ? (r === "core" ? "Not sure yet" : r === "all" ? "Show everything" : ROLES[r].label) : ROLES[r].short, onclick: () => setRole(r) })));
@@ -807,13 +810,38 @@ async function keepWorkshop(w) {
   state.workshop = w.id;
   return w;
 }
-async function openWorkshop(id) {
+// ---------- the presales desk: every prospect in one place, from what this browser keeps
+async function renderDesk() {
+  const cat = await workshopCatalog();
+  await refreshWorkshops();
+  await refreshPovs();
+  const ctx = {
+    workshops: state.workshops, povs: state.povs, catalog: cat, today: todayIso(),
+    openOpp: (o) => openWorkshop(o.workshop, o.stage === "proof" || o.stage === "decision" ? "wspov" : o.stage === "journey" ? "journey" : "workshop"),
+    newWorkshop: () => newWorkshop().catch((e) => say(e.message)), example: () => openExampleWorkshop().catch((e) => say(e.message)),
+    fillExamples: async () => {
+      const ex = DESKX.exampleDesk(todayIso());
+      const read = INV.readInventory(await (await fetch("./demo-inventory.csv")).text());
+      if (read.ok) ex.workshops[0] = WSHOP.setInventory(ex.workshops[0], { ...INV.summarise(read), imported_on: ex.workshops[0].created_on }, ex.workshops[0].created_on);
+      await store.workshopPut(ex.workshops, true); await store.povPut(ex.povs, true);
+      renderDesk().catch((e) => say(e.message));
+    },
+    removeExamples: async () => {
+      for (const w of state.workshops.filter((x) => DESKX.isExampleId(x.id))) await store.workshopRemove(w.id);
+      for (const p of state.povs.filter((x) => DESKX.isExampleId(x.id))) await store.povRemove(p.id);
+      renderDesk().catch((e) => say(e.message));
+    },
+  };
+  $("desk-body").replaceChildren(V.deskView(ctx));
+}
+
+async function openWorkshop(id, tab = "workshop") {
   const cat = await workshopCatalog();   // the questions ship with the page: no engine needed
   await refreshWorkshops();
   let w = id ? state.workshops.find((x) => x.id === id) : state.workshops[0];
   if (!w) w = await keepWorkshop(WSHOP.makeWorkshop({ customer: "New prospect", scope: cat.families.infrastructure.slice(0, 4), createdOn: todayIso() }));
   state.workshop = w.id; state.result = null; state.book = null; state.estate = null;
-  showWorkshop("workshop");
+  showWorkshop(tab);
 }
 async function openExampleWorkshop() {
   await workshopCatalog();
@@ -934,6 +962,7 @@ async function refreshHistory() {
   await refreshAsks();
   await refreshMarks();
   await refreshOutcomes();
+  if (state.place === "desk") renderDesk().catch(() => {});     // the desk opened before the store had answered
   try { state.saved = await store.all(); }
   catch (e) { state.saved = []; wsSay("Saving is not available here: " + e.message); }
   const has = state.saved.length > 0;
@@ -1692,5 +1721,7 @@ document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("tour
 
 initTips();
 renderHelp();
-showPlace("start");
+// a pre-sales engineer lands on their desk; a shared link or a demo link still lands where it points
+if (savedRole() === "se" && !["start", "shared"].some((k) => new URLSearchParams(location.search).has(k))) showPlace("desk");
+else showPlace("start");
 boot();

@@ -6,7 +6,7 @@ export const ROLES = {
   all: { label: "Show everything", short: "All", hint: "Every view, grouped by the question it answers." },
   tam: { label: "Technical account manager", short: "TAM", hint: "You look after customers after the sale: adoption, risk going down, promises, renewal." },
   sa: { label: "Solutions architect", short: "SA", hint: "You design how it gets connected and rolled out: coverage, order of work, what changes what." },
-  se: { label: "Sales engineer", short: "SE", hint: "You run demos and proofs of value: a plan with success criteria, a clear picture, a result to hand over." },
+  se: { label: "Pre-sales engineer", short: "PSE", hint: "You run discovery, demos and proofs of value across many prospects: your own desk, the journey for each, a result to hand over." },
 };
 export const ROLE_IDS = Object.keys(ROLES);
 
@@ -15,7 +15,7 @@ const ESSENTIALS = {
   core: ["today", "overview", "connections", "accounts", "findings", "burndown", "actions", "planview", "prep", "pov", "report"],
   tam: ["today", "overview", "burndown", "accounts", "findings", "onboarding", "actions", "outlook", "teams", "prep", "call", "commitments", "asks", "renewal", "execqbr", "handoff", "value", "plan", "scorecard"],
   sa: ["today", "overview", "connections", "accounts", "onboarding", "maturity", "planview", "whatif", "teams", "pov", "burndown", "roadmap", "report"],
-  se: ["pov", "today", "overview", "maturity", "whatif", "connections", "burndown", "news", "execqbr", "onepager", "scorecard", "value", "report", "call"],
+  se: ["pov", "prep", "call", "today", "overview", "maturity", "whatif", "connections", "burndown", "news", "execqbr", "onepager", "scorecard", "value", "report"],
 };
 
 export const isRole = (r) => ROLE_IDS.includes(r);

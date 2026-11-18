@@ -2,6 +2,13 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.91.0
+
+- **Work as a pre-sales engineer, with a desk of your own.** Choosing "Pre-sales engineer" adds a presales desk to the menu, and the app opens on it next time. It shows every prospect kept in this browser at its stage (discovery, journey agreed, proof of value, decision), what is due in the next two weeks and what is late, a row per opportunity with the line to start with, what is at stake, how the proof is going and the next thing to do, and opens each where it stands. See [docs/presales.md](docs/presales.md).
+- **For the account team:** the Monday update in Markdown, and the pipeline as a CSV whose cells cannot run as formulas in a spreadsheet.
+- **Invented examples for the desk:** four made-up prospects at four stages, dated around today, added and removed in one click.
+- The "Sales engineer" role is now "Pre-sales engineer", with call prep and the call among its first views.
+
 ## 0.90.0
 
 - **Their inventory, read in the page.** In a discovery workshop, read a VM inventory export as CSV (the vInfo sheet of a common inventory tool, or a hand-made sheet): machines and how many run, vCPU and memory in use, storage, hosts and clusters, machines powered off, operating systems past general support, and a first wave to test. It brings the migration line into scope, puts what it found under the questions it answers, and heads the journey, the readout ("Where you start from") and the summary. A starting point for a sizing tool, not a sizing. Only totals and cluster names are kept, never machine names; an invented export is included to try it, and the example workshop comes with it.

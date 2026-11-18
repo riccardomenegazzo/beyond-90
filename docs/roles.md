@@ -8,7 +8,7 @@ The page keeps every view. A role only decides which ones sit first and which go
 |---|---|
 | Technical account manager | Today, overview, risk burn-down, accounts, findings, onboarding, actions, promises, asks, renewal, handoff |
 | Solutions architect | Today, overview, connections, accounts, onboarding, maturity, plan, what-if, proof of value, burn-down |
-| Sales engineer | Proof of value, overview, maturity, what-if, connections, burn-down, one-pager, call |
+| Pre-sales engineer | A presales desk of their own (every prospect from discovery to decision, the agenda, the weekly update), then proof of value, call prep, call, overview, maturity, what-if, one-pager, value |
 
 "Show everything" is the default and keeps the full list.
 
