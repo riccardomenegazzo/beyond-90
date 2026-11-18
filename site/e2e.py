@@ -773,6 +773,17 @@ def main(site: str) -> int:
         page.click("#open-workshop")
         page.wait_for_selector("#view .wsq")
         check("Kestrel Logistics" in page.inner_text("#reshead") and page.locator("#view .wsopt[aria-pressed=true]").count() == 16, "a workshop is kept in the browser and comes back after a reload")
+        # AI on the customer's own infrastructure: a first GPU sketch, open to the customer's assumptions
+        page.get_by_role("button", name="AI on our own infrastructure").click()
+        page.wait_for_selector("#view .szhead")
+        gpus = int(page.inner_text("#view .szhead > b"))
+        page.locator("#view details.szassume summary").first.click()
+        bits = page.locator("#view input[aria-label='Bits per weight as served']")
+        bits.fill("4")
+        bits.dispatch_event("change")
+        page.wait_for_timeout(300)
+        check(gpus == 8 and int(page.inner_text("#view .szhead > b")) < gpus and "copies of the model" in page.inner_text("#view .szhead"),
+              "with the AI line in scope, a first GPU sketch follows the assumptions: fewer bits, fewer GPUs")
         page.get_by_role("button", name="Leaving a virtualisation platform").click()
         page.wait_for_selector("#ws-platform-migration")
         check(page.locator("#view details.wsline").count() == 4 and page.locator("#view .wsopt[aria-pressed=true]").count() >= 8,
@@ -1316,6 +1327,9 @@ def main(site: str) -> int:
                 apage.get_by_role("button", name="Try it with an invented export").click()
                 apage.wait_for_selector("#view .invkpis")
                 bad += [f"inventory: {v}" for v in audit()]
+                apage.get_by_role("button", name="AI on our own infrastructure").click()
+                apage.wait_for_selector("#view .szhead")
+                bad += [f"gpu: {v}" for v in audit()]
                 apage.click(".rail [data-place=start]")
                 apage.locator("#hero-roles [data-role=se]").click()
                 apage.click("#desk-btn")

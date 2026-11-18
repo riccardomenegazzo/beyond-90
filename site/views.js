@@ -16,6 +16,7 @@ import * as SZ from "./sizing.js";
 import * as WV from "./waves.js";
 import * as VC from "./valuecase.js";
 import * as DL from "./delivery.js";
+import * as GPU from "./gpu.js";
 import { connections } from "./graph.js";
 import { headline, firstMinute, rankActions, chainText, doneSummary, funnelSegments, preview } from "./today.js";
 import { stageBars } from "./nav.js";
@@ -1634,7 +1635,7 @@ export function growView({ estate, focus, startWorkshop }) {
 const STAGE_TAG = { value: "Value", L1: "L1 connected", L2: "L2 seen", L3: "L3 switched on", L4: "L4 decided" };
 const painPct = (v) => `${Math.round(v * 100)}%`;
 
-export function workshopView({ workshop: w, catalog, list, answer, worth, rename, preparedBy, setScope, inventory, sizing, waves, today, newWorkshop, openWorkshop, removeWorkshop, presets = [], go, focus }) {
+export function workshopView({ workshop: w, catalog, list, answer, worth, rename, preparedBy, setScope, inventory, sizing, waves, gpu, today, newWorkshop, openWorkshop, removeWorkshop, presets = [], go, focus }) {
   const say = h("p", { class: "note", role: "status" });
   const act = (fn) => async (...a) => { try { await fn(...a); say.textContent = ""; } catch (e) { say.textContent = e.message; } };
   let cur = w;
@@ -1728,7 +1729,7 @@ export function workshopView({ workshop: w, catalog, list, answer, worth, rename
   });
   if (focus) requestAnimationFrame(() => { const el = document.getElementById("ws-" + focus); if (el) el.scrollIntoView({ block: "start" }); });
   return h("div", {}, meeting, inventory ? inventoryCard(w, inventory) : null, w.inventory && sizing ? sizingCard(w, sizing) : null,
-    w.inventory && waves ? wavesCard(w, waves, today) : null, h("div", { class: "card wsprogcard" }, prog), lines);
+    w.inventory && waves ? wavesCard(w, waves, today) : null, w.scope.includes("private-ai") && gpu ? gpuCard(w, gpu) : null, h("div", { class: "card wsprogcard" }, prog), lines);
 }
 
 /** The customer's VM inventory: read in the page, kept as totals, shown as the numbers a sizing starts from. */
@@ -1931,6 +1932,44 @@ export function caseView({ workshop: w, catalog, setCase }) {
     { sub: "What staying costs and what moving costs, month by month, in the customer's own figures. The arithmetic is shown so anyone can check it; it is not a quote." }),
     card("The figures", h("div", {}, h("label", { class: "szf vcyears" }, h("span", { text: "Over" }), years), h("div", { class: "vcgroups" }, groups)),
     { sub: "In the customer's currency, as they gave them. Leave blank what was not discussed." }));
+}
+
+/** A first GPU sketch for serving a model: memory for the weights and the conversations, copies, servers. */
+function gpuCard(w, gpu) {
+  const a = GPU.cleanGpu(w.gpu || {});
+  const say = h("p", { class: "note", role: "status" });
+  const out = h("div", { class: "szout" });
+  const fields = [
+    ["params_b", "Model size", "billion parameters"], ["bits", "Bits per weight as served", "16, 8 or 4"], ["context_k", "Tokens kept per request", "thousands"],
+    ["concurrent", "Requests in flight at the busiest time", ""], ["kv_kib_per_token", "Cache per token, from the model card", "KiB"], ["overhead_pct", "Runtime overhead", "%"],
+    ["gpu_mem_gib", "Memory per GPU", "GiB"], ["fill_pct", "Use each GPU's memory up to", "%"], ["gpus_per_server", "GPUs per server", ""], ["min_replicas", "Copies of the model at least", ""],
+    ["tps_per_user", "Tokens per second each user should see (0: not counted)", ""], ["tps_per_gpu", "Tokens per second one GPU was measured to give (0: unknown)", ""],
+  ];
+  const inputs = {};
+  const current = () => { const v = {}; for (const [k] of fields) v[k] = Number(inputs[k].value); return GPU.cleanGpu(v); };
+  const draw = (assumptions) => {
+    const sk = GPU.gpuSketch(assumptions);
+    if (!sk.ok) { put(out, h("p", { class: "note", text: sk.error })); return; }
+    put(out,
+      h("div", { class: "szhead" }, h("b", { text: String(sk.gpus) }), h("span", {}, h("strong", { text: "GPUs" }),
+        h("small", { text: `in ${sk.servers} server${sk.servers === 1 ? "" : "s"}: ${sk.copies} copies of the model on ${sk.shape} GPU${sk.shape === 1 ? "" : "s"} each, decided by ${sk.decided}` }))),
+      h("ol", { class: "szsteps" }, sk.steps.map((t) => h("li", { text: t }))),
+      h("div", { class: "growproof" }, h("small", { text: "Check before relying on it" }), h("ul", {}, GPU.gpuNotes(assumptions).map((t) => h("li", { text: t })))));
+  };
+  const save = async () => { const v = current(); draw(v); try { await gpu(v); say.textContent = ""; } catch (e) { say.textContent = e.message; } };
+  const grid = h("div", { class: "szgrid" }, fields.map(([k, label, unit]) => {
+    inputs[k] = h("input", { type: "number", step: "any", value: String(a[k]), "aria-label": label });
+    inputs[k].addEventListener("change", save);
+    return h("label", { class: "szf" }, h("span", { text: label + (unit ? ` (${unit})` : "") }), inputs[k]);
+  }));
+  draw(a);
+  return card("A first GPU sketch", h("div", { class: "sz" }, out, h("details", { class: "szassume" }, h("summary", { text: "The assumptions, to agree with the customer" }), grid,
+    h("div", { class: "btnrow" }, h("button", { class: "btn small", type: "button", text: "Back to the defaults", onclick: async () => {
+      for (const [k] of fields) inputs[k].value = String(GPU.GPU_DEFAULTS[k]);
+      draw(GPU.GPU_DEFAULTS);
+      try { await gpu(null); } catch (e) { say.textContent = e.message; }
+    } }))), say),
+  { sub: "For serving a model on the customer's own GPUs: memory for the weights and for the conversations in flight, the GPUs one copy takes, the copies the load and availability need. A starting point for a benchmark on their prompts, not a sizing." });
 }
 
 /** A plan in waves from the inventory: a test wave, then cluster by cluster, the same steps every time. */

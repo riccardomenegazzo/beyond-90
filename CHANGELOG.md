@@ -2,6 +2,16 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.99.0
+
+- **A first GPU sketch** for AI on the customer's own infrastructure. It covers:
+  - the memory for the weights and for the conversations in flight;
+  - the GPUs one copy of the model takes, inside one server;
+  - the copies the load needs and, with a measured figure, the speed each user should see;
+  - at least two copies for availability, and the servers that makes.
+
+  Every step is written out, with what decided the count and what to check before relying on it. The assumptions are kept with the workshop, and appear in the meeting summary and the handover to delivery. A starting point for a benchmark, not a sizing.
+
 ## 0.98.0
 
 - **The invented example comes complete.** "See a filled-in example" now opens a prospect where every presales view has something to show:

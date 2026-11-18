@@ -66,6 +66,21 @@ Design notes follow the assumptions: keep the servers alike (the capacity left a
 
 It is a sketch, to agree the order of magnitude and the assumptions with the customer, not a sizing: the vendor's sizing tool, with the measured workload, has the last word. The assumptions are kept with the workshop and shown in the meeting summary.
 
+## A first GPU sketch
+
+With AI on the customer's own infrastructure in scope, **A first GPU sketch** works out how many GPUs serving a model takes:
+1. the memory for the weights (parameters × bits per weight);
+2. the memory for the conversations in flight (tokens kept per request × the cache per token from the model card × requests in flight);
+3. how many GPUs one copy of the model takes (1, 2, 4 or 8 in one server, leaving at least a fifth for conversations);
+4. how many copies the load needs, and, if there is a measured figure, the speed each user should see;
+5. at least two copies, for availability.
+
+What decided the count is said, and every step is written out. The notes say what to check before relying on it: tokens per second measured on the customer's own prompts, a copy's GPUs in one server, the answers checked on the customer's tasks at fewer bits.
+
+It is a starting point for a benchmark, not a sizing. The assumptions are kept with the workshop, in the meeting summary and in the handover to delivery.
+
+![A first GPU sketch: GPUs, copies of the model, and each step of the arithmetic](img/app-gpu.png)
+
 ## A plan in waves
 
 From the same inventory, **A plan in waves** proposes how the move would run: a test wave first, from the cluster that teaches the most for the least risk, then cluster by cluster, the least risky first (fewest machines past support, smallest). Clusters move whole, so machines that talk to each other inside one stay together; dependencies across clusters still have to be checked with the application owners.

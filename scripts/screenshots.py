@@ -114,6 +114,14 @@ def shoot(site: Path, out: Path) -> None:
             pg.evaluate("(() => { const c = document.querySelectorAll('#view .card')[1]; window.scrollTo({ top: c.getBoundingClientRect().top + window.scrollY - 76, behavior: 'instant' }); })()")
             pg.wait_for_timeout(300)
             pg.screenshot(path=str(out / "app-prepare.png"))
+            pg.click("#tabs [data-tab=workshop]")
+            pg.wait_for_selector("#view .wsq")
+            pg.get_by_role("button", name="AI on our own infrastructure").click()
+            pg.wait_for_selector("#view .szhead")
+            pg.locator("#view details.szassume summary").first.click()
+            pg.evaluate("(() => { const c = document.querySelector('#view .szhead').closest('.card'); window.scrollTo({ top: c.getBoundingClientRect().top + window.scrollY - 76, behavior: 'instant' }); })()")
+            pg.wait_for_timeout(300)
+            pg.screenshot(path=str(out / "app-gpu.png"))
 
             # the invented example: its inventory, and a first sizing sketch from it
             pg.click(".rail [data-place=start]")

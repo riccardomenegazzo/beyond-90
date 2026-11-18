@@ -12,6 +12,7 @@ import { validAssumptions, sketch, sketchMarkdown } from "./sizing.js";
 import { validWaves, planWaves, wavesMarkdown, wavesLine, RUNBOOK } from "./waves.js";
 import { calendar } from "./ics.js";
 import { validCase, buildCase, caseLine, caseMarkdown, money } from "./valuecase.js";
+import { validGpu, gpuSketch, gpuMarkdown } from "./gpu.js";
 
 export const ANSWERS = {
   solved: { label: "Solved", weight: 0 },
@@ -70,6 +71,7 @@ export function validWorkshop(w) {
   if (w.sizing != null && !validAssumptions(w.sizing)) return false;
   if (w.waves != null && !validWaves(w.waves)) return false;
   if (w.case != null && !validCase(w.case)) return false;
+  if (w.gpu != null && !validGpu(w.gpu)) return false;
   if (w.raised != null && !(Array.isArray(w.raised) && w.raised.length && w.raised.length <= MAX_RAISED && w.raised.every((k) => typeof k === "string" && RAISED.test(k)) && new Set(w.raised).size === w.raised.length)) return false;
   const m = /^ws\|(\d{4}-\d{2}-\d{2})\|([a-z0-9]+)$/.exec(w.id || "");
   return !!m && m[1] === w.created_on && NONCE.test(m[2]);
@@ -175,6 +177,17 @@ export function setWaves(w, settings, today) {
   if (settings) {
     if (!validWaves(settings)) throw new Error("One of the wave settings is out of range.");
     next.waves = settings;
+  }
+  return changed(next, {}, today);
+}
+
+/** The assumptions of the GPU sketch, or null to go back to the defaults. */
+export function setGpu(w, assumptions, today) {
+  const next = { ...w };
+  delete next.gpu;
+  if (assumptions) {
+    if (!validGpu(assumptions)) throw new Error("One of the GPU assumptions is out of range.");
+    next.gpu = assumptions;
   }
   return changed(next, {}, today);
 }
@@ -468,6 +481,7 @@ export function summaryMarkdown(catalog, w, res) {
   }
   const cs = w.case ? buildCase(w.case) : null;
   if (cs && cs.ok) out.push("## The case for change", "", caseMarkdown(cs).split("\n").slice(2).join("\n"), "");
+  if (w.gpu && w.scope.includes("private-ai")) out.push(gpuMarkdown(gpuSketch(w.gpu)), "");
   const told = res.land ? stories(catalog, w, res).find((x) => x.land) : null;
   if (told && Object.keys(told.audiences).length) {
     out.push(`## How to tell it: ${told.label.toLowerCase()}`, "");

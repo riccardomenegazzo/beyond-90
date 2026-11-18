@@ -377,3 +377,15 @@ test("the readout says who it helps to have at the next meeting", () => {
   assert.match(html, /It helps to have in the room:/);
   assert.match(html, new RegExp(CAT.lines["dr-backup"].story.people[0].replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
 });
+
+import { setGpu } from "../workshop.js";
+
+test("the GPU sketch is kept with the workshop, checked on import, and reaches the summary when the AI line is in scope", () => {
+  let w = makeWorkshop({ customer: "Acme (mock)", scope: ["private-ai", "hci"], createdOn: "2026-11-01", nonce: "abcdef" });
+  w = setGpu(w, { params_b: 8, bits: 8, concurrent: 100 }, "2026-11-02");
+  assert.equal(validWorkshop(w), true);
+  assert.match(summaryMarkdown(CAT, w, assess(CAT, w)), /### A first GPU sketch/);
+  assert.equal(validWorkshop({ ...w, gpu: { params_b: -1 } }), false);
+  assert.throws(() => setGpu(w, { bits: 64 }, "2026-11-02"));
+  assert.equal("gpu" in setGpu(w, null, "2026-11-02"), false);
+});
