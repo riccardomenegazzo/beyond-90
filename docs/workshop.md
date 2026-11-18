@@ -78,6 +78,15 @@ Notes that hold whatever the product: recover dependent applications together an
 
 ![A first recovery design: replication, bandwidth and retention for three tiers](img/app-recovery.png)
 
+## A first backup capacity sketch
+
+With object storage in scope, **A first backup capacity sketch** works out what a retention scheme holds:
+- one full, the daily points, the weekly and the monthly fulls (each kept full adds only what changed since the one before, as with synthetic fulls);
+- then the data reduction counted, room to grow, how full the store may get, and the protection overhead (erasure coding about 1.3x to 1.5x, three copies 3x);
+- the result in usable and raw TiB, and the bandwidth the nightly window needs.
+
+Notes that hold whatever the product: lock the backups for as long as an attack could go unnoticed, time a full restore of the largest system, measure a high reduction on the customer's own backups, and ask what rule asks for years of monthly copies. The backup product's own calculator, on the customer's data, has the last word.
+
 ## A first GPU sketch
 
 With AI on the customer's own infrastructure in scope, **A first GPU sketch** works out how many GPUs serving a model takes:

@@ -837,6 +837,15 @@ def main(site: str) -> int:
         far.dispatch_event("change")
         page.wait_for_timeout(300)
         check("Not at this distance" in page.inner_text("#view .drtable"), "and says when the distance rules out zero data loss")
+        objcard = page.locator("#view .card").filter(has_text="A first backup capacity sketch")
+        usable = float(objcard.locator(".szhead > b").inner_text().replace(",", ""))
+        objcard.locator("details.szassume summary").click()
+        months = page.locator("#view input[aria-label='Monthly fulls kept']")
+        months.fill("84")
+        months.dispatch_event("change")
+        page.wait_for_timeout(300)
+        check("TiB usable" in objcard.inner_text() and float(objcard.locator(".szhead > b").inner_text().replace(",", "")) > usable and "colder tier" in objcard.inner_text(),
+              "with object storage in scope, a backup capacity sketch follows the retention agreed with the customer")
         page.click("[data-tab=readout]")
         check("How the move would run" in page.frame_locator("#report").locator("body").inner_text(), "the customer readout shows how the move would run")
         # the case for change, in the customer's figures

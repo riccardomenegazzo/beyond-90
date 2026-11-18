@@ -2,6 +2,15 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.102.0
+
+- **A first backup capacity sketch** for object storage. It covers:
+  - what a retention scheme holds (one full, daily points, weekly and monthly fulls), each kept full adding only what changed;
+  - data reduction, growth, how full the store may get, and the protection overhead;
+  - the result in usable and raw TiB, and the bandwidth the nightly window needs.
+
+  Every step is written out, with notes on locking, restore tests and optimistic reduction. It appears in the meeting summary and the handover to delivery.
+
 ## 0.101.0
 
 - **The next meeting.** In "Where to start", an agenda built from what the last meeting left open:

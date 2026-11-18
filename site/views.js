@@ -19,6 +19,7 @@ import * as DL from "./delivery.js";
 import * as GPU from "./gpu.js";
 import * as DRS from "./drsketch.js";
 import * as NM from "./nextmeeting.js";
+import * as OBJ from "./objsketch.js";
 import { connections } from "./graph.js";
 import { headline, firstMinute, rankActions, chainText, doneSummary, funnelSegments, preview } from "./today.js";
 import { stageBars } from "./nav.js";
@@ -1637,7 +1638,7 @@ export function growView({ estate, focus, startWorkshop }) {
 const STAGE_TAG = { value: "Value", L1: "L1 connected", L2: "L2 seen", L3: "L3 switched on", L4: "L4 decided" };
 const painPct = (v) => `${Math.round(v * 100)}%`;
 
-export function workshopView({ workshop: w, catalog, list, answer, worth, rename, preparedBy, setScope, inventory, sizing, waves, gpu, dr, today, newWorkshop, openWorkshop, removeWorkshop, presets = [], go, focus }) {
+export function workshopView({ workshop: w, catalog, list, answer, worth, rename, preparedBy, setScope, inventory, sizing, waves, gpu, dr, obj, today, newWorkshop, openWorkshop, removeWorkshop, presets = [], go, focus }) {
   const say = h("p", { class: "note", role: "status" });
   const act = (fn) => async (...a) => { try { await fn(...a); say.textContent = ""; } catch (e) { say.textContent = e.message; } };
   let cur = w;
@@ -1732,7 +1733,7 @@ export function workshopView({ workshop: w, catalog, list, answer, worth, rename
   if (focus) requestAnimationFrame(() => { const el = document.getElementById("ws-" + focus); if (el) el.scrollIntoView({ block: "start" }); });
   return h("div", {}, meeting, inventory ? inventoryCard(w, inventory) : null, w.inventory && sizing ? sizingCard(w, sizing) : null,
     w.inventory && waves ? wavesCard(w, waves, today) : null, w.scope.includes("private-ai") && gpu ? gpuCard(w, gpu) : null,
-    w.scope.includes("dr-backup") && dr ? drCard(w, dr) : null, h("div", { class: "card wsprogcard" }, prog), lines);
+    w.scope.includes("dr-backup") && dr ? drCard(w, dr) : null, w.scope.includes("object-storage") && obj ? objCard(w, obj) : null, h("div", { class: "card wsprogcard" }, prog), lines);
 }
 
 /** The customer's VM inventory: read in the page, kept as totals, shown as the numbers a sizing starts from. */
@@ -1935,6 +1936,42 @@ export function caseView({ workshop: w, catalog, setCase }) {
     { sub: "What staying costs and what moving costs, month by month, in the customer's own figures. The arithmetic is shown so anyone can check it; it is not a quote." }),
     card("The figures", h("div", {}, h("label", { class: "szf vcyears" }, h("span", { text: "Over" }), years), h("div", { class: "vcgroups" }, groups)),
     { sub: "In the customer's currency, as they gave them. Leave blank what was not discussed." }));
+}
+
+/** A first capacity sketch for backups on object storage: retention, reduction, protection, growth, the nightly window. */
+function objCard(w, obj) {
+  const a = OBJ.cleanObj(w.obj || {});
+  const say = h("p", { class: "note", role: "status" });
+  const out = h("div", { class: "szout" });
+  const fields = [
+    ["data_tib", "Protected data (TiB, 0: from the inventory)"], ["change_pct", "Data changed each day (%)"], ["daily_days", "Daily restore points kept"],
+    ["weekly_weeks", "Weekly fulls kept"], ["monthly_months", "Monthly fulls kept"], ["reduction", "Data reduction counted (ratio)"],
+    ["protection", "Raw over usable for protection (x)"], ["growth_pct", "Growth over the system's life (%)"], ["fill_pct", "Keep the store below (%)"], ["window_h", "Nightly backup window (hours)"],
+  ];
+  const inputs = {};
+  const current = () => { const v = {}; for (const [k] of fields) v[k] = Number(inputs[k].value); return OBJ.cleanObj(v); };
+  const draw = (settings) => {
+    const sk = OBJ.objSketch(settings, w.inventory);
+    if (!sk.ok) { put(out, h("p", { class: "note", text: sk.error })); return; }
+    put(out,
+      h("div", { class: "szhead" }, h("b", { text: INV.fmt(sk.usable) }), h("span", {}, h("strong", { text: "TiB usable" }), h("small", { text: `${INV.fmt(sk.raw)} TiB raw; about ${INV.fmt(sk.gbps)} Gbit/s in the nightly window` }))),
+      h("ol", { class: "szsteps" }, sk.steps.map((t) => h("li", { text: t }))),
+      h("div", { class: "growproof" }, h("small", { text: "Whatever the product" }), h("ul", {}, OBJ.objNotes(sk).map((t) => h("li", { text: t })))));
+  };
+  const save = async () => { const v = current(); draw(v); try { await obj(v); say.textContent = ""; } catch (e) { say.textContent = e.message; } };
+  const grid = h("div", { class: "szgrid" }, fields.map(([k, label]) => {
+    inputs[k] = h("input", { type: "number", step: "any", min: "0", value: String(a[k]), "aria-label": label });
+    inputs[k].addEventListener("change", save);
+    return h("label", { class: "szf" }, h("span", { text: label }), inputs[k]);
+  }));
+  draw(a);
+  return card("A first backup capacity sketch", h("div", { class: "sz" }, out, h("details", { class: "szassume" }, h("summary", { text: "The retention and the assumptions, to agree with the customer" }), grid,
+    h("div", { class: "btnrow" }, h("button", { class: "btn small", type: "button", text: "Back to the defaults", onclick: async () => {
+      for (const [k] of fields) inputs[k].value = String(OBJ.OBJ_DEFAULTS[k]);
+      draw(OBJ.OBJ_DEFAULTS);
+      try { await obj(null); } catch (e) { say.textContent = e.message; }
+    } }))), say),
+  { sub: "For backups kept on object storage: what the retention holds after reduction, with protection and room to grow, and what the nightly window needs. The backup product's own calculator, on the customer's data, has the last word." });
 }
 
 /** A first recovery design: per tier, the replication its recovery point calls for, the bandwidth, a retention. */

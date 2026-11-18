@@ -401,3 +401,15 @@ test("the recovery design is kept with the workshop, checked on import, and reac
   assert.throws(() => setDr(w, { change_pct: -3 }, "2026-11-02"));
   assert.equal("dr" in setDr(w, null, "2026-11-02"), false);
 });
+
+import { setObj } from "../workshop.js";
+
+test("the backup capacity sketch is kept with the workshop, checked on import, and reaches the summary when object storage is in scope", () => {
+  let w = makeWorkshop({ customer: "Acme (mock)", scope: ["object-storage"], createdOn: "2026-11-01", nonce: "abcdef" });
+  w = setObj(w, { data_tib: 40, monthly_months: 24 }, "2026-11-02");
+  assert.equal(validWorkshop(w), true);
+  assert.match(summaryMarkdown(CAT, w, assess(CAT, w)), /### A first backup capacity sketch/);
+  assert.equal(validWorkshop({ ...w, obj: { reduction: 0 } }), false);
+  assert.throws(() => setObj(w, { fill_pct: 99 }, "2026-11-02"));
+  assert.equal("obj" in setObj(w, null, "2026-11-02"), false);
+});
