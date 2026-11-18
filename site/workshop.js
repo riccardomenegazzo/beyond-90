@@ -7,6 +7,8 @@
 // Pure functions over plain records, so the page and the tests share them. A workshop is a customer fact: it is kept
 // in the browser's store, sealed when a passphrase is set, and erased with the customer.
 
+import { validSummary, notesFor, fmt } from "./inventory.js";
+
 export const ANSWERS = {
   solved: { label: "Solved", weight: 0 },
   partly: { label: "Partly", weight: 0.5 },
@@ -59,6 +61,7 @@ export function validWorkshop(w) {
     if (v.by != null && !(isDate(v.by) && v.by >= w.created_on)) return false;
   }
   if (w.prepared_by != null && (typeof w.prepared_by !== "string" || w.prepared_by.length > 80)) return false;
+  if (w.inventory != null && !validSummary(w.inventory)) return false;
   const m = /^ws\|(\d{4}-\d{2}-\d{2})\|([a-z0-9]+)$/.exec(w.id || "");
   return !!m && m[1] === w.created_on && NONCE.test(m[2]);
 }
@@ -133,6 +136,21 @@ export function rename(w, customer, today) {
   return changed(w, { customer: name }, today);
 }
 
+/** The customer's inventory, as totals: it brings the migration line into scope and answers part of its questions. */
+export function setInventory(w, summary, today) {
+  const next = { ...w };
+  delete next.inventory;
+  if (summary) {
+    if (!validSummary(summary)) throw new Error("That inventory summary is not valid.");
+    next.inventory = summary;
+    if (!next.scope.includes("platform-migration") && next.scope.length < MAX_SCOPE) next.scope = [...next.scope, "platform-migration"];
+  }
+  return changed(next, {}, today);
+}
+
+/** What the inventory says about one question, if anything. */
+export const factFor = (w, profile, index) => (w.inventory && profile === "platform-migration" ? notesFor(w.inventory)[index] || "" : "");
+
 /** Who prepared the workshop, for the readout's footer; empty removes it. */
 export function setPreparedBy(w, name, today) {
   const n = text(name, 80);
@@ -155,6 +173,9 @@ export const PRESETS = [
   { id: "resilience", label: "Resilience and ransomware", scope: ["hci", "dr-backup", "object-storage", "file-storage"] },
   { id: "migration", label: "Leaving a virtualisation platform", scope: ["platform-migration", "hci", "dr-backup", "dbaas"] },
   { id: "modernise", label: "Modernising applications", scope: ["kubernetes-platform", "dbaas", "hci", "object-storage"] },
+  { id: "ai", label: "AI on our own infrastructure", scope: ["private-ai", "kubernetes-platform", "object-storage", "hci"] },
+  { id: "hybrid", label: "Hybrid and sovereign cloud", scope: ["hybrid-cloud", "dr-backup", "hci", "platform-migration"] },
+  { id: "workplace", label: "The digital workplace", scope: ["euc", "file-storage", "hci", "dr-backup"] },
   { id: "cloudsec", label: "Securing the cloud", scope: ["cnapp", "identity", "siem", "saas"] },
 ];
 
@@ -252,8 +273,8 @@ const STAGE_ORDER = { value: 0, L1: 1, L2: 2, L3: 3, L4: 4 };
 const STATUS_ORDER = { gap: 0, unknown: 1, partly: 2 };
 
 /** One line's answers turned into conditions: what would need to be true, where the customer is today, the first step. */
-function conditions(l) {
-  const of = (items, status) => items.map((q) => ({ need: q.need || q.q, how: q.how || "", q: q.q, note: q.note || "", status, stage: q.stage, profile: l.profile, index: q.index, who: q.who || "", by: q.by || "" }));
+function conditions(l, w) {
+  const of = (items, status) => items.map((q) => ({ fact: w ? factFor(w, l.profile, q.index) : "", need: q.need || q.q, how: q.how || "", q: q.q, note: q.note || "", status, stage: q.stage, profile: l.profile, index: q.index, who: q.who || "", by: q.by || "" }));
   return [...of(l.gaps, "gap"), ...of(l.unknowns, "unknown"), ...of(l.partly, "partly")]
     .sort((a, b) => STAGE_ORDER[a.stage] - STAGE_ORDER[b.stage] || STATUS_ORDER[a.status] - STATUS_ORDER[b.status]);
 }
@@ -266,7 +287,7 @@ const already = (items) => items.map((q) => q.need || q.q);
  */
 export function journey(catalog, w, res) {
   if (!res.land) return null;
-  const land = res.land, all = conditions(land);
+  const land = res.land, all = conditions(land, w);
   const steps = [];
   const agree = all.filter((c) => c.stage === "value"), agreeDone = already(land.solved.filter((q) => q.stage === "value"));
   if (agree.length || agreeDone.length) {
@@ -280,7 +301,7 @@ export function journey(catalog, w, res) {
     const l = res.lines.find((x) => x.profile === e.profile);
     const proof = (catalog.lines[e.profile] || { proof: [] }).proof;
     steps.push({ kind: "then", title: `Then ${e.label.toLowerCase()}`, profile: e.profile, label: e.label, why: e.why,
-      conditions: l ? conditions(l) : [], already: l ? already(l.solved) : [], discussed: !!(l && l.answered),
+      conditions: l ? conditions(l, w) : [], already: l ? already(l.solved) : [], discussed: !!(l && l.answered),
       validate: proof.slice(0, 1).map((c) => c.text) });
   }
   const need = steps.reduce((n, s) => n + s.conditions.length, 0);
@@ -300,6 +321,7 @@ export function journey(catalog, w, res) {
 /** The note to send after the meeting: what we heard, where it hurts, the proposal, and what is still open. */
 export function summaryMarkdown(catalog, w, res) {
   const out = [`# Discovery: ${w.customer}`, "", `Workshop started ${w.created_on}, last updated ${w.updated_on}. ${res.answered} of ${res.total} questions answered across ${res.lines.length} product line${res.lines.length === 1 ? "" : "s"}.`, ""];
+  if (w.inventory) out.push("## Where they start from", "", inventoryLine(w.inventory), "");
   out.push("## What we heard", "");
   for (const l of res.lines) {
     if (!l.answered) continue;
@@ -333,6 +355,13 @@ export function summaryMarkdown(catalog, w, res) {
   }
   out.push("_Prepared with Beyond 90. The questions come from its product profiles; nothing in this note left the browser it was written in._", "");
   return out.join("\n");
+}
+
+/** The inventory in one sentence. */
+export function inventoryLine(s) {
+  return `${fmt(s.vms)} virtual machines (${fmt(s.on)} running) on ${fmt(s.clusters.length)} cluster${s.clusters.length === 1 ? "" : "s"} and ${fmt(s.hosts)} host${s.hosts === 1 ? "" : "s"}: `
+    + `${fmt(s.vcpu_on)} vCPU and ${fmt(s.mem_on_gib)} GiB of memory in use, ${fmt(s.used_tib != null ? s.used_tib : s.prov_tib)} TiB of storage ${s.used_tib != null ? "used" : "provisioned"}`
+    + `${s.past_total ? `; ${fmt(s.past_total)} machines on operating systems past general support` : ""}. From the inventory export of ${s.imported_on}.`;
 }
 
 // ------------------------------------------------------------------ the readout: a page for the customer
@@ -388,6 +417,7 @@ export function readoutHtml(catalog, w, res, { preparedBy = "", today = "" } = {
     `<title>${esc(w.customer)}: discovery readout</title><style>${css}</style></head><body><main>`,
     `<header class="top"><p>Discovery readout${today ? `, ${esc(today)}` : ""}</p><h1>${esc(w.customer)}: where we could go together</h1>`,
     `<p>From our conversation${heard.length ? ` on ${esc(heard.map((l) => l.label.toLowerCase()).join(", "))}` : ""}. It is meant to be corrected: tell us what we misheard.</p></header>`];
+  if (w.inventory) out.push(`<div class="stake"><small>Where you start from</small>${esc(inventoryLine(w.inventory))}</div>`);
   if (j) {
     out.push(`<p class="lead">Yes, this is possible.</p><p>Here is what would need to be true, how we would get there, and how each step would be proven before the next one starts.</p>`);
     out.push(`<div class="stats"><div><b>${j.need}</b><span>things to make true</span></div><div><b>${j.done}</b><span>already true today</span></div><div><b>${j.unknown}</b><span>to find out together</span></div></div>`);
@@ -404,7 +434,7 @@ export function readoutHtml(catalog, w, res, { preparedBy = "", today = "" } = {
         const planned = st.conditions.some((c) => c.who || c.by);
         out.push(`<table><thead><tr><th>What would need to be true</th><th>Today</th><th>First step</th>${planned ? "<th>Who, by when</th>" : ""}</tr></thead><tbody>`);
         for (const c of st.conditions) {
-          out.push(`<tr><td>${esc(c.need)}${c.note ? `<br><q>${esc(c.note)}</q>` : ""}</td><td class="st">${TODAY_WORDS[c.status]}</td><td>${esc(c.how)}</td>`
+          out.push(`<tr><td>${esc(c.need)}${c.note ? `<br><q>${esc(c.note)}</q>` : ""}${c.fact ? `<br><small>${esc(c.fact)}</small>` : ""}</td><td class="st">${TODAY_WORDS[c.status]}</td><td>${esc(c.how)}</td>`
             + (planned ? `<td class="st">${c.who ? esc(WHO[c.who]) : ""}${c.who && c.by ? "<br>" : ""}${c.by ? esc(c.by) : ""}</td>` : "") + `</tr>`);
         }
         out.push(`</tbody></table>`);

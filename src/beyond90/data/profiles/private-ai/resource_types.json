@@ -1,0 +1,34 @@
+{
+  "version": "2026.4",
+  "description": "AI on your own infrastructure: GPU clusters that serve models and agents next to the organisation's data, with model lifecycle, access, cost and governance to adopt.",
+  "terms": {
+    "estate": "AI platform",
+    "unit": "AI cluster",
+    "units": "AI clusters",
+    "menu": "AI clusters"
+  },
+  "types": {
+    "gpu_node": "GPU nodes",
+    "model_endpoint": "Model endpoints serving teams",
+    "vector_store": "Retrieval indexes over the organisation's data",
+    "agent": "Agents that call tools and data",
+    "usage_policy": "Policies on who can use which model, with which data"
+  },
+  "expected": {
+    "datacenter": [
+      "gpu_node",
+      "model_endpoint",
+      "vector_store",
+      "usage_policy"
+    ],
+    "edge": [
+      "gpu_node",
+      "model_endpoint"
+    ],
+    "sovereign_cloud": [
+      "gpu_node",
+      "model_endpoint",
+      "usage_policy"
+    ]
+  }
+}

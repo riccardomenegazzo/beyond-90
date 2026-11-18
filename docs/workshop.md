@@ -23,6 +23,14 @@ The rest of Beyond 90 reads what a customer runs. The first meetings with a pros
 
 ![Where to start: the first line, what is still missing and the path after](img/app-hurt.png)
 
+## Their inventory
+
+In a conversation about moving off a virtualisation platform, the first numbers come from an inventory export. Under **Their inventory**, read the CSV of the sheet that lists one virtual machine per row (the vInfo sheet of a common inventory tool saved as CSV, or a hand-made sheet with columns such as name, vcpus, memory_gb, disk_gb, os, cluster). Columns are matched by name and units read from them (MiB or GiB); templates are left out.
+
+It shows the machines and how many run, vCPU and memory in use, storage used or provisioned, hosts and clusters, the largest clusters, machines powered off (candidates to retire rather than move), operating systems past general support, and a first wave: a small cluster with the least past support, which teaches the most for the least risk. It also brings the migration line into scope and puts what the export says under the questions it answers, and into the journey, the readout ("Where you start from") and the summary.
+
+It is a starting point for a sizing tool, not a sizing. The file is read in the page and not kept: only totals and cluster names are stored with the workshop, never machine names. "Try it with an invented export" loads a made-up one.
+
 ## How "still missing" is counted
 
 For each line, a real gap counts 1, nobody knows 0.6 (not knowing is itself a finding), partly 0.5 and solved 0; answers to business-value questions count double. What is still missing is that sum over the most it could be for the questions answered. The line to start with is the one with the most still missing, weighted a little by how much of it was explored, so a line heard about twice does not beat one explored in eight questions.

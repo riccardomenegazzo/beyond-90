@@ -26,7 +26,7 @@ from playwright.sync_api import sync_playwright
 
 # Controls live in places (Start, Saved, Help); the test opens the place before using one, as a person would.
 PLACE_OF = {
-    **dict.fromkeys(("open-starter", "open-mapper", "map-file", "map-body", "map-check", "map-use", "map-cancel", "map-notes", "demo", "demo-book", "demo-estate", "open-workshop", "demo-endpoint", "demo-saas", "demo-ai", "demo-identity", "demo-siem", "demo-hci", "demo-objstore", "demo-dbaas", "demo-files", "demo-k8s", "demo-dr", "demo-migration", "latest-adv", "demo-adv", "clear-adv", "adv-status", "run", "cancel",
+    **dict.fromkeys(("open-starter", "open-mapper", "map-file", "map-body", "map-check", "map-use", "map-cancel", "map-notes", "demo", "demo-book", "demo-estate", "open-workshop", "demo-endpoint", "demo-saas", "demo-ai", "demo-identity", "demo-siem", "demo-hci", "demo-objstore", "demo-dbaas", "demo-files", "demo-k8s", "demo-dr", "demo-migration", "demo-privateai", "demo-hybrid", "demo-euc", "latest-adv", "demo-adv", "clear-adv", "adv-status", "run", "cancel",
                      "weeks", "hours", "real", "quarter", "bookhours", "weighting", "loaded", "status"), "start"),
     **dict.fromkeys(("demo-prev", "export", "forget", "vault-on", "vault-unlock", "vault-lock", "vault-off", "vault-state",
                      "vault-warn", "ws-status", "history-body", "device-qr", "send-work", "history-empty", "hist-table", "trend", "autosave", "personal", "privacy-body", "restore-in", "restore-out", "restore-note", "erase-result"), "saved"),
@@ -747,12 +747,17 @@ def main(site: str) -> int:
         page.wait_for_selector("#ws-platform-migration")
         check(page.locator("#view details.wsline").count() == 4 and page.locator("#view .wsopt[aria-pressed=true]").count() >= 8,
               "a starting point sets the lines in scope, and keeps what was already answered")
+        page.get_by_role("button", name="Try it with an invented export").click()
+        page.wait_for_selector("#view .invkpis")
+        check("620" in page.inner_text("#view .invkpis") and "CL-TEST" in page.inner_text("#view .inv"), "an inventory export is read in the page into totals and a first wave")
+        check("From their inventory: 620 virtual machines on 5 clusters" in page.inner_text("#ws-platform-migration"), "and answers part of the migration questions")
         # a filled-in example, for showing the method in thirty seconds, and deleting it again
         page.click(".rail [data-place=start]")
         page.click("#demo-workshop")
         page.wait_for_selector("#view ol.journey")
         check("2,000,000 per day" in page.inner_text("#view .jhero") and "Kestrel Logistics" in page.inner_text("#reshead") and page.locator("#view .jstep").count() >= 3,
               "the example opens on its journey, with figures and notes")
+        check("Where they start from" in page.inner_text("#view .jhero") and "620 virtual machines" in page.inner_text("#view .jhero"), "the example comes with an invented inventory")
         page.get_by_role("button", name="Present", exact=True).click()
         page.wait_for_selector("body.presenting")
         check(not page.is_visible("#rail") and page.is_visible("#view .jhero") and page.is_visible("#present-exit"), "presenting shows the journey alone, with a way back")
@@ -775,7 +780,7 @@ def main(site: str) -> int:
         check("Halden Group" in page.inner_text("#run"), "the estate demo is one customer, not a book")
         run_and_wait()
         page.wait_for_selector("#view .estatemap")
-        check(page.locator("#view .enode").count() == 7 and page.locator("#view .enode.absent").count() == 3, "the estate map draws the whole family, with the three lines not in place dashed")
+        check(page.locator("#view .enode").count() == 10 and page.locator("#view .enode.absent").count() == 6, "the estate map draws the whole family, with the lines not in place dashed")
         check(page.locator("#view .elink.risk").count() >= 1 and page.locator("#view .elink.grow").count() >= 1, "and links coloured by risk and by what comes next")
         check(page.locator("#view .heatcell").count() == 16 and "of 14 clusters" in page.inner_text("#view") and "of 10 sites" in page.inner_text("#view"), "each line is counted in its own units")
         check("Platform 71.9%, recovery 42.8%" in page.inner_text("#view"), "a solid line leaning on a weak one is called out")
@@ -783,7 +788,7 @@ def main(site: str) -> int:
         page.locator("#view .enode.absent").first.focus()
         page.keyboard.press("Enter")
         page.wait_for_selector("#view .card.grow.focus")
-        check(page.locator("#view .card.grow").count() == 3 and "Open with" in page.inner_text("#view"), "a missing line opens where to grow, with the first question to ask")
+        check(page.locator("#view .card.grow").count() == 6 and "Open with" in page.inner_text("#view"), "a missing line opens where to grow, with the first question to ask")
         page.locator("#view .card.grow.focus").get_by_role("button", name="Start a discovery workshop on this line").click()
         page.wait_for_selector("#view .wsq")
         check("Halden Group" in page.inner_text("#reshead") and page.locator("#view details.wsline").count() == 1, "a line to grow starts a discovery workshop with the same customer, on that line")
@@ -1188,6 +1193,9 @@ def main(site: str) -> int:
                 apage.wait_for_selector("#view .wsq")
                 apage.locator("#view .wsq").first.get_by_role("button", name="A real gap", exact=True).click()
                 bad += [f"workshop: {v}" for v in audit()]
+                apage.get_by_role("button", name="Try it with an invented export").click()
+                apage.wait_for_selector("#view .invkpis")
+                bad += [f"inventory: {v}" for v in audit()]
                 for i, ans in enumerate(("A real gap", "A real gap", "Partly")):
                     apage.locator("#view .wsq").nth(i + 1).get_by_role("button", name=ans, exact=True).click()
                 apage.click("[data-tab=journey]")

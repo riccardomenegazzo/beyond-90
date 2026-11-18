@@ -1,0 +1,14 @@
+{
+  "playbooks": {
+    "l1_connect_account": {
+      "title": "Bring the cloud clusters run apart under the same management",
+      "why": "Clusters run in the cloud, but they are managed apart from the data centre, so their policies, recovery and cost drift.",
+      "steps": [
+        "List cloud accounts and the clusters in them.",
+        "Attach each cluster to the same management as the data centre.",
+        "Confirm version, policies and replication show for each."
+      ],
+      "success": "Every cloud cluster in scope is managed with the data centre and reports its state."
+    }
+  }
+}

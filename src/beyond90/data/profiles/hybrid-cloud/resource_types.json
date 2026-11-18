@@ -1,0 +1,37 @@
+{
+  "version": "2026.4",
+  "description": "Hybrid and sovereign cloud: the same platform in the data centre and in public or sovereign clouds, for disaster recovery, bursting, data-centre exit and data that must stay in a country.",
+  "terms": {
+    "estate": "hybrid cloud",
+    "unit": "cloud cluster",
+    "units": "cloud clusters",
+    "menu": "Cloud clusters"
+  },
+  "types": {
+    "cloud_cluster": "Clusters running in a public or sovereign cloud",
+    "replication_pair": "Replication between sites and clouds",
+    "network_link": "Network links between data centre and cloud",
+    "landing_zone": "Cloud accounts prepared for the platform",
+    "cost_policy": "Policies on running, hibernating and paying for cloud capacity"
+  },
+  "expected": {
+    "datacenter": [
+      "replication_pair",
+      "network_link"
+    ],
+    "public_cloud": [
+      "cloud_cluster",
+      "landing_zone",
+      "network_link",
+      "cost_policy"
+    ],
+    "sovereign_cloud": [
+      "cloud_cluster",
+      "landing_zone",
+      "replication_pair"
+    ],
+    "edge": [
+      "replication_pair"
+    ]
+  }
+}

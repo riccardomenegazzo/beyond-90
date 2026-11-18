@@ -1,0 +1,10 @@
+[customer]
+name = "Corvo Bank (mock)"
+tier = "enterprise"
+arr = 230000
+as_of = 2026-10-31
+profile = "hybrid-cloud"
+
+[settings]
+ceiling_version = "2026.4"
+baseline_ceiling = "2026.1"

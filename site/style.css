@@ -977,3 +977,19 @@ body.presenting .jplan select,body.presenting .jplan input{display:none}
 .jdated li{display:grid;grid-template-columns:44px minmax(0,1fr);gap:12px;align-items:start}
 .jdated li>span:last-child{display:grid}
 .jdate{display:grid;place-items:center;height:40px;border-radius:10px;background:var(--accent-soft);color:var(--accent-text);font-weight:800;font-size:16px}
+
+/* ---------- inventory */
+.inv{display:grid;gap:16px}
+.invkpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.invk{background:var(--sunk);border-radius:12px;padding:10px 14px;display:grid}
+.invk b{font-size:24px;font-variant-numeric:tabular-nums}
+.invk small{color:var(--ink2);font-size:12.5px}
+.inv h3{font-size:15px;margin:0 0 8px}
+.invtable{width:100%;border-collapse:collapse;font-size:13.5px}
+.invtable th,.invtable td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)}
+.invtable td.num,.invtable th:not(:first-child){text-align:right;font-variant-numeric:tabular-nums}
+.filebtn{position:relative;overflow:hidden;cursor:pointer}
+.filebtn input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
+.wsfact{color:var(--accent-text);font-weight:600;font-size:13px}
+.jfrom{margin:0;display:grid;gap:2px;color:#c5d2e1}
+.jfrom small{font-weight:700;font-size:12.5px}

@@ -1,0 +1,6 @@
+id,name,has_assets,active_users,sso,role_scoped,last_access_review
+ml-platform,Ml Platform,true,0,true,true,2026-03-08
+research-it,Research It,true,1,false,true,2026-10-06
+data-office,Data Office,true,2,false,false,2026-03-22
+security-ops,Security Ops,true,3,true,false,2026-05-27
+finance-it,Finance It,true,2,true,true,2026-06-21

@@ -1,0 +1,622 @@
+VM,Powerstate,Template,CPUs,Memory,Provisioned MiB,In Use MiB,OS according to the configuration file,Datacenter,Cluster,Host
+cl-prod-01-vm001,poweredOn,False,2,4096,204800,137953,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx04
+cl-prod-01-vm002,poweredOn,False,8,32768,204800,151897,Microsoft Windows Server 2012 R2 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx08
+cl-prod-01-vm003,poweredOn,False,4,16384,204800,71939,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx02
+cl-prod-01-vm004,poweredOn,False,2,8192,40960,31022,Red Hat Enterprise Linux 7 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx08
+cl-prod-01-vm005,poweredOn,False,4,8192,61440,32184,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx07
+cl-prod-01-vm006,poweredOn,False,16,65536,204800,145726,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx09
+cl-prod-01-vm007,poweredOn,False,4,8192,81920,64572,CentOS 7 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx05
+cl-prod-01-vm008,poweredOn,False,2,4096,512000,297234,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx07
+cl-prod-01-vm009,poweredOn,False,8,32768,204800,83604,Microsoft Windows Server 2012 R2 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx08
+cl-prod-01-vm010,poweredOn,False,2,8192,204800,114684,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx09
+cl-prod-01-vm011,poweredOn,False,4,8192,40960,30020,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx09
+cl-prod-01-vm012,poweredOn,False,8,32768,40960,23130,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx08
+cl-prod-01-vm013,poweredOn,False,8,32768,1024000,679255,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx08
+cl-prod-01-vm014,poweredOn,False,4,16384,204800,112853,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx09
+cl-prod-01-vm015,poweredOn,False,4,16384,204800,154101,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx07
+cl-prod-01-vm016,poweredOn,False,2,8192,1024000,375351,Red Hat Enterprise Linux 8 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx08
+cl-prod-01-vm017,poweredOn,False,4,16384,122880,55286,Red Hat Enterprise Linux 7 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx08
+cl-prod-01-vm018,poweredOn,False,4,8192,1024000,772075,Microsoft Windows Server 2012 R2 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx01
+cl-prod-01-vm019,poweredOn,False,4,16384,81920,61927,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx09
+cl-prod-01-vm020,poweredOn,False,2,8192,61440,47383,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx02
+cl-prod-01-vm021,poweredOn,False,4,8192,122880,54963,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx03
+cl-prod-01-vm022,poweredOff,False,4,8192,40960,23577,Microsoft Windows Server 2012 R2 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx02
+cl-prod-01-vm023,poweredOn,False,4,8192,61440,40583,Ubuntu Linux (64-bit) 22.04,MIL-DC1,CL-PROD-01,cl-prod-01-esx09
+cl-prod-01-vm024,poweredOn,False,16,65536,512000,270656,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx06
+cl-prod-01-vm025,poweredOn,False,4,8192,204800,168953,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx03
+cl-prod-01-vm026,poweredOn,False,4,8192,122880,101884,Red Hat Enterprise Linux 7 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx09
+cl-prod-01-vm027,poweredOn,False,2,8192,122880,100457,Red Hat Enterprise Linux 8 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx05
+cl-prod-01-vm028,poweredOn,False,4,8192,122880,74958,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx07
+cl-prod-01-vm029,poweredOn,False,2,4096,40960,15839,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx06
+cl-prod-01-vm030,poweredOff,False,8,32768,40960,24084,Red Hat Enterprise Linux 7 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx05
+cl-prod-01-vm031,poweredOn,False,4,8192,40960,23891,Red Hat Enterprise Linux 8 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx03
+cl-prod-01-vm032,poweredOn,False,2,4096,204800,135510,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx04
+cl-prod-01-vm033,poweredOn,False,4,8192,40960,15035,Red Hat Enterprise Linux 8 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx03
+cl-prod-01-vm034,poweredOn,False,2,4096,204800,76614,Ubuntu Linux (64-bit) 22.04,MIL-DC1,CL-PROD-01,cl-prod-01-esx04
+cl-prod-01-vm035,poweredOn,False,4,8192,512000,212259,Microsoft Windows Server 2012 R2 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx04
+cl-prod-01-vm036,poweredOn,False,4,16384,204800,85782,Red Hat Enterprise Linux 7 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx03
+cl-prod-01-vm037,poweredOn,False,2,8192,122880,96340,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx05
+cl-prod-01-vm038,poweredOn,False,2,8192,61440,36790,SUSE Linux Enterprise 15 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx07
+cl-prod-01-vm039,poweredOn,False,2,8192,61440,36312,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx09
+cl-prod-01-vm040,poweredOn,False,4,16384,1024000,406817,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx04
+cl-prod-01-vm041,poweredOn,False,2,4096,40960,27559,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx09
+cl-prod-01-vm042,poweredOn,False,4,16384,1024000,451815,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx06
+cl-prod-01-vm043,poweredOn,False,8,32768,81920,52114,Microsoft Windows Server 2012 R2 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx04
+cl-prod-01-vm044,poweredOn,False,2,4096,512000,371519,Ubuntu Linux (64-bit) 22.04,MIL-DC1,CL-PROD-01,cl-prod-01-esx04
+cl-prod-01-vm045,poweredOn,False,4,8192,204800,128587,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx05
+cl-prod-01-vm046,poweredOn,False,2,4096,122880,85066,SUSE Linux Enterprise 15 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx06
+cl-prod-01-vm047,poweredOn,False,4,16384,61440,24770,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx05
+cl-prod-01-vm048,poweredOn,False,4,8192,40960,20779,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx05
+cl-prod-01-vm049,poweredOn,False,2,4096,122880,98605,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx07
+cl-prod-01-vm050,poweredOff,False,16,65536,40960,14806,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx02
+cl-prod-01-vm051,poweredOn,False,4,16384,204800,159481,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx08
+cl-prod-01-vm052,poweredOn,False,4,8192,512000,188930,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx06
+cl-prod-01-vm053,poweredOn,False,4,8192,204800,171941,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx06
+cl-prod-01-vm054,poweredOn,False,8,32768,512000,243603,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx06
+cl-prod-01-vm055,poweredOn,False,2,4096,512000,185257,Red Hat Enterprise Linux 7 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx06
+cl-prod-01-vm056,poweredOn,False,2,8192,1024000,421025,SUSE Linux Enterprise 15 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx07
+cl-prod-01-vm057,poweredOn,False,2,8192,40960,21350,Microsoft Windows Server 2012 R2 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx01
+cl-prod-01-vm058,poweredOn,False,4,16384,40960,16848,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx03
+cl-prod-01-vm059,poweredOn,False,4,8192,204800,138833,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx07
+cl-prod-01-vm060,poweredOn,False,4,8192,81920,44121,SUSE Linux Enterprise 15 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx07
+cl-prod-01-vm061,poweredOn,False,4,8192,1024000,636378,Red Hat Enterprise Linux 7 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx09
+cl-prod-01-vm062,poweredOn,False,4,16384,122880,91337,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx01
+cl-prod-01-vm063,poweredOn,False,2,4096,204800,98694,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx03
+cl-prod-01-vm064,poweredOff,False,8,32768,204800,90040,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx09
+cl-prod-01-vm065,poweredOn,False,4,16384,81920,59577,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx01
+cl-prod-01-vm066,poweredOn,False,4,8192,40960,19308,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx04
+cl-prod-01-vm067,poweredOn,False,4,8192,1024000,739938,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx06
+cl-prod-01-vm068,poweredOn,False,16,65536,61440,29975,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx06
+cl-prod-01-vm069,poweredOn,False,2,8192,512000,386928,Red Hat Enterprise Linux 7 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx05
+cl-prod-01-vm070,poweredOn,False,2,8192,512000,303323,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx06
+cl-prod-01-vm071,poweredOn,False,4,16384,1024000,567463,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx03
+cl-prod-01-vm072,poweredOn,False,2,4096,81920,39527,CentOS 7 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx02
+cl-prod-01-vm073,poweredOn,False,16,65536,40960,31740,CentOS 7 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx05
+cl-prod-01-vm074,poweredOn,False,4,8192,122880,102183,Microsoft Windows Server 2012 R2 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx03
+cl-prod-01-vm075,poweredOff,False,16,65536,40960,29339,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx09
+cl-prod-01-vm076,poweredOn,False,2,8192,40960,27899,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx03
+cl-prod-01-vm077,poweredOn,False,8,32768,81920,43303,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx04
+cl-prod-01-vm078,poweredOff,False,16,65536,512000,334323,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx07
+cl-prod-01-vm079,poweredOn,False,2,8192,1024000,859659,Microsoft Windows Server 2012 R2 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx03
+cl-prod-01-vm080,poweredOn,False,4,16384,40960,25376,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx01
+cl-prod-01-vm081,poweredOn,False,8,32768,204800,143808,SUSE Linux Enterprise 15 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx01
+cl-prod-01-vm082,poweredOn,False,8,32768,40960,18763,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx04
+cl-prod-01-vm083,poweredOn,False,2,4096,81920,64470,Ubuntu Linux (64-bit) 22.04,MIL-DC1,CL-PROD-01,cl-prod-01-esx02
+cl-prod-01-vm084,poweredOn,False,2,8192,204800,83717,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx08
+cl-prod-01-vm085,poweredOn,False,2,4096,204800,108408,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx06
+cl-prod-01-vm086,poweredOn,False,2,4096,1024000,772310,SUSE Linux Enterprise 15 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx05
+cl-prod-01-vm087,poweredOn,False,2,8192,512000,262400,Microsoft Windows Server 2012 R2 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx09
+cl-prod-01-vm088,poweredOn,False,2,8192,512000,305457,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx03
+cl-prod-01-vm089,poweredOn,False,2,8192,122880,85350,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx06
+cl-prod-01-vm090,poweredOn,False,2,8192,1024000,467392,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx03
+cl-prod-01-vm091,poweredOn,False,2,8192,81920,41780,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx05
+cl-prod-01-vm092,poweredOn,False,2,4096,512000,264133,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx09
+cl-prod-01-vm093,poweredOn,False,4,16384,81920,47434,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx07
+cl-prod-01-vm094,poweredOn,False,2,4096,512000,284073,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx08
+cl-prod-01-vm095,poweredOn,False,8,32768,1024000,789005,SUSE Linux Enterprise 15 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx09
+cl-prod-01-vm096,poweredOn,False,4,8192,122880,63310,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx03
+cl-prod-01-vm097,poweredOn,False,2,4096,204800,85053,Red Hat Enterprise Linux 8 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx07
+cl-prod-01-vm098,poweredOn,False,4,16384,1024000,813662,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx01
+cl-prod-01-vm099,poweredOn,False,2,4096,61440,41799,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx06
+cl-prod-01-vm100,poweredOn,False,2,4096,61440,37323,Red Hat Enterprise Linux 8 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx06
+cl-prod-01-vm101,poweredOn,False,2,4096,512000,376048,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx03
+cl-prod-01-vm102,poweredOn,False,2,8192,61440,27843,Red Hat Enterprise Linux 7 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx03
+cl-prod-01-vm103,poweredOn,False,4,16384,40960,28914,Red Hat Enterprise Linux 7 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx09
+cl-prod-01-vm104,poweredOn,False,2,4096,40960,22928,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx09
+cl-prod-01-vm105,poweredOn,False,4,16384,61440,49473,Red Hat Enterprise Linux 7 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx06
+cl-prod-01-vm106,poweredOn,False,2,8192,81920,39131,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx05
+cl-prod-01-vm107,poweredOn,False,2,4096,122880,72540,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx05
+cl-prod-01-vm108,poweredOn,False,4,16384,122880,59820,Ubuntu Linux (64-bit) 22.04,MIL-DC1,CL-PROD-01,cl-prod-01-esx07
+cl-prod-01-vm109,poweredOff,False,2,8192,204800,113751,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx09
+cl-prod-01-vm110,poweredOn,False,4,16384,1024000,860688,Red Hat Enterprise Linux 8 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx02
+cl-prod-01-vm111,poweredOn,False,8,32768,204800,121777,Red Hat Enterprise Linux 7 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx06
+cl-prod-01-vm112,poweredOn,False,2,8192,40960,32020,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx05
+cl-prod-01-vm113,poweredOn,False,16,65536,1024000,802970,Red Hat Enterprise Linux 8 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx02
+cl-prod-01-vm114,poweredOff,False,8,32768,61440,28904,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx09
+cl-prod-01-vm115,poweredOn,False,8,32768,61440,45824,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx08
+cl-prod-01-vm116,poweredOn,False,2,4096,512000,262594,Red Hat Enterprise Linux 8 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx07
+cl-prod-01-vm117,poweredOn,False,4,8192,512000,218110,Microsoft Windows Server 2012 R2 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx03
+cl-prod-01-vm118,poweredOn,False,4,16384,61440,46054,Microsoft Windows Server 2008 R2 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx01
+cl-prod-01-vm119,poweredOff,False,4,16384,1024000,762629,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx03
+cl-prod-01-vm120,poweredOn,False,2,8192,204800,84786,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx03
+cl-prod-01-vm121,poweredOn,False,4,16384,1024000,437196,Red Hat Enterprise Linux 8 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx08
+cl-prod-01-vm122,poweredOn,False,8,32768,40960,24874,Microsoft Windows Server 2012 R2 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx02
+cl-prod-01-vm123,poweredOn,False,4,8192,512000,409633,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx09
+cl-prod-01-vm124,poweredOff,False,2,4096,40960,21565,CentOS 7 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx05
+cl-prod-01-vm125,poweredOn,False,2,8192,40960,18254,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx07
+cl-prod-01-vm126,poweredOn,False,4,8192,61440,26746,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx08
+cl-prod-01-vm127,poweredOn,False,2,8192,61440,48242,CentOS 7 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx07
+cl-prod-01-vm128,poweredOn,False,4,8192,81920,68338,Red Hat Enterprise Linux 8 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx08
+cl-prod-01-vm129,poweredOn,False,8,32768,204800,81076,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx04
+cl-prod-01-vm130,poweredOn,False,2,4096,40960,28242,Red Hat Enterprise Linux 7 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx03
+cl-prod-01-vm131,poweredOn,False,2,4096,61440,27319,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx01
+cl-prod-01-vm132,poweredOn,False,4,8192,61440,49571,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx05
+cl-prod-01-vm133,poweredOff,False,4,16384,122880,75019,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx06
+cl-prod-01-vm134,poweredOff,False,4,8192,61440,25927,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx06
+cl-prod-01-vm135,poweredOn,False,4,8192,204800,76619,CentOS 7 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx09
+cl-prod-01-vm136,poweredOn,False,2,8192,81920,31900,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx06
+cl-prod-01-vm137,poweredOn,False,4,8192,1024000,629919,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx05
+cl-prod-01-vm138,poweredOn,False,2,8192,40960,15774,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx02
+cl-prod-01-vm139,poweredOn,False,2,8192,512000,424814,Red Hat Enterprise Linux 8 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx08
+cl-prod-01-vm140,poweredOn,False,4,8192,61440,25630,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx07
+cl-prod-01-vm141,poweredOn,False,2,4096,204800,73547,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx02
+cl-prod-01-vm142,poweredOff,False,4,16384,204800,170381,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx03
+cl-prod-01-vm143,poweredOn,False,2,8192,122880,87058,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx04
+cl-prod-01-vm144,poweredOn,False,2,8192,204800,103692,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx08
+cl-prod-01-vm145,poweredOn,False,2,8192,61440,45121,Red Hat Enterprise Linux 8 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx08
+cl-prod-01-vm146,poweredOn,False,4,8192,122880,73663,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx07
+cl-prod-01-vm147,poweredOn,False,4,16384,204800,86045,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx09
+cl-prod-01-vm148,poweredOn,False,2,8192,1024000,734854,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx06
+cl-prod-01-vm149,poweredOn,False,4,8192,204800,125990,Microsoft Windows Server 2008 R2 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx06
+cl-prod-01-vm150,poweredOff,False,4,16384,204800,89094,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx02
+cl-prod-01-vm151,poweredOn,False,4,16384,1024000,563669,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx04
+cl-prod-01-vm152,poweredOn,False,2,8192,81920,35594,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx06
+cl-prod-01-vm153,poweredOn,False,2,4096,61440,22620,CentOS 7 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx09
+cl-prod-01-vm154,poweredOn,False,2,4096,122880,45193,Red Hat Enterprise Linux 7 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx08
+cl-prod-01-vm155,poweredOn,False,8,32768,204800,75229,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx08
+cl-prod-01-vm156,poweredOn,False,2,4096,40960,15677,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx01
+cl-prod-01-vm157,poweredOff,False,2,8192,512000,415946,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx09
+cl-prod-01-vm158,poweredOn,False,2,4096,512000,317495,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx01
+cl-prod-01-vm159,poweredOn,False,4,8192,61440,35758,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx01
+cl-prod-01-vm160,poweredOn,False,2,4096,122880,70111,Red Hat Enterprise Linux 8 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx03
+cl-prod-01-vm161,poweredOn,False,2,4096,61440,37012,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx07
+cl-prod-01-vm162,poweredOn,False,2,8192,512000,299036,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx06
+cl-prod-01-vm163,poweredOn,False,2,4096,1024000,839819,Microsoft Windows Server 2012 R2 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx04
+cl-prod-01-vm164,poweredOn,False,4,16384,122880,52161,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx03
+cl-prod-01-vm165,poweredOn,False,4,8192,40960,31015,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx08
+cl-prod-01-vm166,poweredOn,False,4,8192,512000,310351,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx02
+cl-prod-01-vm167,poweredOff,False,4,16384,204800,97514,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx07
+cl-prod-01-vm168,poweredOn,False,8,32768,81920,52275,Microsoft Windows Server 2008 R2 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx03
+cl-prod-01-vm169,poweredOff,False,2,8192,204800,74603,Ubuntu Linux (64-bit) 22.04,MIL-DC1,CL-PROD-01,cl-prod-01-esx03
+cl-prod-01-vm170,poweredOff,False,4,16384,204800,139723,Ubuntu Linux (64-bit) 22.04,MIL-DC1,CL-PROD-01,cl-prod-01-esx03
+cl-prod-01-vm171,poweredOn,False,4,8192,204800,120639,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx03
+cl-prod-01-vm172,poweredOn,False,2,4096,204800,113429,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx01
+cl-prod-01-vm173,poweredOn,False,4,8192,81920,44283,Red Hat Enterprise Linux 8 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx01
+cl-prod-01-vm174,poweredOff,False,4,8192,40960,31374,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx02
+cl-prod-01-vm175,poweredOn,False,8,32768,81920,46858,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx05
+cl-prod-01-vm176,poweredOn,False,4,8192,204800,102035,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx03
+cl-prod-01-vm177,poweredOff,False,2,4096,204800,93524,CentOS 7 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx05
+cl-prod-01-vm178,poweredOn,False,4,16384,1024000,473522,Red Hat Enterprise Linux 7 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx06
+cl-prod-01-vm179,poweredOn,False,2,4096,40960,16966,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx09
+cl-prod-01-vm180,poweredOn,False,2,8192,204800,165066,Microsoft Windows Server 2012 R2 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx07
+cl-prod-01-vm181,poweredOn,False,4,16384,81920,47192,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx09
+cl-prod-01-vm182,poweredOn,False,2,8192,512000,229219,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx07
+cl-prod-01-vm183,poweredOn,False,4,8192,61440,33028,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx01
+cl-prod-01-vm184,poweredOff,False,4,8192,512000,331936,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx09
+cl-prod-01-vm185,poweredOn,False,2,8192,122880,85473,Microsoft Windows Server 2012 R2 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx09
+cl-prod-01-vm186,poweredOn,False,2,8192,512000,336453,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx06
+cl-prod-01-vm187,poweredOn,False,4,16384,204800,114818,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx07
+cl-prod-01-vm188,poweredOn,False,4,8192,81920,61454,Microsoft Windows Server 2012 R2 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx07
+cl-prod-01-vm189,poweredOn,False,2,8192,512000,186659,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx04
+cl-prod-01-vm190,poweredOn,False,2,4096,204800,173824,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx07
+cl-prod-01-vm191,poweredOff,False,4,8192,81920,32136,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx02
+cl-prod-01-vm192,poweredOn,False,2,8192,40960,21442,Microsoft Windows Server 2012 R2 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx02
+cl-prod-01-vm193,poweredOn,False,2,8192,81920,28812,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx06
+cl-prod-01-vm194,poweredOn,False,4,8192,122880,49123,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx04
+cl-prod-01-vm195,poweredOn,False,8,32768,204800,106586,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx02
+cl-prod-01-vm196,poweredOn,False,2,4096,61440,35827,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx09
+cl-prod-01-vm197,poweredOn,False,4,16384,122880,51053,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx08
+cl-prod-01-vm198,poweredOn,False,2,8192,40960,15592,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx06
+cl-prod-01-vm199,poweredOn,False,4,16384,40960,23104,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx05
+cl-prod-01-vm200,poweredOn,False,4,16384,204800,82839,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx01
+cl-prod-01-vm201,poweredOn,False,8,32768,204800,103171,SUSE Linux Enterprise 15 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx07
+cl-prod-01-vm202,poweredOn,False,4,16384,512000,417966,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx07
+cl-prod-01-vm203,poweredOn,False,8,32768,40960,26988,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx07
+cl-prod-01-vm204,poweredOn,False,8,32768,1024000,478175,Red Hat Enterprise Linux 8 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx09
+cl-prod-01-vm205,poweredOn,False,2,8192,122880,77139,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx09
+cl-prod-01-vm206,poweredOn,False,4,8192,122880,96406,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx08
+cl-prod-01-vm207,poweredOn,False,2,4096,1024000,846168,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx02
+cl-prod-01-vm208,poweredOff,False,8,32768,61440,27589,Red Hat Enterprise Linux 8 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx06
+cl-prod-01-vm209,poweredOn,False,4,16384,512000,342487,Red Hat Enterprise Linux 7 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx06
+cl-prod-01-vm210,poweredOn,False,2,8192,122880,80408,Red Hat Enterprise Linux 7 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx02
+cl-prod-01-vm211,poweredOn,False,16,65536,1024000,578859,Red Hat Enterprise Linux 7 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx08
+cl-prod-01-vm212,poweredOn,False,4,8192,204800,73159,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx07
+cl-prod-01-vm213,poweredOn,False,4,16384,1024000,604059,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx07
+cl-prod-01-vm214,poweredOff,False,4,8192,204800,144283,Microsoft Windows Server 2012 R2 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx09
+cl-prod-01-vm215,poweredOn,False,4,16384,40960,23178,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx05
+cl-prod-01-vm216,poweredOn,False,8,32768,512000,231997,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx02
+cl-prod-01-vm217,poweredOn,False,2,8192,40960,33487,Red Hat Enterprise Linux 8 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx09
+cl-prod-01-vm218,poweredOn,False,4,8192,512000,311338,Red Hat Enterprise Linux 8 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx01
+cl-prod-01-vm219,poweredOn,False,2,8192,40960,19033,Red Hat Enterprise Linux 7 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx02
+cl-prod-01-vm220,poweredOn,False,8,32768,1024000,869819,Ubuntu Linux (64-bit) 22.04,MIL-DC1,CL-PROD-01,cl-prod-01-esx07
+cl-prod-02-vm001,poweredOn,False,2,4096,122880,77528,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx05
+cl-prod-02-vm002,poweredOn,False,2,8192,81920,62858,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx04
+cl-prod-02-vm003,poweredOn,False,8,32768,122880,59442,Microsoft Windows Server 2012 R2 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx03
+cl-prod-02-vm004,poweredOff,False,4,8192,512000,295267,Microsoft Windows Server 2008 R2 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx07
+cl-prod-02-vm005,poweredOn,False,4,16384,122880,52035,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx05
+cl-prod-02-vm006,poweredOn,False,4,16384,40960,23137,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx08
+cl-prod-02-vm007,poweredOn,False,4,8192,61440,26395,Red Hat Enterprise Linux 7 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx05
+cl-prod-02-vm008,poweredOn,False,2,4096,40960,22243,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx07
+cl-prod-02-vm009,poweredOn,False,16,65536,1024000,546327,Red Hat Enterprise Linux 7 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx02
+cl-prod-02-vm010,poweredOn,False,2,8192,61440,29372,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx02
+cl-prod-02-vm011,poweredOn,False,4,16384,40960,23838,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx03
+cl-prod-02-vm012,poweredOn,False,2,4096,61440,42489,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx05
+cl-prod-02-vm013,poweredOn,False,4,8192,122880,54538,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx06
+cl-prod-02-vm014,poweredOn,False,4,8192,512000,338741,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx01
+cl-prod-02-vm015,poweredOn,False,16,65536,81920,37942,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx08
+cl-prod-02-vm016,poweredOn,False,4,8192,40960,17445,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx07
+cl-prod-02-vm017,poweredOff,False,8,32768,512000,257774,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx07
+cl-prod-02-vm018,poweredOn,False,2,4096,81920,34035,CentOS 7 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx01
+cl-prod-02-vm019,poweredOn,False,8,32768,81920,32361,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx04
+cl-prod-02-vm020,poweredOff,False,8,32768,40960,20790,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx06
+cl-prod-02-vm021,poweredOn,False,2,4096,122880,94510,Red Hat Enterprise Linux 7 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx06
+cl-prod-02-vm022,poweredOn,False,4,8192,204800,108329,Red Hat Enterprise Linux 7 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx08
+cl-prod-02-vm023,poweredOn,False,8,32768,122880,46835,Red Hat Enterprise Linux 8 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx06
+cl-prod-02-vm024,poweredOn,False,8,32768,61440,29307,Red Hat Enterprise Linux 8 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx06
+cl-prod-02-vm025,poweredOn,False,4,16384,204800,79963,Red Hat Enterprise Linux 8 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx01
+cl-prod-02-vm026,poweredOff,False,2,8192,512000,332390,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx03
+cl-prod-02-vm027,poweredOn,False,8,32768,122880,86861,Red Hat Enterprise Linux 8 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx06
+cl-prod-02-vm028,poweredOff,False,16,65536,81920,45984,Red Hat Enterprise Linux 8 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx04
+cl-prod-02-vm029,poweredOn,False,2,8192,61440,42546,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx01
+cl-prod-02-vm030,poweredOn,False,4,16384,204800,89361,Red Hat Enterprise Linux 8 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx03
+cl-prod-02-vm031,poweredOn,False,4,16384,512000,225116,Ubuntu Linux (64-bit) 22.04,MIL-DC1,CL-PROD-02,cl-prod-02-esx07
+cl-prod-02-vm032,poweredOn,False,2,8192,1024000,579850,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx07
+cl-prod-02-vm033,poweredOn,False,2,8192,81920,53572,Ubuntu Linux (64-bit) 22.04,MIL-DC1,CL-PROD-02,cl-prod-02-esx08
+cl-prod-02-vm034,poweredOn,False,2,8192,81920,38452,Ubuntu Linux (64-bit) 22.04,MIL-DC1,CL-PROD-02,cl-prod-02-esx06
+cl-prod-02-vm035,poweredOn,False,4,8192,1024000,495609,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx08
+cl-prod-02-vm036,poweredOn,False,2,4096,512000,417426,Red Hat Enterprise Linux 8 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx07
+cl-prod-02-vm037,poweredOff,False,4,8192,122880,59851,CentOS 7 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx05
+cl-prod-02-vm038,poweredOff,False,4,16384,512000,392600,SUSE Linux Enterprise 15 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx08
+cl-prod-02-vm039,poweredOff,False,2,8192,1024000,556844,Microsoft Windows Server 2012 R2 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx07
+cl-prod-02-vm040,poweredOff,False,4,16384,122880,85954,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx02
+cl-prod-02-vm041,poweredOn,False,4,16384,204800,96987,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx06
+cl-prod-02-vm042,poweredOn,False,8,32768,81920,39739,Red Hat Enterprise Linux 7 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx05
+cl-prod-02-vm043,poweredOn,False,8,32768,204800,151164,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx08
+cl-prod-02-vm044,poweredOn,False,16,65536,1024000,738139,SUSE Linux Enterprise 15 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx03
+cl-prod-02-vm045,poweredOn,False,2,8192,81920,36018,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx06
+cl-prod-02-vm046,poweredOn,False,2,8192,204800,147316,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx02
+cl-prod-02-vm047,poweredOn,False,2,4096,40960,15215,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx03
+cl-prod-02-vm048,poweredOff,False,2,4096,122880,44094,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx08
+cl-prod-02-vm049,poweredOn,False,4,16384,61440,39762,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx04
+cl-prod-02-vm050,poweredOn,False,16,65536,40960,15009,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx05
+cl-prod-02-vm051,poweredOn,False,4,8192,204800,142732,Red Hat Enterprise Linux 7 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx02
+cl-prod-02-vm052,poweredOn,False,8,32768,512000,199069,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx05
+cl-prod-02-vm053,poweredOff,False,2,8192,81920,28877,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx04
+cl-prod-02-vm054,poweredOff,False,4,8192,40960,20590,Red Hat Enterprise Linux 8 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx04
+cl-prod-02-vm055,poweredOn,False,2,4096,40960,22324,Ubuntu Linux (64-bit) 22.04,MIL-DC1,CL-PROD-02,cl-prod-02-esx08
+cl-prod-02-vm056,poweredOn,False,16,65536,122880,63726,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx03
+cl-prod-02-vm057,poweredOn,False,4,16384,61440,24014,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx07
+cl-prod-02-vm058,poweredOn,False,4,8192,204800,151792,SUSE Linux Enterprise 15 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx08
+cl-prod-02-vm059,poweredOn,False,4,8192,1024000,613827,CentOS 7 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx03
+cl-prod-02-vm060,poweredOn,False,4,8192,204800,132571,Microsoft Windows Server 2012 R2 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx02
+cl-prod-02-vm061,poweredOn,False,4,16384,61440,23390,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx08
+cl-prod-02-vm062,poweredOn,False,4,16384,40960,16855,Microsoft Windows Server 2012 R2 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx02
+cl-prod-02-vm063,poweredOn,False,2,4096,204800,132544,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx05
+cl-prod-02-vm064,poweredOn,False,16,65536,40960,23978,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx06
+cl-prod-02-vm065,poweredOff,False,2,8192,81920,44862,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx06
+cl-prod-02-vm066,poweredOn,False,2,4096,122880,94539,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx06
+cl-prod-02-vm067,poweredOn,False,4,8192,61440,43771,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx05
+cl-prod-02-vm068,poweredOn,False,2,4096,512000,359998,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx05
+cl-prod-02-vm069,poweredOn,False,2,8192,512000,280465,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx03
+cl-prod-02-vm070,poweredOn,False,4,8192,512000,382121,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx01
+cl-prod-02-vm071,poweredOn,False,4,8192,512000,359469,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx03
+cl-prod-02-vm072,poweredOn,False,4,8192,40960,17122,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx04
+cl-prod-02-vm073,poweredOn,False,8,32768,512000,379959,Red Hat Enterprise Linux 7 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx06
+cl-prod-02-vm074,poweredOn,False,2,4096,40960,27591,Microsoft Windows Server 2012 R2 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx08
+cl-prod-02-vm075,poweredOn,False,2,4096,40960,23809,Microsoft Windows Server 2012 R2 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx01
+cl-prod-02-vm076,poweredOn,False,4,16384,61440,40710,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx03
+cl-prod-02-vm077,poweredOn,False,2,8192,81920,46575,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx08
+cl-prod-02-vm078,poweredOn,False,4,8192,1024000,827054,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx01
+cl-prod-02-vm079,poweredOff,False,4,8192,61440,47782,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx02
+cl-prod-02-vm080,poweredOn,False,2,4096,61440,32116,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx08
+cl-prod-02-vm081,poweredOn,False,2,4096,61440,38206,SUSE Linux Enterprise 15 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx07
+cl-prod-02-vm082,poweredOn,False,4,8192,81920,37742,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx05
+cl-prod-02-vm083,poweredOn,False,4,16384,1024000,522530,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx04
+cl-prod-02-vm084,poweredOn,False,8,32768,512000,192577,CentOS 7 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx01
+cl-prod-02-vm085,poweredOn,False,2,8192,512000,197387,CentOS 7 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx08
+cl-prod-02-vm086,poweredOn,False,2,4096,512000,374386,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx04
+cl-prod-02-vm087,poweredOff,False,2,8192,81920,42548,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx01
+cl-prod-02-vm088,poweredOn,False,4,8192,204800,172107,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx02
+cl-prod-02-vm089,poweredOff,False,2,8192,61440,23846,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx01
+cl-prod-02-vm090,poweredOff,False,2,4096,81920,33126,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx01
+cl-prod-02-vm091,poweredOff,False,2,8192,512000,248941,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx05
+cl-prod-02-vm092,poweredOn,False,4,16384,1024000,466562,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx01
+cl-prod-02-vm093,poweredOn,False,8,32768,61440,51949,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx02
+cl-prod-02-vm094,poweredOn,False,4,16384,81920,58658,CentOS 7 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx03
+cl-prod-02-vm095,poweredOn,False,2,8192,61440,46157,Red Hat Enterprise Linux 7 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx07
+cl-prod-02-vm096,poweredOn,False,2,8192,1024000,762797,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx08
+cl-prod-02-vm097,poweredOn,False,2,8192,81920,43400,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx05
+cl-prod-02-vm098,poweredOn,False,8,32768,204800,101056,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx05
+cl-prod-02-vm099,poweredOn,False,2,4096,122880,94281,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx03
+cl-prod-02-vm100,poweredOn,False,4,8192,1024000,609396,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx08
+cl-prod-02-vm101,poweredOn,False,2,8192,40960,34726,Ubuntu Linux (64-bit) 22.04,MIL-DC1,CL-PROD-02,cl-prod-02-esx08
+cl-prod-02-vm102,poweredOn,False,2,4096,204800,145848,Red Hat Enterprise Linux 7 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx06
+cl-prod-02-vm103,poweredOn,False,2,8192,81920,43602,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx01
+cl-prod-02-vm104,poweredOn,False,4,8192,40960,19762,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx04
+cl-prod-02-vm105,poweredOn,False,2,8192,122880,95034,Red Hat Enterprise Linux 8 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx03
+cl-prod-02-vm106,poweredOn,False,2,8192,1024000,414346,Red Hat Enterprise Linux 8 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx07
+cl-prod-02-vm107,poweredOn,False,2,8192,81920,53159,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx04
+cl-prod-02-vm108,poweredOn,False,4,8192,40960,25382,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx07
+cl-prod-02-vm109,poweredOn,False,2,8192,512000,301416,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx07
+cl-prod-02-vm110,poweredOn,False,2,8192,122880,76568,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx03
+cl-prod-02-vm111,poweredOn,False,2,4096,61440,26754,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx01
+cl-prod-02-vm112,poweredOn,False,4,8192,204800,113645,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx04
+cl-prod-02-vm113,poweredOn,False,4,16384,512000,201840,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx01
+cl-prod-02-vm114,poweredOn,False,4,16384,204800,122857,Red Hat Enterprise Linux 7 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx01
+cl-prod-02-vm115,poweredOn,False,2,4096,1024000,423818,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx08
+cl-prod-02-vm116,poweredOn,False,2,4096,40960,30788,Red Hat Enterprise Linux 8 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx03
+cl-prod-02-vm117,poweredOn,False,16,65536,204800,90756,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx03
+cl-prod-02-vm118,poweredOn,False,2,4096,122880,92838,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx05
+cl-prod-02-vm119,poweredOn,False,2,8192,1024000,583184,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx07
+cl-prod-02-vm120,poweredOn,False,2,8192,61440,24975,CentOS 7 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx08
+cl-prod-02-vm121,poweredOn,False,8,32768,122880,48210,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx06
+cl-prod-02-vm122,poweredOn,False,4,16384,61440,44840,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx05
+cl-prod-02-vm123,poweredOn,False,4,8192,1024000,695142,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx03
+cl-prod-02-vm124,poweredOn,False,4,8192,1024000,630673,Red Hat Enterprise Linux 8 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx01
+cl-prod-02-vm125,poweredOn,False,4,16384,61440,25412,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx07
+cl-prod-02-vm126,poweredOn,False,4,8192,204800,161593,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx02
+cl-prod-02-vm127,poweredOn,False,2,8192,61440,25151,Microsoft Windows Server 2008 R2 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx05
+cl-prod-02-vm128,poweredOff,False,4,16384,122880,83853,Red Hat Enterprise Linux 7 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx03
+cl-prod-02-vm129,poweredOn,False,4,8192,1024000,434909,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx01
+cl-prod-02-vm130,poweredOn,False,4,8192,61440,50908,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx04
+cl-prod-02-vm131,poweredOn,False,4,8192,122880,56350,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx03
+cl-prod-02-vm132,poweredOff,False,2,8192,1024000,577126,CentOS 7 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx05
+cl-prod-02-vm133,poweredOff,False,2,8192,1024000,508323,Red Hat Enterprise Linux 8 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx05
+cl-prod-02-vm134,poweredOn,False,2,8192,1024000,578630,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx05
+cl-prod-02-vm135,poweredOn,False,2,8192,1024000,372716,Red Hat Enterprise Linux 8 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx05
+cl-prod-02-vm136,poweredOff,False,4,16384,81920,40316,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx01
+cl-prod-02-vm137,poweredOn,False,2,4096,1024000,767804,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx07
+cl-prod-02-vm138,poweredOn,False,2,4096,1024000,642162,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx08
+cl-prod-02-vm139,poweredOn,False,4,8192,40960,31310,SUSE Linux Enterprise 15 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx07
+cl-prod-02-vm140,poweredOff,False,2,4096,40960,16685,CentOS 7 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx06
+cl-prod-02-vm141,poweredOn,False,4,16384,81920,41312,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx06
+cl-prod-02-vm142,poweredOn,False,2,4096,81920,42947,Red Hat Enterprise Linux 7 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx04
+cl-prod-02-vm143,poweredOn,False,4,8192,512000,196884,Red Hat Enterprise Linux 7 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx03
+cl-prod-02-vm144,poweredOn,False,2,8192,204800,75675,Red Hat Enterprise Linux 8 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx03
+cl-prod-02-vm145,poweredOff,False,8,32768,1024000,686706,Red Hat Enterprise Linux 8 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx01
+cl-prod-02-vm146,poweredOn,False,2,8192,204800,161907,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx03
+cl-prod-02-vm147,poweredOn,False,2,8192,512000,343709,Red Hat Enterprise Linux 8 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx08
+cl-prod-02-vm148,poweredOn,False,4,8192,1024000,572197,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx05
+cl-prod-02-vm149,poweredOn,False,2,4096,122880,98357,Microsoft Windows Server 2012 R2 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx01
+cl-prod-02-vm150,poweredOn,False,2,8192,81920,49211,Ubuntu Linux (64-bit) 22.04,MIL-DC1,CL-PROD-02,cl-prod-02-esx07
+cl-prod-02-vm151,poweredOn,False,2,8192,204800,165311,Ubuntu Linux (64-bit) 22.04,MIL-DC1,CL-PROD-02,cl-prod-02-esx03
+cl-prod-02-vm152,poweredOn,False,4,16384,61440,31431,SUSE Linux Enterprise 15 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx07
+cl-prod-02-vm153,poweredOn,False,2,4096,204800,114843,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx05
+cl-prod-02-vm154,poweredOn,False,2,4096,81920,37538,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx06
+cl-prod-02-vm155,poweredOn,False,2,4096,204800,87824,Red Hat Enterprise Linux 8 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx07
+cl-prod-02-vm156,poweredOn,False,4,8192,204800,137886,Red Hat Enterprise Linux 7 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx04
+cl-prod-02-vm157,poweredOn,False,2,8192,122880,98981,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx04
+cl-prod-02-vm158,poweredOn,False,4,16384,122880,70725,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx04
+cl-prod-02-vm159,poweredOn,False,4,8192,1024000,687896,Red Hat Enterprise Linux 8 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx02
+cl-prod-02-vm160,poweredOn,False,4,8192,81920,63858,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx02
+cl-prod-02-vm161,poweredOff,False,4,8192,1024000,781924,Red Hat Enterprise Linux 8 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx05
+cl-prod-02-vm162,poweredOn,False,2,4096,1024000,683308,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx04
+cl-prod-02-vm163,poweredOn,False,2,4096,81920,52566,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx05
+cl-prod-02-vm164,poweredOff,False,4,16384,1024000,389376,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx06
+cl-prod-02-vm165,poweredOff,False,2,8192,204800,122466,Red Hat Enterprise Linux 7 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx05
+cl-prod-02-vm166,poweredOn,False,4,16384,122880,53485,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx01
+cl-prod-02-vm167,poweredOn,False,2,8192,1024000,530927,Red Hat Enterprise Linux 7 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx06
+cl-prod-02-vm168,poweredOn,False,4,16384,40960,28151,Red Hat Enterprise Linux 8 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx08
+cl-prod-02-vm169,poweredOn,False,4,16384,1024000,632123,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx07
+cl-prod-02-vm170,poweredOn,False,4,8192,122880,78124,Red Hat Enterprise Linux 8 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx07
+cl-prod-02-vm171,poweredOn,False,4,16384,40960,23723,Red Hat Enterprise Linux 8 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx06
+cl-prod-02-vm172,poweredOn,False,2,8192,81920,29142,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx06
+cl-prod-02-vm173,poweredOn,False,16,65536,81920,36493,CentOS 7 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx07
+cl-prod-02-vm174,poweredOn,False,4,8192,204800,122258,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx04
+cl-prod-02-vm175,poweredOn,False,2,4096,61440,30845,Microsoft Windows Server 2012 R2 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx08
+cl-prod-02-vm176,poweredOn,False,2,4096,122880,98182,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx07
+cl-prod-02-vm177,poweredOn,False,4,8192,40960,17180,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx02
+cl-prod-02-vm178,poweredOn,False,4,8192,1024000,386372,SUSE Linux Enterprise 15 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx06
+cl-prod-02-vm179,poweredOn,False,4,8192,40960,15205,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx08
+cl-prod-02-vm180,poweredOn,False,4,8192,1024000,513036,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-PROD-02,cl-prod-02-esx02
+cl-vdi-vm001,poweredOn,False,2,4096,1024000,815950,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx05
+cl-vdi-vm002,poweredOn,False,2,8192,512000,228098,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx01
+cl-vdi-vm003,poweredOn,False,16,65536,1024000,519346,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx06
+cl-vdi-vm004,poweredOn,False,2,8192,81920,33529,Microsoft Windows Server 2008 R2 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx02
+cl-vdi-vm005,poweredOn,False,4,8192,204800,113066,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx06
+cl-vdi-vm006,poweredOff,False,16,65536,122880,102742,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx02
+cl-vdi-vm007,poweredOn,False,2,8192,61440,29810,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx05
+cl-vdi-vm008,poweredOn,False,8,32768,122880,56916,Ubuntu Linux (64-bit) 22.04,MIL-DC1,CL-VDI,cl-vdi-esx04
+cl-vdi-vm009,poweredOn,False,2,8192,1024000,365391,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx01
+cl-vdi-vm010,poweredOn,False,4,8192,122880,74952,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx02
+cl-vdi-vm011,poweredOn,False,4,16384,81920,36735,Microsoft Windows Server 2008 R2 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx01
+cl-vdi-vm012,poweredOn,False,8,32768,204800,92851,Microsoft Windows Server 2012 R2 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx01
+cl-vdi-vm013,poweredOn,False,4,8192,512000,264688,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx03
+cl-vdi-vm014,poweredOff,False,8,32768,81920,60722,Microsoft Windows Server 2012 R2 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx04
+cl-vdi-vm015,poweredOn,False,2,8192,1024000,396601,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx03
+cl-vdi-vm016,poweredOff,False,4,16384,61440,43643,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx06
+cl-vdi-vm017,poweredOn,False,2,4096,81920,31872,Red Hat Enterprise Linux 7 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx06
+cl-vdi-vm018,poweredOn,False,4,16384,512000,279955,Red Hat Enterprise Linux 8 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx03
+cl-vdi-vm019,poweredOn,False,4,8192,81920,59260,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx02
+cl-vdi-vm020,poweredOff,False,4,8192,40960,28916,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx05
+cl-vdi-vm021,poweredOn,False,8,32768,122880,78665,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx01
+cl-vdi-vm022,poweredOn,False,2,8192,40960,27243,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx01
+cl-vdi-vm023,poweredOn,False,2,4096,1024000,590395,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx04
+cl-vdi-vm024,poweredOn,False,2,8192,81920,47083,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx06
+cl-vdi-vm025,poweredOn,False,2,4096,1024000,632973,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx01
+cl-vdi-vm026,poweredOn,False,8,32768,61440,43552,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx05
+cl-vdi-vm027,poweredOn,False,4,16384,204800,89205,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx05
+cl-vdi-vm028,poweredOff,False,4,16384,61440,51983,Red Hat Enterprise Linux 8 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx06
+cl-vdi-vm029,poweredOn,False,4,16384,512000,412130,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx02
+cl-vdi-vm030,poweredOn,False,4,16384,81920,64451,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx05
+cl-vdi-vm031,poweredOn,False,4,16384,1024000,613466,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx06
+cl-vdi-vm032,poweredOn,False,2,8192,204800,129496,Ubuntu Linux (64-bit) 22.04,MIL-DC1,CL-VDI,cl-vdi-esx03
+cl-vdi-vm033,poweredOn,False,4,8192,61440,47750,Red Hat Enterprise Linux 8 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx05
+cl-vdi-vm034,poweredOn,False,2,4096,40960,18304,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx01
+cl-vdi-vm035,poweredOn,False,4,8192,512000,233379,Red Hat Enterprise Linux 8 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx02
+cl-vdi-vm036,poweredOn,False,4,8192,61440,34194,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx03
+cl-vdi-vm037,poweredOn,False,4,8192,1024000,526324,Ubuntu Linux (64-bit) 22.04,MIL-DC1,CL-VDI,cl-vdi-esx01
+cl-vdi-vm038,poweredOn,False,16,65536,1024000,469869,Ubuntu Linux (64-bit) 22.04,MIL-DC1,CL-VDI,cl-vdi-esx06
+cl-vdi-vm039,poweredOn,False,4,8192,40960,19219,Microsoft Windows Server 2012 R2 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx06
+cl-vdi-vm040,poweredOn,False,2,8192,81920,56979,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx01
+cl-vdi-vm041,poweredOn,False,4,16384,122880,73771,Microsoft Windows Server 2008 R2 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx01
+cl-vdi-vm042,poweredOn,False,4,8192,61440,28454,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx03
+cl-vdi-vm043,poweredOn,False,4,16384,81920,40748,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx04
+cl-vdi-vm044,poweredOff,False,4,8192,1024000,463749,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx03
+cl-vdi-vm045,poweredOn,False,4,16384,40960,22636,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx06
+cl-vdi-vm046,poweredOn,False,4,8192,61440,51733,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx02
+cl-vdi-vm047,poweredOn,False,8,32768,122880,63803,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx04
+cl-vdi-vm048,poweredOn,False,4,16384,81920,61661,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx01
+cl-vdi-vm049,poweredOn,False,2,8192,512000,201681,Microsoft Windows Server 2012 R2 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx06
+cl-vdi-vm050,poweredOn,False,2,8192,1024000,457912,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx02
+cl-vdi-vm051,poweredOff,False,4,8192,512000,420992,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx01
+cl-vdi-vm052,poweredOn,False,4,8192,61440,35275,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx01
+cl-vdi-vm053,poweredOff,False,8,32768,122880,67262,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx04
+cl-vdi-vm054,poweredOn,False,16,65536,81920,66644,Red Hat Enterprise Linux 8 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx04
+cl-vdi-vm055,poweredOn,False,8,32768,61440,36994,Red Hat Enterprise Linux 7 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx01
+cl-vdi-vm056,poweredOn,False,4,8192,122880,86226,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx03
+cl-vdi-vm057,poweredOn,False,8,32768,61440,51744,Microsoft Windows Server 2008 R2 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx04
+cl-vdi-vm058,poweredOff,False,16,65536,122880,69786,Microsoft Windows Server 2012 R2 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx02
+cl-vdi-vm059,poweredOn,False,8,32768,81920,47472,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx03
+cl-vdi-vm060,poweredOn,False,16,65536,122880,54536,Red Hat Enterprise Linux 8 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx02
+cl-vdi-vm061,poweredOn,False,4,8192,1024000,477769,Red Hat Enterprise Linux 7 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx04
+cl-vdi-vm062,poweredOff,False,4,16384,61440,46579,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx03
+cl-vdi-vm063,poweredOn,False,2,8192,204800,84021,Microsoft Windows Server 2012 R2 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx02
+cl-vdi-vm064,poweredOn,False,2,8192,122880,98507,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx03
+cl-vdi-vm065,poweredOn,False,2,4096,512000,258531,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx03
+cl-vdi-vm066,poweredOn,False,2,8192,40960,24656,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx04
+cl-vdi-vm067,poweredOn,False,4,8192,1024000,713991,Red Hat Enterprise Linux 7 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx02
+cl-vdi-vm068,poweredOn,False,16,65536,512000,295503,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx04
+cl-vdi-vm069,poweredOn,False,2,8192,1024000,749496,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx06
+cl-vdi-vm070,poweredOn,False,2,4096,81920,58405,Red Hat Enterprise Linux 7 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx04
+cl-vdi-vm071,poweredOn,False,2,8192,122880,73631,Ubuntu Linux (64-bit) 22.04,MIL-DC1,CL-VDI,cl-vdi-esx04
+cl-vdi-vm072,poweredOn,False,4,16384,40960,17192,Red Hat Enterprise Linux 7 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx02
+cl-vdi-vm073,poweredOn,False,2,8192,61440,35703,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx04
+cl-vdi-vm074,poweredOn,False,4,8192,122880,80540,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx04
+cl-vdi-vm075,poweredOn,False,4,8192,122880,47334,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx05
+cl-vdi-vm076,poweredOn,False,4,8192,40960,28128,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx05
+cl-vdi-vm077,poweredOn,False,8,32768,61440,50196,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx05
+cl-vdi-vm078,poweredOn,False,4,16384,1024000,671178,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx02
+cl-vdi-vm079,poweredOn,False,2,8192,512000,181884,Microsoft Windows Server 2022 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx04
+cl-vdi-vm080,poweredOn,False,2,4096,1024000,688530,Ubuntu Linux (64-bit) 22.04,MIL-DC1,CL-VDI,cl-vdi-esx05
+cl-vdi-vm081,poweredOn,False,2,4096,1024000,568993,Red Hat Enterprise Linux 8 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx03
+cl-vdi-vm082,poweredOn,False,8,32768,40960,26572,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx03
+cl-vdi-vm083,poweredOn,False,2,8192,61440,24564,Microsoft Windows Server 2016 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx01
+cl-vdi-vm084,poweredOn,False,4,8192,61440,34496,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx03
+cl-vdi-vm085,poweredOn,False,2,4096,204800,101307,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx05
+cl-vdi-vm086,poweredOn,False,4,16384,122880,93508,CentOS 7 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx02
+cl-vdi-vm087,poweredOn,False,4,8192,40960,29972,Red Hat Enterprise Linux 7 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx05
+cl-vdi-vm088,poweredOn,False,4,8192,1024000,561689,Red Hat Enterprise Linux 7 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx02
+cl-vdi-vm089,poweredOn,False,16,65536,512000,324320,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx06
+cl-vdi-vm090,poweredOff,False,4,8192,512000,320561,Microsoft Windows Server 2012 R2 (64-bit),MIL-DC1,CL-VDI,cl-vdi-esx06
+cl-dr-01-vm001,poweredOn,False,4,8192,81920,52141,Microsoft Windows Server 2019 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx05
+cl-dr-01-vm002,poweredOn,False,4,8192,512000,412497,Microsoft Windows Server 2022 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx06
+cl-dr-01-vm003,poweredOn,False,2,8192,61440,41347,Microsoft Windows Server 2019 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx06
+cl-dr-01-vm004,poweredOn,False,2,8192,61440,24096,Microsoft Windows Server 2008 R2 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx04
+cl-dr-01-vm005,poweredOn,False,2,8192,40960,20208,Microsoft Windows Server 2012 R2 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx01
+cl-dr-01-vm006,poweredOn,False,4,16384,61440,33958,Microsoft Windows Server 2012 R2 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx02
+cl-dr-01-vm007,poweredOn,False,4,8192,1024000,621933,Microsoft Windows Server 2019 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx06
+cl-dr-01-vm008,poweredOff,False,16,65536,61440,21992,Microsoft Windows Server 2012 R2 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx01
+cl-dr-01-vm009,poweredOn,False,2,4096,81920,40324,Microsoft Windows Server 2012 R2 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx04
+cl-dr-01-vm010,poweredOff,False,2,8192,40960,15234,CentOS 7 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx05
+cl-dr-01-vm011,poweredOn,False,4,8192,512000,366268,Microsoft Windows Server 2022 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx04
+cl-dr-01-vm012,poweredOn,False,2,8192,204800,80125,Red Hat Enterprise Linux 7 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx01
+cl-dr-01-vm013,poweredOff,False,2,4096,40960,34291,Microsoft Windows Server 2019 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx01
+cl-dr-01-vm014,poweredOn,False,4,8192,512000,289394,Microsoft Windows Server 2022 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx04
+cl-dr-01-vm015,poweredOff,False,8,32768,122880,97779,Microsoft Windows Server 2016 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx04
+cl-dr-01-vm016,poweredOn,False,2,4096,1024000,721774,Red Hat Enterprise Linux 8 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx02
+cl-dr-01-vm017,poweredOn,False,2,4096,81920,62573,Microsoft Windows Server 2019 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx01
+cl-dr-01-vm018,poweredOn,False,2,8192,204800,98587,SUSE Linux Enterprise 15 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx03
+cl-dr-01-vm019,poweredOn,False,8,32768,61440,46338,Microsoft Windows Server 2019 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx01
+cl-dr-01-vm020,poweredOff,False,16,65536,61440,50693,Microsoft Windows Server 2019 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx06
+cl-dr-01-vm021,poweredOff,False,2,8192,122880,94444,Red Hat Enterprise Linux 8 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx03
+cl-dr-01-vm022,poweredOn,False,16,65536,204800,156713,CentOS 7 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx02
+cl-dr-01-vm023,poweredOn,False,4,8192,81920,29542,Red Hat Enterprise Linux 7 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx06
+cl-dr-01-vm024,poweredOn,False,4,16384,40960,21790,Microsoft Windows Server 2016 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx01
+cl-dr-01-vm025,poweredOn,False,2,4096,122880,51265,Microsoft Windows Server 2008 R2 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx01
+cl-dr-01-vm026,poweredOn,False,2,8192,512000,210436,CentOS 7 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx06
+cl-dr-01-vm027,poweredOn,False,2,8192,1024000,380970,Microsoft Windows Server 2019 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx03
+cl-dr-01-vm028,poweredOn,False,4,16384,204800,96687,Microsoft Windows Server 2019 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx04
+cl-dr-01-vm029,poweredOn,False,2,4096,1024000,454720,Red Hat Enterprise Linux 8 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx02
+cl-dr-01-vm030,poweredOff,False,4,8192,40960,15301,Microsoft Windows Server 2008 R2 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx03
+cl-dr-01-vm031,poweredOn,False,4,16384,61440,30756,Microsoft Windows Server 2019 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx03
+cl-dr-01-vm032,poweredOn,False,2,8192,1024000,839790,Ubuntu Linux (64-bit) 22.04,TOR-DC2,CL-DR-01,cl-dr-01-esx04
+cl-dr-01-vm033,poweredOn,False,2,4096,40960,25587,Microsoft Windows Server 2022 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx06
+cl-dr-01-vm034,poweredOn,False,4,16384,122880,77609,Microsoft Windows Server 2008 R2 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx05
+cl-dr-01-vm035,poweredOn,False,8,32768,122880,80576,CentOS 7 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx03
+cl-dr-01-vm036,poweredOn,False,2,8192,204800,108687,Microsoft Windows Server 2019 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx06
+cl-dr-01-vm037,poweredOn,False,2,4096,40960,22747,Microsoft Windows Server 2016 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx06
+cl-dr-01-vm038,poweredOn,False,2,4096,512000,188187,CentOS 7 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx03
+cl-dr-01-vm039,poweredOn,False,8,32768,122880,96682,Microsoft Windows Server 2019 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx01
+cl-dr-01-vm040,poweredOff,False,8,32768,512000,379273,Microsoft Windows Server 2019 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx04
+cl-dr-01-vm041,poweredOn,False,4,8192,81920,51303,CentOS 7 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx03
+cl-dr-01-vm042,poweredOn,False,4,8192,204800,77187,SUSE Linux Enterprise 15 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx02
+cl-dr-01-vm043,poweredOn,False,2,8192,40960,18834,Red Hat Enterprise Linux 8 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx03
+cl-dr-01-vm044,poweredOn,False,2,8192,204800,135509,Red Hat Enterprise Linux 8 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx01
+cl-dr-01-vm045,poweredOff,False,4,8192,122880,93415,Microsoft Windows Server 2016 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx05
+cl-dr-01-vm046,poweredOn,False,2,8192,1024000,423662,Microsoft Windows Server 2022 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx01
+cl-dr-01-vm047,poweredOn,False,4,16384,81920,52868,Microsoft Windows Server 2012 R2 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx01
+cl-dr-01-vm048,poweredOn,False,2,8192,61440,44472,Microsoft Windows Server 2019 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx05
+cl-dr-01-vm049,poweredOn,False,2,4096,204800,103981,Microsoft Windows Server 2019 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx01
+cl-dr-01-vm050,poweredOn,False,2,8192,81920,39894,Microsoft Windows Server 2019 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx02
+cl-dr-01-vm051,poweredOn,False,2,8192,1024000,504727,Microsoft Windows Server 2022 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx02
+cl-dr-01-vm052,poweredOn,False,2,8192,122880,44437,Microsoft Windows Server 2022 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx02
+cl-dr-01-vm053,poweredOn,False,2,8192,122880,84784,CentOS 7 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx01
+cl-dr-01-vm054,poweredOff,False,2,4096,40960,31865,Microsoft Windows Server 2022 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx02
+cl-dr-01-vm055,poweredOn,False,2,4096,40960,30449,CentOS 7 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx06
+cl-dr-01-vm056,poweredOn,False,2,4096,512000,334045,Microsoft Windows Server 2019 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx01
+cl-dr-01-vm057,poweredOn,False,2,4096,61440,25308,Microsoft Windows Server 2016 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx02
+cl-dr-01-vm058,poweredOn,False,2,4096,512000,328242,Microsoft Windows Server 2008 R2 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx03
+cl-dr-01-vm059,poweredOff,False,4,8192,1024000,549931,Microsoft Windows Server 2008 R2 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx06
+cl-dr-01-vm060,poweredOn,False,2,8192,40960,16214,Microsoft Windows Server 2008 R2 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx01
+cl-dr-01-vm061,poweredOn,False,2,4096,512000,288585,Ubuntu Linux (64-bit) 22.04,TOR-DC2,CL-DR-01,cl-dr-01-esx03
+cl-dr-01-vm062,poweredOff,False,2,4096,204800,115058,Microsoft Windows Server 2022 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx06
+cl-dr-01-vm063,poweredOn,False,2,8192,40960,31921,SUSE Linux Enterprise 15 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx01
+cl-dr-01-vm064,poweredOn,False,2,8192,1024000,729147,Microsoft Windows Server 2022 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx06
+cl-dr-01-vm065,poweredOn,False,2,8192,512000,349562,CentOS 7 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx04
+cl-dr-01-vm066,poweredOn,False,4,8192,81920,47478,Microsoft Windows Server 2022 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx04
+cl-dr-01-vm067,poweredOff,False,2,8192,61440,22742,Microsoft Windows Server 2016 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx02
+cl-dr-01-vm068,poweredOn,False,4,16384,81920,41931,Microsoft Windows Server 2022 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx06
+cl-dr-01-vm069,poweredOff,False,2,4096,40960,29848,Microsoft Windows Server 2022 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx01
+cl-dr-01-vm070,poweredOn,False,8,32768,81920,52228,Microsoft Windows Server 2022 (64-bit),TOR-DC2,CL-DR-01,cl-dr-01-esx02
+cl-test-vm001,poweredOn,False,4,8192,122880,45630,Microsoft Windows Server 2016 (64-bit),TOR-DC2,CL-TEST,cl-test-esx04
+cl-test-vm002,poweredOn,False,2,8192,204800,153287,Microsoft Windows Server 2022 (64-bit),TOR-DC2,CL-TEST,cl-test-esx01
+cl-test-vm003,poweredOn,False,2,8192,61440,31944,Microsoft Windows Server 2016 (64-bit),TOR-DC2,CL-TEST,cl-test-esx03
+cl-test-vm004,poweredOff,False,8,32768,512000,227351,Microsoft Windows Server 2022 (64-bit),TOR-DC2,CL-TEST,cl-test-esx01
+cl-test-vm005,poweredOn,False,4,8192,40960,32353,Microsoft Windows Server 2012 R2 (64-bit),TOR-DC2,CL-TEST,cl-test-esx01
+cl-test-vm006,poweredOn,False,4,8192,81920,46335,Ubuntu Linux (64-bit) 22.04,TOR-DC2,CL-TEST,cl-test-esx01
+cl-test-vm007,poweredOn,False,2,8192,122880,60658,Microsoft Windows Server 2022 (64-bit),TOR-DC2,CL-TEST,cl-test-esx03
+cl-test-vm008,poweredOn,False,2,8192,61440,36898,Microsoft Windows Server 2022 (64-bit),TOR-DC2,CL-TEST,cl-test-esx04
+cl-test-vm009,poweredOff,False,2,4096,61440,24770,Red Hat Enterprise Linux 8 (64-bit),TOR-DC2,CL-TEST,cl-test-esx01
+cl-test-vm010,poweredOn,False,2,8192,122880,43412,CentOS 7 (64-bit),TOR-DC2,CL-TEST,cl-test-esx02
+cl-test-vm011,poweredOn,False,2,8192,40960,15454,Microsoft Windows Server 2022 (64-bit),TOR-DC2,CL-TEST,cl-test-esx04
+cl-test-vm012,poweredOn,False,4,8192,204800,108214,Microsoft Windows Server 2012 R2 (64-bit),TOR-DC2,CL-TEST,cl-test-esx04
+cl-test-vm013,poweredOn,False,2,8192,61440,50610,Microsoft Windows Server 2012 R2 (64-bit),TOR-DC2,CL-TEST,cl-test-esx03
+cl-test-vm014,poweredOn,False,4,16384,512000,252270,Microsoft Windows Server 2019 (64-bit),TOR-DC2,CL-TEST,cl-test-esx04
+cl-test-vm015,poweredOn,False,2,8192,1024000,379901,Red Hat Enterprise Linux 7 (64-bit),TOR-DC2,CL-TEST,cl-test-esx02
+cl-test-vm016,poweredOn,False,4,16384,81920,64189,CentOS 7 (64-bit),TOR-DC2,CL-TEST,cl-test-esx01
+cl-test-vm017,poweredOn,False,8,32768,61440,48534,Ubuntu Linux (64-bit) 22.04,TOR-DC2,CL-TEST,cl-test-esx04
+cl-test-vm018,poweredOn,False,8,32768,40960,24227,Microsoft Windows Server 2022 (64-bit),TOR-DC2,CL-TEST,cl-test-esx04
+cl-test-vm019,poweredOn,False,2,4096,40960,17780,Red Hat Enterprise Linux 8 (64-bit),TOR-DC2,CL-TEST,cl-test-esx01
+cl-test-vm020,poweredOn,False,4,8192,81920,43901,Red Hat Enterprise Linux 8 (64-bit),TOR-DC2,CL-TEST,cl-test-esx02
+cl-test-vm021,poweredOn,False,4,16384,1024000,738111,SUSE Linux Enterprise 15 (64-bit),TOR-DC2,CL-TEST,cl-test-esx03
+cl-test-vm022,poweredOn,False,8,32768,204800,171940,Red Hat Enterprise Linux 8 (64-bit),TOR-DC2,CL-TEST,cl-test-esx02
+cl-test-vm023,poweredOn,False,8,32768,61440,33091,Ubuntu Linux (64-bit) 22.04,TOR-DC2,CL-TEST,cl-test-esx02
+cl-test-vm024,poweredOn,False,2,4096,204800,139463,Microsoft Windows Server 2016 (64-bit),TOR-DC2,CL-TEST,cl-test-esx01
+cl-test-vm025,poweredOn,False,4,16384,122880,64466,Microsoft Windows Server 2019 (64-bit),TOR-DC2,CL-TEST,cl-test-esx01
+cl-test-vm026,poweredOff,False,8,32768,61440,48704,CentOS 7 (64-bit),TOR-DC2,CL-TEST,cl-test-esx04
+cl-test-vm027,poweredOn,False,2,4096,81920,37625,CentOS 7 (64-bit),TOR-DC2,CL-TEST,cl-test-esx03
+cl-test-vm028,poweredOn,False,4,16384,122880,58742,Red Hat Enterprise Linux 8 (64-bit),TOR-DC2,CL-TEST,cl-test-esx04
+cl-test-vm029,poweredOn,False,2,4096,40960,32616,Microsoft Windows Server 2012 R2 (64-bit),TOR-DC2,CL-TEST,cl-test-esx03
+cl-test-vm030,poweredOn,False,8,32768,204800,137036,Microsoft Windows Server 2019 (64-bit),TOR-DC2,CL-TEST,cl-test-esx02
+cl-test-vm031,poweredOn,False,4,8192,204800,113918,Microsoft Windows Server 2019 (64-bit),TOR-DC2,CL-TEST,cl-test-esx03
+cl-test-vm032,poweredOn,False,4,8192,122880,99325,Ubuntu Linux (64-bit) 22.04,TOR-DC2,CL-TEST,cl-test-esx03
+cl-test-vm033,poweredOn,False,4,16384,122880,90076,Microsoft Windows Server 2019 (64-bit),TOR-DC2,CL-TEST,cl-test-esx03
+cl-test-vm034,poweredOn,False,2,8192,81920,38836,Microsoft Windows Server 2012 R2 (64-bit),TOR-DC2,CL-TEST,cl-test-esx04
+cl-test-vm035,poweredOn,False,2,8192,512000,360261,Microsoft Windows Server 2012 R2 (64-bit),TOR-DC2,CL-TEST,cl-test-esx01
+cl-test-vm036,poweredOff,False,2,4096,81920,38479,Microsoft Windows Server 2022 (64-bit),TOR-DC2,CL-TEST,cl-test-esx04
+cl-test-vm037,poweredOn,False,2,8192,81920,63160,Microsoft Windows Server 2012 R2 (64-bit),TOR-DC2,CL-TEST,cl-test-esx01
+cl-test-vm038,poweredOn,False,4,8192,204800,85747,Microsoft Windows Server 2016 (64-bit),TOR-DC2,CL-TEST,cl-test-esx03
+cl-test-vm039,poweredOff,False,2,4096,122880,103179,Microsoft Windows Server 2019 (64-bit),TOR-DC2,CL-TEST,cl-test-esx01
+cl-test-vm040,poweredOn,False,2,8192,61440,29834,Microsoft Windows Server 2019 (64-bit),TOR-DC2,CL-TEST,cl-test-esx01
+cl-test-vm041,poweredOn,False,4,8192,1024000,731598,Microsoft Windows Server 2019 (64-bit),TOR-DC2,CL-TEST,cl-test-esx02
+cl-test-vm042,poweredOn,False,2,4096,204800,100864,Microsoft Windows Server 2019 (64-bit),TOR-DC2,CL-TEST,cl-test-esx01
+cl-test-vm043,poweredOn,False,2,8192,81920,40261,Microsoft Windows Server 2022 (64-bit),TOR-DC2,CL-TEST,cl-test-esx04
+cl-test-vm044,poweredOn,False,2,4096,40960,22250,Microsoft Windows Server 2016 (64-bit),TOR-DC2,CL-TEST,cl-test-esx04
+cl-test-vm045,poweredOn,False,4,16384,204800,82758,Microsoft Windows Server 2022 (64-bit),TOR-DC2,CL-TEST,cl-test-esx03
+cl-test-vm046,poweredOn,False,2,8192,512000,203903,Microsoft Windows Server 2022 (64-bit),TOR-DC2,CL-TEST,cl-test-esx02
+cl-test-vm047,poweredOn,False,8,32768,61440,30703,Red Hat Enterprise Linux 8 (64-bit),TOR-DC2,CL-TEST,cl-test-esx02
+cl-test-vm048,poweredOn,False,2,4096,40960,29803,Microsoft Windows Server 2019 (64-bit),TOR-DC2,CL-TEST,cl-test-esx03
+cl-test-vm049,poweredOn,False,2,8192,81920,35037,Microsoft Windows Server 2019 (64-bit),TOR-DC2,CL-TEST,cl-test-esx03
+cl-test-vm050,poweredOn,False,2,4096,40960,25256,Red Hat Enterprise Linux 8 (64-bit),TOR-DC2,CL-TEST,cl-test-esx01
+cl-test-vm051,poweredOn,False,2,4096,40960,16546,Microsoft Windows Server 2022 (64-bit),TOR-DC2,CL-TEST,cl-test-esx04
+cl-test-vm052,poweredOn,False,16,65536,204800,137244,Microsoft Windows Server 2008 R2 (64-bit),TOR-DC2,CL-TEST,cl-test-esx03
+cl-test-vm053,poweredOn,False,4,8192,1024000,448836,Microsoft Windows Server 2016 (64-bit),TOR-DC2,CL-TEST,cl-test-esx04
+cl-test-vm054,poweredOn,False,2,4096,1024000,571461,Microsoft Windows Server 2012 R2 (64-bit),TOR-DC2,CL-TEST,cl-test-esx03
+cl-test-vm055,poweredOn,False,16,65536,512000,311865,Microsoft Windows Server 2022 (64-bit),TOR-DC2,CL-TEST,cl-test-esx04
+cl-test-vm056,poweredOff,False,4,8192,512000,190605,Microsoft Windows Server 2016 (64-bit),TOR-DC2,CL-TEST,cl-test-esx03
+cl-test-vm057,poweredOff,False,4,8192,204800,121743,Microsoft Windows Server 2022 (64-bit),TOR-DC2,CL-TEST,cl-test-esx01
+cl-test-vm058,poweredOn,False,2,4096,512000,284589,Red Hat Enterprise Linux 8 (64-bit),TOR-DC2,CL-TEST,cl-test-esx04
+cl-test-vm059,poweredOn,False,8,32768,204800,140639,Microsoft Windows Server 2016 (64-bit),TOR-DC2,CL-TEST,cl-test-esx01
+cl-test-vm060,poweredOn,False,4,8192,122880,58375,Microsoft Windows Server 2019 (64-bit),TOR-DC2,CL-TEST,cl-test-esx02
+tpl-windows-2022,poweredOff,True,2,4096,204800,137953,Microsoft Windows Server 2019 (64-bit),MIL-DC1,CL-PROD-01,cl-prod-01-esx04

@@ -10,6 +10,7 @@ import * as A from "./asks.js";
 import * as SLA from "./sla.js";
 import * as SC from "./scorecard.js";
 import * as WS from "./workshop.js";
+import * as INV from "./inventory.js";
 import { connections } from "./graph.js";
 import { headline, firstMinute, rankActions, chainText, doneSummary, funnelSegments, preview } from "./today.js";
 import { stageBars } from "./nav.js";
@@ -1528,7 +1529,7 @@ export function scorecardView({ result, dash, score, engine, today }) {
 }
 
 // ------------------------------------------------------------------ one customer, every product line
-const SHORT = { "platform-migration": "Migration", hci: "Platform", dbaas: "Databases", "file-storage": "Files", "object-storage": "Objects", "kubernetes-platform": "Kubernetes", "dr-backup": "Recovery",
+const SHORT = { "platform-migration": "Migration", "private-ai": "AI", "hybrid-cloud": "Hybrid cloud", euc: "Desktops", hci: "Platform", dbaas: "Databases", "file-storage": "Files", "object-storage": "Objects", "kubernetes-platform": "Kubernetes", "dr-backup": "Recovery",
   cnapp: "Cloud", identity: "Identity", saas: "SaaS", siem: "Monitoring", endpoint: "Endpoint", ai: "AI" };
 const shortName = (p, label) => SHORT[p] || label.split(" ")[0];
 
@@ -1537,7 +1538,8 @@ function estateMap(estate, onNode, opt = {}) {
   const value = opt.value || ((l) => l.yield), toneOf = opt.tone || ((v) => (v < 0.6 ? "weak" : v < 0.7 ? "mid" : "strong"));
   const subOf = opt.sub || ((l) => (l.naive != null ? `not ${pct(l.naive).replace(/\.\d%$/, "%")}` : ""));
   const say = opt.say || ((n, l) => (l ? `${n.label}: Yield ${pct(l.yield)}. Open this line.` : `${n.label}: not in place yet. See why it could be next.`));
-  const W = 560, H = 380, cx = W / 2, cy = H / 2 + 6, R = 150, nodes = estate.map;
+  const nodes = estate.map, many = nodes.length > 7;      // a whole portfolio needs more room, and smaller rings
+  const W = many ? 680 : 560, H = many ? 470 : 380, cx = W / 2, cy = H / 2 + 6, R = many ? 190 : 150;
   const byProfile = Object.fromEntries(estate.lines.map((l) => [l.profile, l]));
   const pos = {};
   nodes.forEach((n, i) => {
@@ -1549,7 +1551,7 @@ function estateMap(estate, onNode, opt = {}) {
     const [x1, y1] = pos[l.from], [x2, y2] = pos[l.to];
     return svgEl("line", { x1, y1, x2, y2, class: "elink " + l.state }, svgEl("title", {}, `${l.state === "risk" ? "At risk: " : l.state === "grow" ? "Next: " : ""}${l.why}`));
   });
-  const r = 40, c = 2 * Math.PI * r;
+  const r = many ? 34 : 40, c = 2 * Math.PI * r;
   const dots = nodes.map((n) => {
     const [x, y] = pos[n.profile], ln = byProfile[n.profile];
     const tone = !ln ? "absent" : toneOf(value(ln), ln);
@@ -1627,7 +1629,7 @@ export function growView({ estate, focus, startWorkshop }) {
 const STAGE_TAG = { value: "Value", L1: "L1 connected", L2: "L2 seen", L3: "L3 switched on", L4: "L4 decided" };
 const painPct = (v) => `${Math.round(v * 100)}%`;
 
-export function workshopView({ workshop: w, catalog, list, answer, worth, rename, preparedBy, setScope, newWorkshop, openWorkshop, removeWorkshop, presets = [], go, focus }) {
+export function workshopView({ workshop: w, catalog, list, answer, worth, rename, preparedBy, setScope, inventory, newWorkshop, openWorkshop, removeWorkshop, presets = [], go, focus }) {
   const say = h("p", { class: "note", role: "status" });
   const act = (fn) => async (...a) => { try { await fn(...a); say.textContent = ""; } catch (e) { say.textContent = e.message; } };
   let cur = w;
@@ -1685,7 +1687,8 @@ export function workshopView({ workshop: w, catalog, list, answer, worth, rename
         const note = h("input", { type: "text", class: "wsnote", maxlength: 300, value: ans ? ans.note : "", placeholder: "What they said, in a few words", "aria-label": `Note for: ${q.q}` });
         note.addEventListener("change", act(async () => { if (!cur.answers[`${p}#${i}`]) return; cur = await answer(p, i, cur.answers[`${p}#${i}`].a, note.value); }));
         put(li, 
-          h("div", { class: "wsqtext" }, h("span", { class: "wsstage s-" + q.stage, text: STAGE_TAG[q.stage] || q.stage }), h("span", { text: q.q }), q.why ? h("small", { class: "muted", text: q.why }) : null),
+          h("div", { class: "wsqtext" }, h("span", { class: "wsstage s-" + q.stage, text: STAGE_TAG[q.stage] || q.stage }), h("span", { text: q.q }), q.why ? h("small", { class: "muted", text: q.why }) : null,
+            WS.factFor(cur, p, i) ? h("small", { class: "wsfact", text: "From their inventory: " + WS.factFor(cur, p, i) }) : null),
           h("div", { class: "wsans", role: "group", "aria-label": `Answer to: ${q.q}` }, Object.entries(WS.ANSWERS).map(([k, v]) =>
             h("button", { type: "button", class: "wsopt o-" + k, "aria-pressed": String(!!ans && ans.a === k), text: v.label,
               onclick: act(async () => {
@@ -1719,7 +1722,44 @@ export function workshopView({ workshop: w, catalog, list, answer, worth, rename
     return h("details", { class: "card wsline", id: "ws-" + p, open: focus === p || (!focus && (li === 0 || (st.answered > 0 && st.answered < st.total))) ? "" : null }, h("summary", {}, head), h("ol", { class: "wslist" }, items));
   });
   if (focus) requestAnimationFrame(() => { const el = document.getElementById("ws-" + focus); if (el) el.scrollIntoView({ block: "start" }); });
-  return h("div", {}, meeting, h("div", { class: "card wsprogcard" }, prog), lines);
+  return h("div", {}, meeting, inventory ? inventoryCard(w, inventory) : null, h("div", { class: "card wsprogcard" }, prog), lines);
+}
+
+/** The customer's VM inventory: read in the page, kept as totals, shown as the numbers a sizing starts from. */
+function inventoryCard(w, inventory) {
+  const say = h("p", { class: "note", role: "status" });
+  const file = h("input", { type: "file", accept: ".csv,text/csv", "aria-label": "A virtual machine inventory export, as CSV" });
+  file.addEventListener("change", async () => {
+    const f = file.files && file.files[0];
+    if (!f) return;
+    if (f.size > 50 * 1024 * 1024) { say.textContent = "That file is over 50 MB: export only the sheet with one virtual machine per row."; return; }
+    const read = INV.readInventory(await f.text());
+    if (!read.ok) { say.textContent = read.error; return; }
+    try { await inventory({ ...INV.summarise(read), imported_on: new Date().toISOString().slice(0, 10) }); } catch (e) { say.textContent = e.message; }
+  });
+  const s = w.inventory;
+  const intro = h("p", { class: "note first", text: "Optional. A virtual machine inventory export as CSV (the sheet with one machine per row, such as vInfo). It is read in this page and only the totals are kept: no machine names. It brings the migration line into scope and answers part of its questions." });
+  const tryExample = h("button", { class: "btn small quiet", type: "button", text: "Try it with an invented export", onclick: async () => {
+    const read = INV.readInventory(await (await fetch("./demo-inventory.csv")).text());
+    try { await inventory({ ...INV.summarise(read), imported_on: new Date().toISOString().slice(0, 10) }); } catch (e) { say.textContent = e.message; }
+  } });
+  if (!s) return card("Their inventory", h("div", {}, intro, h("div", { class: "btnrow" }, h("label", { class: "btn small filebtn" }, "Read an inventory export", file), tryExample), say));
+  const k = (v, l) => h("div", { class: "invk" }, h("b", { text: v }), h("small", { text: l }));
+  const top = s.clusters.slice(0, 8);
+  return card("Their inventory", h("div", { class: "inv" },
+    h("div", { class: "invkpis" }, k(INV.fmt(s.vms), `virtual machines, ${INV.fmt(s.on)} running`), k(INV.fmt(s.vcpu_on), "vCPU in use"), k(`${INV.fmt(s.mem_on_gib)} GiB`, "memory in use"),
+      k(`${INV.fmt(s.used_tib != null ? s.used_tib : s.prov_tib)} TiB`, s.used_tib != null ? "storage used" : "storage provisioned"), k(INV.fmt(s.hosts), `hosts, ${INV.fmt(s.clusters.length)} clusters`)),
+    h("div", { class: "col2" },
+      h("div", {}, h("h3", { text: "Largest clusters" }), h("table", { class: "invtable" }, h("thead", {}, h("tr", {}, ["Cluster", "Machines", "Running", "vCPU", "Memory GiB", "Past support"].map((t) => h("th", { scope: "col", text: t })))),
+        h("tbody", {}, top.map((c) => h("tr", {}, h("td", { text: c.name }), ...[c.vms, c.on, c.vcpu, c.mem_gib, c.past].map((v) => h("td", { class: "num", text: INV.fmt(v) }))))))),
+      h("div", {}, h("h3", { text: "Worth knowing before a move" }), h("ul", { class: "growwhy" },
+        s.off ? h("li", { text: `${INV.fmt(s.off)} machines are powered off: candidates to retire rather than move.` }) : null,
+        s.past_total ? h("li", { text: `${INV.fmt(s.past_total)} run operating systems past general support: ${Object.entries(s.past).map(([k2, v]) => `${k2} (${INV.fmt(v)})`).join(", ")}.` }) : null,
+        s.first_wave ? h("li", { text: `A first test could be ${s.first_wave.name}: ${INV.fmt(s.first_wave.vms)} machines, ${INV.fmt(s.first_wave.past)} past support. It teaches the most for the least risk.` }) : null,
+        h("li", { text: `On average ${INV.fmt(s.vcpu_per_vm)} vCPU and ${INV.fmt(s.mem_per_vm_gib)} GiB per running machine: the starting point for a sizing tool, not a sizing.` })))),
+    h("div", { class: "btnrow" }, h("label", { class: "btn small filebtn" }, "Read a newer export", file),
+      h("button", { class: "btn small", type: "button", text: "Remove the inventory", onclick: async () => { try { await inventory(null); } catch (e) { say.textContent = e.message; } } })), say),
+  { sub: `Read on ${s.imported_on}. Totals only; the file itself was not kept.` });
 }
 
 export function hurtView({ workshop: w, catalog, go, startPov }) {
@@ -1795,6 +1835,7 @@ export function journeyView({ workshop: w, catalog, go, startPov, present, plan 
       h("div", {}, h("b", { text: String(j.need) }), h("small", { text: "to make true" })),
       h("div", {}, h("b", { class: "ok", text: String(j.done) }), h("small", { text: "already true" })),
       h("div", {}, h("b", { text: String(j.unknown) }), h("small", { text: "still to find out" }))),
+    w.inventory ? h("p", { class: "jfrom" }, h("small", { text: "Where they start from" }), h("span", { text: WS.inventoryLine(w.inventory) })) : null,
     j.stakes.length || j.impact.length ? h("div", { class: "jimpact" }, h("small", { text: "What is at stake, in their words" }),
       j.stakes.map((x) => h("p", { class: "jfig" }, h("b", { text: x.text }), h("small", { text: `in answer to "${x.what}"` }))),
       j.impact.length ? h("q", { text: j.impact.join("; ") }) : null) : null);
@@ -1805,6 +1846,7 @@ export function journeyView({ workshop: w, catalog, go, startPov, present, plan 
       h("b", { text: c.need }),
       h("span", { class: "jtoday", text: STATUS_TODAY[c.status] + (c.note ? `: "${c.note}"` : "") }),
       c.how ? h("span", { class: "jhow", text: (c.status === "unknown" ? "Find out, then: " : "First step: ") + c.how + "." }) : null,
+      c.fact ? h("span", { class: "wsfact", text: "From their inventory: " + c.fact }) : null,
       plan ? planRow(c) : null))) : null,
     st.already.length ? h("p", { class: "jalready" }, h("small", { text: "Already true" }), h("span", { text: st.already.join(". ") + "." })) : null,
     st.validate.length ? h("div", { class: "growproof" }, h("small", { text: "Validated by" }), h("ul", {}, st.validate.map((v) => h("li", { text: v + "." })))) : null,

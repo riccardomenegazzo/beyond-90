@@ -12,6 +12,7 @@ import * as ASK from "./asks.js";
 import * as DONE from "./done.js";
 import * as POV from "./pov.js";
 import * as WSHOP from "./workshop.js";
+import * as INV from "./inventory.js";
 import * as SLA from "./sla.js";
 import { ROLES, ROLE_IDS, isRole, shape } from "./roles.js";
 import * as store from "./store.js";
@@ -818,7 +819,14 @@ async function openExampleWorkshop() {
   await workshopCatalog();
   await refreshWorkshops();
   const have = state.workshops.find(WSHOP.isExample);
-  const w = have || await keepWorkshop(WSHOP.exampleWorkshop(todayIso()));
+  let w = have;
+  if (!w) {
+    // the example comes with an invented inventory export, read the same way a real one is
+    const read = INV.readInventory(await (await fetch("./demo-inventory.csv")).text());
+    w = WSHOP.exampleWorkshop(todayIso());
+    if (read.ok) w = WSHOP.setInventory(w, { ...INV.summarise(read), imported_on: todayIso() }, todayIso());
+    w = await keepWorkshop(w);
+  }
   state.workshop = w.id; state.result = null; state.book = null; state.estate = null;
   showWorkshop("journey");
 }
@@ -891,6 +899,7 @@ function workshopContext() {
     worth: async (profile, i, amount, per) => edit((x) => WSHOP.setWorth(x, profile, i, amount, per, today)),
     plan: async (profile, i, who, by) => edit((x) => WSHOP.setPlan(x, profile, i, who, by, today)),
     preparedBy: async (name) => edit((x) => WSHOP.setPreparedBy(x, name, today)),
+    inventory: async (summary) => { await edit((x) => WSHOP.setInventory(x, summary, today)); showWorkshop("workshop"); },
     rename: async (name) => { await edit((x) => WSHOP.rename(x, name, today)); showWorkshop("workshop"); },
     setScope: async (scope) => { await edit((x) => WSHOP.setScope(x, scope, today)); showWorkshop("workshop"); },
     newWorkshop, openWorkshop, removeWorkshop, presets: WSHOP.PRESETS.map((p) => ({ ...p, scope: p.scope.filter((x) => cat.lines[x]) })).filter((p) => p.scope.length),

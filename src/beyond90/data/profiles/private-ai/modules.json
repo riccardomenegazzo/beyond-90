@@ -1,0 +1,180 @@
+{
+  "use_cases": {
+    "serve": "Serve models to teams, reliably",
+    "data": "Use the organisation's data, safely",
+    "govern": "Govern who uses what",
+    "cost": "Know what AI costs and uses"
+  },
+  "modules": [
+    {
+      "id": "gpu_inventory",
+      "name": "Every GPU node known and monitored",
+      "category": "cloud",
+      "since": "2025.1",
+      "providers": [
+        "datacenter",
+        "edge",
+        "sovereign_cloud"
+      ],
+      "requires_any": [],
+      "on_connect": true,
+      "use_case": "serve",
+      "csf": [
+        "identify"
+      ]
+    },
+    {
+      "id": "model_catalog",
+      "name": "An approved catalogue of models, with versions",
+      "category": "cloud",
+      "since": "2025.1",
+      "providers": [
+        "datacenter",
+        "edge",
+        "sovereign_cloud"
+      ],
+      "requires_any": [
+        "model_endpoint"
+      ],
+      "on_connect": false,
+      "use_case": "govern",
+      "csf": [
+        "identify"
+      ]
+    },
+    {
+      "id": "shared_endpoints",
+      "name": "Shared model endpoints with quotas per team",
+      "category": "cloud",
+      "since": "2025.2",
+      "providers": [
+        "datacenter",
+        "edge",
+        "sovereign_cloud"
+      ],
+      "requires_any": [
+        "model_endpoint",
+        "gpu_node"
+      ],
+      "on_connect": false,
+      "use_case": "serve",
+      "csf": [
+        "protect"
+      ]
+    },
+    {
+      "id": "rag_pipeline",
+      "name": "Retrieval over internal data, with permissions respected",
+      "category": "cloud",
+      "since": "2025.2",
+      "providers": [
+        "datacenter",
+        "sovereign_cloud"
+      ],
+      "requires_any": [
+        "vector_store"
+      ],
+      "on_connect": false,
+      "use_case": "data",
+      "csf": [
+        "protect"
+      ]
+    },
+    {
+      "id": "access_control",
+      "name": "Sign-in and role-based access to every endpoint",
+      "category": "defend",
+      "since": "2025.1",
+      "providers": [
+        "datacenter",
+        "edge",
+        "sovereign_cloud"
+      ],
+      "requires_any": [
+        "model_endpoint"
+      ],
+      "on_connect": false,
+      "use_case": "govern",
+      "csf": [
+        "protect"
+      ]
+    },
+    {
+      "id": "prompt_logging",
+      "name": "Prompts and responses logged for investigation",
+      "category": "defend",
+      "since": "2025.3",
+      "providers": [
+        "datacenter",
+        "edge",
+        "sovereign_cloud"
+      ],
+      "requires_any": [
+        "model_endpoint",
+        "agent"
+      ],
+      "on_connect": false,
+      "use_case": "govern",
+      "csf": [
+        "detect"
+      ]
+    },
+    {
+      "id": "agent_guardrails",
+      "name": "Guardrails on what agents may call and change",
+      "category": "defend",
+      "since": "2026.1",
+      "providers": [
+        "datacenter",
+        "edge",
+        "sovereign_cloud"
+      ],
+      "requires_any": [
+        "agent"
+      ],
+      "on_connect": false,
+      "use_case": "govern",
+      "csf": [
+        "protect"
+      ]
+    },
+    {
+      "id": "usage_metering",
+      "name": "Usage and cost metered per team",
+      "category": "cloud",
+      "since": "2025.3",
+      "providers": [
+        "datacenter",
+        "edge",
+        "sovereign_cloud"
+      ],
+      "requires_any": [
+        "model_endpoint"
+      ],
+      "on_connect": false,
+      "use_case": "cost",
+      "csf": [
+        "identify"
+      ]
+    },
+    {
+      "id": "gpu_utilisation",
+      "name": "GPU utilisation tracked and capacity planned",
+      "category": "cloud",
+      "since": "2025.2",
+      "providers": [
+        "datacenter",
+        "edge",
+        "sovereign_cloud"
+      ],
+      "requires_any": [
+        "gpu_node"
+      ],
+      "on_connect": false,
+      "use_case": "cost",
+      "csf": [
+        "identify"
+      ]
+    }
+  ]
+}

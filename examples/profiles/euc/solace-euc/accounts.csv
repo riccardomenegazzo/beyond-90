@@ -1,0 +1,11 @@
+id,provider,sources,connected,owner,last_spend,status,in_plan,created_at
+euc-01,datacenter,billing;org;sso,true,branch-it,6200,active,true,2025-03-21
+euc-02,branch,billing,true,clinical-apps,4100,active,true,2025-07-17
+euc-03,public_cloud,billing,true,workplace-it,1000,active,true,2025-09-16
+euc-04,branch,billing;sso,true,clinical-apps,2900,active,false,2025-01-29
+euc-05,datacenter,billing;org;sso,true,workplace-it,3700,active,true,2026-05-22
+euc-06,branch,billing;org;sso,true,clinical-apps,1300,active,true,2026-04-18
+euc-07,datacenter,billing;org;sso,true,clinical-apps,3900,active,true,2026-09-21
+euc-08,datacenter,billing;org,true,security-ops,6900,active,true,2026-08-22
+euc-09,branch,billing;org;sso,true,security-ops,4700,active,false,2025-03-30
+euc-10,datacenter,billing;org;sso,true,branch-it,5500,active,true,2026-06-28

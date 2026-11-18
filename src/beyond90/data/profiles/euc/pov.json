@@ -1,0 +1,24 @@
+{
+  "criteria": [
+    {
+      "text": "Logon time for a standard user is under the agreed target, measured on a normal morning",
+      "how": "Measure logon times for a test group over a week."
+    },
+    {
+      "text": "An image update reaches every pool in one change, with a rollback",
+      "how": "Update a test image, roll it out, then roll back one pool."
+    },
+    {
+      "text": "A user on a personal device reaches their desktop with strong sign-in, and no data stays on the device",
+      "how": "Sign in from an unmanaged device and check what is left on it."
+    },
+    {
+      "text": "A peak of extra users is served by new desktops within the agreed time",
+      "how": "Simulate a peak and time the new desktops coming up."
+    },
+    {
+      "text": "The cost per user per month is known and compared with today's",
+      "how": "Compute the figure with the customer's own numbers."
+    }
+  ]
+}

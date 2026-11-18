@@ -1,0 +1,24 @@
+{
+  "criteria": [
+    {
+      "text": "A team calls an approved model through a shared endpoint, with its own quota, within a day of asking",
+      "how": "Have one team request access and send its first request; time it."
+    },
+    {
+      "text": "An assistant answers from internal documents without showing anything the user may not read",
+      "how": "Ask as two users with different rights and compare the answers."
+    },
+    {
+      "text": "Every prompt and response of a test session can be found and read by security",
+      "how": "Run a session, then search for it in the logs."
+    },
+    {
+      "text": "An agent is stopped when it tries a tool or a change outside its policy",
+      "how": "Give an agent a task that tempts it outside its policy and watch the refusal."
+    },
+    {
+      "text": "GPU usage and cost per team are shown for the month",
+      "how": "Show the usage view to two team leads."
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "playbooks": {
+    "l1_connect_account": {
+      "title": "Bring the desktop pools run apart under one console",
+      "why": "Users work on these pools, but they are not managed with the others, so their images, profiles and capacity are handled by hand.",
+      "steps": [
+        "List desktop pools from each site and team.",
+        "Register each pool with the console with a scoped account.",
+        "Confirm users, images and sessions show for each."
+      ],
+      "success": "Every desktop pool in scope reports its users and its image."
+    }
+  }
+}

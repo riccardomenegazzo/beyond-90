@@ -1,0 +1,14 @@
+{
+  "playbooks": {
+    "l1_connect_account": {
+      "title": "Bring the GPU servers bought by teams under the platform",
+      "why": "Teams run models on these GPU servers, but the platform does not see them, so their access, cost and data are nobody's job.",
+      "steps": [
+        "List GPU servers from purchasing, the data centre and the teams.",
+        "Register each one with the platform with a scoped account.",
+        "Confirm utilisation and the models running show for each."
+      ],
+      "success": "Every GPU server in scope reports its utilisation and its models."
+    }
+  }
+}

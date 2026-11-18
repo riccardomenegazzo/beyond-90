@@ -268,3 +268,29 @@ test("who prepared the workshop signs the readout", async () => {
   assert.equal(validWorkshop({ ...w, prepared_by: "x".repeat(81) }), false);
   assert.equal(validWorkshop({ ...w, prepared_by: 5 }), false);
 });
+
+test("an inventory brings the migration line into scope, and its facts reach the journey and the readout, escaped", async () => {
+  const m = await import("../workshop.js");
+  const inv = await import("../inventory.js");
+  const csv = "VM,Powerstate,CPUs,Memory,Cluster,Host\nx,poweredOn,4,8192,<img src=x onerror=alert(1)>,h1\ny,poweredOn,2,4096,Small,h2\nz,poweredOn,2,4096,Small,h2\n";
+  const s = { ...inv.summarise(inv.readInventory(csv)), imported_on: D };
+  let w = m.setInventory(mk({ scope: ["hci"] }), s, D);
+  assert.deepEqual(w.scope, ["hci", "platform-migration"]);
+  assert.ok(validWorkshop(w));
+  assert.equal(validWorkshop({ ...w, inventory: { ...s, vms: "many" } }), false);
+  w = m.setAnswer(w, "platform-migration", 2, "partly", "", D);
+  w = m.setAnswer(w, "platform-migration", 4, "gap", "", D);
+  w = m.setAnswer(w, "platform-migration", 0, "gap", "", D);
+  assert.match(m.factFor(w, "platform-migration", 2), /3 virtual machines on 2 clusters/);
+  assert.equal(m.factFor(w, "hci", 2), "");
+  const html = m.readoutHtml(CAT_WITH_MIGRATION(), w, m.assess(CAT_WITH_MIGRATION(), w));
+  assert.match(html, /Where you start from/);
+  assert.ok(!html.includes("<img src=x"), "a cluster name never becomes markup");
+  assert.match(m.summaryMarkdown(CAT_WITH_MIGRATION(), w, m.assess(CAT_WITH_MIGRATION(), w)), /## Where they start from/);
+  assert.equal(m.setInventory(w, null, D).inventory, undefined);
+});
+
+function CAT_WITH_MIGRATION() {
+  const q = JSON.parse(readFileSync(new URL("../../src/beyond90/data/profiles/platform-migration/discovery.json", import.meta.url), "utf-8")).questions;
+  return { ...CAT, lines: { ...CAT.lines, "platform-migration": { label: "Platform migration", units: "sites", questions: q, proof: [{ text: "A group moves", how: "Move it" }] } } };
+}

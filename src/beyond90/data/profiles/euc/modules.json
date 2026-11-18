@@ -1,0 +1,181 @@
+{
+  "use_cases": {
+    "experience": "Give users a fast, reliable desktop",
+    "ops": "Run images and updates with less effort",
+    "secure": "Secure access from any device",
+    "cost": "Size and pay for what is used"
+  },
+  "modules": [
+    {
+      "id": "pool_inventory",
+      "name": "Every desktop pool known, with its users",
+      "category": "cloud",
+      "since": "2025.1",
+      "providers": [
+        "datacenter",
+        "branch",
+        "public_cloud"
+      ],
+      "requires_any": [],
+      "on_connect": true,
+      "use_case": "ops",
+      "csf": [
+        "identify"
+      ]
+    },
+    {
+      "id": "image_management",
+      "name": "Golden images updated once and rolled out to every pool",
+      "category": "cloud",
+      "since": "2025.1",
+      "providers": [
+        "datacenter",
+        "branch",
+        "public_cloud"
+      ],
+      "requires_any": [
+        "golden_image"
+      ],
+      "on_connect": false,
+      "use_case": "ops",
+      "csf": [
+        "protect"
+      ]
+    },
+    {
+      "id": "profile_management",
+      "name": "User profiles that follow users and load fast",
+      "category": "cloud",
+      "since": "2025.2",
+      "providers": [
+        "datacenter",
+        "branch",
+        "public_cloud"
+      ],
+      "requires_any": [
+        "user_profile"
+      ],
+      "on_connect": false,
+      "use_case": "experience",
+      "csf": [
+        "protect"
+      ]
+    },
+    {
+      "id": "experience_monitoring",
+      "name": "Logon time and session experience monitored",
+      "category": "cloud",
+      "since": "2025.2",
+      "providers": [
+        "datacenter",
+        "branch",
+        "public_cloud"
+      ],
+      "requires_any": [
+        "desktop",
+        "app_session"
+      ],
+      "on_connect": false,
+      "use_case": "experience",
+      "csf": [
+        "detect"
+      ]
+    },
+    {
+      "id": "secure_access",
+      "name": "Strong sign-in and a gateway for remote access",
+      "category": "defend",
+      "since": "2025.1",
+      "providers": [
+        "datacenter",
+        "branch",
+        "public_cloud"
+      ],
+      "requires_any": [
+        "access_gateway"
+      ],
+      "on_connect": false,
+      "use_case": "secure",
+      "csf": [
+        "protect"
+      ]
+    },
+    {
+      "id": "data_stays_in",
+      "name": "Data stays in the data centre, not on the device",
+      "category": "defend",
+      "since": "2025.2",
+      "providers": [
+        "datacenter",
+        "branch",
+        "public_cloud"
+      ],
+      "requires_any": [
+        "desktop",
+        "app_session"
+      ],
+      "on_connect": false,
+      "use_case": "secure",
+      "csf": [
+        "protect"
+      ]
+    },
+    {
+      "id": "autoscale_pools",
+      "name": "Pools that grow and shrink with demand",
+      "category": "cloud",
+      "since": "2025.3",
+      "providers": [
+        "datacenter",
+        "branch",
+        "public_cloud"
+      ],
+      "requires_any": [
+        "desktop"
+      ],
+      "on_connect": false,
+      "use_case": "cost",
+      "csf": [
+        "identify"
+      ]
+    },
+    {
+      "id": "burst_to_cloud",
+      "name": "Extra desktops in the cloud for peaks or disasters",
+      "category": "cloud",
+      "since": "2026.1",
+      "providers": [
+        "public_cloud",
+        "datacenter"
+      ],
+      "requires_any": [
+        "desktop"
+      ],
+      "on_connect": false,
+      "use_case": "cost",
+      "csf": [
+        "recover"
+      ]
+    },
+    {
+      "id": "app_delivery",
+      "name": "Applications delivered separately from the image",
+      "category": "cloud",
+      "since": "2025.3",
+      "providers": [
+        "datacenter",
+        "branch",
+        "public_cloud"
+      ],
+      "requires_any": [
+        "app_session",
+        "golden_image"
+      ],
+      "on_connect": false,
+      "use_case": "ops",
+      "csf": [
+        "protect"
+      ]
+    }
+  ]
+}

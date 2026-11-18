@@ -1,0 +1,24 @@
+{
+  "criteria": [
+    {
+      "text": "A workload moves from the data centre to a cloud cluster and back with no change to the application",
+      "how": "Move a test application with its addresses and time it both ways."
+    },
+    {
+      "text": "A failover of a business application to the cloud meets the agreed recovery time and point",
+      "how": "Run the recovery plan to the cloud cluster in test mode and record the result."
+    },
+    {
+      "text": "An idle cloud cluster is hibernated and resumed within the agreed time, and the saving is shown",
+      "how": "Hibernate a cluster overnight, resume it, and compare the cost."
+    },
+    {
+      "text": "Data that must stay in the country is shown to stay there, with evidence an auditor accepts",
+      "how": "Produce the residency evidence for one workload and review it with compliance."
+    },
+    {
+      "text": "The same security policy applies to a workload in the data centre and in the cloud",
+      "how": "Move a workload and check that its policy follows it."
+    }
+  ]
+}

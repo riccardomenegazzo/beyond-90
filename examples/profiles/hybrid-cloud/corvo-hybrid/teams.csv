@@ -1,0 +1,6 @@
+id,name,has_assets,active_users,sso,role_scoped,last_access_review
+cloud-platform,Cloud Platform,true,6,true,true,2026-08-09
+infra-ops,Infra Ops,true,6,false,true,2026-06-12
+compliance,Compliance,true,1,false,true,2026-08-28
+security-ops,Security Ops,true,5,false,false,2026-02-27
+finance-it,Finance It,true,1,true,false,2026-04-10

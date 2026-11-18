@@ -28,7 +28,7 @@ from .words import n_of
 # The lines a portfolio is drawn from. A customer's estate is compared with the family most of its lines belong to.
 FAMILIES: dict[str, list[str]] = {
     # The order is also the map's: the first line sits in the middle, the others go round it so that linked lines are near.
-    "infrastructure": ["hci", "dbaas", "dr-backup", "object-storage", "file-storage", "kubernetes-platform", "platform-migration"],
+    "infrastructure": ["hci", "dbaas", "dr-backup", "hybrid-cloud", "object-storage", "file-storage", "euc", "kubernetes-platform", "private-ai", "platform-migration"],
     "security": ["cnapp", "identity", "saas", "siem", "endpoint", "ai"],
 }
 
@@ -36,7 +36,7 @@ LABELS: dict[str, str] = {
     "hci": "Platform (hyperconverged)", "dbaas": "Databases as a service", "file-storage": "File storage",
     "object-storage": "Object storage", "kubernetes-platform": "Kubernetes platform", "dr-backup": "Disaster recovery and backup",
     "cnapp": "Cloud security", "identity": "Identity security", "saas": "SaaS security", "siem": "Security monitoring",
-    "endpoint": "Endpoint protection", "ai": "AI security", "platform-migration": "Platform migration",
+    "endpoint": "Endpoint protection", "ai": "AI security", "platform-migration": "Platform migration", "private-ai": "AI on own infrastructure", "hybrid-cloud": "Hybrid and sovereign cloud", "euc": "Virtual desktops",
 }
 
 # (from, to, why): once the first line runs, the second follows. Read as "because <from> is in place, <why>".
@@ -54,6 +54,16 @@ LINKS: list[tuple[str, str, str]] = [
     ("platform-migration", "hci", "migrated workloads need a platform that is ready to run them, protected and monitored, before the first wave"),
     ("platform-migration", "dr-backup", "recovery must work on the new platform before the old one is switched off"),
     ("hci", "platform-migration", "machines still on the old platform keep its licences and its risks alive"),
+    ("hci", "hybrid-cloud", "the same platform in a public or sovereign cloud gives recovery and room to grow without rewriting anything"),
+    ("hci", "euc", "virtual desktops can run on the platform already in place, next to the applications they use"),
+    ("hci", "private-ai", "AI models can run next to the data the platform already holds, under the same operations"),
+    ("kubernetes-platform", "private-ai", "AI applications and agents are containers, and need GPUs, models and data close by"),
+    ("private-ai", "object-storage", "training data, models and retrieval indexes need scalable storage the organisation controls"),
+    ("hybrid-cloud", "dr-backup", "a cloud cluster is only a recovery site once failover to it is tested"),
+    ("dr-backup", "hybrid-cloud", "a recovery site in the cloud avoids building and paying for a second data centre"),
+    ("platform-migration", "hybrid-cloud", "some workloads can move to a cloud cluster first, buying time for the data centre"),
+    ("euc", "dr-backup", "desktops are how people work during an outage, so they belong in the recovery plan"),
+    ("euc", "file-storage", "user profiles and shared drives need fast, protected file storage"),
     ("cnapp", "identity", "cloud findings keep leading back to identities nobody governs"),
     ("cnapp", "siem", "cloud detections need somewhere to be correlated and answered"),
     ("identity", "saas", "the same identities sign in to business applications nobody reviews"),

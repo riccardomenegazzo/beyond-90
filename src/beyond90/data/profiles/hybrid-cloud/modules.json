@@ -1,0 +1,183 @@
+{
+  "use_cases": {
+    "move": "Move workloads without rewriting them",
+    "recover": "Recover in the cloud",
+    "sovereign": "Keep data where it must stay",
+    "cost": "Pay only for what runs"
+  },
+  "modules": [
+    {
+      "id": "cloud_inventory",
+      "name": "Every cloud cluster managed from the same place as the data centre",
+      "category": "cloud",
+      "since": "2025.1",
+      "providers": [
+        "datacenter",
+        "public_cloud",
+        "sovereign_cloud",
+        "edge"
+      ],
+      "requires_any": [],
+      "on_connect": true,
+      "use_case": "move",
+      "csf": [
+        "identify"
+      ]
+    },
+    {
+      "id": "landing_zone_ready",
+      "name": "Cloud accounts and networks prepared to the organisation's rules",
+      "category": "cloud",
+      "since": "2025.1",
+      "providers": [
+        "public_cloud",
+        "sovereign_cloud"
+      ],
+      "requires_any": [
+        "landing_zone"
+      ],
+      "on_connect": false,
+      "use_case": "move",
+      "csf": [
+        "protect"
+      ]
+    },
+    {
+      "id": "workload_mobility",
+      "name": "Workloads moved to the cloud and back without changing them",
+      "category": "cloud",
+      "since": "2025.2",
+      "providers": [
+        "datacenter",
+        "public_cloud",
+        "sovereign_cloud",
+        "edge"
+      ],
+      "requires_any": [
+        "cloud_cluster",
+        "network_link"
+      ],
+      "on_connect": false,
+      "use_case": "move",
+      "csf": [
+        "protect"
+      ]
+    },
+    {
+      "id": "dr_to_cloud",
+      "name": "Disaster recovery to a cloud cluster, tested",
+      "category": "cloud",
+      "since": "2025.2",
+      "providers": [
+        "datacenter",
+        "public_cloud",
+        "sovereign_cloud",
+        "edge"
+      ],
+      "requires_any": [
+        "replication_pair",
+        "cloud_cluster"
+      ],
+      "on_connect": false,
+      "use_case": "recover",
+      "csf": [
+        "recover"
+      ]
+    },
+    {
+      "id": "hibernate_resume",
+      "name": "Clusters hibernated when idle and resumed when needed",
+      "category": "cloud",
+      "since": "2025.3",
+      "providers": [
+        "public_cloud",
+        "sovereign_cloud"
+      ],
+      "requires_any": [
+        "cloud_cluster",
+        "cost_policy"
+      ],
+      "on_connect": false,
+      "use_case": "cost",
+      "csf": [
+        "identify"
+      ]
+    },
+    {
+      "id": "data_residency",
+      "name": "Data kept in the required country, with evidence",
+      "category": "defend",
+      "since": "2025.3",
+      "providers": [
+        "sovereign_cloud",
+        "public_cloud"
+      ],
+      "requires_any": [
+        "cloud_cluster"
+      ],
+      "on_connect": false,
+      "use_case": "sovereign",
+      "csf": [
+        "protect"
+      ]
+    },
+    {
+      "id": "network_extension",
+      "name": "Addresses and segments extended so workloads keep their identity",
+      "category": "cloud",
+      "since": "2025.2",
+      "providers": [
+        "datacenter",
+        "public_cloud",
+        "sovereign_cloud",
+        "edge"
+      ],
+      "requires_any": [
+        "network_link"
+      ],
+      "on_connect": false,
+      "use_case": "move",
+      "csf": [
+        "protect"
+      ]
+    },
+    {
+      "id": "consistent_security",
+      "name": "The same security policies in the data centre and the cloud",
+      "category": "defend",
+      "since": "2025.3",
+      "providers": [
+        "datacenter",
+        "public_cloud",
+        "sovereign_cloud",
+        "edge"
+      ],
+      "requires_any": [
+        "cloud_cluster"
+      ],
+      "on_connect": false,
+      "use_case": "sovereign",
+      "csf": [
+        "protect"
+      ]
+    },
+    {
+      "id": "cloud_cost_view",
+      "name": "Cloud cost per cluster and per team",
+      "category": "cloud",
+      "since": "2026.1",
+      "providers": [
+        "public_cloud",
+        "sovereign_cloud"
+      ],
+      "requires_any": [
+        "cost_policy"
+      ],
+      "on_connect": false,
+      "use_case": "cost",
+      "csf": [
+        "identify"
+      ]
+    }
+  ]
+}

@@ -130,7 +130,7 @@ def _load_gen(name):
     return mod
 
 
-@pytest.mark.parametrize("profile,folder", [("saas", "acme-saas"), ("ai", "orbit-ai"), ("identity", "harbor-identity"), ("siem", "lantern-siem"), ("hci", "granite-hci"), ("object-storage", "meridian-storage"), ("dbaas", "aurora-dbaas"), ("file-storage", "northgate-files"), ("kubernetes-platform", "pixel-kubernetes"), ("dr-backup", "harborline-dr"), ("platform-migration", "vantage-migration")])
+@pytest.mark.parametrize("profile,folder", [("saas", "acme-saas"), ("ai", "orbit-ai"), ("identity", "harbor-identity"), ("siem", "lantern-siem"), ("hci", "granite-hci"), ("object-storage", "meridian-storage"), ("dbaas", "aurora-dbaas"), ("file-storage", "northgate-files"), ("kubernetes-platform", "pixel-kubernetes"), ("dr-backup", "harborline-dr"), ("platform-migration", "vantage-migration"), ("private-ai", "lumen-ai"), ("hybrid-cloud", "corvo-hybrid"), ("euc", "solace-euc")])
 def test_the_committed_profile_examples_are_what_their_generator_writes(tmp_path, profile, folder):
     mod = _load_gen("gen_profiles")
     mod.build(profile, tmp_path)
@@ -140,13 +140,13 @@ def test_the_committed_profile_examples_are_what_their_generator_writes(tmp_path
     assert [n for n in names if (tmp_path / n).read_text() != (committed / n).read_text()] == [], "run examples/generate_profile_examples.py and commit"
 
 
-@pytest.mark.parametrize("profile,folder", [("saas", "acme-saas"), ("ai", "orbit-ai"), ("identity", "harbor-identity"), ("siem", "lantern-siem"), ("hci", "granite-hci"), ("object-storage", "meridian-storage"), ("dbaas", "aurora-dbaas"), ("file-storage", "northgate-files"), ("kubernetes-platform", "pixel-kubernetes"), ("dr-backup", "harborline-dr"), ("platform-migration", "vantage-migration")])
+@pytest.mark.parametrize("profile,folder", [("saas", "acme-saas"), ("ai", "orbit-ai"), ("identity", "harbor-identity"), ("siem", "lantern-siem"), ("hci", "granite-hci"), ("object-storage", "meridian-storage"), ("dbaas", "aurora-dbaas"), ("file-storage", "northgate-files"), ("kubernetes-platform", "pixel-kubernetes"), ("dr-backup", "harborline-dr"), ("platform-migration", "vantage-migration"), ("private-ai", "lumen-ai"), ("hybrid-cloud", "corvo-hybrid"), ("euc", "solace-euc")])
 def test_the_extra_profile_examples_score_with_their_own_words(profile, folder):
     path = ROOT / "examples" / "profiles" / profile / folder
     d, _ = load_customer(path)
     sc = compute_score(d, Catalogue.for_directory(path))
     assert sc.provenance["profile"] == profile
-    assert sc.terms["units"] == {"saas": "tenants", "ai": "environments", "identity": "directories", "siem": "environments", "hci": "clusters", "object-storage": "tenants", "dbaas": "database environments", "file-storage": "file servers", "kubernetes-platform": "clusters", "dr-backup": "sites", "platform-migration": "sites"}[profile]
+    assert sc.terms["units"] == {"saas": "tenants", "ai": "environments", "identity": "directories", "siem": "environments", "hci": "clusters", "object-storage": "tenants", "dbaas": "database environments", "file-storage": "file servers", "kubernetes-platform": "clusters", "dr-backup": "sites", "platform-migration": "sites", "private-ai": "AI clusters", "hybrid-cloud": "cloud clusters", "euc": "desktop pools"}[profile]
 
 
 @pytest.mark.parametrize("profile", available_profiles())
@@ -155,7 +155,7 @@ def test_suggested_pov_criteria_fit_the_form(profile):
     for c in cat.pov_criteria:
         assert 20 <= len(c["text"]) <= 200 and len(c["how"]) <= 200, c["text"]
     assert len({c["text"] for c in cat.pov_criteria}) == len(cat.pov_criteria)
-    if profile in ("cnapp", "hci", "object-storage", "dbaas", "file-storage", "kubernetes-platform", "dr-backup", "platform-migration"):
+    if profile in ("cnapp", "hci", "object-storage", "dbaas", "file-storage", "kubernetes-platform", "dr-backup", "platform-migration", "private-ai", "hybrid-cloud", "euc"):
         assert len(cat.pov_criteria) >= 5
 
 

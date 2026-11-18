@@ -1,0 +1,3 @@
+id,name,role,team,influence,last_contact,credibility,reliability,intimacy,self_orientation
+c1,Dana Reyes,security_leader,security-ops,3,2026-10-20,8,7,6,3
+c2,Marco Bianchi,champion,ml-platform,2,2026-10-27,7,8,7,2

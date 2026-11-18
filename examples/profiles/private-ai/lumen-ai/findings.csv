@@ -1,0 +1,41 @@
+id,account_id,severity,exposure,opened_at,closed_at,owner,decision,decision_reason,expiry,previous_severity,severity_changed_at,verified_at,reopened,closed_by
+x-001,private-ai-03,medium,internet,2026-07-28,2026-08-15,finance-it,fix,,,,,,,assisted
+x-002,private-ai-02,medium,internet,2026-08-26,2026-09-20,data-office,fix,,,,,,,manual
+x-003,private-ai-04,low,internal,2026-10-09,,research-it,fix,,,,,,,
+x-004,private-ai-05,low,internal,2026-07-13,2026-07-17,finance-it,fix,,,,,,,assisted
+x-005,private-ai-02,medium,internet,2026-09-25,2026-10-23,research-it,fix,,,,,,,manual
+x-006,private-ai-01,medium,internal,2026-07-27,,security-ops,fix,,,,,,,
+x-007,private-ai-06,low,internal,2026-07-11,2026-08-09,research-it,fix,,,,,,,assisted
+x-008,private-ai-02,medium,internal,2026-09-27,,data-office,fix,,,,,,,
+x-009,private-ai-02,low,internal,2026-08-09,,research-it,accepted_risk,business process depends on it,2027-01-20,,,,,
+x-010,private-ai-01,medium,internal,2026-10-01,,research-it,,,,,,,,
+x-011,private-ai-04,low,internet,2026-08-08,2026-09-03,finance-it,accepted_risk,business process depends on it,2026-12-04,,,,,assisted
+x-012,private-ai-06,low,internal,2026-07-12,2026-07-16,data-office,accepted_risk,business process depends on it,2027-01-08,,,,,manual
+x-013,private-ai-02,high,internet,2026-08-11,2026-09-06,security-ops,fix,,,,,,,automated
+x-014,private-ai-01,critical,internet,2026-07-27,,security-ops,accepted_risk,business process depends on it,2027-02-05,,,,,
+x-015,private-ai-04,low,internet,2026-10-08,,security-ops,fix,,,,,,,
+x-016,private-ai-05,medium,internet,2026-10-05,,data-office,accepted_risk,business process depends on it,2026-12-11,,,,,
+x-017,private-ai-02,medium,internal,2026-10-01,,research-it,fix,,,,,,,
+x-018,private-ai-01,medium,internet,2026-09-04,2026-10-03,security-ops,accepted_risk,business process depends on it,2027-02-02,,,,,manual
+x-019,private-ai-02,high,internal,2026-07-19,,,,,,,,,,
+x-020,private-ai-01,medium,internal,2026-09-22,,research-it,accepted_risk,business process depends on it,2026-12-01,,,,,
+x-021,private-ai-06,critical,internal,2026-08-08,,,,,,,,,,
+x-022,private-ai-01,low,internet,2026-07-11,,,,,,,,,,
+x-023,private-ai-06,high,internet,2026-07-16,2026-08-14,finance-it,fix,,,,,,,manual
+x-024,private-ai-03,critical,internet,2026-07-07,2026-07-12,finance-it,fix,,,,,,,assisted
+x-025,private-ai-02,medium,internal,2026-09-23,,research-it,fix,,,,,,,
+x-026,private-ai-02,critical,internal,2026-08-30,,,,,,,,,,
+x-027,private-ai-03,high,internal,2026-08-13,,security-ops,fix,,,,,,,
+x-028,private-ai-02,low,internet,2026-10-17,,data-office,accepted_risk,business process depends on it,2027-02-12,,,,,
+x-029,private-ai-05,medium,internet,2026-09-22,2026-10-15,security-ops,fix,,,,,,,assisted
+x-030,private-ai-03,high,internet,2026-07-25,2026-08-19,research-it,fix,,,,,,,assisted
+x-031,private-ai-05,medium,internet,2026-10-14,,research-it,fix,,,,,,,
+x-032,private-ai-05,high,internal,2026-10-27,,research-it,accepted_risk,business process depends on it,2026-11-29,,,,,
+x-033,private-ai-02,medium,internet,2026-07-31,2026-08-18,data-office,fix,,,,,,,manual
+x-034,private-ai-05,low,internet,2026-07-20,,data-office,accepted_risk,business process depends on it,2027-01-30,,,,,
+x-035,private-ai-01,low,internal,2026-09-17,2026-10-01,data-office,fix,,,,,,,automated
+x-036,private-ai-04,critical,internet,2026-07-11,2026-07-18,security-ops,fix,,,,,,,manual
+x-037,private-ai-02,medium,internal,2026-07-13,,ml-platform,fix,,,,,,,
+x-038,private-ai-01,medium,internal,2026-09-04,2026-09-09,data-office,accepted_risk,business process depends on it,2026-12-30,,,,,assisted
+x-039,private-ai-03,high,internet,2026-09-16,2026-10-15,research-it,fix,,,,,,,automated
+x-040,private-ai-06,medium,internal,2026-10-08,,finance-it,,,,,,,,

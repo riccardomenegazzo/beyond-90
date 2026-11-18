@@ -1,0 +1,7 @@
+id,provider,sources,connected,owner,last_spend,status,in_plan,created_at
+private-ai-01,edge,billing;sso,true,ml-platform,1200,active,false,2026-07-04
+private-ai-02,sovereign_cloud,billing;org;sso,true,ml-platform,1900,active,true,2026-07-18
+private-ai-03,datacenter,billing;org;sso,true,data-office,3400,active,true,2025-06-27
+private-ai-04,datacenter,billing;org;sso,true,research-it,7400,active,false,2024-12-23
+private-ai-05,datacenter,billing,true,data-office,5600,active,true,2026-10-15
+private-ai-06,datacenter,billing;org;sso,true,data-office,2600,active,false,2025-09-24

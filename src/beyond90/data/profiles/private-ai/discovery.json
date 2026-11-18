@@ -1,0 +1,60 @@
+{
+  "questions": [
+    {
+      "stage": "value",
+      "q": "Which AI use case would make a difference this year, and what stops it from running on your own data today?",
+      "why": "Anchors the platform in a real use case, not a lab.",
+      "need": "One use case with a business owner and a measure of success is chosen",
+      "how": "Pick the use case with the owner and agree how success is measured"
+    },
+    {
+      "stage": "value",
+      "q": "Why does this need to run on your infrastructure: data sensitivity, sovereignty, cost, or latency?",
+      "why": "The reason decides the architecture and the proof.",
+      "need": "The reason to run AI in house is written down and agreed",
+      "how": "Write the reason with the sponsor: data, sovereignty, cost or latency"
+    },
+    {
+      "stage": "L1",
+      "q": "How many GPU servers exist today, who bought them, and how busy are they?",
+      "why": "Scattered GPUs are expensive and invisible.",
+      "need": "Every GPU server is known, with an owner and its utilisation",
+      "how": "List GPU servers and measure a week of utilisation"
+    },
+    {
+      "stage": "L2",
+      "q": "Which models are in use, and who approved them?",
+      "why": "An approved catalogue is the start of governance.",
+      "need": "The models in use are known and approved",
+      "how": "Build a catalogue of approved models with an owner"
+    },
+    {
+      "stage": "L3",
+      "q": "Can an assistant reach documents a user is not allowed to read?",
+      "why": "Permission-aware retrieval is where AI meets data protection.",
+      "need": "Retrieval respects the same permissions as the source data",
+      "how": "Test retrieval as two users with different rights"
+    },
+    {
+      "stage": "L3",
+      "q": "Are prompts and responses kept where security can investigate them?",
+      "why": "Without logs, an incident cannot be reconstructed.",
+      "need": "Prompts and responses are logged and searchable, with agreed retention",
+      "how": "Turn on logging for the first endpoint and agree retention"
+    },
+    {
+      "stage": "L3",
+      "q": "What may an agent call or change, and who decided?",
+      "why": "Agents act; their limits must be explicit.",
+      "need": "Each agent has an owner and a policy on what it may call and change",
+      "how": "Write the policy for the first agent and enforce it"
+    },
+    {
+      "stage": "L4",
+      "q": "Who sees what AI costs each team, and decides when it grows?",
+      "why": "Cost without an owner grows unchecked.",
+      "need": "AI usage and cost per team are reviewed by a named owner",
+      "how": "Meter usage per team and review it monthly"
+    }
+  ]
+}

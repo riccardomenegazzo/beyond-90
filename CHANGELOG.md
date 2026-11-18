@@ -2,6 +2,14 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.90.0
+
+- **Their inventory, read in the page.** In a discovery workshop, read a VM inventory export as CSV (the vInfo sheet of a common inventory tool, or a hand-made sheet): machines and how many run, vCPU and memory in use, storage, hosts and clusters, machines powered off, operating systems past general support, and a first wave to test. It brings the migration line into scope, puts what it found under the questions it answers, and heads the journey, the readout ("Where you start from") and the summary. A starting point for a sizing tool, not a sizing. Only totals and cluster names are kept, never machine names; an invented export is included to try it, and the example workshop comes with it.
+- **Three new kinds of product**, vendor-neutral: `private-ai` (AI on your own infrastructure: GPU clusters, model endpoints, permission-aware retrieval, agent guardrails, cost per team), `hybrid-cloud` (the same platform in public or sovereign clouds: mobility, recovery to the cloud, data residency, hibernation) and `euc` (virtual desktops and applications: images, profiles, logon time, secure access, bursting). Each with proof-of-value criteria, discovery questions with conditions and first steps, links to the rest of the portfolio, and an invented example customer.
+- **Three new starting points** for a workshop: AI on our own infrastructure, hybrid and sovereign cloud, the digital workplace.
+- **Platform migration** asks which servers and storage arrays must stay in use, and until when they are supported: reusing hardware already owned can change the cost and the timing of a move.
+- The estate map makes room for a whole portfolio of ten lines.
+
 ## 0.89.0
 
 - **The plan by date.** Dated conditions in the journey are listed by month, and **Add to a calendar** downloads them as an .ics file, one all-day event each, for Outlook, Google Calendar or Apple Calendar. Made in the page; nothing is sent.

@@ -1,0 +1,60 @@
+{
+  "questions": [
+    {
+      "stage": "value",
+      "q": "What is the cost of a slow or unavailable desktop for your users each day?",
+      "why": "Puts a value on experience.",
+      "need": "The cost of poor desktop experience is known",
+      "how": "Agree a figure with the business, per user per hour"
+    },
+    {
+      "stage": "value",
+      "q": "Which users must work from anywhere, and on which devices?",
+      "why": "Decides access, security and capacity.",
+      "need": "The user groups, their locations and their devices are known",
+      "how": "List the user groups with their needs"
+    },
+    {
+      "stage": "L1",
+      "q": "How many desktop pools exist, and who manages each?",
+      "why": "Pools run apart are updated apart.",
+      "need": "Every desktop pool is known and managed in one place",
+      "how": "Register every pool with the console"
+    },
+    {
+      "stage": "L2",
+      "q": "How many golden images are there, and how old are they?",
+      "why": "Image sprawl is the main operational cost.",
+      "need": "Images are few, current and owned",
+      "how": "Consolidate images and set an update cadence"
+    },
+    {
+      "stage": "L3",
+      "q": "How long does a logon take on a Monday morning?",
+      "why": "Logon time is what users feel first.",
+      "need": "Logon time meets the agreed target",
+      "how": "Measure logon times and fix the slowest step"
+    },
+    {
+      "stage": "L3",
+      "q": "Can a user reach their desktop from a personal device without leaving data on it?",
+      "why": "Secure access without data on the device is the point.",
+      "need": "Remote access is secured and leaves no data on devices",
+      "how": "Put a gateway with strong sign-in in front of every pool"
+    },
+    {
+      "stage": "L3",
+      "q": "What happens when demand peaks or a site fails?",
+      "why": "Capacity for peaks and failures decides the design.",
+      "need": "Peaks and site failures are absorbed without users noticing",
+      "how": "Plan burst capacity and test it once"
+    },
+    {
+      "stage": "L4",
+      "q": "Who looks at experience data and decides what to fix?",
+      "why": "Monitoring without an owner changes nothing.",
+      "need": "A named owner reviews experience data and acts on it",
+      "how": "Name the owner and agree a monthly review"
+    }
+  ]
+}

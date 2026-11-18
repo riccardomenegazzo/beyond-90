@@ -55,6 +55,13 @@
       "why": "Without an owner, the old platform never goes away.",
       "need": "Each wave has an owner who signs it off, and the old machines are switched off on schedule",
       "how": "Name a wave owner and agree what done means"
+    },
+    {
+      "stage": "L2",
+      "q": "Which servers and storage arrays must stay in use, and until when are they supported?",
+      "why": "Reusing hardware already owned can change the cost and the timing of the move.",
+      "need": "The hardware that stays is known, with its support dates and whether the new platform can use it",
+      "how": "List servers and arrays with their end-of-support dates, and check each against the new platform's support list"
     }
   ]
 }

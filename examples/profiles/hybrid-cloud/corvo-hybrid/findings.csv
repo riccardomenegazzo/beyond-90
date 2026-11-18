@@ -1,0 +1,41 @@
+id,account_id,severity,exposure,opened_at,closed_at,owner,decision,decision_reason,expiry,previous_severity,severity_changed_at,verified_at,reopened,closed_by
+x-001,hybrid-cloud-04,low,internal,2026-09-06,2026-09-13,infra-ops,fix,,,,,,,assisted
+x-002,hybrid-cloud-03,medium,internet,2026-09-21,,compliance,fix,,,,,,,
+x-003,hybrid-cloud-01,high,internal,2026-07-28,,infra-ops,accepted_risk,business process depends on it,2027-01-28,,,,,
+x-004,hybrid-cloud-03,high,internet,2026-07-06,2026-07-10,compliance,fix,,,,,,,assisted
+x-005,hybrid-cloud-04,medium,internal,2026-08-30,2026-09-06,compliance,,,,,,,,manual
+x-006,hybrid-cloud-03,high,internal,2026-08-02,2026-08-09,security-ops,accepted_risk,business process depends on it,2027-01-27,,,,,manual
+x-007,hybrid-cloud-01,medium,internet,2026-07-17,2026-07-27,,,,,,,,,automated
+x-008,hybrid-cloud-02,medium,internal,2026-08-19,,cloud-platform,accepted_risk,business process depends on it,2027-02-02,,,,,
+x-009,hybrid-cloud-03,high,internal,2026-10-16,,,,,,,,,,
+x-010,hybrid-cloud-04,low,internal,2026-10-28,,compliance,fix,,,,,,,
+x-011,hybrid-cloud-03,medium,internet,2026-08-16,2026-09-02,,,,,,,,,automated
+x-012,hybrid-cloud-02,low,internal,2026-08-16,2026-08-27,finance-it,fix,,,,,,,automated
+x-013,hybrid-cloud-06,medium,internet,2026-10-24,,compliance,accepted_risk,business process depends on it,2026-12-12,,,,,
+x-014,hybrid-cloud-03,high,internet,2026-08-15,,compliance,fix,,,,,,,
+x-015,hybrid-cloud-07,low,internal,2026-10-13,,,,,,,,,,
+x-016,hybrid-cloud-01,high,internal,2026-09-06,2026-09-13,security-ops,fix,,,,,,,assisted
+x-017,hybrid-cloud-01,medium,internal,2026-08-06,2026-09-04,,,,,,,,,automated
+x-018,hybrid-cloud-02,high,internet,2026-09-05,2026-10-01,security-ops,fix,,,,,,,manual
+x-019,hybrid-cloud-02,low,internet,2026-08-20,,finance-it,accepted_risk,business process depends on it,2027-01-16,,,,,
+x-020,hybrid-cloud-02,medium,internet,2026-07-16,2026-07-30,finance-it,fix,,,,,,,automated
+x-021,hybrid-cloud-02,high,internal,2026-08-30,2026-09-25,finance-it,accepted_risk,business process depends on it,2027-02-16,,,,,automated
+x-022,hybrid-cloud-01,high,internal,2026-09-26,2026-09-28,compliance,fix,,,,,,,automated
+x-023,hybrid-cloud-06,low,internet,2026-09-26,,compliance,fix,,,,,,,
+x-024,hybrid-cloud-04,medium,internal,2026-08-15,2026-08-24,compliance,fix,,,,,,,automated
+x-025,hybrid-cloud-07,low,internal,2026-07-07,2026-07-24,cloud-platform,fix,,,,,,,assisted
+x-026,hybrid-cloud-01,high,internal,2026-10-09,,compliance,accepted_risk,business process depends on it,2027-02-24,,,,,
+x-027,hybrid-cloud-01,low,internet,2026-09-09,,compliance,fix,,,,,,,
+x-028,hybrid-cloud-07,medium,internal,2026-10-10,,compliance,fix,,,,,,,
+x-029,hybrid-cloud-05,low,internal,2026-07-10,,cloud-platform,fix,,,,,,,
+x-030,hybrid-cloud-03,medium,internal,2026-08-21,,cloud-platform,accepted_risk,business process depends on it,2027-02-25,,,,,
+x-031,hybrid-cloud-08,medium,internet,2026-09-07,,,,,,,,,,
+x-032,hybrid-cloud-08,medium,internal,2026-07-19,2026-08-07,finance-it,,,,,,,,manual
+x-033,hybrid-cloud-03,medium,internet,2026-09-05,2026-09-20,compliance,accepted_risk,business process depends on it,2026-12-22,,,,,automated
+x-034,hybrid-cloud-01,low,internet,2026-08-10,,infra-ops,fix,,,,,,,
+x-035,hybrid-cloud-08,high,internal,2026-09-30,2026-10-23,finance-it,accepted_risk,business process depends on it,2027-01-19,,,,,manual
+x-036,hybrid-cloud-03,high,internal,2026-08-29,2026-09-10,cloud-platform,accepted_risk,business process depends on it,2027-01-06,,,,,automated
+x-037,hybrid-cloud-05,low,internet,2026-09-25,,infra-ops,fix,,,,,,,
+x-038,hybrid-cloud-05,high,internal,2026-09-24,2026-10-04,security-ops,accepted_risk,business process depends on it,2026-12-02,,,,,assisted
+x-039,hybrid-cloud-07,medium,internal,2026-10-12,,cloud-platform,accepted_risk,business process depends on it,2026-12-08,,,,,
+x-040,hybrid-cloud-04,medium,internet,2026-10-17,,cloud-platform,accepted_risk,business process depends on it,2027-01-15,,,,,

@@ -1,0 +1,41 @@
+id,account_id,severity,exposure,opened_at,closed_at,owner,decision,decision_reason,expiry,previous_severity,severity_changed_at,verified_at,reopened,closed_by
+x-001,euc-10,high,internal,2026-10-18,,clinical-apps,accepted_risk,business process depends on it,2027-02-14,,,,,
+x-002,euc-02,medium,internal,2026-10-14,,branch-it,accepted_risk,business process depends on it,2026-12-16,,,,,
+x-003,euc-06,medium,internet,2026-09-23,2026-10-22,branch-it,,,,,,,,automated
+x-004,euc-06,medium,internet,2026-10-23,,workplace-it,fix,,,,,,,
+x-005,euc-01,high,internal,2026-09-23,,clinical-apps,fix,,,,,,,
+x-006,euc-10,medium,internal,2026-08-20,,,,,,,,,,
+x-007,euc-06,medium,internal,2026-07-28,2026-08-21,clinical-apps,fix,,,,,,,assisted
+x-008,euc-03,high,internal,2026-10-15,,,,,,,,,,
+x-009,euc-07,low,internet,2026-08-27,,security-ops,accepted_risk,business process depends on it,2026-12-27,,,,,
+x-010,euc-02,medium,internet,2026-09-30,2026-10-14,,,,,,,,,automated
+x-011,euc-04,low,internet,2026-07-18,,,,,,,,,,
+x-012,euc-09,medium,internal,2026-08-20,2026-09-11,branch-it,fix,,,,,,,automated
+x-013,euc-08,low,internet,2026-08-29,2026-09-21,,,,,,,,,automated
+x-014,euc-04,medium,internet,2026-08-26,,service-desk,accepted_risk,business process depends on it,2027-01-18,,,,,
+x-015,euc-03,medium,internal,2026-07-19,2026-07-28,workplace-it,accepted_risk,business process depends on it,2027-01-30,,,,,assisted
+x-016,euc-06,medium,internal,2026-07-05,2026-07-12,clinical-apps,fix,,,,,,,automated
+x-017,euc-04,high,internal,2026-08-21,,clinical-apps,fix,,,,,,,
+x-018,euc-06,low,internet,2026-09-27,2026-10-14,branch-it,accepted_risk,business process depends on it,2027-01-27,,,,,assisted
+x-019,euc-04,high,internet,2026-10-16,,service-desk,accepted_risk,business process depends on it,2027-02-23,,,,,
+x-020,euc-06,high,internet,2026-08-03,2026-08-04,security-ops,fix,,,,,,,manual
+x-021,euc-05,medium,internal,2026-10-20,,service-desk,fix,,,,,,,
+x-022,euc-06,medium,internal,2026-07-20,2026-08-17,service-desk,fix,,,,,,,automated
+x-023,euc-06,low,internet,2026-09-06,,security-ops,,,,,,,,
+x-024,euc-07,high,internal,2026-07-06,2026-07-25,security-ops,fix,,,,,,,assisted
+x-025,euc-04,medium,internet,2026-10-12,,security-ops,fix,,,,,,,
+x-026,euc-09,medium,internet,2026-09-12,,clinical-apps,accepted_risk,business process depends on it,2027-01-06,,,,,
+x-027,euc-02,high,internet,2026-09-22,,workplace-it,fix,,,,,,,
+x-028,euc-06,high,internal,2026-08-11,2026-09-06,workplace-it,accepted_risk,business process depends on it,2026-11-30,,,,,assisted
+x-029,euc-10,medium,internet,2026-10-25,,,,,,,,,,
+x-030,euc-06,medium,internal,2026-08-01,,security-ops,fix,,,,,,,
+x-031,euc-01,critical,internal,2026-10-15,,clinical-apps,fix,,,,,,,
+x-032,euc-01,medium,internet,2026-10-02,,branch-it,,,,,,,,
+x-033,euc-06,low,internal,2026-10-19,,branch-it,fix,,,,,,,
+x-034,euc-05,low,internet,2026-08-30,2026-09-17,workplace-it,fix,,,,,,,assisted
+x-035,euc-02,critical,internal,2026-10-24,,,,,,,,,,
+x-036,euc-02,medium,internal,2026-09-12,2026-09-27,branch-it,fix,,,,,,,assisted
+x-037,euc-02,low,internet,2026-08-28,,branch-it,accepted_risk,business process depends on it,2027-01-25,,,,,
+x-038,euc-04,low,internal,2026-08-24,2026-08-30,,,,,,,,,automated
+x-039,euc-04,low,internet,2026-09-04,2026-09-25,security-ops,fix,,,,,,,automated
+x-040,euc-05,critical,internal,2026-09-07,,,,,,,,,,

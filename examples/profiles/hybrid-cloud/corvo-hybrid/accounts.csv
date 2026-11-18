@@ -1,0 +1,9 @@
+id,provider,sources,connected,owner,last_spend,status,in_plan,created_at
+hybrid-cloud-01,datacenter,billing;org;sso,true,infra-ops,3100,active,true,2025-10-13
+hybrid-cloud-02,public_cloud,billing;org,true,security-ops,6900,active,true,2026-09-22
+hybrid-cloud-03,edge,billing;org,true,cloud-platform,3300,active,true,2025-10-03
+hybrid-cloud-04,datacenter,billing;org,true,cloud-platform,3900,active,true,2026-03-13
+hybrid-cloud-05,public_cloud,billing;org;sso,true,infra-ops,3000,active,true,2026-02-23
+hybrid-cloud-06,public_cloud,billing;org;sso,true,cloud-platform,3000,active,true,2026-10-02
+hybrid-cloud-07,edge,billing;org;sso,true,finance-it,4600,active,true,2026-10-18
+hybrid-cloud-08,datacenter,billing;org;sso,true,finance-it,500,active,false,2026-09-27

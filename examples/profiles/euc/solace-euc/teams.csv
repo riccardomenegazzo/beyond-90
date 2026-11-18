@@ -1,0 +1,6 @@
+id,name,has_assets,active_users,sso,role_scoped,last_access_review
+workplace-it,Workplace It,true,0,false,false,2026-03-09
+clinical-apps,Clinical Apps,true,6,false,false,2026-01-07
+service-desk,Service Desk,true,1,true,false,2026-02-17
+security-ops,Security Ops,true,6,true,false,2026-10-09
+branch-it,Branch It,true,0,false,true,2026-10-21

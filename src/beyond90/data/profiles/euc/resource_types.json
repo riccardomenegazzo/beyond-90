@@ -1,0 +1,34 @@
+{
+  "version": "2026.4",
+  "description": "Virtual desktops and applications: desktop pools that give users their applications from any device, with images, profiles, access and capacity to adopt.",
+  "terms": {
+    "estate": "workspace",
+    "unit": "desktop pool",
+    "units": "desktop pools",
+    "menu": "Desktop pools"
+  },
+  "types": {
+    "desktop": "Virtual desktops",
+    "app_session": "Published application sessions",
+    "golden_image": "Golden images",
+    "user_profile": "User profiles and settings",
+    "access_gateway": "Gateways for remote access"
+  },
+  "expected": {
+    "datacenter": [
+      "desktop",
+      "golden_image",
+      "user_profile",
+      "access_gateway"
+    ],
+    "branch": [
+      "desktop",
+      "access_gateway"
+    ],
+    "public_cloud": [
+      "desktop",
+      "app_session",
+      "golden_image"
+    ]
+  }
+}
