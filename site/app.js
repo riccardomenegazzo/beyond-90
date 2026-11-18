@@ -69,6 +69,25 @@ async function openedWith() {
   }
   if (start === "demo") { showPlace("start"); await loadDemo(); await run(); }
   else if (start === "saved") showPlace("saved");
+
+}
+
+/** One link to the presales desk at work, opened at once (the desk needs no engine): a first visit gets the invented
+ *  examples; a browser with real work only opens the desk, adding nothing to it. */
+async function openPresales() {
+  history.replaceState(null, "", location.pathname);   // a reload must not repeat it
+  setRole("se");
+  await refreshWorkshops(); await refreshPovs();
+  if (!state.workshops.length && !state.povs.length) await fillDeskExamples();
+  showPlace("desk");
+}
+
+/** The invented prospects of the presales desk, the first with its invented inventory. */
+async function fillDeskExamples() {
+  const ex = DESKX.exampleDesk(todayIso());
+  const read = INV.readInventory(await (await fetch("./demo-inventory.csv")).text());
+  if (read.ok) ex.workshops[0] = WSHOP.setInventory(ex.workshops[0], { ...INV.summarise(read), imported_on: ex.workshops[0].created_on }, ex.workshops[0].created_on);
+  await store.workshopPut(ex.workshops, true); await store.povPut(ex.povs, true);
 }
 
 // ---------- engine
@@ -819,13 +838,7 @@ async function renderDesk() {
     workshops: state.workshops, povs: state.povs, catalog: cat, today: todayIso(),
     openOpp: (o) => openWorkshop(o.workshop, o.stage === "proof" || o.stage === "decision" ? "wspov" : o.stage === "journey" ? "journey" : "workshop"),
     newWorkshop: () => newWorkshop().catch((e) => say(e.message)), example: () => openExampleWorkshop().catch((e) => say(e.message)),
-    fillExamples: async () => {
-      const ex = DESKX.exampleDesk(todayIso());
-      const read = INV.readInventory(await (await fetch("./demo-inventory.csv")).text());
-      if (read.ok) ex.workshops[0] = WSHOP.setInventory(ex.workshops[0], { ...INV.summarise(read), imported_on: ex.workshops[0].created_on }, ex.workshops[0].created_on);
-      await store.workshopPut(ex.workshops, true); await store.povPut(ex.povs, true);
-      renderDesk().catch((e) => say(e.message));
-    },
+    fillExamples: async () => { await fillDeskExamples(); renderDesk().catch((e) => say(e.message)); },
     removeExamples: async () => {
       for (const w of state.workshops.filter((x) => DESKX.isExampleId(x.id))) await store.workshopRemove(w.id);
       for (const p of state.povs.filter((x) => DESKX.isExampleId(x.id))) await store.povRemove(p.id);
@@ -1739,5 +1752,6 @@ initTips();
 renderHelp();
 // a pre-sales engineer lands on their desk; a shared link or a demo link still lands where it points
 if (savedRole() === "se" && !["start", "shared"].some((k) => new URLSearchParams(location.search).has(k))) showPlace("desk");
+else if (new URLSearchParams(location.search).get("start") === "presales") openPresales().catch((e) => say(e.message));
 else showPlace("start");
 boot();

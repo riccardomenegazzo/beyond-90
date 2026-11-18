@@ -195,7 +195,8 @@ def write_app_manifest(out: Path) -> None:
                      {"src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}],
            # Long-press the app's icon: these two. A shortcut only opens a place of the app; it carries no data.
            "shortcuts": [{"name": "See it on an example", "short_name": "Example", "url": "./index.html?start=demo", "icons": [{"src": "icons/app-192.png", "sizes": "192x192"}]},
-                         {"name": "Saved customers", "short_name": "Saved", "url": "./index.html?start=saved", "icons": [{"src": "icons/app-192.png", "sizes": "192x192"}]}],
+                         {"name": "Saved customers", "short_name": "Saved", "url": "./index.html?start=saved", "icons": [{"src": "icons/app-192.png", "sizes": "192x192"}]},
+                         {"name": "Presales desk", "short_name": "Presales", "url": "./index.html?start=presales", "icons": [{"src": "icons/app-192.png", "sizes": "192x192"}]}],
            "launch_handler": {"client_mode": ["focus-existing", "auto"]},
            # "Share" from another app (mail, files) to Beyond 90: the files go to this app's own service worker, never to a server.
            "share_target": {"action": "./share-target", "method": "POST", "enctype": "multipart/form-data",

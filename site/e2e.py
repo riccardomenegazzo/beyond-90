@@ -1172,6 +1172,19 @@ def main(site: str) -> int:
         page.goto(base + "?start=demo")
         page.wait_for_selector("#results:not([hidden])", timeout=180_000)
         check("start=" not in page.url, "the icon's Example shortcut opens the example, analysed, and leaves a clean address")
+        # one link for a presales leader: the desk at work, at once, without waiting for the engine
+        fresh = browser.new_context()
+        fp = fresh.new_page()
+        fp.goto(base + "?start=presales")
+        fp.wait_for_selector("#desk-body :text('Pietra Bank')", timeout=30_000)
+        check("start=" not in fp.url and "What the deals teach" in fp.inner_text("#desk-body") and "Your team" in fp.inner_text("#desk-body"),
+              "one link opens the presales desk at work, with the invented examples, for a first visit")
+        fresh.close()
+        role_was = page.evaluate("localStorage.getItem('beyond90.role')")
+        page.goto(base + "?start=presales")
+        page.wait_for_selector("#desk-body .deskfunnel")
+        check(page.locator("#desk-body :text('Pietra Bank')").count() == 0 and "Kestrel Logistics" in page.inner_text("#desk-body"), "and adds nothing to a browser with real work")
+        page.evaluate("(r) => r === null ? localStorage.removeItem('beyond90.role') : localStorage.setItem('beyond90.role', r)", role_was)
         shared = page.evaluate("""async () => {
           const files = await (await fetch("./demo.json")).json();
           const form = new FormData();

@@ -19,6 +19,7 @@ Nobody lied. Each team reported its own step. [Why multiply, and why both number
 ## Try it
 
 - **In the browser, nothing to install:** open the [live page](https://riccardomenegazzo.github.io/beyond-90/) and press "See it on an example". Your files are read inside the tab and kept on your device.
+- **The presales desk at work, in one link:** [open it with invented prospects](https://riccardomenegazzo.github.io/beyond-90/?start=presales), from discovery to decision, with what the deals teach and a team of two invented engineers.
 - **On your own computer, without the public site:** download `beyond90-local-<version>.zip` from [Releases](https://github.com/riccardomenegazzo/beyond-90/releases), unzip, run `python3 start.py`. Only Python is needed. [Details](docs/self-hosting.md).
 - **From the command line:** `pip install .` in a clone, then `beyond90 score examples/portfolio/northwind`. For your own customer: `beyond90 init acme`.
 

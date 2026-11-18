@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.105.0
+
+- **The presales desk at work, in one link:** `?start=presales` opens the desk at once, without waiting for the engine. On a first visit it is filled with the invented prospects; a browser that already holds real work only opens the desk, adding nothing. The installed app gets a "Presales desk" shortcut. The README and the page for presales leaders start from it.
+
 ## 0.104.0
 
 - **Your team, for a presales manager.** On the presales desk, each engineer downloads a snapshot of their desk: stages, risks, outcomes, what customers pushed back on, the gaps heard. It carries no notes, no figures and no names of people, and prospect names can be swapped for aliases. The manager reads the team's snapshots together:

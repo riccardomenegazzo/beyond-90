@@ -49,7 +49,7 @@ Each says what decided the result and what to check before relying on it. None i
 
 ## A five-minute tour
 
-1. Open the [live page](https://riccardomenegazzo.github.io/beyond-90/), choose "Pre-sales engineer" under "I work as", open the **Presales desk** and press **Fill it with invented examples**.
+1. Open **[the presales desk at work](https://riccardomenegazzo.github.io/beyond-90/?start=presales)**. On a first visit it opens with invented prospects at every stage, two of them already decided. A browser that already holds real work only opens the desk, adding nothing to it.
 2. Read **What could stop a deal** and **What the deals teach**.
 3. Under **Your team**, press **Try it with two invented engineers**.
 4. Open Kestrel Logistics. Go through **Prepare**, then the inventory, sizing sketch, plan in waves and recovery design under **Questions**, then **Case for change**.
