@@ -27,6 +27,16 @@ A pre-sales engineer carries many prospects at once, each at a different point: 
 
 ![What the deals teach: outcomes, objections, gaps, tests not met and time per stage](img/app-lessons.png)
 
+- **Your team (for a presales manager).** Each engineer downloads a **snapshot** of their desk from "For the account team": stages, risks, outcomes, what customers pushed back on, the gaps heard. It has no notes, no figures and no names of people; prospect names can be swapped for aliases on the way out. The manager reads several snapshots together in "Your team":
+  - each engineer's pipeline by stage, with deals won, lost and at risk;
+  - the deals that could be lost across the team;
+  - what the team's deals teach;
+  - a team review to copy or download for the weekly meeting.
+
+  The files are checked field by field (a forged or edited one is refused whole), read for that visit only, and never stored. **Try it with two invented engineers** shows it at once.
+
+![Your team: each engineer's pipeline, the deals at risk, and what the team's deals teach](img/app-team.png)
+
 - **This week and next.** The dated conditions from every journey, and the start and end of every proof of value, for the next two weeks; what is late comes first.
 - **Opportunities.** One row per prospect: its stage, the line to start with, how much of the discovery is done, what is at stake in the customer's own figures, how the proof is going, and the next thing to do (what is late first, then what the proof needs, then the next dated condition). Open one to carry on where it stands: its questions, its journey or its proof of value.
 - **For the account team.** The Monday note, in Markdown: where each opportunity stands, what is late, what is next. And the pipeline as a CSV for a forecast call or a CRM import; cells a spreadsheet would run as formulas are defused.

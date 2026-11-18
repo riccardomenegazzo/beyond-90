@@ -24,13 +24,15 @@ Nobody lied. Each team reported its own step. [Why multiply, and why both number
 
 ## What it does
 
+Leading a presales team? [docs/leaders.md](docs/leaders.md) shows what the team gets, what a leader sees across it, and a five-minute tour.
+
 - **Ranks the next actions** by points, by hours, or by how many accounts each one finishes; mark them done and newer data checks that the work landed.
 - **Prepares the call:** agenda, what you owe, discovery questions starting from the customer's weakest stage, and a recap afterwards.
 - **Runs a proof of value:** success criteria a sponsor can sign (suggested per kind of product), sessions, evidence, and a dated mutual plan to signature.
 - **Shows what waiting costs:** every drop already dated in the data (secrets, accepted risks, deadlines), and what the work of a quarter was worth.
 - **Writes for the customer:** a CISO one-pager, an executive QBR and slides, a status page, all through a preview that can swap names for aliases.
 - **Works across a book of customers:** this week's priorities, shared patterns, and one budget of hours where it gains most.
-- **Gives a pre-sales engineer a desk of their own:** every prospect from discovery to decision, what is due and what is late, what could stop each deal, and the weekly update for the account team ([docs/presales.md](docs/presales.md)).
+- **Gives a pre-sales engineer a desk of their own:** every prospect from discovery to decision, what is due and what is late, what could stop each deal, how deals ended and what they teach, and the weekly update for the account team. A presales manager reads the team's desk snapshots together ([docs/presales.md](docs/presales.md), [docs/leaders.md](docs/leaders.md)).
 - **Starts before there is any data:** a discovery workshop records what a prospect says to each product line's questions and turns it into a journey: "yes, this is possible", what would need to be true, the first step towards each condition and the test that proves it. It ends in a readout for the customer and a proof of value with that line's own criteria ([docs/workshop.md](docs/workshop.md)).
 - **Prepares the conversation and does the presales arithmetic:**
   - the message for the executive, the technical team and finance, who to bring, and the objections to expect with the question to ask first and how to prove the answer;
@@ -210,6 +212,9 @@ beyond90 explain acme --store history.db   # what changed since the last stored 
 ## Documents
 
 - [docs/guide.md](docs/guide.md): how it fits into a TAM's month
+- [docs/leaders.md](docs/leaders.md): for presales leaders: what the team gets, the team view, what the deals teach, a five-minute tour
+- [docs/presales.md](docs/presales.md): the presales desk and the path from discovery to handover
+- [docs/workshop.md](docs/workshop.md): the discovery workshop, its sketches, the case for change and the handover
 - [SPEC.md](SPEC.md): formulas and rules; the contract for the code
 - [docs/data-format.md](docs/data-format.md): input files
 - [docs/profiles.md](docs/profiles.md): one engine for any security product (cloud, endpoint, and how to map others)

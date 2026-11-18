@@ -21,6 +21,7 @@ import * as DRS from "./drsketch.js";
 import * as NM from "./nextmeeting.js";
 import * as OBJ from "./objsketch.js";
 import * as LS from "./lessons.js";
+import * as TEAM from "./team.js";
 import { connections } from "./graph.js";
 import { headline, firstMinute, rankActions, chainText, doneSummary, funnelSegments, preview } from "./today.js";
 import { stageBars } from "./nav.js";
@@ -2393,12 +2394,68 @@ export function deskView({ workshops, povs, catalog, today, openOpp, newWorkshop
       h("span", {}, h("b", { text: o.customer }), " ", h("span", { text: r.text })),
       o.workshop ? h("button", { class: "btn small", type: "button", text: "Open", "aria-label": `Open ${o.customer}`, onclick: () => openOpp(o) }) : null))),
   { sub: "Read from what is recorded: late conditions, a proof without a sponsor or ending with tests not tried, concerns left out of the proof, no figures for finance. Each says what to do." }) : null;
+  const me = h("input", { type: "text", maxlength: 100, value: [...workshops].sort((a, b) => (b.updated_on > a.updated_on ? 1 : -1)).map((w) => w.prepared_by || "").find(Boolean) || "",
+    "aria-label": "Your name, as your manager should see it", placeholder: "Your name" });
+  const snapshot = () => TEAM.snapshotFrom(opps, facts, me.value, today);
   const docs = card("For the account team", h("div", {},
     h("p", { class: "note first", text: "The Monday note: where each opportunity stands, what is late, what is next. And the pipeline as a sheet for a forecast call or a CRM import." }),
     h("div", { class: "btnrow" },
       h("button", { class: "btn small", type: "button", text: "Copy the weekly update", onclick: (ev) => copyText(md).then((ok) => { ev.target.textContent = ok ? "Copied" : "Not copied"; }) }),
       h("button", { class: "btn small", type: "button", text: "Download it (.md)", onclick: () => saveBlob(md, `presales-update-${today}.md`, "text/markdown") }),
-      h("button", { class: "btn small", type: "button", text: "Pipeline (.csv)", onclick: () => saveBlob(DESK.pipelineCsv(opps), `presales-pipeline-${today}.csv`, "text/csv") })))
+      h("button", { class: "btn small", type: "button", text: "Pipeline (.csv)", onclick: () => saveBlob(DESK.pipelineCsv(opps), `presales-pipeline-${today}.csv`, "text/csv") })),
+    h("p", { class: "note", text: "For your manager: a snapshot of this desk (stages, risks, outcomes, what customers pushed back on, the gaps heard), without notes, figures or the names of people. Names of prospects can be swapped for aliases on the way out." }),
+    h("div", { class: "btnrow" }, h("label", { class: "szf deskme" }, h("span", { text: "Your name" }), me),
+      h("button", { class: "btn small", type: "button", text: "Snapshot for my manager (.json)",
+        onclick: () => saveBlob(JSON.stringify(snapshot(), null, 1), `desk-snapshot-${(me.value || "engineer").replace(/[^A-Za-z0-9]+/g, "-").replace(/^-|-$/g, "").toLowerCase() || "engineer"}-${today}.json`, "application/json") })))
   );
-  return h("div", {}, hero, h("div", { class: "card deskfunnelcard" }, funnelRow), riskCard, lessonsCard, h("div", { class: "col2" }, agendaCard, docs), card("Opportunities", table.el, { sub: "Furthest along first. Open one to carry on: its questions, its journey, its proof of value." }));
+  return h("div", {}, hero, h("div", { class: "card deskfunnelcard" }, funnelRow), riskCard, lessonsCard, h("div", { class: "col2" }, agendaCard, docs), card("Opportunities", table.el, { sub: "Furthest along first. Open one to carry on: its questions, its journey, its proof of value." }),
+    teamCard(catalog, today));
+}
+
+// the team's snapshots, read for this visit only: never stored, gone when the page closes
+let teamSnaps = null;
+
+/** For a presales manager: the team's desk snapshots read together, in this page only. */
+function teamCard(catalog, today) {
+  const body = h("div", { class: "teambody" });
+  const say = h("p", { class: "note", role: "status" });
+  const draw = () => {
+    if (!teamSnaps || !teamSnaps.ok.length) {
+      put(body, teamSnaps && teamSnaps.refused.length ? h("ul", { class: "plain" }, teamSnaps.refused.map((r) => h("li", { text: `${r.name}: ${r.why}.` }))) : null);
+      return;
+    }
+    const examples = teamSnaps.ok.every((s) => s.deals.every((d) => d.example));
+    const t = TEAM.teamView(teamSnaps.ok, { includeExamples: examples });
+    const md = TEAM.teamMarkdown(t, today);
+    put(body,
+      teamSnaps.refused.length ? h("ul", { class: "plain" }, teamSnaps.refused.map((r) => h("li", { class: "neg", text: `Not read: ${r.name}: ${r.why}.` }))) : null,
+      examples ? h("p", { class: "note first", text: "Two invented engineers: with real snapshots, their invented examples are left out." }) : null,
+      h("div", { class: "tablewrap" }, h("table", { class: "drtable teamtable" },
+        h("thead", {}, h("tr", {}, ["Engineer", "Open", "Discovery", "Journey", "Proof", "Decision", "Won", "Lost or no decision", "At risk", "Snapshot of"].map((x) => h("th", { scope: "col", text: x })))),
+        h("tbody", {}, t.engineers.map((e) => h("tr", {}, h("th", { scope: "row", text: e.name }), h("td", { text: String(e.live) }),
+          ...["discovery", "journey", "proof", "decision"].map((id) => h("td", { text: String(e.stages[id]) })),
+          h("td", { text: String(e.won) }), h("td", { text: String(e.lost) }), h("td", { class: e.at_risk ? "neg" : "", text: String(e.at_risk) }), h("td", { text: e.as_of })))))),
+      t.risky.length ? h("div", { class: "growproof" }, h("small", { text: "What could lose a deal, across the team" }),
+        h("ul", {}, t.risky.slice(0, 12).map((r) => h("li", {}, h("b", { text: r.customer }), h("span", { class: "muted", text: `, ${r.engineer}: ` }), h("span", { text: r.risk }))))) : null,
+      t.lessons.deals ? lessonsView(t.lessons, false, "What the team's deals teach") : null,
+      h("div", { class: "btnrow" },
+        h("button", { class: "btn small", type: "button", text: "Copy the team review", onclick: (ev) => copyText(md).then((ok) => { ev.target.textContent = ok ? "Copied" : "Not copied"; }) }),
+        h("button", { class: "btn small", type: "button", text: "Download it (.md)", onclick: () => saveBlob(md, `presales-team-review-${today}.md`, "text/markdown") }),
+        h("button", { class: "btn small", type: "button", text: "Clear the team", onclick: () => { teamSnaps = null; files.value = ""; draw(); say.textContent = "Cleared: nothing was kept."; } })));
+  };
+  const files = h("input", { type: "file", multiple: true, accept: ".json,application/json", "aria-label": "The team's desk snapshots" });
+  files.addEventListener("change", async () => {
+    const list = [...files.files];
+    const read = await Promise.all(list.slice(0, TEAM.MAX_FILES + 1).map(async (f) => ({ name: f.name, text: f.size > TEAM.MAX_FILE ? "x".repeat(TEAM.MAX_FILE + 1) : await f.text() })));
+    teamSnaps = TEAM.readSnapshots(read);
+    say.textContent = `${teamSnaps.ok.length} snapshot${teamSnaps.ok.length === 1 ? "" : "s"} read${teamSnaps.refused.length ? `, ${teamSnaps.refused.length} not` : ""}.`;
+    draw();
+  });
+  draw();
+  return card("Your team", h("div", {},
+    h("p", { class: "note first", text: "For a presales manager: each engineer downloads a snapshot from their desk and sends it to you; read them here together. They are checked field by field, read for this visit only, never stored and never sent." }),
+    h("div", { class: "btnrow" }, h("label", { class: "szf" }, h("span", { text: "Read the team's snapshots" }), files),
+      h("button", { class: "btn small", type: "button", text: "Try it with two invented engineers", onclick: () => { teamSnaps = { ok: TEAM.exampleTeam(catalog, today), refused: [] }; say.textContent = ""; draw(); } })),
+    say, body),
+  { sub: "Each engineer's pipeline, the deals that could be lost across the team, and what the team's deals teach, for the weekly review." });
 }

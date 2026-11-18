@@ -2,6 +2,17 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.104.0
+
+- **Your team, for a presales manager.** On the presales desk, each engineer downloads a snapshot of their desk: stages, risks, outcomes, what customers pushed back on, the gaps heard. It carries no notes, no figures and no names of people, and prospect names can be swapped for aliases. The manager reads the team's snapshots together:
+  - each engineer's pipeline by stage, with deals won, lost and at risk;
+  - the deals that could be lost across the team;
+  - what the team's deals teach;
+  - a team review to copy or download.
+
+  Snapshots are checked field by field (a forged one is refused whole), read for that visit only, and never stored. "Try it with two invented engineers" shows it at once.
+- **For presales leaders:** a page on what the team gets, what a leader sees, why it can be adopted tomorrow, and a five-minute tour ([docs/leaders.md](docs/leaders.md)).
+
 ## 0.103.0
 
 - **How each deal ended.** A proof of value records its outcome: won, lost or no decision, the main reason (technical fit, price, went with someone else, timing, no budget, stayed as they are, other), the date and a sentence. A decided deal leaves the live pipeline and shows as won or lost; the Monday note and the pipeline CSV say so.

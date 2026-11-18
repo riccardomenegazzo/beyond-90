@@ -957,6 +957,27 @@ def main(site: str) -> int:
         lessons_card = page.locator("#desk-body .card").filter(has_text="What the deals teach")
         check(lessons_card.count() == 1 and "What customers push back on" in lessons_card.inner_text() and "Ransomware would encrypt the backups too" in lessons_card.inner_text(),
               "what the deals teach: what customers push back on, read from every prospect")
+        # the team: each engineer shares a snapshot, the manager reads them together
+        page.get_by_label("Your name, as your manager should see it").fill("Giulia R. (mock)")
+        with page.expect_download() as dl:
+            page.get_by_role("button", name="Snapshot for my manager (.json)").click()
+        snap_text = Path(dl.value.path()).read_text(encoding="utf-8")
+        snap = json.loads(snap_text)
+        check(snap["kind"] == "beyond90-desk-snapshot" and snap["by"] == "Giulia R. (mock)" and len(snap["deals"]) >= 6 and "Patient data must stay in Italy" not in snap_text,
+              "a desk snapshot for the manager: stages, risks and lessons, without notes")
+        bad_path = Path(dl.value.path()).with_name("not-a-snapshot.json")
+        bad_path.write_text(json.dumps({"kind": "beyond90-desk-snapshot", "format": 1, "by": "x", "as_of": "2026-11-19", "deals": [{"customer": "<img src=x onerror=alert(1)>"}]}), encoding="utf-8")
+        page.get_by_label("The team's desk snapshots").set_input_files([dl.value.path(), str(bad_path)])
+        page.wait_for_selector("#desk-body .teamtable")
+        team_text = page.inner_text("#desk-body .teambody")
+        check("Giulia R. (mock)" in team_text and "Not read: not-a-snapshot.json" in team_text and page.locator("#desk-body .teambody img").count() == 0,
+              "the manager reads the team's snapshots, checked field by field: a forged one is refused")
+        page.get_by_role("button", name="Try it with two invented engineers").click()
+        page.wait_for_selector("#desk-body .teamtable tbody tr:nth-child(2)")
+        check("Engineer B (mock)" in page.inner_text("#desk-body .teamtable") and "What the team's deals teach" in page.inner_text("#desk-body .teambody"),
+              "and sees each engineer's pipeline, the deals at risk and what the team's deals teach")
+        page.get_by_role("button", name="Clear the team").click()
+        check(page.locator("#desk-body .teamtable").count() == 0, "and clears it: nothing was kept")
         page.get_by_role("button", name="Remove the invented examples").click()
         page.wait_for_selector("#desk-body :text('Pietra Bank')", state="detached", timeout=60_000)   # the page's CSP forbids string evaluation
         check("Kestrel Logistics" in page.inner_text("#desk-body"), "and go away in one click, leaving real work alone")

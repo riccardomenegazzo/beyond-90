@@ -1110,3 +1110,11 @@ ol.deskfunnel{list-style:none;margin:0;padding:0;display:grid;grid-template-colu
 .lsgrid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));align-items:start}
 .lsgrid .growproof{margin:0;display:block}
 .lsgrid .growproof small.muted{font-weight:500}
+
+/* the team's desk */
+.teamtable th[scope=row]{text-align:left;font-weight:700}
+.teamtable td{text-align:right;font-variant-numeric:tabular-nums}
+.teamtable td:last-child{text-align:left;white-space:nowrap}
+.teamtable thead th:nth-child(n+2):not(:last-child){text-align:right}
+.teambody{display:grid;gap:12px;margin-top:10px}
+.deskme{max-width:260px}

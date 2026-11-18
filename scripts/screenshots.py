@@ -173,6 +173,11 @@ def shoot(site: Path, out: Path) -> None:
             pg.evaluate("(() => { const c = [...document.querySelectorAll('#desk-body .card')].find((x) => x.textContent.includes('What the deals teach')); if (c) window.scrollTo({ top: c.getBoundingClientRect().top + window.scrollY - 76, behavior: 'instant' }); })()")
             pg.wait_for_timeout(300)
             pg.screenshot(path=str(out / "app-lessons.png"))
+            pg.get_by_role("button", name="Try it with two invented engineers").click()
+            pg.wait_for_selector("#desk-body .teamtable tbody tr:nth-child(2)")
+            pg.evaluate("(() => { const c = document.querySelector('#desk-body .teamtable').closest('.card'); window.scrollTo({ top: c.getBoundingClientRect().top + window.scrollY - 76, behavior: 'instant' }); })()")
+            pg.wait_for_timeout(300)
+            pg.screenshot(path=str(out / "app-team.png"))
             pg.click(".rail [data-place=start]")
             pg.locator("#hero-roles [data-role=core]").click()
 
