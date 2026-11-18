@@ -94,6 +94,25 @@ Every figure comes from the conversation. The page prices nothing and quotes not
 
 ![The case for change: staying and moving month by month, with the payback month and the arithmetic](img/app-case.png)
 
+## Handover to delivery
+
+When the deal moves to delivery, **Handover to delivery** writes the note the delivery team reads before the kickoff:
+- what the proof of value showed, criterion by criterion with its evidence;
+- what the customer asked us to prove, and whether it was;
+- what still has to be made true, with who and by when;
+- the numbers it rests on: inventory, sizing sketch, plan in waves, case for change;
+- who to keep involved;
+- what is still open.
+
+It ends with the **promises to keep after go-live**:
+- the tests passed, which must stay true in production;
+- the conditions we agreed to make true, alone or together with the customer;
+- the concerns the customer raised that are not proven yet.
+
+**Keep them as commitments** turns the promises into the customer's commitments, never twice. After the sale they show with the customer's other promises, so what presales promised is still followed after the deal. The note can be copied or downloaded as Markdown, through the same check on names as every export.
+
+![Handover to delivery: the promises the delivery team inherits, and the note](img/app-handover.png)
+
 ## How "still missing" is counted
 
 For each line, a real gap counts 1, nobody knows 0.6 (not knowing is itself a finding), partly 0.5 and solved 0; answers to business-value questions count double. What is still missing is that sum over the most it could be for the questions answered. The line to start with is the one with the most still missing, weighted a little by how much of it was explored, so a line heard about twice does not beat one explored in eight questions.

@@ -15,6 +15,7 @@ import * as DESK from "./desk.js";
 import * as SZ from "./sizing.js";
 import * as WV from "./waves.js";
 import * as VC from "./valuecase.js";
+import * as DL from "./delivery.js";
 import { connections } from "./graph.js";
 import { headline, firstMinute, rankActions, chainText, doneSummary, funnelSegments, preview } from "./today.js";
 import { stageBars } from "./nav.js";
@@ -1815,6 +1816,43 @@ function sizingCard(w, sizing) {
       try { await sizing(null); } catch (e) { say.textContent = e.message; }
     } }))), say),
   { sub: "The arithmetic before the sizing tool: how many servers the inventory needs, which resource decides, and what it runs at with a server down. Every assumption is open; it is not a sizing." });
+}
+
+/** The handover to the team that delivers and runs it, with the promises they inherit. */
+export function deliveryView({ workshop: w, catalog, povs, commitments, keepPromises, today, go }) {
+  const pov = DL.povFor(povs, w.customer);
+  const promises = DL.promisesFrom(catalog, w, pov);
+  const md = DL.handoverMarkdown(catalog, w, pov, today);
+  const mine = (commitments || []).filter((c) => c.customer.toLowerCase() === w.customer.toLowerCase()).map((c) => c.what.toLowerCase());
+  const kept = new Set(mine);
+  const fresh = promises.filter((p) => !kept.has(p.what.toLowerCase()));
+  const say = h("p", { class: "note", role: "status" });
+  const FROM = { proven: "Proven", agreed: "Agreed", asked: "Asked by the customer" };
+  const keep = h("button", { class: "btn primary", type: "button", disabled: fresh.length ? null : true,
+    text: fresh.length ? `Keep ${nOf(fresh.length, "promise")} as commitments for ${w.customer}` : promises.length ? "All promises are kept as commitments" : "No promises yet",
+    onclick: async () => {
+      try {
+        const n = await keepPromises(fresh);
+        keep.disabled = true; keep.textContent = "All promises are kept as commitments";
+        say.textContent = `${nOf(n, "commitment")} added for ${w.customer}: they show with the customer's other promises once it is a customer.`;
+      } catch (e) { say.textContent = e.message; }
+    } });
+  const slug = w.customer.replace(/[^A-Za-z0-9]+/g, "-").replace(/^-|-$/g, "").toLowerCase() || "customer";
+  return h("div", {},
+    card("Handover to delivery", h("div", {},
+      h("p", { class: "note first", text: pov ? "Built from the workshop and its proof of value. Check it with the delivery lead before the kickoff." : "No proof of value is kept for this prospect yet: the handover lists what was agreed and asked, and gains what is proven once the proof runs." }),
+      !pov ? h("div", { class: "btnrow" }, h("button", { class: "btn small", type: "button", text: "Go to where to start", onclick: () => go("hurt") })) : null,
+      h("h3", { class: "objtitle", text: `Promises to keep after go-live (${promises.length})` }),
+      promises.length ? h("ul", { class: "dlpromises" }, promises.map((p) => h("li", { class: kept.has(p.what.toLowerCase()) ? "kept" : "" },
+        h("span", { class: "chip2 dl-" + p.from, text: FROM[p.from] }), h("span", { text: p.what }),
+        p.who || p.due ? h("small", { text: [p.who && `Owner: ${p.who.toLowerCase()}`, p.due && `by ${p.due}`].filter(Boolean).join(", ") }) : null)))
+        : h("p", { class: "note", text: "None yet: a criterion met, a condition we agreed to make true, or a concern the customer raised becomes one." }),
+      h("div", { class: "btnrow" }, keep,
+        h("button", { class: "btn small", type: "button", text: "Copy the handover", onclick: (ev) => copyText(md).then((ok) => { ev.target.textContent = ok ? "Copied" : "Not copied"; }) }),
+        h("button", { class: "btn small", type: "button", text: "Download it (.md)", onclick: () => saveBlob(md, `${slug}-handover.md`, "text/markdown") })),
+      say),
+    { sub: "What the delivery team inherits: what was proven, what the customer asked us to prove, what each side agreed to make true and by when, the numbers it rests on, and what is still open." }),
+    card("The note", h("pre", { class: "dldoc", text: md, tabindex: "0", role: "region", "aria-label": "The handover note" }), { sub: "As it will be copied or downloaded; names pass through the same check as every export." }));
 }
 
 /** Cumulative cost of staying and of moving, month by month: where the lines cross, the move has paid back. */

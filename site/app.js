@@ -472,7 +472,7 @@ const VIEWS = {
   portfolio: { kind: "md", key: "portfolio_markdown", file: "beyond90-portfolio.md", type: "text/markdown" },
   book: { kind: "md", key: "book_markdown", file: "beyond90-book.md", type: "text/markdown" },
   bookreport: { kind: "html", key: "book_html", file: "beyond90-book.html", type: "text/html" },
-  wsprep: { kind: "view", view: "wsPrepView" }, wscase: { kind: "view", view: "caseView" }, workshop: { kind: "view", view: "workshopView" }, journey: { kind: "view", view: "journeyView" }, hurt: { kind: "view", view: "hurtView" }, wspov: { kind: "view", view: "povView" },
+  wsprep: { kind: "view", view: "wsPrepView" }, wscase: { kind: "view", view: "caseView" }, wsdelivery: { kind: "view", view: "deliveryView" }, workshop: { kind: "view", view: "workshopView" }, journey: { kind: "view", view: "journeyView" }, hurt: { kind: "view", view: "hurtView" }, wspov: { kind: "view", view: "povView" },
   wsummary: { kind: "md", key: "summary_markdown", file: "beyond90-discovery.md", type: "text/markdown" },
   readout: { kind: "html", key: "readout_html", file: "discovery-readout.html", type: "text/html" },
   estate: { kind: "view", view: "estateView" }, estategrow: { kind: "view", view: "growView" },
@@ -932,6 +932,14 @@ function workshopContext() {
     raise: async (profile, i, on) => edit((x) => WSHOP.setRaised(x, profile, i, on, today)),
     waves: async (settings) => edit((x) => WSHOP.setWaves(x, settings, today)),
     setCase: async (figures) => edit((x) => WSHOP.setCase(x, figures, today)),
+    commitments: state.commitments,
+    // the promises of the handover become the customer's commitments, kept with the rest after the sale; none twice
+    keepPromises: async (list) => {
+      const have = new Set(state.commitments.filter((c) => c.customer.toLowerCase() === w.customer.toLowerCase()).map((c) => c.what.toLowerCase()));
+      const made = list.filter((p) => !have.has(p.what.toLowerCase())).map((p) => K.makeCommitment({ customer: w.customer, what: p.what, who: p.who, due: p.due, source: "manual", createdOn: today }));
+      if (made.length) { await store.commitmentPut(made); await refreshCommitments(); }
+      return made.length;
+    },
     rename: async (name) => { await edit((x) => WSHOP.rename(x, name, today)); showWorkshop("workshop"); },
     setScope: async (scope) => { await edit((x) => WSHOP.setScope(x, scope, today)); showWorkshop("workshop"); },
     newWorkshop, openWorkshop, removeWorkshop, presets: WSHOP.PRESETS.map((p) => ({ ...p, scope: p.scope.filter((x) => cat.lines[x]) })).filter((p) => p.scope.length),

@@ -2,6 +2,17 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.96.0
+
+- **Handover to delivery.** From a discovery workshop and its proof of value, the note the delivery team reads before the kickoff:
+  - what the proof showed, criterion by criterion with evidence;
+  - what the customer asked us to prove, and whether it was;
+  - what still has to be made true, with who and by when;
+  - the numbers it rests on: inventory, sizing sketch, plan in waves, case for change;
+  - who to keep involved, and what is still open.
+
+  It ends with the promises to keep after go-live: tests passed that must stay true, conditions we agreed to make true, and concerns not yet proven. **Keep them as commitments** adds them to the customer's commitments, never twice, so what presales promised is followed after the sale. Copy it, or download it as Markdown.
+
 ## 0.95.0
 
 - **The case for change.** A new view in the discovery workshop puts staying and moving side by side, month by month over one to seven years, in the customer's own figures:

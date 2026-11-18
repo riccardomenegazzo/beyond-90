@@ -60,6 +60,7 @@ export const WORKSHOP_NAV = [
   ] },
   { question: "Documents to share", views: [
     { id: "readout", label: "Customer readout", icon: "doc", tip: "A page for the customer: what we heard, what would need to be true, the first steps and how each is proven. No internal scores. Download it to send, print or show at the next meeting." },
+    { id: "wsdelivery", label: "Handover to delivery", icon: "changes", tip: "For the team that delivers and runs it: what the proof of value showed, what the customer asked us to prove, what each side agreed to do by when, the numbers it rests on, what is still open, and the promises to keep after go-live. The promises can be kept as commitments for the customer." },
     { id: "wsummary", label: "Meeting summary", icon: "doc", tip: "What we heard, where we propose to start, what comes after and what is still open: the note to send after the meeting." },
   ] },
 ];

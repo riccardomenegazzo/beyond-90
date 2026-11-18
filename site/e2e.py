@@ -747,6 +747,18 @@ def main(site: str) -> int:
         check("Recovery point and time agreed for the workloads in the test" in page.inner_text("#view"), "the proof of value starts with the first line's own checklist")
         check(state_tab(page) == "wspov" and "immutable copy" in page.inner_text("#view"), "starting the proof of value carries the first line's own criteria")
         check("Try to delete a locked copy with an administrator account, then recover from it" in page.inner_text("#view"), "and what the customer asked us to prove")
+        # the handover to delivery: what was proven, agreed and asked, and the promises the delivery team inherits
+        page.click("[data-tab=wsdelivery]")
+        page.wait_for_selector("#view .dlpromises")
+        promises = page.inner_text("#view .dlpromises")
+        check("Prove: try to delete a locked copy" in promises and "Owner: together, by 2026-12-15" in promises, "the handover lists the promises: what was agreed, with owner and date, and what the customer asked us to prove")
+        check("# Handover to delivery: Kestrel Logistics" in page.inner_text("#view .dldoc") and "## What the customer asked us to prove" in page.inner_text("#view .dldoc"), "and the note the delivery team reads")
+        page.get_by_role("button", name=re.compile(r"^Keep \d+ promises? as commitments")).click()
+        page.wait_for_selector("#view button:has-text('All promises are kept as commitments')")
+        check("added for Kestrel Logistics" in page.inner_text("#view"), "the promises are kept as the customer's commitments, once")
+        with page.expect_download() as dl:
+            page.get_by_role("button", name="Download it (.md)").click()
+        check(dl.value.suggested_filename.endswith("-handover.md") and "Promises to keep after go-live" in Path(dl.value.path()).read_text(encoding="utf-8"), "and downloads as Markdown")
         page.click("[data-tab=readout]")
         readout = page.frame_locator("#report").locator("body")
         check("Yes, this is possible." in readout.inner_text() and "What would need to be true" in readout.inner_text() and "pain" not in readout.inner_text().lower(),
@@ -1330,6 +1342,9 @@ def main(site: str) -> int:
                     apage.locator(f"#view input[aria-label='{label}']").dispatch_event("change")
                 apage.wait_for_selector("#view .vcchart")
                 bad += [f"case: {v}" for v in audit()]
+                apage.click("[data-tab=wsdelivery]")
+                apage.wait_for_selector("#view .dldoc")
+                bad += [f"handover: {v}" for v in audit()]
                 for place in ("saved", "help"):
                     apage.click(f".rail [data-place={place}]")
                     bad += [f"{place}: {v}" for v in audit()]

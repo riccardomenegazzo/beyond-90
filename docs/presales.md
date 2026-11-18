@@ -19,6 +19,7 @@ A pre-sales engineer carries many prospects at once, each at a different point: 
 3. **The case for change:** staying and moving side by side over a few years, in the customer's own figures, with the payback month and the arithmetic shown.
 4. **The journey:** "yes, this is possible", what would need to be true, the first step for each condition and who does it by when; a readout for the customer and a calendar file for the plan.
 5. **Proof of value:** opened with the first line's own criteria, what the customer asked us to prove, and the checklist for its first day (addresses, DNS and NTP, switch ports, supported hardware, the failures to test); sessions, results and the mutual plan.
-6. **After the sale:** the [estate](estate.md) shows, line by line, what really works and where to grow, and starts a new workshop on the next line.
+6. **Handover to delivery:** what was proven, asked and agreed, the numbers it rests on, and the promises to keep after go-live, kept as the customer's commitments in one click.
+7. **After the sale:** the [estate](estate.md) shows, line by line, what really works and where to grow, and starts a new workshop on the next line.
 
 Everything stays in this browser, sealed when a passphrase is set, and erased with the customer.

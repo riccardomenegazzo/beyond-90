@@ -1,0 +1,107 @@
+/**
+ * The handover from presales to the team that delivers and runs it: what was proven, what the customer asked us to prove,
+ * what each side agreed to do by when, how it was sized and how the move would run, what is still open, and the promises
+ * to keep after go-live. Built from the workshop and its proof of value; no DOM, so Node can test it.
+ */
+import { progress, STATUS_TEXT } from "./pov.js";
+import { assess, journey, inventoryLine, stories, WHO, worthText, figuresHeard } from "./workshop.js";
+import { sketch } from "./sizing.js";
+import { planWaves, wavesLine } from "./waves.js";
+import { buildCase, caseLine } from "./valuecase.js";
+
+const clean = (t) => String(t == null ? "" : t).replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim();
+const cell = (t) => clean(t).replace(/\|/g, "/");
+const same = (a, b) => clean(a).toLowerCase() === clean(b).toLowerCase();
+const lower = (t) => { const x = clean(t); return x.charAt(0).toLowerCase() + x.slice(1); };
+
+/** The proof of value kept for this prospect: the most recently changed one under the same name. */
+export function povFor(povs, customer) {
+  return (povs || []).filter((p) => same(p.customer, customer)).sort((a, b) => (b.updated_on || b.created_on || "").localeCompare(a.updated_on || a.created_on || ""))[0] || null;
+}
+
+/**
+ * What the delivery team inherits as promises: tests passed that must stay true in production, conditions we (or we and
+ * the customer together) agreed to make true, and what the customer asked us to prove that is not proven yet.
+ */
+export function promisesFrom(catalog, w, pov) {
+  const res = assess(catalog, w), j = journey(catalog, w, res);
+  const out = [];
+  if (pov) for (const c of pov.criteria) if (c.status === "met") out.push({ what: `Keep true in production: ${lower(c.text)}`, who: "", due: "", from: "proven" });
+  if (j) {
+    for (const st of j.steps) for (const c of st.conditions) {
+      if (c.who === "us" || c.who === "together") out.push({ what: clean(c.need), who: WHO[c.who], due: c.by || "", from: "agreed" });
+    }
+  }
+  const met = new Set(pov ? pov.criteria.filter((c) => c.status === "met").map((c) => clean(c.text).toLowerCase()) : []);
+  for (const o of res.raised || []) if (!met.has(clean(o.prove).toLowerCase())) out.push({ what: `Prove: ${lower(o.prove)}`, who: "", due: "", from: "asked" });
+  const seen = new Set();
+  return out.filter((x) => { const k = x.what.toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; }).map((x) => ({ ...x, what: x.what.slice(0, 300) }));
+}
+
+/** The handover note, in Markdown. */
+export function handoverMarkdown(catalog, w, pov, today) {
+  const res = assess(catalog, w), j = journey(catalog, w, res);
+  const L = [`# Handover to delivery: ${clean(w.customer)}`, "",
+    `Prepared on ${today} from the discovery workshop started ${w.created_on}${pov ? ` and the proof of value started ${pov.created_on}` : ""}. For the team that will deliver and run it.`, ""];
+  // in short
+  const short = [];
+  const lines = res.lines.filter((l) => l.answered).map((l) => l.label.toLowerCase());
+  short.push(`Discussed: ${lines.length ? lines.join(", ") : "nothing recorded yet"}${res.land ? `; started with ${res.land.label.toLowerCase()}` : ""}.`);
+  if (pov) {
+    const pr = progress(pov);
+    short.push(`Proof of value: ${pr.verdict} (${pr.met} of ${pr.total} criteria met${pr.partly ? `, ${pr.partly} partly` : ""}${pr.not_met ? `, ${pr.not_met} not met` : ""}${pr.open ? `, ${pr.open} not yet tried` : ""}); first-day checklist ${pr.ready} of ${pr.ready_total} done.`);
+    if (pov.start || pov.end) short.push(`Test window ${pov.start || "?"} to ${pov.end || "?"}.`);
+    if (pov.sponsor || pov.champion) short.push(`Sponsor ${clean(pov.sponsor) || "not named"}; champion ${clean(pov.champion) || "not named"}.`);
+  } else short.push("No proof of value is kept for this prospect yet.");
+  const figures = figuresHeard(catalog, w);
+  if (figures.length) short.push(`At stake, in the customer's words: ${figures.map((f) => `${worthText(f)}${f.what ? ` ("${clean(f.what)}")` : ""}`).join("; ")}.`);
+  L.push("## In short", "", ...short.map((x) => `- ${x}`), "");
+  // what was proven
+  if (pov && pov.criteria.length) {
+    L.push("## What the proof of value showed", "", "| Criterion | Result | Evidence |", "|---|---|---|");
+    for (const c of pov.criteria.filter((x) => x.status !== "dropped")) L.push(`| ${cell(c.text)} | ${STATUS_TEXT[c.status]} | ${cell(c.evidence) || "—"} |`);
+    L.push("");
+  }
+  // what the customer asked us to prove
+  if ((res.raised || []).length) {
+    L.push("## What the customer asked us to prove", "");
+    for (const o of res.raised) {
+      const c = pov && pov.criteria.find((x) => same(x.text, o.prove));
+      L.push(`- "${clean(o.says)}" (${o.label.toLowerCase()}): ${clean(o.prove)} **${c ? STATUS_TEXT[c.status] : "Not in the proof of value"}.**`);
+    }
+    L.push("");
+  }
+  // what was agreed
+  if (j) {
+    const owned = j.steps.flatMap((st) => st.conditions.map((c) => ({ ...c, step: st.title })));
+    if (owned.length) {
+      L.push("## What still has to be made true", "", "| Condition | Today | First step | Who | By |", "|---|---|---|---|---|");
+      for (const c of owned) L.push(`| ${cell(c.need)} | ${({ gap: "a real gap", partly: "partly", unknown: "not known" })[c.status]} | ${cell(c.how)} | ${c.who ? WHO[c.who] : "—"} | ${c.by || "—"} |`);
+      L.push("");
+    }
+  }
+  // the numbers it rests on
+  const facts = [];
+  if (w.inventory) {
+    facts.push(inventoryLine(w.inventory));
+    const sk = sketch(w.inventory, w.sizing || {});
+    if (sk.ok) facts.push(`Sizing sketch: ${sk.nodes} servers, decided by ${sk.decided}; assumptions ${w.sizing ? "agreed with the customer" : "left at the defaults"}. Confirm with the sizing tool before ordering.`);
+    const pw = planWaves(w.inventory, w.waves || {}, w.updated_on);
+    if (pw.ok) facts.push(`Plan in waves: ${wavesLine(pw)}`);
+  }
+  const cs = w.case ? buildCase(w.case) : null;
+  if (cs && cs.ok) facts.push(`Case for change: ${caseLine(cs)}`);
+  if (facts.length) L.push("## The numbers it rests on", "", ...facts.map((x) => `- ${x}`), "");
+  // who
+  const told = res.land ? stories(catalog, w, res).find((x) => x.land) : null;
+  if (told && told.people.length) L.push("## Who to keep involved", "", ...told.people.map((x) => `- ${x}`), "");
+  // still open
+  const open = [...(pov ? pov.criteria.filter((c) => c.status === "open" || c.status === "partly").map((c) => `Proof of value: ${clean(c.text)} (${STATUS_TEXT[c.status].toLowerCase()})`) : []),
+    ...(pov ? pov.readiness.filter((r) => !r.done).map((r) => `First-day checklist: ${clean(r.text)}`) : []),
+    ...res.unknowns.map((u) => `${u.label}: ${clean(u.q)}`)];
+  if (open.length) L.push("## Still open", "", ...open.map((x) => `- ${x}`), "");
+  const promises = promisesFrom(catalog, w, pov);
+  if (promises.length) L.push("## Promises to keep after go-live", "", ...promises.map((p) => `- [ ] ${p.what}${p.who ? `. Owner: ${p.who.toLowerCase()}` : ""}${p.due ? `. By ${p.due}` : ""}.`), "");
+  L.push("_Prepared with Beyond 90 from what was recorded in the browser where it was written; nothing was sent anywhere to produce it._", "");
+  return L.join("\n");
+}
