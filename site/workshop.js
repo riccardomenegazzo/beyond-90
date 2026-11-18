@@ -290,6 +290,13 @@ const EXAMPLE = {
     "dbaas#1": "Last point-in-time restore took two days and needed the vendor",
   },
   worth: { "dr-backup#0": [2000000, "day"], "platform-migration#0": [1400000, "year"] },
+  // who makes what true, and by when: days after the workshop
+  plan: { "dr-backup#2": ["together", 21], "dr-backup#4": ["us", 10], "platform-migration#3": ["customer", 14] },
+  raised: [["dr-backup", 3], ["platform-migration", 1], ["hci", 2]],
+  sizing: { growth_pct: 15 },
+  case: { years: 3, in_readout: true, stay_run: 700000, stay_uplift_pct: 200, renewal_in_months: 10, stay_refresh: 900000, refresh_in_months: 18,
+    move_run: 1100000, move_once: 650000, move_hardware: 0, ops_hours_now: 160, ops_hours_after: 60, hour_cost: 80,
+    downtime_cost_hour: 83333, downtime_hours_now: 12, downtime_hours_after: 4 },
 };
 
 export function exampleWorkshop(createdOn) {
@@ -301,6 +308,13 @@ export function exampleWorkshop(createdOn) {
     const [profile, i] = k.split("#");
     w = setWorth(w, profile, Number(i), amount, per, createdOn);
   }
+  const later = (n) => new Date(Date.parse(createdOn + "T00:00:00Z") + n * 86400000).toISOString().slice(0, 10);
+  for (const [k, [who, n]] of Object.entries(EXAMPLE.plan)) {
+    const [profile, i] = k.split("#");
+    w = setPlan(w, profile, Number(i), who, later(n), createdOn);
+  }
+  for (const [profile, i] of EXAMPLE.raised) w = setRaised(w, profile, i, true, createdOn);
+  w = setCase(setSizing(w, EXAMPLE.sizing, createdOn), EXAMPLE.case, createdOn);
   return w;
 }
 export const isExample = (w) => /\|example\d$/.test(w.id);
@@ -592,8 +606,12 @@ export function readoutHtml(catalog, w, res, { preparedBy = "", today = "" } = {
     for (const o of raised) out.push(`<tr><td>&ldquo;${esc(o.says)}&rdquo;</td><td>${esc(o.prove)}</td></tr>`);
     out.push(`</tbody></table>`);
   }
-  if (res.unknowns.length) {
-    out.push(`<h2>For our next meeting</h2><ul>${res.unknowns.map((u) => `<li>${esc(u.q)} <span style="color:#5f6c76">(${esc(u.label.toLowerCase())})</span></li>`).join("")}</ul>`);
+  const told = res.land ? stories(catalog, w, res).find((x) => x.land) : null;
+  const people = told ? told.people : [];
+  if (res.unknowns.length || people.length) {
+    out.push(`<h2>For our next meeting</h2>`);
+    if (res.unknowns.length) out.push(`<ul>${res.unknowns.map((u) => `<li>${esc(u.q)} <span style="color:#5f6c76">(${esc(u.label.toLowerCase())})</span></li>`).join("")}</ul>`);
+    if (people.length) out.push(`<p>It helps to have in the room:</p><ul>${people.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>`);
   }
   const by = preparedBy || w.prepared_by || "";
   out.push(`<footer>${by ? `Prepared by ${esc(by)}. ` : ""}Written from our conversation in the browser where it was recorded; nothing was sent anywhere to produce it.</footer></main></body></html>`);

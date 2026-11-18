@@ -357,3 +357,23 @@ test("the case for change is kept with the workshop, checked on import, and reac
   assert.throws(() => setCase(w, { years: 12 }, "2026-11-03"));
   assert.equal("case" in setCase(w, null, "2026-11-03"), false);
 });
+
+test("the invented example comes complete: owners and dates, raised concerns, agreed sizing, a case for change", async () => {
+  const m = await import("../workshop.js");
+  const { buildCase } = await import("../valuecase.js");
+  const w = m.exampleWorkshop("2026-11-18");
+  assert.equal(validWorkshop(w), true);
+  assert.equal(m.isExample(w), true);
+  const res = assess(CAT, w);
+  assert.ok(res.raised.length >= 1, "its concerns, for the lines the test catalog carries");
+  assert.ok(Object.values(w.answers).some((a) => a.who && a.by > "2026-11-18"));
+  assert.ok(w.sizing && w.case && buildCase(w.case).saving > 0);
+});
+
+test("the readout says who it helps to have at the next meeting", () => {
+  let w = makeWorkshop({ customer: "Acme (mock)", scope: ["dr-backup"], createdOn: "2026-11-01", nonce: "abcdef" });
+  for (let i = 0; i < 4; i++) w = setAnswer(w, "dr-backup", i, "gap", "", "2026-11-02");
+  const html = readoutHtml(CAT, w, assess(CAT, w));
+  assert.match(html, /It helps to have in the room:/);
+  assert.match(html, new RegExp(CAT.lines["dr-backup"].story.people[0].replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+});

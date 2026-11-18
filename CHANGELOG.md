@@ -2,6 +2,15 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.98.0
+
+- **The invented example comes complete.** "See a filled-in example" now opens a prospect where every presales view has something to show:
+  - conditions with owners and dates;
+  - three concerns raised by the customer;
+  - sizing assumptions agreed;
+  - a case for change in its own figures, shown in the readout.
+- **The customer readout says who it helps to have at the next meeting,** from the line to start with.
+
 ## 0.97.0
 
 - **What could stop a deal, on the presales desk.** Read from what is already recorded, with what to do about each. The risks that can lose a deal on their own come first:

@@ -816,7 +816,7 @@ def main(site: str) -> int:
         # the case for change, in the customer's figures
         page.click("[data-tab=wscase]")
         page.wait_for_selector("#view .vcgroups")
-        check("Type the figures the customer gave" in page.inner_text("#view .vcout"), "the case for change starts empty and says what to ask for")
+        check("less by moving" in page.inner_text("#view .vcout"), "the example comes with its case for change, in its own figures")
         for label, value in (("What the current platform costs per year (licences, subscriptions, support)", "1200000"), ("Expected rise at the next renewal", "50"),
                              ("The next renewal is in", "6"), ("What the new platform would cost per year", "1000000"), ("One-off cost of the move: services, migration, training", "600000")):
             f = page.locator(f"#view input[aria-label='{label}']")
@@ -831,6 +831,8 @@ def main(site: str) -> int:
         page.locator("#view input[aria-label='Hours down per year today']").dispatch_event("change")
         page.wait_for_timeout(200)
         check("Downtime" in page.inner_text("#view .vctable"), "and counts what downtime costs")
+        page.get_by_label("Show the case in the customer readout").uncheck()
+        page.wait_for_timeout(200)
         page.get_by_label("Show the case in the customer readout").check()
         page.wait_for_timeout(300)
         page.click("[data-tab=readout]")
