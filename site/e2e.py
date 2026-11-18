@@ -731,6 +731,12 @@ def main(site: str) -> int:
         check("Disaster recovery and backup" in page.inner_text("#view .wsland"), "the line that hurts most is where to start")
         check(page.locator("#view .painmap .enode.absent").count() == 2 and "2M in lost orders" in page.inner_text("#view"), "lines not discussed are dashed, and the customer's own words back the choice")
         check(page.locator("#view .flags li").count() == 2, "what nobody could answer becomes the list for the next meeting")
+        agenda = page.inner_text("#view pre[aria-label='Agenda of the next meeting']")
+        check(agenda.startswith("Next meeting with Kestrel Logistics") and "Questions to answer together" in agenda and "It helps to have in the room:" in agenda,
+              "and the next meeting has an agenda: what is open, and who to bring")
+        with page.expect_download() as dl:
+            page.get_by_role("button", name="Invitation (.ics)").click()
+        check("SUMMARY:Kestrel Logistics (mock): next meeting" in Path(dl.value.path()).read_text(encoding="utf-8"), "and an invitation that carries it")
         # prepare: the line for each audience, who to bring, the objections; one the customer raises goes to the proof and the readout
         page.click("[data-tab=wsprep]")
         page.wait_for_selector("#view .objs")

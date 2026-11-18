@@ -30,8 +30,16 @@ Nobody lied. Each team reported its own step. [Why multiply, and why both number
 - **Shows what waiting costs:** every drop already dated in the data (secrets, accepted risks, deadlines), and what the work of a quarter was worth.
 - **Writes for the customer:** a CISO one-pager, an executive QBR and slides, a status page, all through a preview that can swap names for aliases.
 - **Works across a book of customers:** this week's priorities, shared patterns, and one budget of hours where it gains most.
-- **Gives a pre-sales engineer a desk of their own:** every prospect from discovery to decision, what is due and what is late, and the weekly update for the account team ([docs/presales.md](docs/presales.md)).
+- **Gives a pre-sales engineer a desk of their own:** every prospect from discovery to decision, what is due and what is late, what could stop each deal, and the weekly update for the account team ([docs/presales.md](docs/presales.md)).
 - **Starts before there is any data:** a discovery workshop records what a prospect says to each product line's questions and turns it into a journey: "yes, this is possible", what would need to be true, the first step towards each condition and the test that proves it. It ends in a readout for the customer and a proof of value with that line's own criteria ([docs/workshop.md](docs/workshop.md)).
+- **Prepares the conversation and does the presales arithmetic:**
+  - the message for the executive, the technical team and finance, who to bring, and the objections to expect with the question to ask first and how to prove the answer;
+  - from a VM inventory, a sizing sketch and a plan in waves;
+  - a GPU sketch for AI and a recovery design for disaster recovery;
+  - a case for change in the customer's own figures.
+
+  Every step is written out, and none of it is a quote or a sizing.
+- **Hands over to delivery:** what was proven, asked and agreed, and the promises to keep after go-live, kept as the customer's commitments so what presales promised is followed after the sale.
 - **Sees one customer across a whole portfolio:** every product line on its own profile, where one line puts another at risk, and which line comes next with the question that opens it ([docs/estate.md](docs/estate.md)).
 - **Fits the product you support:** profiles for cloud security, endpoint, SaaS, AI, identity, SIEM, hyperconverged infrastructure, object storage, databases, file storage, Kubernetes platforms, disaster recovery, platform migration, private AI, hybrid cloud, virtual desktops and network microsegmentation, or your own in JSON.
 - **Installs as an app** on a phone or a computer, works offline, and accepts files shared from mail.
@@ -196,6 +204,7 @@ beyond90 explain acme --store history.db   # what changed since the last stored 
 - The book planner needs effort figures that fit you; the defaults are estimates.
 - Trust ratings (credibility, reliability, intimacy, self-orientation) are your own judgement; the index is a prompt for reflection, not a measurement.
 - Input confidence says how far to trust the files, not how healthy the customer is.
+- The sizing sketch, the GPU sketch, the recovery design and the case for change are arithmetic on assumptions agreed with the customer, to settle the order of magnitude. The vendor's sizing tool, a benchmark on the customer's own workload and the product's own calculators have the last word.
 - In the browser app, deleting a saved snapshot is local: merging by union brings it back if another device still has it. A 500-account estate takes about 10 seconds there.
 
 ## Documents

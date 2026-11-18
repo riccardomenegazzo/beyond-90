@@ -2,6 +2,18 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.101.0
+
+- **The next meeting.** In "Where to start", an agenda built from what the last meeting left open:
+  - what slipped;
+  - the questions nobody could answer;
+  - the customer's concerns and how each will be proven;
+  - what is due soon;
+  - who it helps to have in the room.
+
+  Copy it, or download an invitation for the chosen day that carries it.
+- **The README** describes the presales arithmetic and the handover, and says plainly that the sketches settle the order of magnitude: the vendor's tools and a benchmark on the customer's workload have the last word.
+
 ## 0.100.0
 
 - **A first recovery design** for disaster recovery. It works from the protected data (from the inventory, or typed in), the daily change, the busiest hour and the distance between the sites. For three tiers of applications, each with its recovery point and recovery time, it gives:

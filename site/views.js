@@ -18,6 +18,7 @@ import * as VC from "./valuecase.js";
 import * as DL from "./delivery.js";
 import * as GPU from "./gpu.js";
 import * as DRS from "./drsketch.js";
+import * as NM from "./nextmeeting.js";
 import { connections } from "./graph.js";
 import { headline, firstMinute, rankActions, chainText, doneSummary, funnelSegments, preview } from "./today.js";
 import { stageBars } from "./nav.js";
@@ -2076,7 +2077,26 @@ function wavesCard(w, waves, today) {
   { sub: "A test wave first, from the cluster that teaches the most for the least risk; then cluster by cluster, the least risky first. Clusters move whole, so machines that talk to each other inside one stay together; dependencies across clusters still have to be checked with the owners." });
 }
 
-export function hurtView({ workshop: w, catalog, go, startPov }) {
+/** The next meeting, from what the last one left open: an agenda to copy, or an invitation that carries it. */
+function nextMeetingCard(w, catalog, today) {
+  const m = NM.nextMeeting(catalog, w, today);
+  const inWeek = new Date(Date.parse(today + "T00:00:00Z") + 7 * 86400000).toISOString().slice(0, 10);
+  const day = h("input", { type: "date", value: inWeek, min: today, "aria-label": "Day of the next meeting" });
+  const longDay = () => new Date(day.value + "T00:00:00Z").toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" });
+  const text = () => NM.agendaText(m, day.value ? longDay() : "");
+  const pre = h("pre", { class: "dldoc", text: text(), tabindex: "0", role: "region", "aria-label": "Agenda of the next meeting" });
+  day.addEventListener("change", () => { pre.textContent = text(); });
+  const slug = w.customer.replace(/[^A-Za-z0-9]+/g, "-").replace(/^-|-$/g, "").toLowerCase() || "customer";
+  return card("The next meeting", h("div", {},
+    m.empty ? h("p", { class: "note first", text: "Nothing is open yet: the agenda is the next steps, with owners and dates." }) : null,
+    h("label", { class: "szf nmday" }, h("span", { text: "On" }), day), pre,
+    h("div", { class: "btnrow" },
+      h("button", { class: "btn small", type: "button", text: "Copy the agenda", onclick: (ev) => copyText(text()).then((ok) => { ev.target.textContent = ok ? "Copied" : "Not copied"; }) }),
+      h("button", { class: "btn small", type: "button", text: "Invitation (.ics)", onclick: () => { if (day.value) saveBlob(NM.meetingIcs(w, m, day.value, new Date().toISOString().replace(/[-:]/g, "").slice(0, 15) + "Z"), `${slug}-next-meeting.ics`, "text/calendar"); } }))),
+  { sub: "From what the last meeting left open: what slipped, the questions nobody could answer, the concerns to prove, what is due soon, and who to bring." });
+}
+
+export function hurtView({ workshop: w, catalog, go, startPov, today }) {
   const res = WS.assess(catalog, w);
   const say = h("p", { class: "note", role: "status" });
   if (!res.answered) return card("Where to start", h("div", {}, h("p", { class: "note first", text: "Nothing recorded yet. Answer a few questions in the workshop and this page shows where to start, what is still missing on each line and what to find out next." }),
@@ -2116,6 +2136,7 @@ export function hurtView({ workshop: w, catalog, go, startPov }) {
       h("button", { class: "btn small", type: "button", text: "Copy the list", onclick: (ev) => copyText(text).then((ok) => { ev.target.textContent = ok ? "Copied" : "Not copied"; }) })),
     { sub: "Questions nobody in the room could answer. Each one is a reason for the next meeting, and often the real gap." }));
   }
+  out.push(nextMeetingCard(w, catalog, today));
   return h("div", {}, out);
 }
 

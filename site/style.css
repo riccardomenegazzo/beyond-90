@@ -1097,3 +1097,4 @@ ol.deskfunnel{list-style:none;margin:0;padding:0;display:grid;grid-template-colu
 .drwhy{display:block;margin-top:3px}
 .drtiers{margin-top:10px}
 .drtable td:nth-child(-n+4),.drtable td:nth-child(6){white-space:nowrap}
+.nmday{max-width:220px;margin-bottom:10px}
