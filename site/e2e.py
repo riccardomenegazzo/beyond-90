@@ -801,6 +801,32 @@ def main(site: str) -> int:
         check(ics.count("BEGIN:VEVENT") == page.locator("#view .wvtable tbody tr").count() and "Test wave" in ics, "and goes to a calendar, one event per wave")
         page.click("[data-tab=readout]")
         check("How the move would run" in page.frame_locator("#report").locator("body").inner_text(), "the customer readout shows how the move would run")
+        # the case for change, in the customer's figures
+        page.click("[data-tab=wscase]")
+        page.wait_for_selector("#view .vcgroups")
+        check("Type the figures the customer gave" in page.inner_text("#view .vcout"), "the case for change starts empty and says what to ask for")
+        for label, value in (("What the current platform costs per year (licences, subscriptions, support)", "1200000"), ("Expected rise at the next renewal", "50"),
+                             ("The next renewal is in", "6"), ("What the new platform would cost per year", "1000000"), ("One-off cost of the move: services, migration, training", "600000")):
+            f = page.locator(f"#view input[aria-label='{label}']")
+            f.fill(value)
+            f.dispatch_event("change")
+        page.wait_for_selector("#view .vcchart")
+        check("less by moving" in page.inner_text("#view .vcline") and "paid back by month" in page.inner_text("#view .vcline"), "and adds up staying and moving, with when the move pays back")
+        use = page.locator("#view .vcheard button").first
+        check("83,333" in use.inner_text(), "a figure heard in the workshop is offered as the cost of an hour down")
+        use.click()
+        page.locator("#view input[aria-label='Hours down per year today']").fill("12")
+        page.locator("#view input[aria-label='Hours down per year today']").dispatch_event("change")
+        page.wait_for_timeout(200)
+        check("Downtime" in page.inner_text("#view .vctable"), "and counts what downtime costs")
+        page.get_by_label("Show the case in the customer readout").check()
+        page.wait_for_timeout(300)
+        page.click("[data-tab=readout]")
+        check("The case for change, in your figures" in page.frame_locator("#report").locator("body").inner_text(), "the case goes to the customer readout when asked")
+        page.click("[data-tab=wsummary]")
+        check("## The case for change" in page.inner_text("#doc") or "The case for change" in page.inner_text("#doc"), "and to the meeting summary")
+        page.click("[data-tab=workshop]")
+        page.wait_for_selector("#view .wvtable")
         page.click("[data-tab=workshop]")
         page.wait_for_selector("#view .wvtable")
         page.click("[data-tab=journey]")
@@ -1297,6 +1323,13 @@ def main(site: str) -> int:
                 apage.locator("#view .objraise").first.click()
                 apage.wait_for_selector("#view .obj.on")
                 bad += [f"prepare: {v}" for v in audit()]
+                apage.click("[data-tab=wscase]")
+                apage.wait_for_selector("#view .vcgroups")
+                for label, value in (("What the current platform costs per year (licences, subscriptions, support)", "100000"), ("What the new platform would cost per year", "80000")):
+                    apage.locator(f"#view input[aria-label='{label}']").fill(value)
+                    apage.locator(f"#view input[aria-label='{label}']").dispatch_event("change")
+                apage.wait_for_selector("#view .vcchart")
+                bad += [f"case: {v}" for v in audit()]
                 for place in ("saved", "help"):
                     apage.click(f".rail [data-place={place}]")
                     bad += [f"{place}: {v}" for v in audit()]

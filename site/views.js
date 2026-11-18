@@ -14,6 +14,7 @@ import * as INV from "./inventory.js";
 import * as DESK from "./desk.js";
 import * as SZ from "./sizing.js";
 import * as WV from "./waves.js";
+import * as VC from "./valuecase.js";
 import { connections } from "./graph.js";
 import { headline, firstMinute, rankActions, chainText, doneSummary, funnelSegments, preview } from "./today.js";
 import { stageBars } from "./nav.js";
@@ -1814,6 +1815,84 @@ function sizingCard(w, sizing) {
       try { await sizing(null); } catch (e) { say.textContent = e.message; }
     } }))), say),
   { sub: "The arithmetic before the sizing tool: how many servers the inventory needs, which resource decides, and what it runs at with a server down. Every assumption is open; it is not a sizing." });
+}
+
+/** Cumulative cost of staying and of moving, month by month: where the lines cross, the move has paid back. */
+function caseChart(c) {
+  const W = 640, H = 230, pad = { l: 64, r: 16, t: 14, b: 30 };
+  const top = Math.max(1, ...c.stayCum, ...c.moveCum);
+  const X = (i) => pad.l + (i / Math.max(1, c.months)) * (W - pad.l - pad.r), Y = (v) => pad.t + (1 - v / top) * (H - pad.t - pad.b);
+  const short = (v) => (v >= 1e9 ? `${(v / 1e9).toFixed(1)}B` : v >= 1e6 ? `${(v / 1e6).toFixed(1)}M` : v >= 1e3 ? `${Math.round(v / 1e3)}k` : String(Math.round(v)));
+  const svg = svgEl("svg", { viewBox: `0 0 ${W} ${H}`, class: "chart vcchart", role: "img", "aria-label": `Cumulative cost, month by month. ${VC.caseLine(c)}` });
+  for (let k = 0; k <= 4; k++) {
+    const v = (top * k) / 4;
+    svg.append(svgEl("line", { x1: pad.l, x2: W - pad.r, y1: Y(v), y2: Y(v), stroke: "var(--grid)" }), svgEl("text", { x: pad.l - 8, y: Y(v) + 4, "text-anchor": "end", class: "tick" }, short(v)));
+  }
+  for (let y = 0; y <= c.years; y++) svg.append(svgEl("text", { x: X(y * 12), y: H - 10, "text-anchor": "middle", class: "tick" }, y ? `year ${y}` : "now"));
+  const path = (cum) => [[0, 0], ...cum.map((v, i) => [i + 1, v])].map(([i, v], j) => `${j ? "L" : "M"}${X(i).toFixed(1)} ${Y(v).toFixed(1)}`).join(" ");
+  svg.append(svgEl("path", { d: path(c.stayCum), fill: "none", stroke: "var(--neg, #c2410c)", "stroke-width": 2.4, "stroke-dasharray": "6 4" }, svgEl("title", {}, "Staying")),
+    svgEl("path", { d: path(c.moveCum), fill: "none", stroke: "var(--accent)", "stroke-width": 2.8 }, svgEl("title", {}, "Moving")));
+  if (c.payback) svg.append(svgEl("circle", { cx: X(c.payback), cy: Y(c.moveCum[c.payback - 1]), r: 5, fill: "var(--accent)" }, svgEl("title", {}, `Paid back by month ${c.payback}`)));
+  return h("figure", { class: "vcfig" }, svg, h("figcaption", { class: "vclegend" }, h("span", { class: "vcstay", text: "Staying" }), h("span", { class: "vcmove", text: "Moving" }),
+    c.payback ? h("span", { text: `Dot: paid back by month ${c.payback}` }) : null));
+}
+
+/** The case for change: what staying and moving cost over a few years, in the customer's figures, the arithmetic shown. */
+export function caseView({ workshop: w, catalog, setCase }) {
+  const a = VC.cleanCase(w.case || {});
+  const say = h("p", { class: "note", role: "status" });
+  const out = h("div", { class: "vcout" });
+  const inputs = {};
+  const years = h("select", { "aria-label": "Over how many years" }, [1, 2, 3, 4, 5, 6, 7].map((y) => h("option", { value: String(y), text: `${y} year${y === 1 ? "" : "s"}` })));
+  years.value = String(a.years);
+  const inReadout = h("input", { type: "checkbox", "aria-label": "Show the case in the customer readout" });
+  inReadout.checked = a.in_readout;
+  const current = () => {
+    const v = { years: Number(years.value), in_readout: inReadout.checked };
+    for (const [k, el] of Object.entries(inputs)) if (el.value !== "") v[k] = Number(el.value);
+    return VC.cleanCase(v);
+  };
+  const draw = (figures) => {
+    const c = VC.buildCase(figures);
+    if (!c.ok) { put(out, h("p", { class: "note first", text: "Type the figures the customer gave: what the current platform costs and when it renews, what moving would cost, the hours spent on routine work, the cost of an hour down. Blanks count as nothing; every figure stays in this browser." })); copy.hidden = true; return; }
+    copy.hidden = false;
+    put(out,
+      h("p", { class: "tline vcline", text: VC.caseLine(c) }),
+      caseChart(c),
+      h("div", { class: "tablewrap" }, h("table", { class: "wvtable vctable" },
+        h("thead", {}, h("tr", {}, ["Cost", "Staying", "Moving", "Difference"].map((t) => h("th", { scope: "col", text: t })))),
+        h("tbody", {}, c.rows.map((r) => h("tr", {}, h("th", { scope: "row", text: r.label }), h("td", { class: "n", text: VC.money(r.stay) }), h("td", { class: "n", text: VC.money(r.move) }),
+          h("td", { class: "n" + (r.diff < 0 ? " neg" : ""), text: VC.money(r.diff) }))),
+        h("tr", { class: "vctotal" }, h("th", { scope: "row", text: `Total over ${c.years} year${c.years === 1 ? "" : "s"}` }), h("td", { class: "n", text: VC.money(c.stay) }), h("td", { class: "n", text: VC.money(c.move) }),
+          h("td", { class: "n" + (c.saving < 0 ? " neg" : ""), text: VC.money(c.saving) }))))),
+      h("div", { class: "growproof" }, h("small", { text: "The arithmetic" }), h("ul", {}, VC.caseSteps(c).map((x) => h("li", { text: x })))));
+  };
+  const save = async () => { const v = current(); draw(v); try { await setCase(VC.hasCase(v) || v.in_readout ? v : null); say.textContent = ""; } catch (e) { say.textContent = e.message; } };
+  // outside what is redrawn, so a change made by leaving a field never takes them away mid-click
+  const copy = h("button", { class: "btn small", type: "button", text: "Copy for finance", hidden: true,
+    onclick: (ev) => copyText(VC.caseMarkdown(VC.buildCase(current()))).then((ok) => { ev.target.textContent = ok ? "Copied" : "Not copied"; }) });
+  const heard = VC.hourlyFrom(WS.figuresHeard(catalog, w));
+  const groups = VC.FIELDS.map((g) => h("fieldset", { class: "vcgroup" }, h("legend", { text: g.group }),
+    g.fields.map(([k, label, unit]) => {
+      inputs[k] = h("input", { type: "number", step: "any", min: "0", value: a[k] == null ? "" : String(a[k]), "aria-label": label, placeholder: "—" });
+      inputs[k].addEventListener("change", save);
+      const extra = k === "downtime_cost_hour" && heard.length ? h("span", { class: "vcheard" }, heard.slice(0, 2).map((f) => h("button", { class: "btn small", type: "button",
+        text: `Use ${VC.money(f.hourly)}`, "data-tip": `Heard in the workshop: ${VC.money(f.amount)} per ${f.per}${f.what ? `, in answer to "${f.what}"` : ""}${f.per === "day" ? "; a day counted as 24 hours" : ""}.`,
+        onclick: () => { inputs[k].value = String(f.hourly); save(); } }))) : null;
+      return h("label", { class: "szf" }, h("span", { text: `${label} (${unit})` }), inputs[k], extra);
+    })));
+  years.addEventListener("change", save);
+  inReadout.addEventListener("change", save);
+  draw(a);
+  const res = WS.assess(catalog, w);
+  const told = res.land ? WS.stories(catalog, w, res).find((x) => x.land) : null;
+  const finance = told && told.audiences.financial ? h("p", { class: "note first", text: `How finance hears ${told.label.toLowerCase()}: ${told.audiences.financial}` }) : null;
+  return h("div", {},
+    card("The case for change", h("div", {}, finance, out, h("div", { class: "btnrow" }, copy,
+      h("label", { class: "vcopt" }, inReadout, h("span", { text: "Show it in the customer readout" }))), say),
+    { sub: "What staying costs and what moving costs, month by month, in the customer's own figures. The arithmetic is shown so anyone can check it; it is not a quote." }),
+    card("The figures", h("div", {}, h("label", { class: "szf vcyears" }, h("span", { text: "Over" }), years), h("div", { class: "vcgroups" }, groups)),
+    { sub: "In the customer's currency, as they gave them. Leave blank what was not discussed." }));
 }
 
 /** A plan in waves from the inventory: a test wave, then cluster by cluster, the same steps every time. */

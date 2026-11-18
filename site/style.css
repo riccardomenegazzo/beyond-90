@@ -1057,3 +1057,21 @@ ol.deskfunnel{list-style:none;margin:0;padding:0;display:grid;grid-template-colu
 .wvtable tr.wvtest td{background:var(--accent-soft);font-weight:600}
 .wvoff{display:flex;gap:8px;align-items:center;grid-column:1/-1}
 .wvbook{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));margin-top:10px}
+
+/* the case for change */
+.vcline{font-size:19px}
+.vcfig{margin:6px 0 10px}
+.vcchart{width:100%;height:auto}
+.vclegend{display:flex;gap:18px;font-size:13px;color:var(--ink2)}
+.vcstay::before,.vcmove::before{content:"";display:inline-block;width:22px;height:0;border-top:2.6px solid var(--accent);vertical-align:middle;margin-right:6px}
+.vcstay::before{border-top:2.4px dashed var(--neg,#c2410c)}
+.vctable th[scope=row]{text-align:left;font-weight:600}
+.vctable td.neg{color:var(--neg,#c2410c)}
+.vctable tr.vctotal th,.vctable tr.vctotal td{font-weight:800;border-top:2px solid var(--line)}
+.vcgroups{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));margin-top:12px}
+.vcgroup{border:1px solid var(--line);border-radius:12px;padding:10px 14px 14px;display:grid;gap:10px;margin:0}
+.vcgroup legend{font-weight:700;padding:0 6px}
+.vcheard{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.vcopt{display:inline-flex;gap:8px;align-items:center;font-size:14px}
+.vcyears select{max-width:160px}
+.vctable thead th:nth-child(n+2){text-align:right}

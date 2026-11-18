@@ -55,6 +55,7 @@ export const WORKSHOP_NAV = [
     { id: "workshop", label: "Questions", icon: "prep", tip: "The discovery questions for each product line in scope. Record what the customer says: solved, partly, a real gap, or nobody knows." },
     { id: "journey", label: "The journey", icon: "planview", tip: "Yes, this is possible: what would need to be true, the first step towards each condition and how each step is validated, from today to where the customer could be." },
     { id: "hurt", label: "Where to start", icon: "outlook", tip: "Which line to start with and why, how much is still missing on each line, the path after it, and what to find out before the next meeting." },
+    { id: "wscase", label: "Case for change", icon: "renewal", tip: "What staying costs and what moving costs, month by month over a few years, in the customer's own figures, with the arithmetic shown. For finance; not a quote." },
     { id: "wspov", label: "Proof of value", icon: "maturity", tip: "The proof of value for the first line: criteria agreed before it starts, sessions, results. Kept in this browser." },
   ] },
   { question: "Documents to share", views: [

@@ -338,3 +338,22 @@ test("stories put the line to start with first, and the summary tells it for eac
   assert.match(md, /## How to tell it: disaster recovery and backup/i);
   assert.match(md, /\*\*For finance:\*\*/);
 });
+
+import { setCase, figuresHeard } from "../workshop.js";
+
+test("the case for change is kept with the workshop, checked on import, and reaches the summary and, when asked, the readout", () => {
+  let w = makeWorkshop({ customer: "Acme (mock)", scope: ["dr-backup"], createdOn: "2026-11-01", nonce: "abcdef" });
+  w = setWorth(setAnswer(w, "dr-backup", 0, "gap", "", "2026-11-02"), "dr-backup", 0, 2400000, "day", "2026-11-02");
+  assert.equal(figuresHeard(CAT, w)[0].amount, 2400000);
+  const figures = { years: 3, in_readout: false, stay_run: 1200000, stay_uplift_pct: 50, renewal_in_months: 6, move_run: 1000000, move_once: 600000 };
+  w = setCase(w, figures, "2026-11-03");
+  assert.equal(validWorkshop(w), true);
+  const res = assess(CAT, w);
+  assert.match(summaryMarkdown(CAT, w, res), /## The case for change/);
+  assert.doesNotMatch(readoutHtml(CAT, w, res), /The case for change/);
+  w = setCase(w, { ...figures, in_readout: true }, "2026-11-03");
+  assert.match(readoutHtml(CAT, w, assess(CAT, w)), /The case for change, in your figures/);
+  assert.equal(validWorkshop({ ...w, case: { stay_run: -1 } }), false);
+  assert.throws(() => setCase(w, { years: 12 }, "2026-11-03"));
+  assert.equal("case" in setCase(w, null, "2026-11-03"), false);
+});

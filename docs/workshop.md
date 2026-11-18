@@ -78,6 +78,22 @@ Every wave goes through the same steps. Before: owners named and the change appr
 
 ![A plan in waves: a test wave, then cluster by cluster, with dates and what each wave carries](img/app-waves.png)
 
+## The case for change
+
+**Case for change** puts what staying costs beside what moving costs, month by month over one to seven years, in the customer's own figures:
+- **Staying:** what the current platform costs a year, the rise expected at the next renewal and when it comes, and a hardware refresh due if nothing changes.
+- **Moving:** what the new platform would cost a year, the one-off cost of the move, and hardware bought for it (nothing if servers are reused).
+- **Running it:** hours a month on routine work today and after, and the cost of an hour.
+- **Downtime:** the cost of an hour down, with hours down a year today and after.
+
+A figure the customer put on what is at stake in the workshop, per hour or per day, is offered as the cost of an hour down.
+
+It shows the total each way, the difference, the month the move is paid back if it is, a chart of both lines, a table by cost line, and the arithmetic in words so anyone can check it. Blanks count as nothing. **Copy for finance** copies it as Markdown. It is in the meeting summary, and in the customer readout only when "Show it in the customer readout" is ticked.
+
+Every figure comes from the conversation. The page prices nothing and quotes nothing.
+
+![The case for change: staying and moving month by month, with the payback month and the arithmetic](img/app-case.png)
+
 ## How "still missing" is counted
 
 For each line, a real gap counts 1, nobody knows 0.6 (not knowing is itself a finding), partly 0.5 and solved 0; answers to business-value questions count double. What is still missing is that sum over the most it could be for the questions answered. The line to start with is the one with the most still missing, weighted a little by how much of it was explored, so a line heard about twice does not beat one explored in eight questions.

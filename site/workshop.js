@@ -11,6 +11,7 @@ import { validSummary, notesFor, fmt } from "./inventory.js";
 import { validAssumptions, sketch, sketchMarkdown } from "./sizing.js";
 import { validWaves, planWaves, wavesMarkdown, wavesLine, RUNBOOK } from "./waves.js";
 import { calendar } from "./ics.js";
+import { validCase, buildCase, caseLine, caseMarkdown, money } from "./valuecase.js";
 
 export const ANSWERS = {
   solved: { label: "Solved", weight: 0 },
@@ -68,6 +69,7 @@ export function validWorkshop(w) {
   if (w.inventory != null && !validSummary(w.inventory)) return false;
   if (w.sizing != null && !validAssumptions(w.sizing)) return false;
   if (w.waves != null && !validWaves(w.waves)) return false;
+  if (w.case != null && !validCase(w.case)) return false;
   if (w.raised != null && !(Array.isArray(w.raised) && w.raised.length && w.raised.length <= MAX_RAISED && w.raised.every((k) => typeof k === "string" && RAISED.test(k)) && new Set(w.raised).size === w.raised.length)) return false;
   const m = /^ws\|(\d{4}-\d{2}-\d{2})\|([a-z0-9]+)$/.exec(w.id || "");
   return !!m && m[1] === w.created_on && NONCE.test(m[2]);
@@ -175,6 +177,26 @@ export function setWaves(w, settings, today) {
     next.waves = settings;
   }
   return changed(next, {}, today);
+}
+
+/** The figures of the case for change, or null to clear them. */
+export function setCase(w, figures, today) {
+  const next = { ...w };
+  delete next.case;
+  if (figures) {
+    if (!validCase(figures)) throw new Error("One of the figures is out of range.");
+    next.case = figures;
+  }
+  return changed(next, {}, today);
+}
+
+/** The figures the customer put on what is at stake, with the question each answered: for the case for change. */
+export function figuresHeard(catalog, w) {
+  return Object.entries(w.answers).filter(([, v]) => v.amount != null).map(([k, v]) => {
+    const [p, i] = k.split("#");
+    const q = catalog.lines[p] && catalog.lines[p].questions[Number(i)];
+    return { amount: v.amount, per: v.per, what: q ? q.q : "", line: catalog.lines[p] ? catalog.lines[p].label : p };
+  });
 }
 
 /** Mark an objection as raised by the customer, or not: it then has to be answered, and proven. */
@@ -430,6 +452,8 @@ export function summaryMarkdown(catalog, w, res) {
     for (const o of raised) out.push(`- **"${o.says}"** (${o.label}). Our answer: ${o.answer} To prove it: ${o.prove}`);
     out.push("");
   }
+  const cs = w.case ? buildCase(w.case) : null;
+  if (cs && cs.ok) out.push("## The case for change", "", caseMarkdown(cs).split("\n").slice(2).join("\n"), "");
   const told = res.land ? stories(catalog, w, res).find((x) => x.land) : null;
   if (told && Object.keys(told.audiences).length) {
     out.push(`## How to tell it: ${told.label.toLowerCase()}`, "");
@@ -554,6 +578,13 @@ export function readoutHtml(catalog, w, res, { preparedBy = "", today = "" } = {
     out.push(`<table><thead><tr><th>Date</th><th>Wave</th><th>Cluster</th><th>Machines</th></tr></thead><tbody>`);
     for (const wv of pw.waves) out.push(`<tr><td class="st">${esc(wv.date)}</td><td>${wv.test ? "Test wave" : `Wave ${wv.n}`}</td><td>${esc(wv.cluster)}</td><td>${wv.machines}</td></tr>`);
     out.push(`</tbody></table><div class="proof"><b>Every wave, the same steps</b><ul>${RUNBOOK.map((r) => `<li><b>${esc(r.when)}:</b> ${esc(r.steps.join("; "))}.</li>`).join("")}</ul></div>`);
+  }
+  const cs = w.case && w.case.in_readout ? buildCase(w.case) : null;
+  if (cs && cs.ok) {
+    out.push(`<h2>The case for change, in your figures</h2><p>${esc(caseLine(cs))}</p><table><thead><tr><th>Cost</th><th>Staying</th><th>Moving</th><th>Difference</th></tr></thead><tbody>`);
+    for (const r of cs.rows) out.push(`<tr><td>${esc(r.label)}</td><td>${money(r.stay)}</td><td>${money(r.move)}</td><td>${money(r.diff)}</td></tr>`);
+    out.push(`<tr><td><b>Total over ${cs.years} year${cs.years === 1 ? "" : "s"}</b></td><td><b>${money(cs.stay)}</b></td><td><b>${money(cs.move)}</b></td><td><b>${money(cs.saving)}</b></td></tr></tbody></table>`);
+    out.push(`<p class="why">Every figure came from you, and the arithmetic is shown; it is not a quote. Tell us which figure is wrong and we will redo it.</p>`);
   }
   const raised = res.raised || [];
   if (raised.length) {

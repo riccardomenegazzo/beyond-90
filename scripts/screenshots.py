@@ -128,6 +128,21 @@ def shoot(site: Path, out: Path) -> None:
             pg.evaluate("(() => { const c = document.querySelector('#view .wvtable').closest('.card'); window.scrollTo({ top: c.getBoundingClientRect().top + window.scrollY - 76, behavior: 'instant' }); })()")
             pg.wait_for_timeout(300)
             pg.screenshot(path=str(out / "app-waves.png"))
+            pg.click("#tabs [data-tab=wscase]")
+            pg.wait_for_selector("#view .vcgroups")
+            for label, value in (("What the current platform costs per year (licences, subscriptions, support)", "1200000"), ("Expected rise at the next renewal", "50"),
+                                 ("The next renewal is in", "6"), ("Hardware refresh due if you stay", "900000"), ("The refresh is due in", "18"),
+                                 ("What the new platform would cost per year", "1000000"), ("One-off cost of the move: services, migration, training", "600000"),
+                                 ("Hours a month on routine work today: patching, upgrades, provisioning", "160"), ("Hours a month on the same work after the move", "60"),
+                                 ("Cost of one hour of that work", "80"), ("Hours down per year today", "12"), ("Hours down per year expected after", "4")):
+                f = pg.locator(f"#view input[aria-label='{label}']")
+                f.fill(value)
+                f.dispatch_event("change")
+            pg.locator("#view .vcheard button").first.click()
+            pg.wait_for_selector("#view .vcchart")
+            pg.evaluate("window.scrollTo({ top: 0, behavior: 'instant' })")
+            pg.wait_for_timeout(300)
+            pg.screenshot(path=str(out / "app-case.png"))
 
             # the presales desk, filled with invented prospects at four stages
             pg.click(".rail [data-place=start]")

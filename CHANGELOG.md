@@ -2,6 +2,16 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.95.0
+
+- **The case for change.** A new view in the discovery workshop puts staying and moving side by side, month by month over one to seven years, in the customer's own figures:
+  - **Staying:** the current platform's yearly cost, the rise at the next renewal and when it comes, and a hardware refresh due if nothing changes.
+  - **Moving:** the new platform's yearly cost, the one-off cost of the move, and any hardware bought for it.
+  - **Running it:** routine hours before and after, and the cost of an hour.
+  - **Downtime:** hours down before and after, and the cost of an hour. A figure the customer gave in the workshop can be used for it in one click.
+
+  It shows the totals, the difference, the payback month, a chart, a table by cost line and the arithmetic in words. **Copy for finance** gives it as Markdown. The case appears in the meeting summary, and in the customer readout when asked. It prices nothing and quotes nothing.
+
 ## 0.94.0
 
 - **A plan in waves.** From the VM inventory read in a discovery workshop:
