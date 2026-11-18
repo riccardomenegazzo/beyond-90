@@ -17,6 +17,7 @@ import * as WV from "./waves.js";
 import * as VC from "./valuecase.js";
 import * as DL from "./delivery.js";
 import * as GPU from "./gpu.js";
+import * as DRS from "./drsketch.js";
 import { connections } from "./graph.js";
 import { headline, firstMinute, rankActions, chainText, doneSummary, funnelSegments, preview } from "./today.js";
 import { stageBars } from "./nav.js";
@@ -1635,7 +1636,7 @@ export function growView({ estate, focus, startWorkshop }) {
 const STAGE_TAG = { value: "Value", L1: "L1 connected", L2: "L2 seen", L3: "L3 switched on", L4: "L4 decided" };
 const painPct = (v) => `${Math.round(v * 100)}%`;
 
-export function workshopView({ workshop: w, catalog, list, answer, worth, rename, preparedBy, setScope, inventory, sizing, waves, gpu, today, newWorkshop, openWorkshop, removeWorkshop, presets = [], go, focus }) {
+export function workshopView({ workshop: w, catalog, list, answer, worth, rename, preparedBy, setScope, inventory, sizing, waves, gpu, dr, today, newWorkshop, openWorkshop, removeWorkshop, presets = [], go, focus }) {
   const say = h("p", { class: "note", role: "status" });
   const act = (fn) => async (...a) => { try { await fn(...a); say.textContent = ""; } catch (e) { say.textContent = e.message; } };
   let cur = w;
@@ -1729,7 +1730,8 @@ export function workshopView({ workshop: w, catalog, list, answer, worth, rename
   });
   if (focus) requestAnimationFrame(() => { const el = document.getElementById("ws-" + focus); if (el) el.scrollIntoView({ block: "start" }); });
   return h("div", {}, meeting, inventory ? inventoryCard(w, inventory) : null, w.inventory && sizing ? sizingCard(w, sizing) : null,
-    w.inventory && waves ? wavesCard(w, waves, today) : null, w.scope.includes("private-ai") && gpu ? gpuCard(w, gpu) : null, h("div", { class: "card wsprogcard" }, prog), lines);
+    w.inventory && waves ? wavesCard(w, waves, today) : null, w.scope.includes("private-ai") && gpu ? gpuCard(w, gpu) : null,
+    w.scope.includes("dr-backup") && dr ? drCard(w, dr) : null, h("div", { class: "card wsprogcard" }, prog), lines);
 }
 
 /** The customer's VM inventory: read in the page, kept as totals, shown as the numbers a sizing starts from. */
@@ -1932,6 +1934,54 @@ export function caseView({ workshop: w, catalog, setCase }) {
     { sub: "What staying costs and what moving costs, month by month, in the customer's own figures. The arithmetic is shown so anyone can check it; it is not a quote." }),
     card("The figures", h("div", {}, h("label", { class: "szf vcyears" }, h("span", { text: "Over" }), years), h("div", { class: "vcgroups" }, groups)),
     { sub: "In the customer's currency, as they gave them. Leave blank what was not discussed." }));
+}
+
+/** A first recovery design: per tier, the replication its recovery point calls for, the bandwidth, a retention. */
+function drCard(w, dr) {
+  const a = DRS.cleanDr(w.dr || {});
+  const say = h("p", { class: "note", role: "status" });
+  const out = h("div", { class: "szout" });
+  const top = [["data_tib", "Protected data (TiB, 0: from the inventory)"], ["change_pct", "Data written each day (%)"], ["peak", "Busiest hour against the day's average (x)"], ["latency_ms", "Round trip between the sites (ms)"]];
+  const inputs = {}, tierIn = [];
+  const current = () => {
+    const v = { tiers: tierIn.map((t) => Object.fromEntries(Object.entries(t).map(([k, el]) => [k, Number(el.value)]))) };
+    for (const [k] of top) v[k] = Number(inputs[k].value);
+    return DRS.cleanDr(v);
+  };
+  const draw = (settings) => {
+    const sk = DRS.drSketch(settings, w.inventory);
+    if (!sk.ok) { put(out, h("p", { class: "note", text: sk.error })); return; }
+    put(out,
+      h("div", { class: "szhead" }, h("b", { text: INV.fmt(sk.mbps) }), h("span", {}, h("strong", { text: "Mbit/s between the sites" }), h("small", { text: `to keep ${INV.fmt(sk.data)} TiB protected in three tiers, before compression` }))),
+      h("div", { class: "tablewrap" }, h("table", { class: "drtable" },
+        h("thead", {}, h("tr", {}, ["Tier", "Data", "Recovery point", "Recovery time", "Replication", "Bandwidth", "Retention to agree"].map((t) => h("th", { scope: "col", text: t })))),
+        h("tbody", {}, sk.tiers.map((t) => h("tr", {}, h("td", { text: String(t.n) }), h("td", { text: `${INV.fmt(t.tib)} TiB` }), h("td", { text: DRS.duration(t.rpo_min) }), h("td", { text: DRS.duration(t.rto_min) }),
+          h("td", {}, h("span", { text: t.mode }), t.ok ? null : h("small", { class: "neg drwhy", text: `Not at this distance: ${t.why}.` })),
+          h("td", { text: `~${INV.fmt(t.mbps)} Mbit/s` }), h("td", { text: t.retention })))))),
+      h("ol", { class: "szsteps" }, sk.steps.map((t) => h("li", { text: t }))),
+      h("div", { class: "growproof" }, h("small", { text: "Whatever the product" }), h("ul", {}, DRS.drNotes(sk).map((t) => h("li", { text: t })))));
+  };
+  const save = async () => { const v = current(); draw(v); try { await dr(v); say.textContent = ""; } catch (e) { say.textContent = e.message; } };
+  const field = (el, label) => { el.addEventListener("change", save); return h("label", { class: "szf" }, h("span", { text: label }), el); };
+  const grid = h("div", { class: "szgrid" }, top.map(([k, label]) => field(inputs[k] = h("input", { type: "number", step: "any", min: "0", value: String(a[k]), "aria-label": label }), label)));
+  const tiers = h("div", { class: "szgrid drtiers" }, a.tiers.flatMap((t, i) => {
+    const row = {
+      share_pct: h("input", { type: "number", step: "any", min: "0", value: String(t.share_pct), "aria-label": `Tier ${i + 1}: share of the data (%)` }),
+      rpo_min: h("input", { type: "number", step: "any", min: "0", value: String(t.rpo_min), "aria-label": `Tier ${i + 1}: recovery point (minutes)` }),
+      rto_min: h("input", { type: "number", step: "any", min: "0", value: String(t.rto_min), "aria-label": `Tier ${i + 1}: recovery time (minutes)` }),
+    };
+    tierIn.push(row);
+    return [field(row.share_pct, `Tier ${i + 1}: share of the data (%)`), field(row.rpo_min, `Tier ${i + 1}: recovery point (minutes)`), field(row.rto_min, `Tier ${i + 1}: recovery time (minutes)`)];
+  }));
+  draw(a);
+  return card("A first recovery design", h("div", { class: "sz" }, out, h("details", { class: "szassume" }, h("summary", { text: "The data, the distance and the tiers, to agree with the customer" }), grid, tiers,
+    h("div", { class: "btnrow" }, h("button", { class: "btn small", type: "button", text: "Back to the defaults", onclick: async () => {
+      for (const [k] of top) inputs[k].value = String(DRS.DR_DEFAULTS[k]);
+      tierIn.forEach((row, i) => { for (const k of Object.keys(row)) row[k].value = String(DRS.DR_DEFAULTS.tiers[i][k]); });
+      draw(DRS.DR_DEFAULTS);
+      try { await dr(null); } catch (e) { say.textContent = e.message; }
+    } }))), say),
+  { sub: "For each tier of applications: the replication its recovery point calls for, whether the distance allows it, the bandwidth its data needs, and a retention to agree. The replication product's own calculator has the last word." });
 }
 
 /** A first GPU sketch for serving a model: memory for the weights and the conversations, copies, servers. */

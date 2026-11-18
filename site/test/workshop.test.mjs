@@ -389,3 +389,15 @@ test("the GPU sketch is kept with the workshop, checked on import, and reaches t
   assert.throws(() => setGpu(w, { bits: 64 }, "2026-11-02"));
   assert.equal("gpu" in setGpu(w, null, "2026-11-02"), false);
 });
+
+import { setDr } from "../workshop.js";
+
+test("the recovery design is kept with the workshop, checked on import, and reaches the summary when disaster recovery is in scope", () => {
+  let w = makeWorkshop({ customer: "Acme (mock)", scope: ["dr-backup"], createdOn: "2026-11-01", nonce: "abcdef" });
+  w = setDr(w, { data_tib: 80, latency_ms: 1 }, "2026-11-02");
+  assert.equal(validWorkshop(w), true);
+  assert.match(summaryMarkdown(CAT, w, assess(CAT, w)), /### A first recovery design/);
+  assert.equal(validWorkshop({ ...w, dr: { tiers: [] } }), false);
+  assert.throws(() => setDr(w, { change_pct: -3 }, "2026-11-02"));
+  assert.equal("dr" in setDr(w, null, "2026-11-02"), false);
+});

@@ -66,6 +66,17 @@ Design notes follow the assumptions: keep the servers alike (the capacity left a
 
 It is a sketch, to agree the order of magnitude and the assumptions with the customer, not a sizing: the vendor's sizing tool, with the measured workload, has the last word. The assumptions are kept with the workshop and shown in the meeting summary.
 
+## A first recovery design
+
+With disaster recovery in scope, **A first recovery design** takes the protected data (from the inventory, or typed in), how much of it is written each day, how much busier the busiest hour is, and the round trip between the sites. For three tiers of applications, each with its share of the data, recovery point and recovery time, it gives:
+- **the replication the recovery point calls for:** synchronous with a witness in a third place for zero data loss, which needs sites closer than about 5 ms (the design says so when they are not); near-continuous for a few minutes; scheduled snapshots otherwise;
+- **the bandwidth it needs** to keep up with its busiest hour, and the total between the sites before compression;
+- **a retention to agree:** recent points close together, older ones further apart.
+
+Notes that hold whatever the product: recover dependent applications together and in order, test on an isolated network, keep a copy nobody can delete, write the power-on order when the recovery time is short. The replication product's own calculator has the last word.
+
+![A first recovery design: replication, bandwidth and retention for three tiers](img/app-recovery.png)
+
 ## A first GPU sketch
 
 With AI on the customer's own infrastructure in scope, **A first GPU sketch** works out how many GPUs serving a model takes:

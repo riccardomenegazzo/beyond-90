@@ -1050,9 +1050,9 @@ ol.deskfunnel{list-style:none;margin:0;padding:0;display:grid;grid-template-colu
 .objdl dd{margin:0}
 @media (max-width:700px){.tellit,.objdl{grid-template-columns:1fr}.tellit dd,.objdl dd{margin-bottom:6px}.objhead{flex-direction:column}}
 /* the plan in waves */
-.wvtable{width:100%;border-collapse:collapse;font-size:14px}
-.wvtable th,.wvtable td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line)}
-.wvtable th{font-size:12.5px;color:var(--ink2)}
+.wvtable,.drtable{width:100%;border-collapse:collapse;font-size:14px}
+.wvtable th,.wvtable td,.drtable th,.drtable td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line)}
+.wvtable th,.drtable th{font-size:12.5px;color:var(--ink2)}
 .wvtable td.n,.wvtable th:nth-child(n+4){text-align:right;font-variant-numeric:tabular-nums}
 .wvtable tr.wvtest td{background:var(--accent-soft);font-weight:600}
 .wvoff{display:flex;gap:8px;align-items:center;grid-column:1/-1}
@@ -1091,3 +1091,9 @@ ol.deskfunnel{list-style:none;margin:0;padding:0;display:grid;grid-template-colu
 .deskrisk{display:inline-grid;place-items:center;min-width:24px;height:24px;border-radius:999px;background:var(--sunk);font-weight:700;font-size:13px}
 .deskrisk.high{background:color-mix(in srgb,var(--bad) 14%,transparent);color:var(--bad)}
 @media (max-width:700px){.deskrisks li{grid-template-columns:1fr}}
+
+/* the first recovery design */
+.drtable td{vertical-align:top}
+.drwhy{display:block;margin-top:3px}
+.drtiers{margin-top:10px}
+.drtable td:nth-child(-n+4),.drtable td:nth-child(6){white-space:nowrap}

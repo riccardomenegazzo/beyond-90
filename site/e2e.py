@@ -822,6 +822,15 @@ def main(site: str) -> int:
             page.get_by_role("button", name="Add the waves to a calendar (.ics)").click()
         ics = Path(dl.value.path()).read_text(encoding="utf-8")
         check(ics.count("BEGIN:VEVENT") == page.locator("#view .wvtable tbody tr").count() and "Test wave" in ics, "and goes to a calendar, one event per wave")
+        dr = page.locator("#view .drtable tbody tr")
+        check(dr.count() == 3 and "Synchronous replication" in dr.first.inner_text() and "Mbit/s between the sites" in page.inner_text("#view"),
+              "with disaster recovery in scope, a first recovery design: replication by tier and the bandwidth it needs, from the inventory")
+        page.locator("#view .drtable").locator("xpath=ancestor::div[@class='sz'][1]").locator("details.szassume summary").click()
+        far = page.locator("#view input[aria-label='Round trip between the sites (ms)']")
+        far.fill("20")
+        far.dispatch_event("change")
+        page.wait_for_timeout(300)
+        check("Not at this distance" in page.inner_text("#view .drtable"), "and says when the distance rules out zero data loss")
         page.click("[data-tab=readout]")
         check("How the move would run" in page.frame_locator("#report").locator("body").inner_text(), "the customer readout shows how the move would run")
         # the case for change, in the customer's figures

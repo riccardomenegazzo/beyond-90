@@ -2,6 +2,15 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.100.0
+
+- **A first recovery design** for disaster recovery. It works from the protected data (from the inventory, or typed in), the daily change, the busiest hour and the distance between the sites. For three tiers of applications, each with its recovery point and recovery time, it gives:
+  - the replication the tier calls for, saying when the distance rules out zero data loss;
+  - the bandwidth needed to keep up with the busiest hour;
+  - a retention to agree.
+
+  Each step is written out, with notes that hold whatever the product. The design appears in the meeting summary and the handover to delivery.
+
 ## 0.99.0
 
 - **A first GPU sketch** for AI on the customer's own infrastructure. It covers:

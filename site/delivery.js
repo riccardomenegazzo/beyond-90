@@ -9,6 +9,7 @@ import { sketch } from "./sizing.js";
 import { planWaves, wavesLine } from "./waves.js";
 import { buildCase, caseLine } from "./valuecase.js";
 import { gpuSketch } from "./gpu.js";
+import { drSketch } from "./drsketch.js";
 
 const clean = (t) => String(t == null ? "" : t).replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim();
 const cell = (t) => clean(t).replace(/\|/g, "/");
@@ -93,6 +94,8 @@ export function handoverMarkdown(catalog, w, pov, today) {
   const cs = w.case ? buildCase(w.case) : null;
   if (cs && cs.ok) facts.push(`Case for change: ${caseLine(cs)}`);
   const gs = w.gpu && w.scope.includes("private-ai") ? gpuSketch(w.gpu) : null;
+  const ds = w.dr && w.scope.includes("dr-backup") ? drSketch(w.dr, w.inventory) : null;
+  if (ds && ds.ok) facts.push(`Recovery design: ${ds.tiers.map((t) => `tier ${t.n} ${t.mode.toLowerCase()}`).join("; ")}; about ${Math.round(ds.mbps)} Mbit/s between the sites before compression.`);
   if (gs && gs.ok) facts.push(`GPU sketch: ${gs.gpus} GPUs in ${gs.servers} server${gs.servers === 1 ? "" : "s"}, ${gs.copies} copies of the model, decided by ${gs.decided}; to confirm with a benchmark on the customer's own prompts.`);
   if (facts.length) L.push("## The numbers it rests on", "", ...facts.map((x) => `- ${x}`), "");
   // who

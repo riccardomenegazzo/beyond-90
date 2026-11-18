@@ -933,6 +933,7 @@ function workshopContext() {
     waves: async (settings) => edit((x) => WSHOP.setWaves(x, settings, today)),
     setCase: async (figures) => edit((x) => WSHOP.setCase(x, figures, today)),
     gpu: async (assumptions) => edit((x) => WSHOP.setGpu(x, assumptions, today)),
+    dr: async (settings) => edit((x) => WSHOP.setDr(x, settings, today)),
     commitments: state.commitments,
     // the promises of the handover become the customer's commitments, kept with the rest after the sale; none twice
     keepPromises: async (list) => {
