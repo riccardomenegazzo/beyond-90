@@ -27,6 +27,7 @@ export function snapshotFrom(opps, facts, by, today) {
         next: clean(o.next, 300), risks: (o.risks || []).slice(0, 20).map((r) => ({ level: r.level, text: clean(r.text, 300) })),
         pov: f.pov ? { stage: f.pov.stage, start: f.pov.start, end: f.pov.end, verdict: clean(f.pov.verdict, 40), met: f.pov.met, total: f.pov.total, not_met: f.pov.not_met.slice(0, 20) } : null,
         outcome: f.outcome || null, raised: (f.raised || []).slice(0, 40), gaps: (f.gaps || []).slice(0, 200),
+        ...(o.evidence ? { evidence: o.evidence.score } : {}),
       };
     }),
   };
@@ -38,7 +39,8 @@ const only = (o, keys) => !!o && typeof o === "object" && !Array.isArray(o) && O
 const intIn = (v, lo, hi) => Number.isInteger(v) && v >= lo && v <= hi;
 
 function validDeal(d) {
-  if (!only(d, ["customer", "stage", "closed", "example", "started_on", "updated_on", "lines", "land", "next", "risks", "pov", "outcome", "raised", "gaps"])) return false;
+  if (!only(d, ["customer", "stage", "closed", "example", "started_on", "updated_on", "lines", "land", "next", "risks", "pov", "outcome", "raised", "gaps", "evidence"])) return false;
+  if (d.evidence !== undefined && !intIn(d.evidence, 0, 100)) return false;     // optional: snapshots from before it stay readable
   if (!isStr(d.customer, 200, 1) || !STAGE_IDS.includes(d.stage) || !["", "won", "lost", "none", "stopped"].includes(d.closed) || typeof d.example !== "boolean") return false;
   if (!isDay(d.started_on) || !isDay(d.updated_on) || !isStr(d.land, 100) || !isStr(d.next, 300)) return false;
   if (!Array.isArray(d.lines) || d.lines.length > 20 || !d.lines.every((x) => isStr(x, 100, 1))) return false;
@@ -75,6 +77,12 @@ export function readSnapshots(files) {
 }
 
 const who = (s, i) => s.by || `Engineer ${i + 1}`;
+const median = (xs) => {
+  const v = xs.filter((x) => Number.isInteger(x)).sort((a, b) => a - b);
+  if (!v.length) return null;
+  const m = Math.floor(v.length / 2);
+  return v.length % 2 ? v[m] : Math.round((v[m - 1] + v[m]) / 2);
+};
 
 /** The team read together: each engineer's pipeline, the deals that could be lost, and what the deals teach. */
 export function teamView(snapshots, { includeExamples = false } = {}) {
@@ -86,6 +94,7 @@ export function teamView(snapshots, { includeExamples = false } = {}) {
       stages: Object.fromEntries(STAGE_IDS.map((id) => [id, live.filter((d) => d.stage === id).length])),
       won: deals.filter((d) => d.closed === "won").length, lost: deals.filter((d) => d.closed === "lost" || d.closed === "none").length,
       at_risk: live.filter((d) => d.risks.some((r) => r.level === "high")).length,
+      evidence: median(live.map((d) => d.evidence)),
     };
   });
   const all = snapshots.flatMap((s, i) => s.deals.filter((d) => includeExamples || !d.example).map((d) => ({ ...d, engineer: who(s, i) })));
@@ -100,8 +109,8 @@ export function teamView(snapshots, { includeExamples = false } = {}) {
 /** The team review in Markdown: for the weekly pipeline review with the presales leadership. */
 export function teamMarkdown(t, today) {
   const out = [`# Presales team review, ${today}`, "", `${t.engineers.length} engineer${t.engineers.length === 1 ? "" : "s"}, ${t.deals} deal${t.deals === 1 ? "" : "s"}; snapshots from ${t.oldest} onwards.`, "",
-    "| Engineer | Open | Discovery | Journey | Proof | Decision | Won | Lost or no decision | At risk |", "|---|---|---|---|---|---|---|---|---|"];
-  for (const e of t.engineers) out.push(`| ${e.name.replace(/\|/g, "/")} | ${e.live} | ${e.stages.discovery} | ${e.stages.journey} | ${e.stages.proof} | ${e.stages.decision} | ${e.won} | ${e.lost} | ${e.at_risk} |`);
+    "| Engineer | Open | Discovery | Journey | Proof | Decision | Won | Lost or no decision | At risk | Evidence (median) |", "|---|---|---|---|---|---|---|---|---|---|"];
+  for (const e of t.engineers) out.push(`| ${e.name.replace(/\|/g, "/")} | ${e.live} | ${e.stages.discovery} | ${e.stages.journey} | ${e.stages.proof} | ${e.stages.decision} | ${e.won} | ${e.lost} | ${e.at_risk} | ${e.evidence == null ? "—" : `${e.evidence}/100`} |`);
   out.push("");
   if (t.risky.length) out.push("## What could lose a deal", "", ...t.risky.map((r) => `- **${r.customer}**, ${r.engineer}: ${r.risk}${r.more ? ` (and ${r.more} more)` : ""}`), "");
   const l = t.lessons;

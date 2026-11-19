@@ -1118,3 +1118,8 @@ ol.deskfunnel{list-style:none;margin:0;padding:0;display:grid;grid-template-colu
 .teamtable thead th:nth-child(n+2):not(:last-child){text-align:right}
 .teambody{display:grid;gap:12px;margin-top:10px}
 .deskme{max-width:260px}
+
+/* evidence of a technical win, per deal */
+.deskev{display:inline-flex;align-items:center;gap:8px;justify-content:flex-end}
+.deskevbar{display:inline-block;width:56px;height:6px;border-radius:99px;background:linear-gradient(90deg,var(--accent) var(--ev),var(--sunk) var(--ev))}
+.deskev b{min-width:2ch;text-align:right;font-variant-numeric:tabular-nums}

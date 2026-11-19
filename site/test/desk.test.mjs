@@ -123,3 +123,21 @@ test("what could stop a deal is read from what is recorded, the risks that can l
   assert.deepEqual(calm, []);
   assert.match(risksOf({ w: { answers: {}, updated_on: "2026-10-01" }, p: null, res: { raised: [], unknowns: [] }, pr: null, stage: "discovery", overdue: 0, today }).map((x) => x.text).join(), /Not touched for 50 days/);
 });
+
+import { evidenceOf } from "../desk.js";
+
+test("the evidence of a technical win is a checklist out of 100, with what would raise it", () => {
+  const none = evidenceOf({ w: null, p: null, res: null, plan: [], pr: null, overdue: 0 });
+  assert.equal(none.score, 0);
+  assert.equal(none.missing.length, 9);
+  const w = { answers: { "x#0": { a: "gap", note: "", amount: 5, per: "day" } }, case: { stay_run: 100, move_run: 80 } };
+  const res = { land: { label: "X" }, raised: [{ prove: "Prove A" }] };
+  const p = { sponsor: "Dana", criteria: [{ text: "Prove A", status: "met" }, { text: "B", status: "met" }, { text: "C", status: "open" }, { text: "D", status: "open" }] };
+  const pr = { total: 4, met: 2 };
+  const e = evidenceOf({ w, p, res, plan: [{ by: "2026-12-01" }], pr, overdue: 0 });
+  assert.equal(e.score, 88, "half the criteria met counts half of 25: 87.5, rounded");
+  assert.deepEqual(e.missing, ["Success criteria met: 2 of 4"]);
+  const late = evidenceOf({ w, p, res, plan: [{ by: "2026-10-01" }], pr, overdue: 1 });
+  assert.ok(late.missing.includes("No agreed condition is late"));
+  assert.equal(late.score, e.score - 10);
+});

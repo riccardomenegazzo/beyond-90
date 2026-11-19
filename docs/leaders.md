@@ -25,11 +25,11 @@ Each says what decided the result and what to check before relying on it. None i
 
 ## What a leader sees
 
-**Each engineer's desk.** Every prospect at its stage, what is due and what is late, and what could stop each deal, read from what is recorded: conditions gone late, a proof without a sponsor or ending with tests not tried, concerns left out of the proof, no figures for finance. A Monday note for the account team, and the pipeline as a sheet.
+**Each engineer's desk.** Every prospect at its stage, what is due and what is late, how much evidence of a technical win each deal holds (a checklist out of 100, with what would raise it), and what could stop each deal, read from what is recorded: conditions gone late, a proof without a sponsor or ending with tests not tried, concerns left out of the proof, no figures for finance. A Monday note for the account team, and the pipeline as a sheet.
 
 ![The presales desk: stages, agenda, and what could stop a deal](img/app-desk.png)
 
-**The team, read together.** Each engineer downloads a snapshot of their desk: stages, risks, outcomes, what customers pushed back on, the gaps heard. It carries no notes, no figures and no names of people, and prospect names can be swapped for aliases. The leader reads the snapshots together: each engineer's pipeline, the deals that could be lost across the team, and a team review in Markdown for the weekly meeting. The files are checked field by field, read for that visit only, and never stored.
+**The team, read together.** Each engineer downloads a snapshot of their desk: stages, risks, outcomes, what customers pushed back on, the gaps heard. It carries no notes, no figures and no names of people, and prospect names can be swapped for aliases. The leader reads the snapshots together: each engineer's pipeline and the median evidence of their open deals, the deals that could be lost across the team, and a team review in Markdown for the weekly meeting. The files are checked field by field, read for that visit only, and never stored.
 
 ![Your team: each engineer's pipeline, the deals at risk, and what the team's deals teach](img/app-team.png)
 

@@ -2,6 +2,17 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.106.0
+
+- **Evidence of a technical win, per deal.** A checklist out of 100, read from what is recorded; it is not a probability. It counts:
+  - the line to start with, and what is at stake in the customer's words;
+  - conditions with owners and dates, none late;
+  - a sponsor for the proof, three or more criteria agreed, and the share met;
+  - every concern the customer raised being in the proof;
+  - a case for change for finance.
+
+  The desk shows it per opportunity with what would raise it, and the Monday note and the CSV carry it. Desk snapshots carry it too: the team view shows each engineer's median, and snapshots from before it are still read.
+
 ## 0.105.0
 
 - **The presales desk at work, in one link:** `?start=presales` opens the desk at once, without waiting for the engine. On a first visit it is filled with the invented prospects; a browser that already holds real work only opens the desk, adding nothing. The installed app gets a "Presales desk" shortcut. The README and the page for presales leaders start from it.

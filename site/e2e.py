@@ -954,6 +954,9 @@ def main(site: str) -> int:
         counts = [int(t) for t in page.locator("#desk-body .deskfunnel li b").all_inner_texts()]
         check(all(c >= 1 for c in counts) and page.locator("#desk-body .deskagenda li.late").count() >= 1, "invented examples fill every stage, with something late on the agenda")
         check(page.locator("#desk-body .deskstage.s-won").count() == 1 and page.locator("#desk-body .deskstage.s-lost").count() == 1, "decided deals show as won or lost, off the live pipeline")
+        ev = page.locator("#desk-body .deskev")
+        check(ev.count() >= 4 and "What would raise it" in (ev.first.get_attribute("title") or "") and int(ev.first.locator("b").inner_text()) <= 100,
+              "each open deal shows how much evidence of a technical win it holds, and what would raise it")
         lessons_card = page.locator("#desk-body .card").filter(has_text="What the deals teach")
         check(lessons_card.count() == 1 and "What customers push back on" in lessons_card.inner_text() and "Ransomware would encrypt the backups too" in lessons_card.inner_text(),
               "what the deals teach: what customers push back on, read from every prospect")

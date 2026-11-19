@@ -25,6 +25,36 @@ const days = (a, b) => Math.round((Date.parse(b + "T00:00:00Z") - Date.parse(a +
  * What could stop this deal, read from what is already recorded; each says what to do. "high" first: it can lose the deal
  * on its own. Nothing is guessed: no figure, no sponsor or no date counts only where the stage needs one.
  */
+/**
+ * How much evidence of a technical win the deal holds, out of 100: a checklist read from what is recorded, not a
+ * probability. Each item says what it is worth; what is missing says what would raise it.
+ */
+export function evidenceOf({ w, p, res, plan, pr, overdue }) {
+  const raised = res ? res.raised || [] : [];
+  const inProof = new Set(p ? p.criteria.filter((c) => c.status !== "dropped").map((c) => String(c.text).trim().toLowerCase()) : []);
+  const counted = pr ? pr.total : 0;
+  const items = [
+    [10, "The line to start with is known", !!(res && res.land)],
+    [10, "What is at stake is in the customer's words", !!(w && Object.values(w.answers).some((a) => a.amount != null))],
+    [10, "The conditions have owners and dates", plan.length > 0],
+    [10, "No agreed condition is late", plan.length > 0 && !overdue],
+    [10, "A sponsor is named for the proof of value", !!(p && String(p.sponsor || "").trim())],
+    [5, "At least three success criteria are agreed", counted >= 3],
+    [25, "Success criteria met", pr && counted ? pr.met / counted : 0],
+    [10, "Every concern the customer raised is in the proof of value", !!(p && raised.length && raised.every((o) => inProof.has(String(o.prove).trim().toLowerCase())))],
+    [10, "Finance has a case for change", !!(w && w.case && hasCase(w.case))],
+  ];
+  let score = 0;
+  const have = [], missing = [];
+  for (const [worth, label, got] of items) {
+    const part = typeof got === "number" ? got : got ? 1 : 0;
+    score += worth * part;
+    if (part >= 1) have.push(label);
+    else missing.push(typeof got === "number" && counted ? `${label}: ${pr.met} of ${counted}` : label);
+  }
+  return { score: Math.round(score), have, missing };
+}
+
 export function risksOf({ w, p, res, pr, stage, overdue, today }) {
   const out = [];
   const add = (level, text) => out.push({ level, text });
@@ -98,6 +128,7 @@ export function pipeline(workshops, povs, catalog, today) {
       pov_end: p ? p.end || "" : "", pov_days_left: p && p.end ? days(today, p.end) : null,
       overdue: overdue.length, next, example: isExampleId(w && w.id) || isExampleId(p && p.id),
       risks: stopped ? [] : risksOf({ w, p, res, pr, stage, overdue: overdue.length, today }),
+      evidence: evidenceOf({ w, p, res, plan, pr, overdue: overdue.length }),
     });
   }
   // furthest along first, then the most recently touched
@@ -157,7 +188,8 @@ export function weeklyMarkdown(opps, items, today) {
     out.push(`## ${s.label}`, "");
     for (const o of list) {
       const bits = [o.land ? `start with ${o.land.toLowerCase()}` : "", o.stakes.length ? `at stake ${o.stakes.join(", ")}` : "",
-        o.pov_total ? `proof ${o.pov_met} of ${o.pov_total} criteria met` : "", o.unknowns ? `${o.unknowns} question${o.unknowns === 1 ? "" : "s"} nobody could answer` : ""].filter(Boolean);
+        o.pov_total ? `proof ${o.pov_met} of ${o.pov_total} criteria met` : "", o.unknowns ? `${o.unknowns} question${o.unknowns === 1 ? "" : "s"} nobody could answer` : "",
+        o.evidence ? `evidence of a technical win ${o.evidence.score}/100` : ""].filter(Boolean);
       out.push(`- **${o.customer}**${bits.length ? `: ${bits.join("; ")}` : ""}. Next: ${o.next || "nothing planned"}.`);
     }
     out.push("");
@@ -174,8 +206,8 @@ const csvCell = (v) => { const t = String(v == null ? "" : v); const safe = /^[=
 
 /** The pipeline as a sheet, for a CRM import or a forecast call. Cells that a spreadsheet would run as formulas are defused. */
 export function pipelineCsv(opps) {
-  const head = ["customer", "stage", "start_with", "answered", "questions", "at_stake", "unknowns", "conditions_to_make_true", "already_true", "proof_met", "proof_criteria", "proof_ends", "next", "risks", "updated_on"];
-  const rows = opps.map((o) => [o.customer, o.outcome ? OUTCOME_WORDS[o.outcome].toLowerCase() : o.stopped ? "stopped" : o.stage, o.land, o.answered, o.total, o.stakes.join("; "), o.unknowns, o.need, o.done, o.pov_met, o.pov_total, o.pov_end, o.next, (o.risks || []).map((r) => r.text).join(" "), o.updated_on]);
+  const head = ["customer", "stage", "start_with", "answered", "questions", "at_stake", "unknowns", "conditions_to_make_true", "already_true", "proof_met", "proof_criteria", "proof_ends", "next", "risks", "evidence", "updated_on"];
+  const rows = opps.map((o) => [o.customer, o.outcome ? OUTCOME_WORDS[o.outcome].toLowerCase() : o.stopped ? "stopped" : o.stage, o.land, o.answered, o.total, o.stakes.join("; "), o.unknowns, o.need, o.done, o.pov_met, o.pov_total, o.pov_end, o.next, (o.risks || []).map((r) => r.text).join(" "), o.evidence ? o.evidence.score : "", o.updated_on]);
   return [head, ...rows].map((r) => r.map(csvCell).join(",")).join("\r\n") + "\r\n";
 }
 

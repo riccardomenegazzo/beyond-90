@@ -7,6 +7,16 @@ A pre-sales engineer carries many prospects at once, each at a different point: 
 ## The desk
 
 - **Where each prospect stands.** Every discovery workshop and every proof of value kept in this browser becomes an opportunity, placed at its stage: discovery (still listening), journey agreed (we know where to start and what would need to be true), proof of value (planned or running), decision (the result is with the customer). Stopped ones are set apart.
+- **Evidence of a technical win, per deal.** A checklist out of 100, read from what is recorded. It is not a probability:
+  - the line to start with (10);
+  - what is at stake in the customer's words (10);
+  - conditions with owners and dates (10), none of them late (10);
+  - a sponsor for the proof of value (10);
+  - at least three criteria agreed (5), and the share of criteria met (25);
+  - every concern the customer raised is in the proof (10);
+  - a case for change for finance (10).
+
+  The opportunities table shows it as a bar and a number, and its tooltip says what would raise it. The Monday note and the CSV carry it, and the team view shows each engineer's median.
 - **What could stop a deal.** Read from what is already recorded, the risks that can lose a deal on their own first:
   - conditions agreed and now late;
   - a proof of value with no sponsor to sign it;

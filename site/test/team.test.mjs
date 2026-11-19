@@ -22,6 +22,10 @@ test("a desk snapshot carries stages, risks, outcomes and lessons, and nothing p
     assert.ok(!json.includes(leak), `kept out: ${leak}`);
   }
   assert.ok(s.deals.some((d) => d.closed === "won") && s.deals.some((d) => d.risks.length));
+  assert.ok(s.deals.every((d) => Number.isInteger(d.evidence)));
+  const older = { ...s, deals: s.deals.map(({ evidence, ...d }) => d) };
+  assert.equal(validSnapshot(older), true, "a snapshot from before the evidence is still read");
+  assert.equal(validSnapshot({ ...s, deals: [{ ...s.deals[0], evidence: 101 }] }), false);
 });
 
 test("the manager reads the team together: pipelines, deals that could be lost, and what the deals teach", () => {
@@ -35,7 +39,8 @@ test("the manager reads the team together: pipelines, deals that could be lost, 
   assert.ok(t.risky.length >= 2 && t.risky.every((r) => r.engineer && r.risk));
   const md = teamMarkdown(t, D);
   assert.match(md, /^# Presales team review, 2026-11-19/);
-  assert.match(md, /\| Giulia R\. \| \d+ \| \d+ \| \d+ \| \d+ \| \d+ \| 1 \| 1 \| \d+ \|/);
+  assert.match(md, /\| Giulia R\. \| \d+ \| \d+ \| \d+ \| \d+ \| \d+ \| 1 \| 1 \| \d+ \| \d+\/100 \|/);
+  assert.ok(Number.isInteger(t.engineers[0].evidence));
   assert.match(md, /## What customers push back on, across the team/);
   assert.equal(teamView([snap("A")]).deals, 0, "invented examples are left out unless asked");
 });
