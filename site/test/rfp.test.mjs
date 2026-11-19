@@ -5,7 +5,7 @@ import { parseRequirements, suggestLine, lineOrder, rfpState, clarificationQuest
   sheetsToText, csvToText, matchedWords, questionFor, tenderAsks, suggestAnswer, pastAnswer, evidenceFor, nextSteps, filterCounts, keepReq, matchesSearch, FILTERS,
   blanks, sectionOf, sections, mentionsOfOthers, responseChecks, responseMarkdown, responseHtml, tendersOverview, ownerBrief } from "../rfp.js";
 import { nextMeeting, agendaText } from "../nextmeeting.js";
-import { makeWorkshop, addRequirements, setRequirement, removeRequirement, setRfpMeta, clearRfp, validWorkshop, summaryMarkdown, assess, fillSuggestedNotes, setSectionTitle } from "../workshop.js";
+import { makeWorkshop, addRequirements, setRequirement, removeRequirement, setRfpMeta, clearRfp, validWorkshop, summaryMarkdown, assess, fillSuggestedNotes, setSectionTitle, setAward } from "../workshop.js";
 import { pipeline, agenda, exampleDesk } from "../desk.js";
 import { forward } from "../forward.js";
 import { handoverMarkdown } from "../delivery.js";
@@ -406,5 +406,34 @@ test("the invented desk has a public tender, half answered, at risk, on the desk
   assert.ok(pipeline(ex.workshops, ex.povs, CAT, D).find((o) => o.customer === "Valle Health (mock)").risks.some((r) => /mandatory requirement of the tender is not met/.test(r.text)));
   assert.ok(agenda(ex.workshops, ex.povs, CAT, D).some((i) => i.kind === "tender" && i.customer === "Valle Health (mock)"));
   assert.match(ownerBrief(CAT, valle, "specialist", D), /For a specialist: 1 requirement/);
+});
+
+test("price and quality, kept with the tender: a rival ahead is a next step, in the bid summary and on the desk", () => {
+  let w = addRequirements(ws(), parseRequirements(EXAMPLE_TENDER), CAT, D);
+  w = setRfpMeta(w, { title: "Lot 1 (mock)", due: "2026-12-10" }, D);
+  for (const id of ["r1", "r2", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15", "r16"]) w = setRequirement(w, id, { a: "yes", note: "Included" }, D);
+  w = setAward(w, { quality: 70, price: 30, formula: "inverse", ours: { price: 1000000 }, rivals: [{ name: "Rival A (mock)", quality: 69, price: 700000 }] }, D);
+  assert.equal(validWorkshop(w), true);
+  assert.equal(w.rfp.award.ours.quality, null, "our quality is read from the requirements, not stored");
+  const st = rfpState(CAT, w, D);
+  assert.deepEqual([st.award.ready, st.award.quality, st.award.quality_from, st.award.rank], [true, 70, "requirements", 2]);
+  const step = nextSteps(CAT, w, D).find((x) => x.id === "award");
+  assert.match(step.text, /^On price and quality: Rival A \(mock\) comes first; we come second, 8 points behind\. We would come first below [\d,]+ /);
+  assert.equal(step.act, "award");
+  assert.match(rfpMarkdown(CAT, w, D), /## Price and quality\n[\s\S]*\| Rival A \(mock\) \| 69 \| 700,000 \| 30 \| 99 \|/);
+  assert.deepEqual(tendersOverview([w], CAT, D)[0].award, { rank: 2, of: 2, margin: -8 });
+  // ahead on both: no step; taken away, the tender stays
+  const ahead = setAward(w, { ...w.rfp.award, rivals: [{ name: "Rival A (mock)", quality: 50, price: 1100000 }] }, D);
+  assert.equal(nextSteps(CAT, ahead, D).some((x) => x.id === "award"), false);
+  const none = setAward(w, null, D);
+  assert.equal(none.rfp.award, undefined);
+  assert.equal(none.rfp.reqs.length, 16);
+  // a comparison alone keeps a tender, until it is taken away
+  const only = setAward(ws(), { ours: { price: 5 } }, D);
+  assert.ok(only.rfp && only.rfp.award);
+  assert.equal(setAward(only, null, D).rfp, undefined);
+  assert.equal(setRfpMeta(only, { title: "" }, D).rfp.award.ours.price, 5, "clearing the details keeps the comparison");
+  // a forged comparison is refused with the whole tender
+  assert.equal(validRfp({ ...w.rfp, award: { ...w.rfp.award, formula: "secret" } }), false);
 });
 

@@ -174,6 +174,20 @@ def shoot(site: Path, out: Path) -> None:
             pg.evaluate("(() => { const c = [...document.querySelectorAll('#view .card')].find((x) => x.textContent.includes('Deliver the bid')); window.scrollTo({ top: c.getBoundingClientRect().top + window.scrollY - 76, behavior: 'instant' }); })()")
             pg.wait_for_timeout(300)
             pg.screenshot(path=str(out / "app-rfp-deliver.png"))
+            # what wins it: our bid against two guessed rivals, price scored on the discount
+            pg.get_by_label("How price is scored").select_option("linear")
+            for label, value in (("Base amount", "1200000"), ("Our quality points", "54"), ("Our price", "980000")):
+                pg.get_by_label(label, exact=True).fill(value)
+                pg.get_by_label(label, exact=True).press("Tab")
+            for i, (name, quality, price) in enumerate((("Rival A (mock)", "60", "1050000"), ("Rival B (mock)", "47", "890000")), start=1):
+                pg.get_by_role("button", name="Add a rival").first.click()
+                for label, value in (("Name", name), ("Quality points", quality), ("Price", price)):
+                    pg.get_by_label(f"{label}, rival {i}", exact=True).fill(value)
+                    pg.get_by_label(f"{label}, rival {i}", exact=True).press("Tab")
+            pg.wait_for_selector("#rfpaward .awardbars li:nth-child(3)")
+            pg.evaluate("(() => { const c = document.getElementById('rfpaward'); window.scrollTo({ top: c.getBoundingClientRect().top + window.scrollY - 76, behavior: 'instant' }); })()")
+            pg.wait_for_timeout(300)
+            pg.screenshot(path=str(out / "app-rfp-award.png"))
             # the way forward: the phase now, what moves it on, and the demo planned from what was said
             pg.click("#tabs [data-tab=wsforward]")
             pg.wait_for_selector("#view .fwhero")

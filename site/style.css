@@ -1298,3 +1298,33 @@ ol.deskfunnel{list-style:none;margin:0;padding:0;display:grid;grid-template-colu
 .rfpverdictpill.risk{background:var(--bad)}.rfpverdictpill.clarify{background:var(--warn)}.rfpverdictpill.go{background:var(--pos)}.rfpverdictpill.empty{background:var(--ink2)}
 @media (max-width:900px){.desktenders li{grid-template-columns:1fr auto}.dtbar{grid-column:1/-1}}
 
+/* what wins it: quality and price, ours against the rivals' guessed bids */
+.awardgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:28px;align-items:start}
+@media (max-width:1100px){.awardgrid{grid-template-columns:1fr}}
+.awardin h3{font-size:15px;margin:16px 0 6px}.awardin h3:first-child{margin-top:4px}
+.awardin .szgrid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+.awardhint{margin:6px 0 4px}
+.awardcheck{display:flex;flex-direction:row;gap:8px;cursor:pointer;align-items:center;font-size:14px;color:var(--ink2);margin:6px 0 4px}
+.awardcheck input{width:18px;height:18px;flex:none;margin:0;accent-color:var(--accent-btn)}
+.awardin .awardformula{grid-column:1/-1}.awardin select{width:100%;max-width:100%}
+.awardhead small{color:var(--muted);font-size:12.5px}
+.awardnum{width:100%}
+.awardrivals{display:grid;gap:8px}
+.awardrival{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,.8fr) minmax(0,1fr) auto;gap:8px;align-items:center}
+.awardrivals>.btn{justify-self:start}
+.awardout{background:var(--sunk);border-radius:var(--r);padding:16px 18px}
+.awardlead{font-size:17px;font-weight:700;margin:0 0 12px;padding-left:10px;border-left:4px solid var(--ink2)}
+.awardlead.first{border-left-color:var(--pos)}.awardlead.behind{border-left-color:var(--bad)}
+.awardbars{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.awardbars li{display:grid;grid-template-columns:minmax(70px,9em) minmax(0,1fr) 3.4em;grid-template-areas:"who track total" ". price .";gap:2px 10px;align-items:center}
+.awardbars li.us .awardwho{font-weight:700}
+.awardwho{grid-area:who;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.awardtrack{grid-area:track;display:flex;height:14px;border-radius:999px;background:var(--grid);overflow:hidden}
+.awardtrack i{display:block;height:100%}
+.awardtrack .aq,.dot.aq{background:var(--s1)}.awardtrack .ap,.dot.ap{background:var(--s2)}
+.awardbars li.us .awardtrack{box-shadow:0 0 0 2px var(--ink)}
+.awardtotal{grid-area:total;text-align:right;font-variant-numeric:tabular-nums}
+.awardprice{grid-area:price;color:var(--muted);font-size:13px}
+.awardturn{font-weight:600;margin:12px 0 4px}
+.awardwarn{color:var(--warn);font-weight:600;margin:6px 0}
+@media (max-width:600px){.awardrival{grid-template-columns:1fr 1fr}.awardrival .awardname{grid-column:1/-1}}

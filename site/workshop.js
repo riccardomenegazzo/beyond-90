@@ -17,6 +17,7 @@ import { validDr, drSketch, drMarkdown } from "./drsketch.js";
 import { validObj, objSketch, objMarkdown } from "./objsketch.js";
 import { validEdge, edgeSketch, edgeMarkdown } from "./edgesketch.js";
 import { validUnit, unitSketch, unitMarkdown } from "./unitcost.js";
+import { cleanAward } from "./award.js";
 import { validRfp, withRequirements, withRequirement, lineOrder, emptyRfp, rfpState, suggestAnswer, TITLE_MAX, MAX_PAGES, SECTION_MAX } from "./rfp.js";
 import { validDeal, withDealAnswer, dealMarkdown } from "./qualify.js";
 import { ROLE_WORDS, displayOrder, inMeeting } from "./questions.js";
@@ -271,7 +272,17 @@ export function setRfpMeta(w, { title = "", due = "", questions_due: q = "", iss
     rfp.pages = n;
   }
   const next = { ...w, rfp };
-  if (!rfp.reqs.length && !t && !rfp.due && !rfp.questions_due && !issuer) delete next.rfp;
+  if (!rfp.reqs.length && !t && !rfp.due && !rfp.questions_due && !issuer && !rfp.award) delete next.rfp;
+  return changed(next, {}, today);
+}
+
+/** How the tender is awarded on price and quality, with our offer and the rivals' guessed ones; null takes it away. */
+export function setAward(w, given, today) {
+  const rfp = { ...(w.rfp || emptyRfp()) };
+  if (given == null) delete rfp.award;
+  else rfp.award = cleanAward(given);
+  const next = { ...w, rfp };
+  if (!rfp.reqs.length && !rfp.title && !rfp.due && !rfp.questions_due && !rfp.issuer && !rfp.award) delete next.rfp;
   return changed(next, {}, today);
 }
 

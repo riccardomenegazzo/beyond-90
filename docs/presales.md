@@ -53,6 +53,7 @@ A pre-sales engineer carries many prospects at once, each at a different point: 
   - whether the bid can go ahead (a mandatory requirement not met puts it at risk);
   - who issues it;
   - a bar of the answers, and how many are answered;
+  - where we stand on price and quality, once a comparison is filled in ("second of 3 on price and quality");
   - the next deadline, questions or bid, with the days left;
   - **Open the tender**, which opens it where the bid stands. See [tender requirements](workshop.md#tender-requirements).
 

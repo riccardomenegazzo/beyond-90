@@ -8,6 +8,7 @@
  */
 import { csvCell } from "./ui.js";
 import { parseCsv } from "./inventory.js";
+import { validAward, standings, awardSay, awardMarkdown } from "./award.js";
 
 export const ANSWERS = { yes: "Met", partly: "Partly", no: "Not met", check: "To check" };
 /** Who issued it: a public body takes questions only through the formal channel; a company can be asked in a meeting. */
@@ -389,7 +390,8 @@ export function tendersOverview(workshops, catalog, today) {
     const next = dl.questions_in != null && dl.questions_in >= 0 ? { what: "Questions due", on: dl.questions_due, in: dl.questions_in }
       : dl.due_in != null ? { what: dl.due_in < 0 ? "Bid was due" : "Bid due", on: dl.due, in: dl.due_in } : null;
     out.push({ workshop: w.id, customer: w.customer, title: st.title, issuer: (w.rfp.issuer && ISSUERS[w.rfp.issuer]) || "", total: st.total, answered: st.total - st.open,
-      must: st.must, must_no: st.must_no.length, yes: st.yes, partly: st.partly, no: st.no, check: st.check, verdict: st.verdict, next, ready: responseChecks(catalog, w).ready });
+      must: st.must, must_no: st.must_no.length, yes: st.yes, partly: st.partly, no: st.no, check: st.check, verdict: st.verdict, next, ready: responseChecks(catalog, w).ready,
+      award: st.award && st.award.ready ? { rank: st.award.rank, of: st.award.bids.length, margin: st.award.margin } : null });
   }
   const key = (t) => (t.next ? (t.next.in < 0 ? 100000 + t.next.in : t.next.in) : 1e9);
   return out.sort((a, b) => key(a) - key(b) || a.customer.localeCompare(b.customer));
@@ -489,7 +491,8 @@ export function validRequirement(r) {
 /** Stored with a workshop: the tender's name and dates, and its requirements, each checked. */
 export function validRfp(t) {
   if (!t || typeof t !== "object" || Array.isArray(t)) return false;
-  if (!Object.keys(t).every((k) => ["title", "due", "questions_due", "reqs", "issuer", "sections", "pages"].includes(k))) return false;
+  if (!Object.keys(t).every((k) => ["title", "due", "questions_due", "reqs", "issuer", "sections", "pages", "award"].includes(k))) return false;
+  if (t.award !== undefined && !validAward(t.award)) return false;
   if (t.pages !== undefined && !(Number.isInteger(t.pages) && t.pages >= 1 && t.pages <= MAX_PAGES)) return false;
   if (t.sections !== undefined && !validSections(t.sections)) return false;
   if (t.issuer !== undefined && !Object.hasOwn(ISSUERS, t.issuer)) return false;
@@ -576,6 +579,7 @@ export function rfpState(catalog, w, today) {
     title: t.title, total: reqs.length, must: must.length, scored: scored.length,
     yes: count(reqs, "yes"), partly: count(reqs, "partly"), no: count(reqs, "no"), check: count(reqs, "check"), open: reqs.filter((r) => !r.a).length,
     must_no: mustNo, clarify, open_must: openMust, points, lines, outside: lines.filter((l) => l.profile && !l.in_scope), deadlines, verdict,
+    award: t.award ? standings(t.award, points) : null,
   };
 }
 
@@ -629,6 +633,11 @@ export function nextSteps(catalog, w, today, others = []) {
   const qs = clarificationQuestions(w);
   if (qs.length && dl.questions_in != null && dl.questions_in >= 0 && dl.questions_in <= 7) {
     out.push({ id: "questions", text: `Questions to the contracting authority are due ${dl.questions_in === 0 ? "today" : `in ${plural(dl.questions_in, "day")}`}: ${plural(qs.length, "question")} drafted.`, act: "copy-questions", label: "Copy the questions" });
+  }
+  // at the price planned, a rival is likely to be awarded the tender
+  if (st.award && st.award.ready && st.award.rank > 1) {
+    const say = awardSay(w.rfp.award, st.award);
+    out.push({ id: "award", text: `On price and quality: ${say.lead} ${say.turn}`, act: "award", label: "See what wins it" });
   }
   if (st.open_must.length) out.push({ id: "open", text: `${plural(st.open_must.length, "mandatory requirement")} still to answer.`, act: "next-open", label: "Answer them" });
   const unexplained = ((w.rfp && w.rfp.reqs) || []).filter((r) => keepReq(r, "nonote"));
@@ -688,6 +697,7 @@ export function rfpMarkdown(catalog, w, today) {
   if (st.outside.length) out.push(`The tender also asks about ${st.outside.map((l) => `${l.label.toLowerCase()} (${plural(l.count, "requirement")})`).join(", ")}: lines not in this conversation yet.`, "");
   const ev = evidenceFor(catalog, w);
   if (ev.length) out.push("## Evidence to gather", "", ...ev.map((e) => `- ${e.item} (for ${e.refs.slice(0, 6).join(", ")}${e.refs.length > 6 ? `, and ${e.refs.length - 6} more` : ""})`), "");
+  if (w.rfp.award) out.push(awardMarkdown(w.rfp.award, st.award));
   if (st.owed.length || st.unassigned) out.push("## Still to answer, by who", "", ...st.owed.map((x) => `- ${x.label}: ${x.count}`), ...(st.unassigned ? [`- Nobody asked yet: ${st.unassigned}`] : []), "");
   out.push("_Prepared with Beyond 90. The requirements stay in the browser they were pasted into._", "");
   return out.join("\n");

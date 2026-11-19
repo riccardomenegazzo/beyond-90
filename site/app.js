@@ -952,6 +952,7 @@ function workshopContext() {
     removeReq: async (id) => edit((x) => WSHOP.removeRequirement(x, id, today)),
     setRfpMeta: async (meta) => edit((x) => WSHOP.setRfpMeta(x, meta, today)),
     clearRfp: async () => edit((x) => WSHOP.clearRfp(x, today)),
+    setAward: async (given) => edit((x) => WSHOP.setAward(x, given, today)),
     fillNotes: async () => edit((x) => WSHOP.fillSuggestedNotes(x, cat, today)),
     setSection: async (key, title) => edit((x) => WSHOP.setSectionTitle(x, key, title, today)),
     // the other tenders in this browser, for the answers given before

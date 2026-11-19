@@ -231,12 +231,37 @@ The other buttons give:
 
   They are drafts, to put in the tender's language.
 
+**What wins it: price and quality.** When the tender goes to the best ratio of quality to price, the card compares our bid with the rivals' guessed ones:
+- **How the tender scores**, as the tender states it:
+  - the points for quality and for price (70 and 30, say);
+  - how price is scored, among the formulas public procurement platforms publish for contracting authorities:
+    - lowest price over each price: the cheapest bid gets every price point;
+    - each discount over the largest discount, on the base amount;
+    - two slopes around the average discount: a share X (0.80, 0.85 or 0.90) of the points up to the average, the rest above it;
+    - the discount over the largest, raised to a power below one;
+    - from the dearest (no points) to the cheapest (every point);
+  - the base amount the discounts are taken from;
+  - whether quality is rescaled so the best bid gets every quality point.
+- **Our bid:** our price, and our quality points. Left empty, the quality points are read from the scored requirements as answered (met counts in full, partly half), on the tender's scale.
+- **The rivals, guessed:** up to four, each with a name, quality points and a price.
+
+It shows:
+- a bar per bid, quality and price stacked, the highest total first;
+- who comes first, and by how much;
+- the price at which that changes: below which we would come first, or up to which we stay first. When half our price would still not do it, it says the gap is in quality;
+- what one point of quality is worth in price, at this offer;
+- a warning when our price is above the base amount, or far below the rivals' (an abnormally low bid may have to be justified).
+
+**Copy for the bid review** gives it in Markdown, and the bid summary carries it. A rival ahead is one of the things **Do next** can list, with **See what wins it**. The rivals' figures are guesses: the result is only as good as they are.
+
+![What wins it: our bid against two guessed rivals, quality and price stacked, the price at which the lead changes](img/app-rfp-award.png)
+
 The tender also reaches other places:
 - **On the presales desk:**
   - a mandatory requirement not met is a risk that can lose the deal;
   - so are questions due within a week with requirements to raise, and a bid due within ten days with requirements still open;
   - both deadlines go in the agenda;
-  - **Tenders in progress** lists every tender in this browser, the nearest deadline first: whether the bid can go ahead, a bar of the answers, the next deadline, and a button that opens the tender.
+  - **Tenders in progress** lists every tender in this browser, the nearest deadline first: whether the bid can go ahead, a bar of the answers, where we stand on price and quality, the next deadline, and a button that opens the tender.
 - **On [the way forward](#the-way-forward),** the decision waits until every mandatory requirement is answered and none fails.
 - **In the [handover to delivery](#handover-to-delivery):** the mandatory requirements answered met or partly, with how. These are what the bid committed to, and delivery has to keep them.
 

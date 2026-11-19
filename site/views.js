@@ -23,6 +23,7 @@ import * as OBJ from "./objsketch.js";
 import * as EDGE from "./edgesketch.js";
 import * as UNIT from "./unitcost.js";
 import * as RFP from "./rfp.js";
+import * as AWD from "./award.js";
 import * as LS from "./lessons.js";
 import * as TEAM from "./team.js";
 import * as QD from "./qualify.js";
@@ -2569,7 +2570,7 @@ export function qualifyView({ workshop: w, catalog, setDeal, setAlt, go }) {
 }
 
 /** A tender or a request for proposal, requirement by requirement: whether to bid, what to ask, the points, the matrix. */
-export function rfpView({ workshop: w, catalog, today, addReqs, setReq, removeReq, setRfpMeta, clearRfp, setScope, readRows, fillNotes, setSection, others, go }) {
+export function rfpView({ workshop: w, catalog, today, addReqs, setReq, removeReq, setRfpMeta, clearRfp, setAward, setScope, readRows, fillNotes, setSection, others, go }) {
   let cur = w;
   // what the list shows: a narrowing, a line, words searched, grouped by line or not, and the requirement open for editing
   const ui = { only: "all", line: "", q: "", group: false, open: "" };
@@ -2632,6 +2633,7 @@ export function rfpView({ workshop: w, catalog, today, addReqs, setReq, removeRe
       if (first) openRow(first.id, true);
       return;
     }
+    if (what === "award") { awardCard.scrollIntoView({ block: "start" }); return; }
     if (what.startsWith("filter:")) { setOnly(what.slice(7)); listCard.scrollIntoView({ block: "start" }); return; }
     if (what.startsWith("open:")) { setOnly("all"); ui.line = ""; byLine.value = ""; ui.q = ""; search.value = ""; openRow(what.slice(5), false); }
   };
@@ -2808,7 +2810,7 @@ export function rfpView({ workshop: w, catalog, today, addReqs, setReq, removeRe
   };
   // after a change: the row, the counts and the picture; an answer moves on to the next requirement still open, as in a meeting
   const afterChange = (id, then) => {
-    drawHero(); drawChips(); drawDeliver(); drawLoaded();
+    drawHero(); drawChips(); drawDeliver(); drawLoaded(); drawAward();
     if (then === "next") {
       const vis = visible();
       const i = vis.findIndex((r) => r.id === id);
@@ -2915,17 +2917,106 @@ export function rfpView({ workshop: w, catalog, today, addReqs, setReq, removeRe
     drawChannel(); redraw();
   } });
 
-  const redraw = () => { drawHero(); drawChips(); drawLineOptions(); drawList(); drawDeliver(); drawSections(); drawLoaded(); loader.open = !reqs().length || loader.open; };
+  const redraw = () => { drawHero(); drawChips(); drawLineOptions(); drawList(); drawDeliver(); drawSections(); drawLoaded(); drawAward(); loader.open = !reqs().length || loader.open; };
   drawHero(); drawChips(); drawLineOptions(); drawList(); drawDeliver(); drawSections(); drawLoaded();
   const listCard = card("Answer the requirements", h("div", {},
     h("div", { class: "rfptools" }, search, byLine, grouped, fill), chips, shown, list, say),
   { sub: "Open a requirement to answer it: the keys 1 to 4 answer (met, partly, not met, to check) and the next one still open opens. Escape closes it. A mandatory requirement not met can exclude the bid." });
+  // ---------------------------------------------------------------- what wins it: quality and price, ours against the rivals' guessed bids
+  const a0 = AWD.cleanAward((cur.rfp && cur.rfp.award) || {});
+  const numIn = (value, label, step = "any", extra = {}) => h("input", { type: "number", min: "0", step, value: value == null ? "" : String(value), "aria-label": label, class: "awardnum", ...extra });
+  const aq = numIn(a0.quality, "Points for quality", "1", { max: String(AWD.POINTS_MAX) });
+  const ap = numIn(a0.price, "Points for price", "1", { max: String(AWD.POINTS_MAX) });
+  const af = h("select", { "aria-label": "How price is scored" }, Object.entries(AWD.FORMULAS).map(([k, f]) => h("option", { value: k, text: f.label, selected: k === a0.formula })));
+  const ax = h("select", { "aria-label": "Share of the price points up to the average discount" }, ["0.8", "0.85", "0.9"].map((v) => h("option", { value: v, text: v, selected: Number(v) === a0.x })));
+  const aalpha = numIn(a0.alpha, "Power the discount is raised to", "0.05", { max: "1" });
+  const abase = numIn(a0.base, "Base amount", "1000", { placeholder: "the tender's starting amount" });
+  const aresc = h("input", { type: "checkbox", checked: a0.rescale });
+  const oq = numIn(a0.ours.quality, "Our quality points");
+  const op = numIn(a0.ours.price, "Our price", "1000", { placeholder: "what we will offer" });
+  const ahint = h("p", { class: "note awardhint" });
+  const xWrap = h("label", { class: "szf" }, h("span", { text: "Share up to the average (X)" }), ax);
+  const alphaWrap = h("label", { class: "szf" }, h("span", { text: "Power, below 1" }), aalpha);
+  const awardMsg = h("p", { class: "note", role: "status" });
+  const awardOut = h("div", { class: "awardout" });
+  const rivalsBox = h("div", { class: "awardrivals" });
+  let rivalRows = a0.rivals.map((r) => ({ name: r.name, quality: String(r.quality), price: String(r.price) }));
+  const given = () => ({ quality: aq.value, price: ap.value, formula: af.value, x: ax.value, alpha: aalpha.value, base: abase.value, rescale: aresc.checked,
+    ours: { quality: oq.value, price: op.value }, rivals: rivalRows });
+  const saveAward = async () => {
+    try { cur = await setAward(given()); awardMsg.textContent = ""; } catch (e) { awardMsg.textContent = e.message; }
+    drawAward(); drawHero();
+  };
+  const drawRivals = () => {
+    put(rivalsBox, rivalRows.length ? h("div", { class: "awardrival awardhead", "aria-hidden": "true" }, h("small", { text: "Name" }), h("small", { text: "Quality points" }), h("small", { text: "Price" }), h("span")) : null,
+      rivalRows.map((r, i) => {
+      const field = (k, label, attrs) => { const el = h("input", { value: r[k], "aria-label": `${label}, rival ${i + 1}`, ...attrs }); el.addEventListener("change", () => { rivalRows[i] = { ...rivalRows[i], [k]: el.value }; saveAward(); }); return el; };
+      return h("div", { class: "awardrival" },
+        field("name", "Name", { type: "text", maxlength: String(AWD.NAME_MAX), placeholder: `Rival ${String.fromCharCode(65 + i)}`, class: "awardname" }),
+        field("quality", "Quality points", { type: "number", min: "0", step: "any", placeholder: "quality", class: "awardnum" }),
+        field("price", "Price", { type: "number", min: "0", step: "1000", placeholder: "price", class: "awardnum" }),
+        h("button", { type: "button", class: "btn small quiet", text: "Remove", "aria-label": `Remove rival ${i + 1}`, onclick: () => { rivalRows = rivalRows.filter((_, j) => j !== i); drawRivals(); saveAward(); } }));
+    }), rivalRows.length < AWD.MAX_RIVALS ? h("button", { type: "button", class: "btn small", text: rivalRows.length ? "Add a rival" : "Add a rival's guessed bid",
+      onclick: () => { rivalRows = [...rivalRows, { name: "", quality: "", price: "" }]; drawRivals(); rivalsBox.querySelector(".awardrival:last-of-type input").focus(); } }) : null);
+  };
+  const drawAward = () => {
+    const st = RFP.rfpState(catalog, cur, today);
+    const a = AWD.cleanAward(given());
+    const fromReqs = AWD.ourQuality({ ...a, ours: { ...a.ours, quality: null } }, st.points).value;
+    oq.placeholder = fromReqs != null ? `${AWD.pts(fromReqs)} from the requirements` : "e.g. 52";
+    ahint.textContent = AWD.FORMULAS[a.formula].hint;
+    xWrap.hidden = a.formula !== "bilinear";
+    alphaWrap.hidden = a.formula !== "concave";
+    const s = AWD.standings(a, st.points);
+    const said = AWD.awardSay(a, s);
+    if (!s.ready) { put(awardOut, h("p", { class: "awardlead", text: said.lead })); return; }
+    const max = a.quality + a.price || 1;
+    const name = (b) => (b.us ? "Us" : b.name);
+    put(awardOut,
+      h("p", { class: `awardlead ${s.rank === 1 ? "first" : "behind"}`, role: "status", text: said.lead }),
+      h("ol", { class: "awardbars" }, s.bids.map((b) => h("li", { class: b.us ? "us" : "" },
+        h("span", { class: "awardwho", text: name(b) }),
+        h("span", { class: "awardtrack", role: "img", "aria-label": `${name(b)}: quality ${AWD.pts(b.quality)}, price ${AWD.pts(b.price_points)}, total ${AWD.pts(b.total)}` },
+          h("i", { class: "aq", style: `width:${((b.quality / max) * 100).toFixed(2)}%` }), h("i", { class: "ap", style: `width:${((b.price_points / max) * 100).toFixed(2)}%` })),
+        h("b", { class: "awardtotal", text: AWD.pts(b.total) }),
+        h("small", { class: "awardprice", text: `${AWD.money(b.price)}${b.discount != null ? `, ${AWD.pct(b.discount)} off` : ""}` })))),
+      h("p", { class: "rfplegend" }, h("span", {}, h("i", { class: "dot aq" }), "Quality"), h("span", {}, h("i", { class: "dot ap" }), "Price")),
+      h("p", { class: "awardturn", text: said.turn }),
+      said.worth ? h("p", { class: "note", text: said.worth }) : null,
+      s.over_base ? h("p", { class: "awardwarn", text: "Our price is above the base amount: most tenders exclude such a bid." }) : null,
+      s.low ? h("p", { class: "awardwarn", text: "Our price is far below the rivals': the contracting authority may ask us to justify it as abnormally low." }) : null,
+      h("p", { class: "note", text: `${s.quality_from === "requirements" ? "Our quality points are read from the scored requirements, as answered. " : ""}The rivals' figures are guesses: the result is only as good as they are.` }),
+      h("div", { class: "btnrow" },
+        h("button", { type: "button", class: "btn small", text: "Copy for the bid review", onclick: (ev) => copyText(AWD.awardMarkdown(a, s)).then((ok) => { ev.target.textContent = ok ? "Copied" : "Not copied"; }) }),
+        h("button", { type: "button", class: "btn small quiet", text: "Clear the comparison", onclick: async () => {
+          try { cur = await setAward(null); } catch (e) { awardMsg.textContent = e.message; return; }
+          const d = AWD.cleanAward({});
+          aq.value = String(d.quality); ap.value = String(d.price); af.value = d.formula; ax.value = String(d.x); aalpha.value = String(d.alpha);
+          abase.value = ""; aresc.checked = false; oq.value = ""; op.value = ""; rivalRows = []; drawRivals(); drawAward(); drawHero();
+        } })));
+  };
+  for (const el of [aq, ap, af, ax, aalpha, abase, aresc, oq, op]) el.addEventListener("change", saveAward);
+  drawRivals(); drawAward();
+  const awardCard = card("What wins it: price and quality", h("div", { class: "awardgrid" },
+    h("div", { class: "awardin" },
+      h("h3", { text: "How the tender scores" }),
+      h("div", { class: "szgrid" }, h("label", { class: "szf" }, h("span", { text: "Points for quality" }), aq), h("label", { class: "szf" }, h("span", { text: "Points for price" }), ap),
+        h("label", { class: "szf awardformula" }, h("span", { text: "Price scored as" }), af), h("label", { class: "szf" }, h("span", { text: "Base amount" }), abase), xWrap, alphaWrap),
+      ahint, h("label", { class: "awardcheck" }, aresc, " Quality rescaled so the best bid gets every quality point"),
+      h("h3", { text: "Our bid" }),
+      h("div", { class: "szgrid" }, h("label", { class: "szf" }, h("span", { text: "Quality points" }), oq), h("label", { class: "szf" }, h("span", { text: "Price" }), op)),
+      h("h3", { text: "The rivals, guessed" }), rivalsBox, awardMsg),
+    awardOut),
+  { sub: "When the tender goes to the best ratio of quality to price: who comes first at the price planned, the price at which that changes, and what a point of quality is worth. Use the tender's own scoring; the rivals' bids are your best guesses. Nothing leaves this browser." });
+  awardCard.id = "rfpaward";
+
   return h("div", {}, hero,
     card("Load the tender", h("div", {}, h("div", { class: "szgrid" }, h("label", { class: "szf" }, h("span", { text: "Name" }), title),
       h("label", { class: "szf" }, h("span", { text: "Who issued it" }), issuer),
       h("label", { class: "szf" }, h("span", { text: "Questions to the contracting authority due" }), qdue), h("label", { class: "szf" }, h("span", { text: "Bid due" }), due)), channel, loader, addSay),
     { sub: "Paste the requirements or read the tender's file: each is read as mandatory or scored, with its points, and matched to the product line it asks about. English and Italian wording are recognised; nothing leaves this browser." }),
     listCard,
+    awardCard,
     card("Deliver the bid", h("div", {}, checks, deliver, sectionsBox,
       h("label", { class: "szf rfppages" }, h("span", { text: "Page limit of the technical response" }), pages),
       h("div", { class: "btnrow" },
@@ -3176,7 +3267,7 @@ export function deskView({ workshops, povs, catalog, today, openOpp, openTender,
     h("span", { class: `rfpverdictpill ${t.verdict.level}`, text: { risk: "At risk", clarify: "To clarify", go: "Can bid", empty: "Empty" }[t.verdict.level] }),
     h("span", { class: "dtbar" }, h("span", { class: "rfpbartrack rfpmini", role: "img", "aria-label": `${t.answered} of ${t.total} answered` },
       ["yes", "partly", "no", "check"].filter((k) => t[k]).map((k) => h("i", { class: `seg s-${k}`, style: `width:${((t[k] / t.total) * 100).toFixed(2)}%` }))),
-      h("small", { class: "muted", text: `${t.answered} of ${t.total}${t.must_no ? `, ${t.must_no} mandatory not met` : ""}` })),
+      h("small", { class: "muted", text: `${t.answered} of ${t.total}${t.must_no ? `, ${t.must_no} mandatory not met` : ""}${t.award ? `; ${t.award.rank === 1 ? "first" : ["", "", "second", "third", "fourth", "fifth"][t.award.rank]} of ${t.award.of} on price and quality` : ""}` })),
     t.next ? h("span", { class: "chip" + (t.next.in <= 7 ? " warn" : ""), text: `${t.next.what} ${t.next.on}${t.next.in < 0 ? `, ${-t.next.in} days ago` : t.next.in === 0 ? ", today" : `, in ${t.next.in} days`}` }) : h("span", { class: "muted", text: "No date yet" }),
     openTender ? h("button", { type: "button", class: "btn small", text: "Open the tender", "aria-label": `Open the tender of ${t.customer}`, onclick: () => openTender(t.workshop) }) : null))),
   { sub: "Every tender kept in this browser, the nearest deadline first: whether it can bid, how far it is answered, and what is due next." }) : null;

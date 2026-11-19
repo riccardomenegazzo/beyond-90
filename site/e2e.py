@@ -863,6 +863,35 @@ def main(site: str) -> int:
         response = Path(dl.value.path()).read_text(encoding="utf-8")
         check("default-src 'none'" in response and "<h2>2. Business continuity</h2>" in response and "<script" not in response,
               "the technical response downloads as a page to print, with the section titles the tender uses and no scripts")
+        # what wins it: price and quality, our bid against a rival's guessed one
+        award = page.locator("#rfpaward")
+        check("To compare the bids, add" in award.inner_text(), "the comparison says what it still needs")
+        page.get_by_label("How price is scored").select_option("linear")
+        for label, value in (("Base amount", "1200000"), ("Our quality points", "52"), ("Our price", "1000000")):
+            page.get_by_label(label, exact=True).fill(value)
+            page.get_by_label(label, exact=True).press("Tab")
+        award.get_by_role("button", name="Add a rival's guessed bid").click()
+        for label, value in (("Name, rival 1", "Rival A <b>(mock)</b>"), ("Quality points, rival 1", "60"), ("Price, rival 1", "900000")):
+            page.get_by_label(label, exact=True).fill(value)
+            page.get_by_label(label, exact=True).press("Tab")
+        page.wait_for_selector("#rfpaward .awardbars li:nth-child(2)")
+        at = award.inner_text()
+        check("Rival A <b>(mock)</b> comes first; we come second, 18 points behind." in at and award.locator("b b").count() == 0,
+              "with our bid and a rival's, it says who comes first and by how much, names kept as text")
+        check("We would come first below" in at and "one point of quality is worth about" in at, "and the price at which that changes, and what a point of quality is worth")
+        with page.expect_download() as dl:
+            page.get_by_role("button", name="Bid summary (.md)").click()
+        summary = Path(dl.value.path()).read_text(encoding="utf-8")
+        check("## Price and quality" in summary and "| **Us** | 52 | 1,000,000 (16.7% off) | 20 | 72 |" in summary, "the bid summary carries the comparison")
+        page.get_by_label("Price, rival 1", exact=True).fill("1150000")
+        page.get_by_label("Price, rival 1", exact=True).press("Tab")
+        page.wait_for_selector("#rfpaward .awardlead.first")
+        check("We come first" in award.inner_text() and "We stay first" in award.inner_text(), "a dearer rival puts us first, with how far our price can rise")
+        page.click("[data-tab=workshop]")
+        page.wait_for_selector("#view .wsq")
+        page.click("[data-tab=wsrfp]")
+        page.wait_for_selector("#rfpaward .awardlead.first")
+        check(page.get_by_label("Price, rival 1", exact=True).input_value() == "1150000", "the comparison is kept with the tender")
         # the tender's own workbook: the sheet holding the requirements is found and read
         page.locator("#view .rfploader > summary").click()
         page.locator("#view .filebtn input[type=file]").set_input_files(files=[{"name": "tender.xlsx", "mimeType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",

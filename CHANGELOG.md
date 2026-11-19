@@ -2,6 +2,30 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.125.0
+
+- **What wins it: price and quality.** For a tender awarded on the best ratio of quality to price, a new card compares our bid with the rivals' guessed ones.
+  - **How the tender scores:** the points for quality and for price, and how price is scored, among five formulas public procurement platforms publish for contracting authorities:
+    - lowest price over each price;
+    - each discount over the largest;
+    - two slopes around the average discount (X of 0.80, 0.85 or 0.90);
+    - the discount over the largest, to a power below one;
+    - from the dearest to the cheapest.
+
+    Plus the base amount, and whether quality is rescaled so the best bid gets every point.
+  - **Our bid:** the price, and the quality points, typed or read from the scored requirements as answered.
+  - **The rivals, guessed:** up to four.
+  - **What it says:**
+    - a bar per bid, quality and price stacked, the highest total first;
+    - who comes first and by how much;
+    - the price at which that changes, or that the gap is in quality when half our price would not close it;
+    - what one point of quality is worth in price;
+    - a warning for a price above the base amount, or far below the rivals'.
+  - **Copy for the bid review** gives it in Markdown; the bid summary carries it.
+- **Do next** lists a rival ahead on price and quality, with the price that would change it.
+- **Tenders in progress**, on the desk, says where each bid stands on price and quality.
+- Stored with the tender and checked field by field on the way in; it never reaches the customer readout.
+
 ## 0.124.0
 
 - **Tenders in progress, on the presales desk.** Every tender kept in this browser, the nearest deadline first:
