@@ -168,6 +168,27 @@ def shoot(site: Path, out: Path) -> None:
             pg.evaluate("(() => { const c = document.querySelector('#view .szhead').closest('.card'); window.scrollTo({ top: c.getBoundingClientRect().top + window.scrollY - 76, behavior: 'instant' }); })()")
             pg.wait_for_timeout(300)
             pg.screenshot(path=str(out / "app-gpu.png"))
+            pg.get_by_role("button", name="Shops, plants and branches").click()
+            pg.wait_for_selector("#view .edgetable")
+            pg.evaluate("(() => { const c = document.querySelector('#view .edgetable').closest('.card'); window.scrollTo({ top: c.getBoundingClientRect().top + window.scrollY - 76, behavior: 'instant' }); })()")
+            pg.wait_for_timeout(300)
+            pg.screenshot(path=str(out / "app-edge.png"))
+            pg.get_by_role("button", name="Running it like a cloud").click()
+            pg.wait_for_selector("#ws-cloud-operations")
+            unit = pg.locator("#view .card").filter(has_text="What one machine costs")
+            unit.locator("details.szassume summary").click()
+            for label, value in (("Machines running (0: those running in the inventory)", "500"), ("Hardware in use: servers, storage, network, at purchase price", "1500000"),
+                                 ("Software licences and subscriptions", "240000"), ("Hardware and software support", "60000"), ("Power and cooling", "45000"), ("Space: racks, rooms, data-centre rent", "30000"),
+                                 ("People running the estate, as full-time equivalents", "3"), ("Cost of one full-time person", "70000"), ("Machines idle, oversized past use or forgotten", "18"),
+                                 ("A comparable machine in a public cloud, storage, backup and support included (0: not compared)", "175")):
+                f = pg.locator(f"#view input[aria-label='{label}']")
+                f.fill(value)
+                f.dispatch_event("change")
+            pg.wait_for_timeout(300)
+            unit.locator("details.szassume summary").click()
+            pg.evaluate("(() => { const c = [...document.querySelectorAll('#view .card')].find((x) => x.textContent.includes('What one machine costs')); window.scrollTo({ top: c.getBoundingClientRect().top + window.scrollY - 76, behavior: 'instant' }); })()")
+            pg.wait_for_timeout(300)
+            pg.screenshot(path=str(out / "app-unitcost.png"))
 
             # the invented example: its inventory, and a first sizing sketch from it
             pg.click(".rail [data-place=start]")

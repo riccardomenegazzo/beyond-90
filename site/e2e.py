@@ -867,6 +867,33 @@ def main(site: str) -> int:
         page.wait_for_timeout(300)
         check(gpus == 8 and int(page.inner_text("#view .szhead > b")) < gpus and "copies of the model" in page.inner_text("#view .szhead"),
               "with the AI line in scope, a first GPU sketch follows the assumptions: fewer bits, fewer GPUs")
+        # shops, plants and branches: a first edge design, kind of site by kind of site
+        page.get_by_role("button", name="Shops, plants and branches").click()
+        page.wait_for_selector("#ws-edge-sites")
+        edgecard = page.locator("#view .card").filter(has_text="A first edge design")
+        check(edgecard.locator(".edgetable tbody tr").count() == 3 and edgecard.locator(".szhead > b").inner_text() == "198" and "a witness for 30 two-server sites" in edgecard.inner_text(),
+              "with edge sites in scope, a first edge design: servers per kind of site and the witness the two-server sites need")
+        edgecard.locator("details.szassume summary").click()
+        link = page.locator("#view input[aria-label='Kind 1: link (Mbit/s)']")
+        link.fill("2")
+        link.dispatch_event("change")
+        page.wait_for_timeout(300)
+        check("Does not fit the night." in edgecard.locator(".edgetable").inner_text() and "does not fit the night over its link" in edgecard.inner_text(),
+              "and says when the daily copy no longer fits the night over a thin link")
+        # running it like a cloud: what one machine costs, all in
+        page.get_by_role("button", name="Running it like a cloud").click()
+        page.wait_for_selector("#ws-cloud-operations")
+        unitcard = page.locator("#view .card").filter(has_text="What one machine costs")
+        check("number of machines running" in unitcard.inner_text(), "with cloud operations in scope, the cost per machine asks for the customer's figures")
+        unitcard.locator("details.szassume summary").click()
+        for label, value in (("Machines running (0: those running in the inventory)", "500"), ("Software licences and subscriptions", "240000"),
+                             ("People running the estate, as full-time equivalents", "3"), ("Cost of one full-time person", "70000")):
+            f = page.locator(f"#view input[aria-label='{label}']")
+            f.fill(value)
+            f.dispatch_event("change")
+        page.wait_for_timeout(300)
+        check(unitcard.locator(".szhead > b").inner_text() == "75" and "People" in unitcard.locator(".vctable").inner_text() and unitcard.get_by_role("button", name="Copy for finance").is_visible(),
+              "and works out the cost per machine a month, with each part shown")
         page.get_by_role("button", name="Leaving a virtualisation platform").click()
         page.wait_for_selector("#ws-platform-migration")
         check(page.locator("#view details.wsline").count() == 4 and page.locator("#view .wsopt[aria-pressed=true]").count() >= 8,

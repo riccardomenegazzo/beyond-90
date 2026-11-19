@@ -2,6 +2,31 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.116.0
+
+- **A first edge design**, in the discovery workshop when edge and branch sites are in scope. It works kind of site by kind of site, up to four standard designs, and gives:
+  - the servers each site needs for its load and for the failure it must ride through;
+  - the witness the two-server sites need;
+  - whether the daily copy to the core fits the night over each link;
+  - how long a whole site would take to come back over its link;
+  - the upgrade waves: a pilot of one site of each kind, then waves of the agreed size;
+  - what trips to sites cost today.
+
+  Notes hold whatever the product.
+- **What one machine costs**, when cloud operations, a service provider's cloud or hybrid cloud is in scope. A year of the estate, in the customer's figures:
+  - hardware written off;
+  - licences and support;
+  - power and space;
+  - the people who run it.
+
+  It is divided among the machines running, typed in or taken from the inventory. Beside it:
+  - what idle machines do to the cost;
+  - a comparable machine in a public cloud;
+  - for a provider, what a standard tenant costs and the margin its price leaves.
+
+  "Copy for finance" gives the table and the arithmetic.
+- Both are kept with the workshop, checked on the way in like everything else, and carried into the meeting summary and the handover to delivery.
+
 ## 0.115.0
 
 - **Three more infrastructure lines**, each with its discovery questions (who to ask, what to listen for, what to ask next), proof-of-value criteria with how to test them, readiness items, a story for each audience with four objections, and an invented example customer:

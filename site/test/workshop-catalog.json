@@ -4,7 +4,9 @@
    "hci",
    "dr-backup",
    "dbaas",
-   "object-storage"
+   "object-storage",
+   "cloud-operations",
+   "edge-sites"
   ]
  },
  "links": [
@@ -27,6 +29,26 @@
    "dr-backup",
    "object-storage",
    "immutable copies need a target that an administrator cannot delete from"
+  ],
+  [
+   "hci",
+   "cloud-operations",
+   "a platform run by hand caps how many clusters one team can look after"
+  ],
+  [
+   "cloud-operations",
+   "dbaas",
+   "databases are the request teams wait longest for, and the first catalog item worth automating"
+  ],
+  [
+   "hci",
+   "edge-sites",
+   "the same platform at the sites removes a second set of skills and tools"
+  ],
+  [
+   "edge-sites",
+   "dr-backup",
+   "a site's copy at the core is what brings it back after a disaster"
   ]
  ],
  "lines": {
@@ -972,6 +994,446 @@
       "clarify": "Which product and version, and which features: lock, tiering?",
       "answer": "Check the compatibility of the exact versions in use, and test them.",
       "prove": "Run a backup and a restore with the customer's own backup software against a locked bucket."
+     }
+    ]
+   }
+  },
+  "edge-sites": {
+   "label": "Edge and branch sites",
+   "description": "Edge and branch sites: small clusters in shops, plants, branches and remote locations, deployed without local IT, managed and upgraded centrally, protected locally and at the core, and running local applications, AI included.",
+   "units": "sites",
+   "questions": [
+    {
+     "stage": "value",
+     "q": "What happens to the business at a site when its systems stop: a till, a production line, a branch counter?",
+     "why": "The cost of a site stopping decides how much resilience each kind of site needs.",
+     "need": "The cost of a site stopping is known per kind of site",
+     "how": "Put a figure on an hour of downtime for each kind of site",
+     "role": "executive",
+     "core": true,
+     "listen": "Sites where a stop halts sales or production justify two servers and local recovery; others can live with one.",
+     "probe": "Which site stopped last, for how long, and what did it cost?"
+    },
+    {
+     "stage": "value",
+     "q": "How often does someone travel to a site to fix, replace or upgrade something, and what does a visit cost?",
+     "why": "Site visits are the hidden cost of distributed infrastructure.",
+     "need": "Site visits and their cost are counted",
+     "how": "Count last year's visits and their reasons",
+     "role": "operations",
+     "core": true,
+     "listen": "Visits for routine upgrades or disk swaps are what central management removes.",
+     "probe": "Which visit could have been done remotely if the tools allowed it?"
+    },
+    {
+     "stage": "L1",
+     "q": "How many sites are there, of how many kinds, and what runs at each?",
+     "why": "Kinds of site, not their number, decide the standard designs.",
+     "need": "Sites are grouped into a few standard kinds",
+     "how": "List sites with their applications and size",
+     "role": "architect",
+     "core": true,
+     "listen": "Three or four standard site designs make hundreds of sites manageable; one design per site does not.",
+     "probe": "Which site is the exception everyone remembers, and why?"
+    },
+    {
+     "stage": "L1",
+     "q": "What network connects each site: bandwidth, latency, and how often does it drop?",
+     "why": "The link decides what runs locally, how copies travel and how upgrades arrive.",
+     "need": "Bandwidth, latency and outages are known per kind of site",
+     "how": "Collect link speeds and last quarter's outages",
+     "role": "architect",
+     "listen": "Sites that lose their link must keep working alone, then catch up; plan for both.",
+     "probe": "What must keep working at a site when its link is down for a day?"
+    },
+    {
+     "stage": "L2",
+     "q": "How old is the hardware at the sites, and when does its support end?",
+     "why": "A refresh across many sites is a date and a budget.",
+     "need": "Site hardware is listed with its support dates",
+     "how": "Export the site hardware list with purchase dates",
+     "role": "finance",
+     "listen": "A wave of sites going out of support is the reason to standardise now.",
+     "probe": "How many sites go out of support next year?"
+    },
+    {
+     "stage": "L2",
+     "q": "Who can see, from one place, the health of every site right now?",
+     "why": "Without a central view, problems are found by the people at the site.",
+     "need": "Every site's health is visible centrally",
+     "how": "Bring one region's sites under one view",
+     "role": "operations",
+     "listen": "Problems reported by shop or plant staff mean the central view is missing.",
+     "probe": "How did you learn about the last site problem: an alert, or a phone call?"
+    },
+    {
+     "stage": "L2",
+     "q": "Who looks after the sites day to day: a central team, local staff, or a partner?",
+     "why": "Who operates the sites decides how much must be automatic.",
+     "need": "The operating model for the sites is agreed",
+     "how": "Map who does what at the sites today",
+     "role": "operations",
+     "listen": "Sites run by people who are not in IT need everything remote and simple; partners need clear boundaries.",
+     "probe": "What do local staff do today that they should not have to?"
+    },
+    {
+     "stage": "L3",
+     "q": "Which sites must keep running if one server fails, and which can wait for a replacement?",
+     "why": "One-server sites cost less; two or three servers keep running through a failure.",
+     "need": "Each kind of site has an agreed tolerance to a server failure",
+     "how": "Agree a tolerance per kind of site with the business",
+     "role": "architect",
+     "listen": "Two-server sites need a small witness elsewhere to decide which side keeps running: ask where it would live.",
+     "probe": "Where could a small witness service run that every site can reach?"
+    },
+    {
+     "stage": "L3",
+     "q": "How are sites backed up today, and how long would restoring a site take without its link?",
+     "why": "A copy that exists only at the core is slow to bring back over a thin link.",
+     "need": "Each site has a local copy and a copy at the core",
+     "how": "Time a restore of one site's main application",
+     "role": "operations",
+     "core": true,
+     "listen": "Restores over a thin link take days; a local copy brings a site back in minutes.",
+     "probe": "What is the largest site, and how long would its data take to copy back?"
+    },
+    {
+     "stage": "L3",
+     "q": "How are upgrades done across the sites today, and how far behind are the oldest?",
+     "why": "Sites left on old versions are where security holes stay open.",
+     "need": "Sites are upgraded remotely, in waves",
+     "how": "List the versions running across the sites",
+     "role": "security",
+     "core": true,
+     "listen": "Sites several versions behind are an audit finding waiting to happen; remote, staged upgrades are the answer.",
+     "probe": "How long did the last upgrade campaign take to reach every site?"
+    },
+    {
+     "stage": "L3",
+     "q": "Who can physically reach the servers at a site, and are their disks encrypted?",
+     "why": "Servers in shops and plants can be stolen or tampered with.",
+     "need": "Site servers are encrypted and locked down by default",
+     "how": "Check encryption and physical access at three sites",
+     "role": "security",
+     "listen": "Unencrypted disks in a back office become a data breach the day they are stolen.",
+     "probe": "What would be exposed if the server at your smallest site walked out of the door?"
+    },
+    {
+     "stage": "L4",
+     "q": "Which new applications should run at the sites: cameras, quality inspection, local AI, sensors?",
+     "why": "New applications at the edge decide the next design, and whether it needs GPUs.",
+     "need": "Planned edge applications are listed with their needs",
+     "how": "List applications planned for the sites in the next two years",
+     "role": "application",
+     "listen": "Video and AI at the edge need GPUs and storage at the site; data that cannot leave the site settles where it runs.",
+     "probe": "Which data from the sites can never leave them, and why?"
+    },
+    {
+     "stage": "L4",
+     "q": "How is a new site opened today, and how long until its systems run?",
+     "why": "Opening sites quickly is a business goal in retail and manufacturing.",
+     "need": "A new site runs from a standard design within days",
+     "how": "Time the last site opening from delivery to running",
+     "role": "executive",
+     "listen": "Weeks to open a site point to manual builds; standard designs deployed remotely cut it to days.",
+     "probe": "How many sites will open next year?"
+    }
+   ],
+   "proof": [
+    {
+     "text": "A new site is deployed from a standard design with no IT staff on site",
+     "how": "Ship a test site and have it join the central plane from the network alone"
+    },
+    {
+     "text": "Every test site is seen and upgraded from one place, in waves, without a visit",
+     "how": "Upgrade the test sites in two waves and record any visit needed"
+    },
+    {
+     "text": "A site keeps running when one server fails, and the people working there do not notice",
+     "how": "Power off a server at a two-server test site during a simulated working day"
+    },
+    {
+     "text": "A site's main application is restored from a local copy with the link down",
+     "how": "Cut the link, delete a test machine and restore it locally"
+    },
+    {
+     "text": "Each site's workloads reach the core within the agreed recovery point, over the real link",
+     "how": "Measure replication lag over a week on the real link"
+    },
+    {
+     "text": "An inference application runs at the site on local data that never leaves it",
+     "how": "Run a sample model on local images and confirm nothing is sent out"
+    }
+   ],
+   "readiness": [
+    "Two or three test sites chosen, one of each kind",
+    "Network details for each test site: addresses, link speed, firewall rules to the core",
+    "Somewhere to run a witness, reachable from the two-server sites",
+    "A core site or cloud to replicate to",
+    "Someone at each test site who can plug in a server, and nothing more",
+    "The business agrees a window for the failure test"
+   ],
+   "story": {
+    "audiences": {
+     "executive": "Open and run sites without sending IT: standard designs deployed remotely, every site upgraded from one place, and a site that keeps working when a server fails.",
+     "technical": "Small clusters from one server to a few, deployed without hands on site, upgraded remotely in waves, with local copies plus replication to the core, encrypted by default, and room for AI at the edge.",
+     "financial": "Fewer site visits and emergency replacements; one standard design bought in volume instead of a different one per site."
+    },
+    "people": [
+     "The head of stores, plants or branches",
+     "Infrastructure operations for the sites",
+     "Security, for equipment outside the data centre",
+     "Whoever installs equipment at the sites, staff or partner"
+    ],
+    "objections": [
+     {
+      "says": "Our sites are too small for this.",
+      "clarify": "What runs at your smallest site, and what happens when it stops?",
+      "answer": "One server where a stop can wait, two where it cannot; both managed from the same place as the rest.",
+      "prove": "Run the smallest site's applications on a one-server test site managed centrally."
+     },
+     {
+      "says": "The links to our sites are too poor.",
+      "clarify": "Which sites lose their link, and for how long?",
+      "answer": "Sites keep working alone and catch up when the link returns; upgrades and copies are scheduled around the link.",
+      "prove": "Cut a test site's link for a working day and show it runs and catches up."
+     },
+     {
+      "says": "We cannot send people to install servers everywhere.",
+      "clarify": "Who is at the sites today who could plug in a box?",
+      "answer": "Servers ship configured and join the central plane on their own; nobody with IT skills needs to travel.",
+      "prove": "Ship a server to a test site and have someone outside IT plug it in."
+     },
+     {
+      "says": "AI at the edge is not for us yet.",
+      "clarify": "Is there data at the sites, like images or sensor readings, that nobody looks at?",
+      "answer": "Size the sites so a GPU can be added later; start with the applications that run there today.",
+      "prove": "Show the site design with room for a GPU, and its cost now and later."
+     }
+    ]
+   }
+  },
+  "cloud-operations": {
+   "label": "Cloud operations and self-service",
+   "description": "Cloud operations on private infrastructure: capacity planned before it runs out, routine work automated, a self-service catalog with guardrails, costs shown per team, and security posture checked against a baseline.",
+   "units": "sites",
+   "questions": [
+    {
+     "stage": "value",
+     "q": "How many hours a month go into routine operations: provisioning, patching, capacity checks, reports?",
+     "why": "Hours of routine work are what automation gives back, in the team's own count.",
+     "need": "Routine hours are counted per task",
+     "how": "List the routine tasks of a month with their hours",
+     "role": "operations",
+     "core": true,
+     "listen": "A team that cannot count its routine hours spends more than it thinks: count three tasks with them.",
+     "probe": "Which task would you hand to a machine first, and why that one?"
+    },
+    {
+     "stage": "value",
+     "q": "How long does a team wait for a new machine, environment or database, from request to use?",
+     "why": "Waiting time is the delay the business feels, and why teams go around IT.",
+     "need": "The wait from request to use is measured",
+     "how": "Time the last five requests from ticket to use",
+     "role": "application",
+     "core": true,
+     "listen": "Days or weeks of waiting push teams to the public cloud or to machines nobody manages.",
+     "probe": "What did the last team that could not wait do instead?"
+    },
+    {
+     "stage": "L1",
+     "q": "How many sites and clusters are managed today, and from how many separate consoles?",
+     "why": "Every extra console is another place to check and another skill to keep.",
+     "need": "All sites and clusters are listed with the tool that manages each",
+     "how": "List sites and clusters with their management tool",
+     "role": "architect",
+     "listen": "Several consoles for one estate means nobody sees the whole: one plane is the first win.",
+     "probe": "Which site was last checked by hand, and when?"
+    },
+    {
+     "stage": "L2",
+     "q": "When will the busiest cluster run out of processor, memory or storage, and who would notice first?",
+     "why": "Capacity that runs out unannounced becomes an emergency purchase.",
+     "need": "Each cluster has a forecast with a run-out date",
+     "how": "Forecast growth from three months of usage",
+     "role": "operations",
+     "core": true,
+     "listen": "If the answer is 'when users complain', capacity is managed by incident; a forecast with a date changes the budget conversation.",
+     "probe": "When did you last buy hardware in a hurry, and what did it cost?"
+    },
+    {
+     "stage": "L2",
+     "q": "How do you find out that an application is slower than usual before its users do?",
+     "why": "Problems found by users cost more than problems found by monitoring.",
+     "need": "Unusual behaviour raises an alert before users notice",
+     "how": "Compare the last incident's first alert with its first complaint",
+     "role": "operations",
+     "listen": "Fixed thresholds miss slow drifts; baselines learned from the system's own behaviour catch them earlier.",
+     "probe": "What was the last problem users reported before any alert fired?"
+    },
+    {
+     "stage": "L2",
+     "q": "How many machines are oversized, idle or forgotten, and what do they hold?",
+     "why": "Reclaiming waste is the cheapest capacity there is.",
+     "need": "Idle and oversized machines are listed with an owner's decision",
+     "how": "List machines idle for a month or using under a fifth of what they have",
+     "role": "finance",
+     "listen": "Most estates hold a fifth or more of waste; reclaiming it postpones the next purchase.",
+     "probe": "Who can decide to shrink or switch off a machine that belongs to another team?"
+    },
+    {
+     "stage": "L2",
+     "q": "Do the public cloud bills and the data-centre costs end up in the same view, on the same basis?",
+     "why": "Choosing where to run something needs costs compared like for like.",
+     "need": "Private and public cloud costs are seen side by side",
+     "how": "Put last quarter's cloud bill next to the data-centre cost per machine",
+     "role": "finance",
+     "listen": "Two views on two bases lead to wrong placement decisions, in both directions.",
+     "probe": "Which workload would you move if you saw both costs side by side?"
+    },
+    {
+     "stage": "L3",
+     "q": "Which routine tasks are scripted today, who maintains the scripts, and what happens when that person is away?",
+     "why": "Scripts in one person's folder are a risk, not automation.",
+     "need": "Routine tasks run as shared, maintained runbooks",
+     "how": "List the scripts in use with their owner and last change",
+     "role": "operations",
+     "listen": "Scripts kept by one person are a single point of failure; shared runbooks with approvals and logs are the step up.",
+     "probe": "Which script would stop working if its author left tomorrow?"
+    },
+    {
+     "stage": "L3",
+     "q": "Can teams order standard services themselves, with approvals and quotas, or does every request go through a ticket?",
+     "why": "Self-service within limits is how a private estate competes with the public cloud.",
+     "need": "Teams order approved services from a catalog within quotas",
+     "how": "Turn three frequent requests into catalog items",
+     "role": "application",
+     "core": true,
+     "listen": "Tickets for standard requests mean the catalog is the gap; quotas and approvals answer the fear of sprawl.",
+     "probe": "Which request is asked for most often, and how standard is it really?"
+    },
+    {
+     "stage": "L3",
+     "q": "Is each team shown what its infrastructure costs, and are those costs charged back?",
+     "why": "Without a cost per team, demand grows without limit and the platform looks expensive.",
+     "need": "Cost per team or project is shown back or charged back",
+     "how": "Agree a cost per machine and allocate last month's estate to teams",
+     "role": "finance",
+     "listen": "A unit cost per machine, built from hardware, licences, power, space and people, settles 'the cloud is cheaper' with facts.",
+     "probe": "What does one virtual machine cost you a month, all in?"
+    },
+    {
+     "stage": "L3",
+     "q": "How is the estate checked against security baselines and regulations, and how often?",
+     "why": "Configuration drifts between audits; continuous checks catch it.",
+     "need": "Security posture is checked continuously against a baseline",
+     "how": "Pick a baseline and run a first check across the estate",
+     "role": "security",
+     "core": true,
+     "listen": "A yearly audit by spreadsheet means months of drift; continuous checks with a report the auditor accepts are the change.",
+     "probe": "What did the last audit find that had changed since the one before?"
+    },
+    {
+     "stage": "L3",
+     "q": "Must the management plane and its data stay on your own premises, or may it run as a hosted service?",
+     "why": "Sovereignty rules can forbid management and monitoring data leaving the country.",
+     "need": "Management and its data run where the rules require",
+     "how": "Ask security where management and monitoring data may live",
+     "role": "security",
+     "listen": "Regulated customers often need the management plane itself on premises: ask before proposing a hosted service.",
+     "probe": "Who approved the current monitoring tools from a data-protection point of view?"
+    },
+    {
+     "stage": "L4",
+     "q": "Who reviews capacity, cost and compliance each month, and what decisions come out of it?",
+     "why": "Reports nobody acts on are noise.",
+     "need": "A monthly review decides on capacity, cost and compliance",
+     "how": "Set up a monthly review with an owner and a short agenda",
+     "role": "executive",
+     "listen": "A review that ends in decisions turns data into budget and priorities.",
+     "probe": "What was the last decision taken because of a capacity or cost report?"
+    },
+    {
+     "stage": "L4",
+     "q": "Which approvals are needed before a change or a new service, and how long do they take?",
+     "why": "Approvals built into the request are faster than approvals by email.",
+     "need": "Approvals run inside the request, with a time limit",
+     "how": "Map the approval steps for one common request",
+     "role": "executive",
+     "listen": "Approvals by email add days; the same rules inside the workflow keep control without the wait.",
+     "probe": "Which approval is given every time, and could become automatic?"
+    }
+   ],
+   "proof": [
+    {
+     "text": "A capacity forecast names the cluster that runs out first, and when, from the customer's own usage",
+     "how": "Collect a month of usage and compare the forecast with the team's own estimate"
+    },
+    {
+     "text": "A routine task the team does by hand runs as an automated runbook, with approval and a log",
+     "how": "Automate the most frequent manual task end to end and read its log"
+    },
+    {
+     "text": "A team orders a standard environment from a catalog and gets it within the agreed time, inside its quota",
+     "how": "Publish one catalog item with a quota and time a request from a real team"
+    },
+    {
+     "text": "Last month's cost is allocated to teams on a cost per machine agreed with finance",
+     "how": "Build the cost model with finance and allocate one month"
+    },
+    {
+     "text": "A baseline check finds a real drift, and security accepts the report",
+     "how": "Run the baseline across the estate and review the findings with security"
+    },
+    {
+     "text": "An unusual slowdown raises an alert before the application owner notices",
+     "how": "Load a test machine until it slows and see who is told first"
+    }
+   ],
+   "readiness": [
+    "The sites and clusters in scope, with read access for the management plane",
+    "A month of usage data, or the time to collect it",
+    "Three frequent requests chosen to become catalog items, with their owners",
+    "Finance agrees the cost elements: hardware, licences, power, space, people",
+    "The security baseline to check against, chosen by security",
+    "A test team willing to order through the catalog"
+   ],
+   "story": {
+    "audiences": {
+     "executive": "Run your own infrastructure like a cloud: teams served in minutes, costs visible per team, and compliance shown continuously instead of once a year.",
+     "technical": "One management plane for every site: capacity forecasts with dates, alerts on unusual behaviour, runbooks instead of scripts, a catalog with quotas and approvals, posture checked against a baseline.",
+     "financial": "Reclaim idle capacity before buying more, show each team what it costs, and compare private and public cloud on the same basis."
+    },
+    "people": [
+     "The head of infrastructure operations",
+     "Application teams that request environments",
+     "Finance, or whoever leads cloud cost management",
+     "Security and compliance"
+    ],
+    "objections": [
+     {
+      "says": "We already have monitoring tools.",
+      "clarify": "Do they forecast when capacity runs out, and act on what they find, or only draw graphs?",
+      "answer": "Keep what works; add forecasts with dates and runbooks that act, on one plane for every site.",
+      "prove": "Forecast the busiest cluster's run-out date and automate the fix for its most frequent alert."
+     },
+     {
+      "says": "Self-service will create sprawl.",
+      "clarify": "What sprawl did you see the last time teams had access: size, number, or machines nobody claimed?",
+      "answer": "Catalog items come with quotas, approvals and an expiry, so self-service is faster and tidier than tickets.",
+      "prove": "Publish one catalog item with a quota and an expiry, and show what happens when the quota is reached."
+     },
+     {
+      "says": "Chargeback will start a political fight.",
+      "clarify": "Would showing costs first, without charging them, be accepted?",
+      "answer": "Start with showback on an agreed unit cost; charge back only once teams trust the numbers.",
+      "prove": "Show one month of cost per team to two team leads and ask whether the numbers look right."
+     },
+     {
+      "says": "Automation will break production.",
+      "clarify": "Which change went wrong last time, and was it made by hand?",
+      "answer": "Runbooks run with approvals, logs and a dry run; they make the same change the same way every time.",
+      "prove": "Run one runbook as a dry run, approve it, run it, and read the log."
      }
     ]
    }

@@ -10,6 +10,8 @@ import { planWaves, wavesLine } from "./waves.js";
 import { buildCase, caseLine } from "./valuecase.js";
 import { gpuSketch } from "./gpu.js";
 import { drSketch } from "./drsketch.js";
+import { edgeSketch } from "./edgesketch.js";
+import { unitSketch, money as unitMoney } from "./unitcost.js";
 import { objSketch } from "./objsketch.js";
 import { channelState, KINDS } from "./partners.js";
 
@@ -100,6 +102,10 @@ export function handoverMarkdown(catalog, w, pov, today) {
   if (ds && ds.ok) facts.push(`Recovery design: ${ds.tiers.map((t) => `tier ${t.n} ${t.mode.toLowerCase()}`).join("; ")}; about ${Math.round(ds.mbps)} Mbit/s between the sites before compression.`);
   const os = w.obj && w.scope.includes("object-storage") ? objSketch(w.obj, w.inventory) : null;
   if (os && os.ok) facts.push(`Backup capacity: ${os.usable} TiB usable, ${os.raw} TiB raw, about ${os.gbps} Gbit/s in the nightly window; to confirm with the backup product's own calculator.`);
+  const es = w.edge && w.scope.includes("edge-sites") ? edgeSketch(w.edge) : null;
+  if (es && es.ok) facts.push(`Edge design: ${es.servers} servers at ${es.sites} sites in ${es.kinds.length} standard design${es.kinds.length === 1 ? "" : "s"} (${es.kinds.map((k) => `${clean(k.name).toLowerCase()}: ${k.servers_each} a site`).join("; ")})${es.witness_sites ? `, a witness for ${es.witness_sites} two-server sites` : ""}; upgrades in about ${es.weeks} weeks after a pilot of ${es.pilot}${es.kinds.some((k) => !k.copy_fits) ? "; some daily copies do not fit the night over their link" : ""}.`);
+  const us = w.unit && w.scope.some((p) => ["cloud-operations", "service-provider-cloud", "hybrid-cloud"].includes(p)) ? unitSketch(w.unit, w.inventory) : null;
+  if (us && us.ok) facts.push(`Cost per machine: ${unitMoney(us.month)} a month all in, across ${unitMoney(us.machines)} machines${us.tenant ? `; a standard tenant costs ${unitMoney(us.tenant.cost)} a month` : ""}. Agreed with finance? Check before it is used for showback or prices.`);
   if (gs && gs.ok) facts.push(`GPU sketch: ${gs.gpus} GPUs in ${gs.servers} server${gs.servers === 1 ? "" : "s"}, ${gs.copies} copies of the model, decided by ${gs.decided}; to confirm with a benchmark on the customer's own prompts.`);
   if (facts.length) L.push("## The numbers it rests on", "", ...facts.map((x) => `- ${x}`), "");
   // who delivers: the partners on the deal and who owns deployment and support, with the skills still to line up

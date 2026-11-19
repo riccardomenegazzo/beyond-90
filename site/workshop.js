@@ -15,6 +15,8 @@ import { validCase, buildCase, caseLine, caseMarkdown, money } from "./valuecase
 import { validGpu, gpuSketch, gpuMarkdown } from "./gpu.js";
 import { validDr, drSketch, drMarkdown } from "./drsketch.js";
 import { validObj, objSketch, objMarkdown } from "./objsketch.js";
+import { validEdge, edgeSketch, edgeMarkdown } from "./edgesketch.js";
+import { validUnit, unitSketch, unitMarkdown } from "./unitcost.js";
 import { validDeal, withDealAnswer, dealMarkdown } from "./qualify.js";
 import { ROLE_WORDS, displayOrder, inMeeting } from "./questions.js";
 import { validChannel, cleanChannel, KINDS, ROUTES, ACTIVITIES, whoLabel } from "./partners.js";
@@ -81,6 +83,8 @@ export function validWorkshop(w) {
   if (w.gpu != null && !validGpu(w.gpu)) return false;
   if (w.dr != null && !validDr(w.dr)) return false;
   if (w.obj != null && !validObj(w.obj)) return false;
+  if (w.edge != null && !validEdge(w.edge)) return false;
+  if (w.unit != null && !validUnit(w.unit)) return false;
   if (w.deal != null && !validDeal(w.deal)) return false;
   if (w.channel != null && !validChannel(w.channel)) return false;
   if (w.demo != null && !(w.demo && typeof w.demo === "object" && !Array.isArray(w.demo) && Object.keys(w.demo).length === 1 && isDate(w.demo.on) && w.demo.on >= w.created_on)) return false;
@@ -211,6 +215,31 @@ export function setDr(w, settings, today) {
   if (settings) {
     if (!validDr(settings)) throw new Error("One of the recovery settings is out of range.");
     next.dr = settings;
+  }
+  return changed(next, {}, today);
+}
+
+/** The settings of the edge design, or null to go back to the defaults. */
+export function setEdge(w, settings, today) {
+  const next = { ...w };
+  delete next.edge;
+  if (settings) {
+    if (!validEdge(settings)) throw new Error("One of the edge settings is out of range.");
+    next.edge = settings;
+  }
+  return changed(next, {}, today);
+}
+
+/** The lines where a cost per machine is the conversation: running it like a cloud, a provider's tenants, placement. */
+export const UNIT_LINES = ["cloud-operations", "service-provider-cloud", "hybrid-cloud"];
+
+/** The figures of the cost per machine, or null to clear them. */
+export function setUnit(w, figures, today) {
+  const next = { ...w };
+  delete next.unit;
+  if (figures) {
+    if (!validUnit(figures)) throw new Error("One of the cost figures is out of range.");
+    next.unit = figures;
   }
   return changed(next, {}, today);
 }
@@ -604,6 +633,8 @@ export function summaryMarkdown(catalog, w, res) {
   if (w.gpu && w.scope.includes("private-ai")) out.push(gpuMarkdown(gpuSketch(w.gpu)), "");
   if (w.dr && w.scope.includes("dr-backup")) out.push(drMarkdown(drSketch(w.dr, w.inventory)), "");
   if (w.obj && w.scope.includes("object-storage")) out.push(objMarkdown(objSketch(w.obj, w.inventory)), "");
+  if (w.edge && w.scope.includes("edge-sites")) out.push(edgeMarkdown(edgeSketch(w.edge)), "");
+  if (w.unit && w.scope.some((p) => UNIT_LINES.includes(p))) { const u = unitSketch(w.unit, w.inventory); if (u.ok) out.push(unitMarkdown(u), ""); }
   const told = res.land ? stories(catalog, w, res).find((x) => x.land) : null;
   if (told && Object.keys(told.audiences).length) {
     out.push(`## How to tell it: ${told.label.toLowerCase()}`, "");

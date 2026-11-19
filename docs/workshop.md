@@ -179,6 +179,41 @@ It is a starting point for a benchmark, not a sizing. The assumptions are kept w
 
 ![A first GPU sketch: GPUs, copies of the model, and each step of the arithmetic](img/app-gpu.png)
 
+## A first edge design
+
+With edge and branch sites in scope, **A first edge design** works kind of site by kind of site, up to four kinds ("small shops", "large stores", "plants"). Three or four standard designs are what make hundreds of sites manageable. For each kind, typed in from the conversation:
+- how many sites, the machines at each, the data kept there, how much of it is written each day and the link to the core;
+- what the site must ride through: wait for a replacement (one server is enough), keep running through a server failure with a witness (two servers), or keep running without one (three servers).
+
+It gives:
+- **the servers each site needs:** enough for the load, plus one spare where the site must keep running, and the total;
+- **the witness:** the two-server sites need one in a third place they can all reach;
+- **whether the daily copy to the core fits the night** over each link, at the share of the link the copies may use;
+- **how long a whole site would take to come back over its link**, which is why each site keeps a local copy;
+- **the upgrade waves:** one site of each kind first, then waves of the agreed size, and the weeks it takes to reach every site;
+- **what trips to sites cost today**, when the number of trips and the cost of one are known.
+
+Notes that hold whatever the product: keep a few standard designs, ship servers ready to join the central plane, encrypt every site's disks, keep a spare where one server is all there is. The product's own sizing tool has the last word.
+
+![A first edge design: servers per kind of site, the witness, the daily copy against the night and the upgrade waves](img/app-edge.png)
+
+## What one machine costs
+
+With cloud operations, a service provider's cloud or hybrid cloud in scope, **What one machine costs** works out the number behind "the cloud is cheaper", in the customer's own figures. It adds up a year of the estate:
+- the hardware in use, written off over its life;
+- licences and subscriptions, support, power and cooling, space;
+- the people who run it.
+
+It then divides the total among the machines running, typed in or taken from the inventory, and gives:
+- **the cost of one machine a month, all in,** with each part's share;
+- **what idle machines do to it:** the machines that really work cost more each, and reclaiming the idle ones makes room before buying hardware;
+- **a comparable machine in a public cloud**, side by side, a machine a month and across the estate in a year;
+- **for a service provider, a standard tenant:** what it costs to run, and the margin its price leaves.
+
+The notes say what makes the number trusted: every element agreed with finance, showback before chargeback, a like-for-like cloud price, an owner's decision to reclaim. "Copy for finance" gives the table and the arithmetic. It is not a quote; it is kept with the workshop, in the meeting summary and in the handover to delivery.
+
+![What one machine costs: each part of a year of the estate, a machine a month, idle machines and a public cloud beside it](img/app-unitcost.png)
+
 ## A plan in waves
 
 From the same inventory, **A plan in waves** proposes how the move would run: a test wave first, from the cluster that teaches the most for the least risk, then cluster by cluster, the least risky first (fewest machines past support, smallest). Clusters move whole, so machines that talk to each other inside one stay together; dependencies across clusters still have to be checked with the application owners.
@@ -213,7 +248,7 @@ When the deal moves to delivery, **Handover to delivery** writes the note the de
 - what the proof of value showed, criterion by criterion with its evidence;
 - what the customer asked us to prove, and whether it was;
 - what still has to be made true, with who and by when;
-- the numbers it rests on: inventory, sizing sketch, plan in waves, case for change;
+- the numbers it rests on: inventory, sizing sketch, plan in waves, case for change, and the recovery, backup, GPU and edge designs and the cost per machine when their lines are in scope;
 - who to keep involved;
 - what is still open.
 

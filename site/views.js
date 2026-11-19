@@ -20,6 +20,8 @@ import * as GPU from "./gpu.js";
 import * as DRS from "./drsketch.js";
 import * as NM from "./nextmeeting.js";
 import * as OBJ from "./objsketch.js";
+import * as EDGE from "./edgesketch.js";
+import * as UNIT from "./unitcost.js";
 import * as LS from "./lessons.js";
 import * as TEAM from "./team.js";
 import * as QD from "./qualify.js";
@@ -1666,7 +1668,7 @@ const painPct = (v) => `${Math.round(v * 100)}%`;
 // how the questions are narrowed for this meeting: kept while the page is open, never stored
 const wsFilter = { core: false, roles: [] };
 
-export function workshopView({ workshop: w, catalog, list, answer, worth, rename, preparedBy, setScope, inventory, sizing, waves, gpu, dr, obj, today, newWorkshop, openWorkshop, removeWorkshop, presets = [], go, focus }) {
+export function workshopView({ workshop: w, catalog, list, answer, worth, rename, preparedBy, setScope, inventory, sizing, waves, gpu, dr, obj, edge, unit, today, newWorkshop, openWorkshop, removeWorkshop, presets = [], go, focus }) {
   const say = h("p", { class: "note", role: "status" });
   const act = (fn) => async (...a) => { try { await fn(...a); say.textContent = ""; } catch (e) { say.textContent = e.message; } };
   let cur = w;
@@ -1795,7 +1797,9 @@ export function workshopView({ workshop: w, catalog, list, answer, worth, rename
   requestAnimationFrame(apply);
   return h("div", {}, meeting, inventory ? inventoryCard(w, inventory) : null, w.inventory && sizing ? sizingCard(w, sizing) : null,
     w.inventory && waves ? wavesCard(w, waves, today) : null, w.scope.includes("private-ai") && gpu ? gpuCard(w, gpu) : null,
-    w.scope.includes("dr-backup") && dr ? drCard(w, dr) : null, w.scope.includes("object-storage") && obj ? objCard(w, obj) : null, h("div", { class: "card wsprogcard" }, prog), narrow, lines);
+    w.scope.includes("dr-backup") && dr ? drCard(w, dr) : null, w.scope.includes("object-storage") && obj ? objCard(w, obj) : null,
+    w.scope.includes("edge-sites") && edge ? edgeCard(w, edge) : null, w.scope.some((p) => WS.UNIT_LINES.includes(p)) && unit ? unitCard(w, unit) : null,
+    h("div", { class: "card wsprogcard" }, prog), narrow, lines);
 }
 
 /** The customer's VM inventory: read in the page, kept as totals, shown as the numbers a sizing starts from. */
@@ -2082,6 +2086,94 @@ function drCard(w, dr) {
       try { await dr(null); } catch (e) { say.textContent = e.message; }
     } }))), say),
   { sub: "For each tier of applications: the replication its recovery point calls for, whether the distance allows it, the bandwidth its data needs, and a retention to agree. The replication product's own calculator has the last word." });
+}
+
+/** A first design for edge and branch sites: servers per kind of site, the witness, copies over each link, upgrade waves. */
+function edgeCard(w, edge) {
+  const a = EDGE.cleanEdge(w.edge || {});
+  const say = h("p", { class: "note", role: "status" });
+  const out = h("div", { class: "szout" });
+  const top = [["vms_per_server", "Machines one server carries"], ["link_use_pct", "Share of each link the copies may use (%)"], ["window_h", "Hours a night for the copies"],
+    ["wave_size", "Sites upgraded together after the pilot"], ["waves_per_week", "Upgrade waves a week"], ["visits_year", "Trips to sites a year today (0: not counted)"], ["visit_cost", "Cost of one trip"]];
+  const cols = [["sites", "sites"], ["vms", "machines a site"], ["data_tib", "data a site (TiB)"], ["change_pct", "written a day (%)"], ["link_mbps", "link (Mbit/s)"]];
+  const inputs = {}, kindIn = [];
+  const current = () => {
+    const v = { kinds: kindIn.map((r) => ({ name: r.name.value, servers_min: Number(r.servers_min.value), ...Object.fromEntries(cols.map(([k]) => [k, Number(r[k].value)])) })) };
+    for (const [k] of top) v[k] = Number(inputs[k].value);
+    return EDGE.cleanEdge(v);
+  };
+  const draw = (settings) => {
+    const sk = EDGE.edgeSketch(settings);
+    if (!sk.ok) { put(out, h("p", { class: "note", text: sk.error })); return; }
+    put(out,
+      h("div", { class: "szhead" }, h("b", { text: INV.fmt(sk.servers) }), h("span", {}, h("strong", { text: "servers" }),
+        h("small", { text: `at ${INV.fmt(sk.sites)} sites in ${sk.kinds.length} standard design${sk.kinds.length === 1 ? "" : "s"}${sk.witness_sites ? `, a witness for ${INV.fmt(sk.witness_sites)} two-server sites` : ""}; every site upgraded in about ${INV.fmt(sk.weeks)} week${sk.weeks === 1 ? "" : "s"}` }))),
+      h("div", { class: "tablewrap" }, h("table", { class: "drtable edgetable" },
+        h("thead", {}, h("tr", {}, ["Kind", "Sites", "Servers a site", "Servers in all", "If a server fails", "Daily copy to the core", "Whole site over the link"].map((t) => h("th", { scope: "col", text: t })))),
+        h("tbody", {}, sk.kinds.map((k) => h("tr", {}, h("td", { text: k.name }), h("td", { text: INV.fmt(k.sites) }), h("td", { text: String(k.servers_each) }), h("td", { text: INV.fmt(k.servers) }),
+          h("td", { text: k.tolerance }), h("td", {}, h("span", { text: EDGE.edgeHours(k.copy_h) }), k.copy_fits ? null : h("small", { class: "neg drwhy", text: "Does not fit the night." })),
+          h("td", { text: EDGE.edgeHours(k.restore_h) })))))),
+      h("ol", { class: "szsteps" }, sk.steps.map((t) => h("li", { text: t }))),
+      h("div", { class: "growproof" }, h("small", { text: "Whatever the product" }), h("ul", {}, EDGE.edgeNotes(sk).map((t) => h("li", { text: t })))));
+  };
+  const save = async () => { const v = current(); draw(v); try { await edge(v); say.textContent = ""; } catch (e) { say.textContent = e.message; } };
+  const field = (el, label) => { el.addEventListener("change", save); return h("label", { class: "szf" }, h("span", { text: label }), el); };
+  const grid = h("div", { class: "szgrid" }, top.map(([k, label]) => field(inputs[k] = h("input", { type: "number", step: "any", min: "0", value: String(a[k]), "aria-label": label }), label)));
+  const kinds = a.kinds.map((t, i) => {
+    const row = { name: h("input", { type: "text", maxlength: EDGE.NAME_MAX, value: t.name, "aria-label": `Kind ${i + 1}: name` }),
+      servers_min: h("select", { "aria-label": `Kind ${i + 1}: if a server fails` }, Object.entries(EDGE.TOLERANCE).map(([v, label]) => h("option", { value: v, text: `${v === "1" ? "One server" : `${v} servers`} at least: ${label}` }))) };
+    row.servers_min.value = String(t.servers_min);
+    for (const [k, label] of cols) row[k] = h("input", { type: "number", step: "any", min: "0", value: String(t[k]), "aria-label": `Kind ${i + 1}: ${label}` });
+    kindIn.push(row);
+    return h("fieldset", { class: "vcgroup edgekind" }, h("legend", { text: `Kind ${i + 1}` }),
+      h("div", { class: "szgrid" }, field(row.name, "Name"), ...cols.map(([k, label]) => field(row[k], cap(label))), field(row.servers_min, "If a server fails")));
+  });
+  draw(a);
+  return card("A first edge design", h("div", { class: "sz" }, out, h("details", { class: "szassume" }, h("summary", { text: "The kinds of site, the links and the upgrade pace, to agree with the customer" }), h("div", { class: "vcgroups" }, kinds), grid,
+    h("div", { class: "btnrow" }, h("button", { class: "btn small", type: "button", text: "Back to the defaults", onclick: async () => {
+      for (const [k] of top) inputs[k].value = String(EDGE.EDGE_DEFAULTS[k]);
+      kindIn.forEach((row, i) => { const d = EDGE.EDGE_DEFAULTS.kinds[i]; row.name.value = d.name; row.servers_min.value = String(d.servers_min); for (const [k] of cols) row[k].value = String(d[k]); });
+      draw(EDGE.EDGE_DEFAULTS);
+      try { await edge(null); } catch (e) { say.textContent = e.message; }
+    } }))), say),
+  { sub: "Three or four standard kinds of site: the servers each needs for its load and the failure it must ride through, the witness, whether the nightly copy fits over each link, a restore over the link against a local one, and the upgrade waves. The product's own sizing tool has the last word." });
+}
+
+/** What one machine costs a month, all in, in the customer's figures; idle machines, a public cloud and a tenant beside it. */
+function unitCard(w, unit) {
+  const a = UNIT.cleanUnit(w.unit || {});
+  const say = h("p", { class: "note", role: "status" });
+  const out = h("div", { class: "szout" });
+  const inputs = {};
+  const current = () => { const v = {}; for (const [k, el] of Object.entries(inputs)) if (el.value !== "") v[k] = Number(el.value); return UNIT.cleanUnit(v); };
+  const draw = (figures) => {
+    const sk = UNIT.unitSketch(figures, w.inventory);
+    if (!sk.ok) { put(out, h("p", { class: "note first", text: `${sk.error} Every figure stays in this browser.` })); copy.hidden = true; return; }
+    copy.hidden = false;
+    put(out,
+      h("div", { class: "szhead" }, h("b", { text: UNIT.money(sk.month) }), h("span", {}, h("strong", { text: "a machine a month, all in" }),
+        h("small", { text: `across ${UNIT.money(sk.machines)} machines${sk.used_month ? `; ${UNIT.money(sk.used_month)} for each one that really works` : ""}` }))),
+      h("div", { class: "tablewrap" }, h("table", { class: "wvtable vctable" },
+        h("thead", {}, h("tr", {}, ["Part", "A year", "A machine a month", "Share"].map((t) => h("th", { scope: "col", text: t })))),
+        h("tbody", {}, sk.parts.map((p) => h("tr", {}, h("th", { scope: "row", text: p.label }), h("td", { class: "n", text: UNIT.money(p.year) }), h("td", { class: "n", text: UNIT.money(p.month) }), h("td", { class: "n", text: `${Math.round(p.share)}%` }))),
+          h("tr", { class: "vctotal" }, h("th", { scope: "row", text: "Total" }), h("td", { class: "n", text: UNIT.money(sk.total) }), h("td", { class: "n", text: UNIT.money(sk.month) }), h("td", { class: "n", text: "100%" }))))),
+      h("ol", { class: "szsteps" }, sk.steps.map((t) => h("li", { text: t }))),
+      h("div", { class: "growproof" }, h("small", { text: "Before showing it" }), h("ul", {}, UNIT.unitNotes(sk).map((t) => h("li", { text: t })))));
+  };
+  const save = async () => { const v = current(); draw(v); const any = Object.keys(v).some((k) => k !== "hardware_years" || v[k] !== UNIT.UNIT_DEFAULTS.hardware_years); try { await unit(any ? v : null); say.textContent = ""; } catch (e) { say.textContent = e.message; } };
+  // outside what is redrawn, so a change made by leaving a field never takes it away mid-click
+  const copy = h("button", { class: "btn small", type: "button", text: "Copy for finance", hidden: true,
+    onclick: (ev) => copyText(UNIT.unitMarkdown(UNIT.unitSketch(current(), w.inventory))).then((ok) => { ev.target.textContent = ok ? "Copied" : "Not copied"; }) });
+  const groups = UNIT.FIELDS.map((g) => h("fieldset", { class: "vcgroup" }, h("legend", { text: g.group }),
+    g.fields.map(([k, label, u]) => {
+      inputs[k] = h("input", { type: "number", step: "any", min: "0", value: a[k] == null ? "" : String(a[k]), "aria-label": label, placeholder: "—" });
+      inputs[k].addEventListener("change", save);
+      return h("label", { class: "szf" }, h("span", { text: `${label} (${u})` }), inputs[k]);
+    })));
+  draw(a);
+  return card("What one machine costs", h("div", { class: "sz" }, out, h("div", { class: "btnrow" }, copy),
+    h("details", { class: "szassume" }, h("summary", { text: "The figures, as the customer and finance gave them" }), h("div", { class: "vcgroups" }, groups)), say),
+  { sub: "Hardware written off, licences, support, power, space and people, divided among the machines they run: the number behind \"the cloud is cheaper\", showback per team and a provider's price per tenant. In the customer's own figures; not a quote." });
 }
 
 /** A first GPU sketch for serving a model: memory for the weights and the conversations, copies, servers. */

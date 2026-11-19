@@ -414,6 +414,37 @@ test("the backup capacity sketch is kept with the workshop, checked on import, a
   assert.equal("obj" in setObj(w, null, "2026-11-02"), false);
 });
 
+import { setEdge, setUnit, UNIT_LINES } from "../workshop.js";
+
+test("the edge design is kept with the workshop, checked on import, and reaches the summary when edge sites are in scope", () => {
+  let w = makeWorkshop({ customer: "Faro Stores (mock)", scope: ["edge-sites", "hci"], createdOn: "2026-11-01", nonce: "abcdef" });
+  w = setEdge(w, { window_h: 6, kinds: [{ name: "Shops", sites: 80, vms: 3, data_tib: 1, change_pct: 2, link_mbps: 30, servers_min: 2 }, { name: "Large sites", sites: 0, vms: 1, data_tib: 0, change_pct: 0, link_mbps: 1, servers_min: 1 },
+    { name: "Plants", sites: 0, vms: 1, data_tib: 0, change_pct: 0, link_mbps: 1, servers_min: 1 }, { name: "Other sites", sites: 0, vms: 1, data_tib: 0, change_pct: 0, link_mbps: 1, servers_min: 1 }] }, "2026-11-02");
+  assert.equal(validWorkshop(w), true);
+  const md = summaryMarkdown(CAT, w, assess(CAT, w));
+  assert.match(md, /### A first edge design/);
+  assert.match(md, /\| Shops \| 80 \| 2 \| 160 \|/);
+  assert.doesNotMatch(summaryMarkdown(CAT, setScope(w, ["hci"], "2026-11-02"), assess(CAT, setScope(w, ["hci"], "2026-11-02"))), /edge design/, "only with edge sites in scope");
+  assert.equal(validWorkshop({ ...w, edge: { kinds: [] } }), false);
+  assert.throws(() => setEdge(w, { window_h: 30 }, "2026-11-02"));
+  assert.equal("edge" in setEdge(w, null, "2026-11-02"), false);
+});
+
+test("the cost per machine is kept with the workshop and reaches the summary on the lines where it is the conversation", () => {
+  assert.deepEqual(UNIT_LINES, ["cloud-operations", "service-provider-cloud", "hybrid-cloud"]);
+  let w = makeWorkshop({ customer: "Quarzo Utilities (mock)", scope: ["cloud-operations", "hci"], createdOn: "2026-11-01", nonce: "abcdef" });
+  w = setUnit(w, { machines: 600, hardware: 1800000, licences_year: 300000, people_fte: 4, fte_cost: 65000, cloud_month: 190 }, "2026-11-02");
+  assert.equal(validWorkshop(w), true);
+  const md = summaryMarkdown(CAT, w, assess(CAT, w));
+  assert.match(md, /### What one machine costs/);
+  assert.match(md, /\*\*128 a machine a month\*\*/);
+  assert.equal(validWorkshop({ ...w, unit: { machines: -1 } }), false);
+  assert.throws(() => setUnit(w, { idle_pct: 99 }, "2026-11-02"));
+  assert.equal("unit" in setUnit(w, null, "2026-11-02"), false);
+  const noLine = setScope(w, ["hci"], "2026-11-02");
+  assert.doesNotMatch(summaryMarkdown(CAT, noLine, assess(CAT, noLine)), /What one machine costs/);
+});
+
 test("the questions come in the order of a conversation, can be narrowed to a meeting, and travel as a guide", async () => {
   const { displayOrder, inMeeting, questionGuide, ROLE_WORDS, makeWorkshop: mk, setAnswer: sa } = await import("../workshop.js");
   const line = CAT.lines.hci;

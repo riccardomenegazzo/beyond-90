@@ -71,3 +71,13 @@ test("the handover says who delivers, with the skills still to line up before go
   const bare = handoverMarkdown(CAT, { ...w, channel: undefined }, null, "2026-11-19");
   assert.doesNotMatch(bare, /## Who delivers/);
 });
+
+test("the handover carries the edge design and the cost per machine when their lines are in scope", async () => {
+  const { setEdge, setUnit } = await import("../workshop.js");
+  let w = makeWorkshop({ customer: "Faro Stores (mock)", scope: ["edge-sites", "cloud-operations"], createdOn: "2026-11-01", nonce: "abcdef" });
+  w = setEdge(w, { window_h: 8 }, "2026-11-02");
+  w = setUnit(w, { machines: 300, licences_year: 180000, tenant_vms: 10 }, "2026-11-02");
+  const md = handoverMarkdown(CAT, w, null, "2026-11-20");
+  assert.match(md, /Edge design: 198 servers at 156 sites in 3 standard designs \(small sites: 1 a site; large sites: 2 a site; plants: 3 a site\), a witness for 30 two-server sites; upgrades in about/);
+  assert.match(md, /Cost per machine: 50 a month all in, across 300 machines; a standard tenant costs 500 a month/);
+});
