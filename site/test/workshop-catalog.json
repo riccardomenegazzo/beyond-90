@@ -40,84 +40,187 @@
      "q": "What does an hour of downtime cost on your most important application?",
      "why": "Turns recovery features into money the sponsor recognises.",
      "need": "The cost of an hour down on the key application is known",
-     "how": "Put a number on it with the application owner"
+     "how": "Put a number on it with the application owner",
+     "role": "executive",
+     "core": true,
+     "listen": "A number with an owner is a business case. 'It would be bad' means nobody has counted it yet: count it with them.",
+     "probe": "Who would notice first, a customer or an internal team, and how long before it reached the board?"
     },
     {
      "stage": "value",
      "q": "When did you last restore a whole system, not a file, and how long did it take?",
      "why": "Untested recovery is the usual gap behind a confident answer.",
      "need": "A whole system can be restored in a known time",
-     "how": "Restore one complete system and time it"
+     "how": "Restore one complete system and time it",
+     "role": "operations",
+     "core": true,
+     "listen": "Never, or not end to end, is the gap. A timed test in the last quarter is a strength to build on.",
+     "probe": "What was slower than planned in that restore, and who was waiting for it?"
     },
     {
      "stage": "L1",
      "q": "How many clusters run outside the main data centre: plants, branches, edge sites?",
      "why": "Remote clusters are the ones the central console does not see.",
      "need": "Clusters outside the main data centre are known and managed",
-     "how": "Bring plant, branch and edge clusters under central management"
+     "how": "Bring plant, branch and edge clusters under central management",
+     "role": "architect",
+     "listen": "Sites with no local IT staff are where a platform that looks after itself pays most.",
+     "probe": "How is a failed disk at the furthest site replaced today, and how long does it take?"
     },
     {
      "stage": "L2",
      "q": "Do you know which virtual machines have no owner and what they run?",
      "why": "Unowned machines are skipped by protection and patching.",
      "need": "Every virtual machine has an owner and a purpose",
-     "how": "Tag machines with owners and retire the orphans"
+     "how": "Tag machines with owners and retire the orphans",
+     "role": "operations",
+     "listen": "If nobody can say, the estate is bigger than it needs to be: the first saving is what can be switched off.",
+     "probe": "When did anyone last switch off a machine nobody claimed, and what happened?"
     },
     {
      "stage": "L3",
      "q": "Which workloads have snapshots, and could an administrator account delete them?",
      "why": "Snapshots an attacker can delete are not ransomware protection.",
      "need": "Important workloads have snapshots that an admin cannot delete",
-     "how": "Apply protection policies with immutable copies"
+     "how": "Apply protection policies with immutable copies",
+     "role": "security",
+     "core": true,
+     "listen": "Yes, or 'not sure', means one stolen account can erase the safety net.",
+     "probe": "Who holds those administrator accounts, and does deleting a copy need a second person?"
     },
     {
      "stage": "L3",
      "q": "Is there a second site, and has failover to it been run end to end?",
      "why": "Replication without a tested recovery plan is a hope.",
      "need": "Failover to a second site has been run end to end",
-     "how": "Run a test failover of one application"
+     "how": "Run a test failover of one application",
+     "role": "operations",
+     "listen": "A runbook that has never been run end to end is a hope, not a plan.",
+     "probe": "What would you rather the auditor did not see in your last failover test?"
     },
     {
      "stage": "L3",
      "q": "How far behind on upgrades are you, and what makes upgrading hard?",
      "why": "Lifecycle debt is a security risk and the most common hidden effort.",
      "need": "Upgrades are routine, not a project",
-     "how": "Agree an upgrade cadence and remove what makes upgrading hard"
+     "how": "Agree an upgrade cadence and remove what makes upgrading hard",
+     "role": "operations",
+     "core": true,
+     "listen": "Upgrades planned around weekends and change boards cost people every time: that time is the saving.",
+     "probe": "How many people and nights did the last full upgrade take: firmware, hypervisor and storage?"
     },
     {
      "stage": "L4",
      "q": "When the platform raises an alert at night, who acts on it?",
      "why": "Alerts without an owner turn into noise, then into outages.",
      "need": "A platform alert at night reaches someone who acts",
-     "how": "Route platform alerts to a named on-call owner"
+     "how": "Route platform alerts to a named on-call owner",
+     "role": "operations",
+     "listen": "A named person with a runbook is mature. 'The supplier calls us', or nobody, means outages last longer than they should.",
+     "probe": "Which alert last woke someone up, and was it worth it?"
     },
     {
      "stage": "L2",
      "q": "Which failures must the platform ride through without stopping: a disk, a server, a whole rack, a room?",
      "why": "The answer decides how many copies of the data are kept and where they are placed.",
      "need": "The failures to survive are agreed, and every copy of the data sits in a different place for each of them",
-     "how": "Agree the failure domains (server, rack, room) and how many copies each group of workloads needs"
+     "how": "Agree the failure domains (server, rack, room) and how many copies each group of workloads needs",
+     "role": "architect",
+     "core": true,
+     "listen": "This decides how many copies of the data to keep and how much headroom to buy: write it down as a requirement.",
+     "probe": "Has a whole rack or room ever failed, and what stopped with it?"
     },
     {
      "stage": "L3",
      "q": "How full are storage and hosts today, and how much room is kept free for a server failure and for growth?",
      "why": "A platform run at the edge cannot rebuild after a failure, and the next purchase arrives as an emergency.",
      "need": "Capacity is planned with room to rebuild after a failure and to grow, with alerts before it runs short",
-     "how": "Measure today's use, keep a server's worth of room free, and set alerts at two thresholds"
+     "how": "Measure today's use, keep a server's worth of room free, and set alerts at two thresholds",
+     "role": "architect",
+     "listen": "Above about three quarters full, a server failure can leave no room to rebuild: a sizing input, not a detail.",
+     "probe": "How fast has used capacity grown over the last two years?"
     },
     {
      "stage": "L3",
      "q": "Which workloads need the fastest storage, and which can live on cheaper capacity?",
      "why": "Separating hot from cold data, and deciding where to compress or deduplicate, is where cost and performance are won.",
      "need": "Workloads are grouped by the performance they need, with data reduction used where it pays off",
-     "how": "Group workloads by performance tier and agree where compression and deduplication apply"
+     "how": "Group workloads by performance tier and agree where compression and deduplication apply",
+     "role": "application",
+     "listen": "A few latency-sensitive systems often drive the whole design: name them now so the proof measures them.",
+     "probe": "Which application owner complains first when storage slows down?"
     },
     {
      "stage": "L4",
      "q": "Could a tested platform update be pre-approved as routine and run during the working day?",
      "why": "Updates that need a weekend get postponed, and a platform that falls behind becomes a risk.",
      "need": "Tested platform updates are pre-approved and run during the working day, without downtime",
-     "how": "Agree with change management a pre-approved path for tested updates"
+     "how": "Agree with change management a pre-approved path for tested updates",
+     "role": "executive",
+     "listen": "If every update needs a change board at night, simple rolling updates are worth hours a month: agree it as a goal.",
+     "probe": "What would the change board need to see to treat a tested update as a standard change?"
+    },
+    {
+     "stage": "L1",
+     "q": "What hardware runs the estate today, how old is it, and when does its support end?",
+     "why": "The end of hardware support is often the real date behind the project.",
+     "need": "Servers and arrays are listed with their end-of-support dates",
+     "how": "Export the hardware list with purchase and support dates",
+     "role": "architect",
+     "core": true,
+     "listen": "An array or a server fleet out of support within 18 months is a reason to decide this year, with a date.",
+     "probe": "What would it cost to extend support on the oldest array for two more years?"
+    },
+    {
+     "stage": "L2",
+     "q": "Is there a week of performance data for the estate, processor, memory, storage and network, covering the busiest days?",
+     "why": "Sizing on what machines are given rather than what they use over-buys; a week of peaks sizes it right.",
+     "need": "A week of performance data covers the busiest days",
+     "how": "Run a collector for seven days that include month-end or the busiest day",
+     "role": "operations",
+     "core": true,
+     "listen": "Without measured peaks, sizing falls back on what was allocated, often several times what is used.",
+     "probe": "Which days of the month are the busiest, and can the collection include one?"
+    },
+    {
+     "stage": "L2",
+     "q": "How much storage belongs to machines that are switched off, and do they still need it?",
+     "why": "Switched-off machines still hold data: it must be sized, or retired.",
+     "need": "Switched-off machines are either sized or retired",
+     "how": "List switched-off machines with their storage and an owner's decision",
+     "role": "operations",
+     "listen": "A large share of switched-off capacity is an early win: retire it before buying for it.",
+     "probe": "Who can approve retiring a machine that has been off for six months?"
+    },
+    {
+     "stage": "L3",
+     "q": "Which software is licensed per processor core or per host, and does that shape how servers are built?",
+     "why": "Database and operating system licences can cost more than the platform; they decide the processor choice.",
+     "need": "Per-core licences are known and the design keeps them on the fewest cores",
+     "how": "List per-core licences and the hosts they are tied to",
+     "role": "finance",
+     "listen": "Per-core software calls for fewer, faster cores on dedicated hosts. Ignoring it can erase the savings.",
+     "probe": "What did the last licence true-up or audit cost, and for which product?"
+    },
+    {
+     "stage": "L2",
+     "q": "Which data must be encrypted at rest, and where are encryption keys managed today?",
+     "why": "Encryption and key management are often a gate in the security review.",
+     "need": "Encryption at rest and the key manager are agreed with security",
+     "how": "Ask security for the policy on encryption at rest and key management",
+     "role": "security",
+     "listen": "A key manager already in place is a requirement to test in the proof, not a footnote.",
+     "probe": "Who approves a new system that holds encrypted data, and how long does that review take?"
+    },
+    {
+     "stage": "L4",
+     "q": "How many people run the infrastructure, and what would they do with the time if routine work went away?",
+     "why": "The value of simpler operations is the work it frees, said by the team itself.",
+     "need": "The team's routine hours are known, and where freed time would go",
+     "how": "List the routine tasks of a typical month with their hours",
+     "role": "executive",
+     "listen": "A named project waiting for those hours makes the saving real. 'Nothing' means it will not be believed.",
+     "probe": "Which project was postponed this year for lack of people?"
     }
    ],
    "proof": [
@@ -213,77 +316,166 @@
      "q": "What would one day without your main site cost, and has anyone put a number on it?",
      "why": "Turns recovery objectives into a business decision.",
      "need": "The cost of a day without the main site is known and agreed",
-     "how": "Put a number on it with finance and the business owner"
+     "how": "Put a number on it with finance and the business owner",
+     "role": "executive",
+     "core": true,
+     "listen": "A figure per hour or per day turns recovery time into a budget line.",
+     "probe": "Which service would the business restore first, and has it agreed that order?"
     },
     {
      "stage": "value",
      "q": "When was the last full recovery test, and what went wrong in it?",
      "why": "Tests always find something; no test means it is still hidden.",
      "need": "A full recovery test runs regularly, and its findings are closed",
-     "how": "Schedule a non-disruptive test failover and track what it finds"
+     "how": "Schedule a non-disruptive test failover and track what it finds",
+     "role": "operations",
+     "listen": "No full test in the last year means every recovery time is a guess.",
+     "probe": "What did the test leave out because it was too risky or too hard?"
     },
     {
      "stage": "L1",
      "q": "Which sites and branches have no copy of their workloads anywhere?",
      "why": "Unprotected sites are the first gap to close.",
      "need": "Every site and branch has a copy of its workloads",
-     "how": "Connect the unprotected sites and start their first copies"
+     "how": "Connect the unprotected sites and start their first copies",
+     "role": "architect",
+     "listen": "Branches with no copy are where one fire or one attack becomes permanent loss.",
+     "probe": "What would be lost for good if the smallest site burned down tonight?"
     },
     {
      "stage": "L2",
      "q": "Has every workload been given a recovery point and a recovery time, agreed with the business?",
      "why": "Without objectives, nothing can be checked or prioritised.",
      "need": "Every workload has a recovery point and time agreed with the business",
-     "how": "Classify workloads in tiers with the business owners"
+     "how": "Classify workloads in tiers with the business owners",
+     "role": "application",
+     "core": true,
+     "listen": "Targets set by IT alone are wrong in both directions; agreed with the business they become a design input.",
+     "probe": "Which system has the strictest target, and who set it?"
     },
     {
      "stage": "L3",
      "q": "Could an administrator account delete your backups today?",
      "why": "If yes, ransomware can too.",
      "need": "No administrator account can delete the backups",
-     "how": "Keep an immutable copy that admins cannot remove"
+     "how": "Keep an immutable copy that admins cannot remove",
+     "role": "security",
+     "core": true,
+     "listen": "If one account can delete the copies, so can ransomware: copies nobody can change, and a second approver, close it.",
+     "probe": "Is there a copy that no administrator can change before it expires?"
     },
     {
      "stage": "L3",
      "q": "Does the recovery plan include the network: addresses, DNS, firewall rules?",
      "why": "Most failed recoveries fail on the network, not on the data.",
      "need": "The recovery plan includes the network",
-     "how": "Add addresses, DNS and firewall changes to the plan, and test them"
+     "how": "Add addresses, DNS and firewall changes to the plan, and test them",
+     "role": "architect",
+     "listen": "Failovers fail on addresses, name resolution and firewall rules more often than on data.",
+     "probe": "Will machines keep their addresses at the recovery site, or be given new ones?"
     },
     {
      "stage": "L3",
      "q": "Who can start a failover, and do they have the runbook at night?",
      "why": "Recovery depends on people as much as on copies.",
      "need": "Whoever starts a failover has the runbook, at night too",
-     "how": "Name who can start it, and give them a one-click plan"
+     "how": "Name who can start it, and give them a one-click plan",
+     "role": "operations",
+     "listen": "One named person with the runbook in hand saves the first hour of a disaster.",
+     "probe": "Who can declare a disaster when the head of IT cannot be reached?"
     },
     {
      "stage": "L4",
      "q": "When a replication falls behind, who is told and what do they do?",
      "why": "A silent missed recovery point is discovered on the worst day.",
      "need": "A replication that falls behind reaches a named owner",
-     "how": "Alert on missed recovery points with an owner and a response"
+     "how": "Alert on missed recovery points with an owner and a response",
+     "role": "operations",
+     "listen": "Silent lag is how a recovery point of minutes becomes hours on the day.",
+     "probe": "When did replication last fall behind, and how long before anyone noticed?"
     },
     {
      "stage": "L2",
      "q": "Which workloads can lose no data at all, which can lose minutes, and which can lose hours?",
      "why": "Zero, minutes and hours need different replication, distances and costs.",
      "need": "Every workload sits in a recovery tier (zero, minutes, hours) with the replication that matches it",
-     "how": "Group workloads into recovery tiers with the business and pick the replication for each"
+     "how": "Group workloads into recovery tiers with the business and pick the replication for each",
+     "role": "application",
+     "core": true,
+     "listen": "Zero loss needs synchronous copies over short distances; minutes or hours cost far less. Sort systems into these tiers.",
+     "probe": "How many systems truly need zero data loss, if each had to justify the cost?"
     },
     {
      "stage": "L2",
      "q": "How far back must you be able to go, and how close together must the recovery points be?",
      "why": "Keeping every point forever costs storage; keeping too few loses the point you need after ransomware went unnoticed for days.",
      "need": "Retention is agreed per tier: recent recovery points close together, older ones further apart",
-     "how": "Agree a retention scheme, for example hourly for a day, daily for a week, weekly for a month"
+     "how": "Agree a retention scheme, for example hourly for a day, daily for a week, weekly for a month",
+     "role": "security",
+     "listen": "An intruder may sit unnoticed for weeks: retention must reach further back than that.",
+     "probe": "How long could an intruder have been inside before your last incident or test found them?"
     },
     {
      "stage": "L3",
      "q": "Which machines must come back together, in the same state and in a set order: an application with its database, say?",
      "why": "Recovering machines one by one, from different moments, breaks applications that depend on each other.",
      "need": "Applications that depend on each other are protected as a group and recovered in a set order",
-     "how": "Group dependent machines, snapshot each group together, and write the power-on order into the plan"
+     "how": "Group dependent machines, snapshot each group together, and write the power-on order into the plan",
+     "role": "application",
+     "listen": "Applications whose parts must return to the same instant need consistency groups and a set start order.",
+     "probe": "Which application has the most parts that must come back in order?"
+    },
+    {
+     "stage": "L1",
+     "q": "Where is the second site, how far away, and what is the network round-trip time between them?",
+     "why": "Distance and latency decide whether copies can be synchronous.",
+     "need": "Distance and round-trip time between the sites are measured",
+     "how": "Measure round-trip time between the sites at peak",
+     "role": "architect",
+     "core": true,
+     "listen": "Under about five milliseconds allows zero-loss copies; beyond that, plan near-continuous or scheduled copies.",
+     "probe": "Is there a third place, a cloud or a partner site, that could hold a copy?"
+    },
+    {
+     "stage": "L2",
+     "q": "How much data changes per day on the systems to protect, and how much bandwidth is there for replication?",
+     "why": "Daily change and bandwidth decide which recovery points are achievable.",
+     "need": "Daily change and replication bandwidth are known",
+     "how": "Measure daily change per protected system",
+     "role": "operations",
+     "listen": "If the link cannot carry a day's change within the recovery point, the target or the link must change.",
+     "probe": "Does replication share the link with users, and at which hours?"
+    },
+    {
+     "stage": "L3",
+     "q": "Which backup software and storage are used today, and when do their contracts and support end?",
+     "why": "An existing backup stack can be kept, integrated or replaced: the dates decide which.",
+     "need": "The backup stack is listed with its contract dates",
+     "how": "List backup software, targets and renewal dates",
+     "role": "operations",
+     "listen": "A renewal in the same year as the platform decision is a chance to simplify both.",
+     "probe": "Which backup jobs fail most often, and why?"
+    },
+    {
+     "stage": "L3",
+     "q": "Must recovery be tested regularly for an auditor or a regulation, and how is the test documented today?",
+     "why": "Required tests make automated, non-disruptive testing worth money.",
+     "need": "Recovery tests and their evidence meet what the auditor asks",
+     "how": "Ask compliance for the test frequency and the evidence required",
+     "role": "security",
+     "listen": "A manual test once a year for the auditor costs weekends; one run monthly in an isolated network is the upgrade.",
+     "probe": "What did the last auditor ask for that took longest to produce?"
+    },
+    {
+     "stage": "L4",
+     "q": "If ransomware struck tonight, where would you restore to, and how would you know the copy is clean?",
+     "why": "Recovering from ransomware needs a clean place and a known-good point, not only a copy.",
+     "need": "A clean recovery environment and a way to find the last good copy are planned",
+     "how": "Agree where a clean restore would run and how copies are checked",
+     "role": "security",
+     "core": true,
+     "listen": "Restoring into the same infected network repeats the attack: an isolated recovery area is the requirement.",
+     "probe": "Who decides which copy is clean enough to restore, and on what evidence?"
     }
    ],
    "proof": [
@@ -371,56 +563,146 @@
      "q": "How long does a team wait today for a copy of production, and who makes it?",
      "why": "Copy time is usually the most visible pain and the easiest win.",
      "need": "A team gets a safe copy of production in under an hour",
-     "how": "Offer self-service clones from approved profiles"
+     "how": "Offer self-service clones from approved profiles",
+     "role": "application",
+     "core": true,
+     "listen": "Days or weeks of waiting for a copy is lost development time: the figure is the value.",
+     "probe": "How many copies are requested each month, and how many are refused?"
     },
     {
      "stage": "value",
      "q": "When did you last restore a database to a precise point in time, and how long did it take?",
      "why": "Untested point-in-time recovery is the usual hidden gap.",
      "need": "Any database can be restored to a precise point in time, in a known time",
-     "how": "Restore one production database to a minute and time it"
+     "how": "Restore one production database to a minute and time it",
+     "role": "data",
+     "core": true,
+     "listen": "If nobody has done it recently, the recovery time is unknown.",
+     "probe": "What happens if wrong data is loaded at ten and found at eleven?"
     },
     {
      "stage": "L1",
      "q": "How many databases are there, and how many does nobody own clearly?",
      "why": "Databases outside any list are the ones that miss backups and patches.",
      "need": "Every database is known and has an owner",
-     "how": "Register databases with the platform and assign owners"
+     "how": "Register databases with the platform and assign owners",
+     "role": "data",
+     "listen": "Databases with no clear owner are the ones that miss patches and backups.",
+     "probe": "How many database servers run a single small database?"
     },
     {
      "stage": "L2",
      "q": "Which versions are you running, and how far are they from the supported ones?",
      "why": "Version spread is effort and risk; it sizes the patching work.",
      "need": "Database versions are within support",
-     "how": "Agree target versions and a patch window for the fleet"
+     "how": "Agree target versions and a patch window for the fleet",
+     "role": "data",
+     "core": true,
+     "listen": "Versions out of support are a security and audit finding; upgrading them through automation is a strong case.",
+     "probe": "What stopped the last major version upgrade?"
     },
     {
      "stage": "L3",
      "q": "Which production databases have no point-in-time backup today?",
      "why": "The answer is the first list of the plan.",
      "need": "Every production database has point-in-time backup",
-     "how": "Apply a backup policy to the databases without one"
+     "how": "Apply a backup policy to the databases without one",
+     "role": "data",
+     "listen": "Production without point-in-time recovery means a logical error becomes lost data.",
+     "probe": "Which application owner believes they have it, and does not?"
     },
     {
      "stage": "L3",
      "q": "How are test copies masked, if at all?",
      "why": "Unmasked copies of production are a common data leak.",
      "need": "Test copies are masked before a team sees them",
-     "how": "Mask sensitive columns as part of cloning"
+     "how": "Mask sensitive columns as part of cloning",
+     "role": "security",
+     "core": true,
+     "listen": "Personal data left unmasked in test is a compliance risk that automated copies can close.",
+     "probe": "Who checks that a test copy no longer holds personal data?"
     },
     {
      "stage": "L3",
      "q": "Which databases must survive a server failure without anyone acting?",
      "why": "Separates what needs a cluster from what does not.",
      "need": "Databases that must survive a server failure do so with nobody acting",
-     "how": "Cluster the ones that need it, and test a failure"
+     "how": "Cluster the ones that need it, and test a failure",
+     "role": "application",
+     "listen": "High availability built by hand differs from one database to the next; standard patterns cut the risk.",
+     "probe": "Which high-availability methods are used, and which licence level does each need?"
     },
     {
      "stage": "L4",
      "q": "Who is woken up when a backup fails, and how quickly do they know?",
      "why": "A failed backup nobody sees is no backup.",
      "need": "A failed backup wakes the right person within minutes",
-     "how": "Route backup alerts to a named on-call owner"
+     "how": "Route backup alerts to a named on-call owner",
+     "role": "operations",
+     "listen": "A failed backup found only on restore day is the classic failure.",
+     "probe": "When was a failed backup last discovered, and how late?"
+    },
+    {
+     "stage": "L1",
+     "q": "Which database engines and editions run today, and how are they licensed: per core, per server, or by subscription?",
+     "why": "Engine and licence shape the platform, the hosts and the savings.",
+     "need": "Engines, editions and licence models are listed",
+     "how": "List every engine and edition with its licence model",
+     "role": "finance",
+     "core": true,
+     "listen": "Per-core licences reward fewer, faster cores on dedicated hosts: consolidation can pay for the project.",
+     "probe": "When is the next licence true-up or audit, and what did the last one find?"
+    },
+    {
+     "stage": "L2",
+     "q": "How large is each important database, how fast does it grow, and how much of it is busy at any one time?",
+     "why": "The busy part belongs on the fastest storage; size and growth drive capacity.",
+     "need": "Size, growth and busy data are measured for the important databases",
+     "how": "Collect size, growth and an hour of peak activity for the top databases",
+     "role": "data",
+     "core": true,
+     "listen": "When the busy part fits in the fastest tier, latency stays low: measure it rather than guess.",
+     "probe": "Which database has grown fastest, and why?"
+    },
+    {
+     "stage": "L2",
+     "q": "What do the important databases ask of storage: transactions per second, latency, and when is the peak?",
+     "why": "Measured peaks size the platform and give the proof a target.",
+     "need": "Peak load and latency targets are known for each important database",
+     "how": "Pull a performance report covering the busiest hour",
+     "role": "data",
+     "listen": "A latency target agreed now becomes a pass-or-fail line in the proof.",
+     "probe": "What does the application owner see when latency doubles?"
+    },
+    {
+     "stage": "L3",
+     "q": "How long does a routine patch take per database, and how often is it skipped?",
+     "why": "Patching by hand is where database fleets fall behind.",
+     "need": "Patching time per database and the backlog are known",
+     "how": "Count the patches applied and skipped last quarter",
+     "role": "operations",
+     "listen": "If patching runs one server at a time at night, patching the whole fleet at once is the headline saving.",
+     "probe": "How many databases missed the last security patch, and why?"
+    },
+    {
+     "stage": "L3",
+     "q": "Do developers get databases themselves today, or only through a ticket?",
+     "why": "Self-service within limits is the change the business notices.",
+     "need": "Developers get approved databases without a ticket",
+     "how": "Agree a catalogue of database sizes and versions developers may request",
+     "role": "application",
+     "listen": "Tickets that take days push teams to cloud databases or to servers nobody knows about.",
+     "probe": "Which team has started using a cloud database to avoid waiting?"
+    },
+    {
+     "stage": "L4",
+     "q": "Who owns database standards (versions, sizes, backup policies), and how are they enforced?",
+     "why": "Standards held in a document drift; standards built into templates hold.",
+     "need": "Database standards are written down and applied by templates",
+     "how": "List the standards and check how many databases follow them",
+     "role": "data",
+     "listen": "Standards that live only on a wiki are ignored under pressure.",
+     "probe": "What share of databases follow the backup standard today?"
     }
    ],
    "proof": [
@@ -496,56 +778,135 @@
      "q": "What data would hurt most if it were encrypted or deleted tomorrow?",
      "why": "Points straight at the buckets that need immutability first.",
      "need": "The data that would hurt most is known and protected first",
-     "how": "Name it with the business, and protect it first"
+     "how": "Name it with the business, and protect it first",
+     "role": "executive",
+     "core": true,
+     "listen": "Backups and records under legal hold usually top the list; they set the level of protection.",
+     "probe": "Which of that data has a legal retention period?"
     },
     {
      "stage": "value",
      "q": "What do you pay today per terabyte, including egress and requests?",
      "why": "Request and egress fees are where storage bills surprise people.",
      "need": "The full cost per terabyte is known",
-     "how": "Add up storage, egress and requests for a typical month"
+     "how": "Add up storage, egress and requests for a typical month",
+     "role": "finance",
+     "core": true,
+     "listen": "Charges for retrieval and requests often double the headline price.",
+     "probe": "What did retrieving data cost the last time you restored from the cloud?"
     },
     {
      "stage": "L1",
      "q": "Which applications and backup jobs write to object storage, and where?",
      "why": "Unknown writers mean unknown tenants and keys.",
      "need": "Every application and backup job writing to object storage is known",
-     "how": "List writers and their buckets"
+     "how": "List writers and their buckets",
+     "role": "architect",
+     "listen": "Each application that writes is a compatibility test for the proof.",
+     "probe": "Which of them use more than simple reads and writes: versioning, lifecycle rules, notifications?"
     },
     {
      "stage": "L2",
      "q": "Do you know how many access keys exist, who owns them and when they were last used?",
      "why": "Old keys with broad rights are the easiest way in.",
      "need": "Every access key has an owner and is used",
-     "how": "Review keys, give owners, and remove unused ones"
+     "how": "Review keys, give owners, and remove unused ones",
+     "role": "security",
+     "listen": "Old keys with broad rights are a common way in.",
+     "probe": "When was a key last rotated, and what broke?"
     },
     {
      "stage": "L3",
      "q": "Are your backup copies under object lock, and for how long?",
      "why": "Backups an administrator can delete do not survive ransomware.",
      "need": "Backup copies are under object lock for long enough",
-     "how": "Turn on object lock with the agreed retention"
+     "how": "Turn on object lock with the agreed retention",
+     "role": "security",
+     "core": true,
+     "listen": "Backups that can be deleted with the right keys can be deleted by an attacker.",
+     "probe": "Which lock mode is used: one even administrators cannot override, or one they can?"
     },
     {
      "stage": "L3",
      "q": "Must any data stay in a given country, and can you prove where it is?",
      "why": "Residency is often a legal requirement before it is a technical one.",
      "need": "Data that must stay in a country stays there, with proof",
-     "how": "Pin buckets to regions and keep the evidence"
+     "how": "Pin buckets to regions and keep the evidence",
+     "role": "security",
+     "listen": "Being able to prove where data is matters as much as where it is.",
+     "probe": "Who would ask for that proof: a regulator, a customer, an auditor?"
     },
     {
      "stage": "L3",
      "q": "When did you last restore from these backups, and how long did it take?",
      "why": "The restore is the only test that counts.",
      "need": "A restore from object storage has been tested and timed",
-     "how": "Restore one backup end to end and time it"
+     "how": "Restore one backup end to end and time it",
+     "role": "operations",
+     "listen": "Restore speed depends on throughput, not capacity: measure it.",
+     "probe": "How long would restoring the largest system from these copies take?"
     },
     {
      "stage": "L4",
      "q": "Who is alerted when someone reads or deletes far more than usual?",
      "why": "Mass reads and deletes are the first signs of theft or ransomware.",
      "need": "Unusual reads or deletes alert someone named",
-     "how": "Alert on unusual volumes, routed to an owner"
+     "how": "Alert on unusual volumes, routed to an owner",
+     "role": "security",
+     "listen": "Mass reads can mean theft; mass deletes can mean an attack.",
+     "probe": "Who can stop a key from working within minutes?"
+    },
+    {
+     "stage": "L1",
+     "q": "How much data will be stored, in how many objects, and how much is written each day?",
+     "why": "Capacity, object count and daily writes size the platform.",
+     "need": "Capacity, object count and daily writes are estimated",
+     "how": "Collect current size and daily writes per bucket or application",
+     "role": "architect",
+     "core": true,
+     "listen": "Billions of small objects stress metadata more than capacity: ask about object size too.",
+     "probe": "What is the typical object size, and the largest?"
+    },
+    {
+     "stage": "L2",
+     "q": "How fast must data be written and read back, in the backup window and during a restore?",
+     "why": "Throughput, not capacity, decides backup and restore times.",
+     "need": "The throughput needed for backup and restore is known",
+     "how": "Divide the size of the backup set by its window to get the throughput needed",
+     "role": "operations",
+     "core": true,
+     "listen": "A nightly window and a restore target give a throughput the design must meet.",
+     "probe": "What is the restore time target for the largest backup set?"
+    },
+    {
+     "stage": "L3",
+     "q": "Which data should move to cheaper storage, or be deleted, automatically as it ages?",
+     "why": "Lifecycle rules keep cost down without anyone acting.",
+     "need": "Lifecycle and retention rules are agreed per data set",
+     "how": "Agree tiering and expiry per bucket with its owner",
+     "role": "finance",
+     "listen": "Data kept forever by default is the cost to cut: give each rule an owner.",
+     "probe": "Which data set has no retention rule at all today?"
+    },
+    {
+     "stage": "L3",
+     "q": "Do analytics or AI teams need to read this data where it is, and with which tools?",
+     "why": "Data read in place avoids copies and transfer charges.",
+     "need": "Needs to read data in place for analytics or AI are known",
+     "how": "Ask the data teams which tools and protocols they would read with",
+     "role": "data",
+     "listen": "Reading in place turns a backup target into a data platform: a strong second use.",
+     "probe": "How much data is copied today only to be analysed elsewhere?"
+    },
+    {
+     "stage": "L4",
+     "q": "Will the storage serve several teams or customers, each seeing only its own data and usage?",
+     "why": "Serving several tenants needs isolation, quotas and usage per tenant.",
+     "need": "Tenants, quotas and usage reporting are agreed",
+     "how": "List the teams or customers and what each must see",
+     "role": "executive",
+     "listen": "Charging back per team needs usage per tenant from the first day.",
+     "probe": "How is the cost of storage split between teams today?"
     }
    ],
    "proof": [

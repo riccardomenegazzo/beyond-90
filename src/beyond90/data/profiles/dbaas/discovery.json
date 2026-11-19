@@ -5,56 +5,146 @@
       "q": "How long does a team wait today for a copy of production, and who makes it?",
       "why": "Copy time is usually the most visible pain and the easiest win.",
       "need": "A team gets a safe copy of production in under an hour",
-      "how": "Offer self-service clones from approved profiles"
+      "how": "Offer self-service clones from approved profiles",
+      "role": "application",
+      "core": true,
+      "listen": "Days or weeks of waiting for a copy is lost development time: the figure is the value.",
+      "probe": "How many copies are requested each month, and how many are refused?"
     },
     {
       "stage": "value",
       "q": "When did you last restore a database to a precise point in time, and how long did it take?",
       "why": "Untested point-in-time recovery is the usual hidden gap.",
       "need": "Any database can be restored to a precise point in time, in a known time",
-      "how": "Restore one production database to a minute and time it"
+      "how": "Restore one production database to a minute and time it",
+      "role": "data",
+      "core": true,
+      "listen": "If nobody has done it recently, the recovery time is unknown.",
+      "probe": "What happens if wrong data is loaded at ten and found at eleven?"
     },
     {
       "stage": "L1",
       "q": "How many databases are there, and how many does nobody own clearly?",
       "why": "Databases outside any list are the ones that miss backups and patches.",
       "need": "Every database is known and has an owner",
-      "how": "Register databases with the platform and assign owners"
+      "how": "Register databases with the platform and assign owners",
+      "role": "data",
+      "listen": "Databases with no clear owner are the ones that miss patches and backups.",
+      "probe": "How many database servers run a single small database?"
     },
     {
       "stage": "L2",
       "q": "Which versions are you running, and how far are they from the supported ones?",
       "why": "Version spread is effort and risk; it sizes the patching work.",
       "need": "Database versions are within support",
-      "how": "Agree target versions and a patch window for the fleet"
+      "how": "Agree target versions and a patch window for the fleet",
+      "role": "data",
+      "core": true,
+      "listen": "Versions out of support are a security and audit finding; upgrading them through automation is a strong case.",
+      "probe": "What stopped the last major version upgrade?"
     },
     {
       "stage": "L3",
       "q": "Which production databases have no point-in-time backup today?",
       "why": "The answer is the first list of the plan.",
       "need": "Every production database has point-in-time backup",
-      "how": "Apply a backup policy to the databases without one"
+      "how": "Apply a backup policy to the databases without one",
+      "role": "data",
+      "listen": "Production without point-in-time recovery means a logical error becomes lost data.",
+      "probe": "Which application owner believes they have it, and does not?"
     },
     {
       "stage": "L3",
       "q": "How are test copies masked, if at all?",
       "why": "Unmasked copies of production are a common data leak.",
       "need": "Test copies are masked before a team sees them",
-      "how": "Mask sensitive columns as part of cloning"
+      "how": "Mask sensitive columns as part of cloning",
+      "role": "security",
+      "core": true,
+      "listen": "Personal data left unmasked in test is a compliance risk that automated copies can close.",
+      "probe": "Who checks that a test copy no longer holds personal data?"
     },
     {
       "stage": "L3",
       "q": "Which databases must survive a server failure without anyone acting?",
       "why": "Separates what needs a cluster from what does not.",
       "need": "Databases that must survive a server failure do so with nobody acting",
-      "how": "Cluster the ones that need it, and test a failure"
+      "how": "Cluster the ones that need it, and test a failure",
+      "role": "application",
+      "listen": "High availability built by hand differs from one database to the next; standard patterns cut the risk.",
+      "probe": "Which high-availability methods are used, and which licence level does each need?"
     },
     {
       "stage": "L4",
       "q": "Who is woken up when a backup fails, and how quickly do they know?",
       "why": "A failed backup nobody sees is no backup.",
       "need": "A failed backup wakes the right person within minutes",
-      "how": "Route backup alerts to a named on-call owner"
+      "how": "Route backup alerts to a named on-call owner",
+      "role": "operations",
+      "listen": "A failed backup found only on restore day is the classic failure.",
+      "probe": "When was a failed backup last discovered, and how late?"
+    },
+    {
+      "stage": "L1",
+      "q": "Which database engines and editions run today, and how are they licensed: per core, per server, or by subscription?",
+      "why": "Engine and licence shape the platform, the hosts and the savings.",
+      "need": "Engines, editions and licence models are listed",
+      "how": "List every engine and edition with its licence model",
+      "role": "finance",
+      "core": true,
+      "listen": "Per-core licences reward fewer, faster cores on dedicated hosts: consolidation can pay for the project.",
+      "probe": "When is the next licence true-up or audit, and what did the last one find?"
+    },
+    {
+      "stage": "L2",
+      "q": "How large is each important database, how fast does it grow, and how much of it is busy at any one time?",
+      "why": "The busy part belongs on the fastest storage; size and growth drive capacity.",
+      "need": "Size, growth and busy data are measured for the important databases",
+      "how": "Collect size, growth and an hour of peak activity for the top databases",
+      "role": "data",
+      "core": true,
+      "listen": "When the busy part fits in the fastest tier, latency stays low: measure it rather than guess.",
+      "probe": "Which database has grown fastest, and why?"
+    },
+    {
+      "stage": "L2",
+      "q": "What do the important databases ask of storage: transactions per second, latency, and when is the peak?",
+      "why": "Measured peaks size the platform and give the proof a target.",
+      "need": "Peak load and latency targets are known for each important database",
+      "how": "Pull a performance report covering the busiest hour",
+      "role": "data",
+      "listen": "A latency target agreed now becomes a pass-or-fail line in the proof.",
+      "probe": "What does the application owner see when latency doubles?"
+    },
+    {
+      "stage": "L3",
+      "q": "How long does a routine patch take per database, and how often is it skipped?",
+      "why": "Patching by hand is where database fleets fall behind.",
+      "need": "Patching time per database and the backlog are known",
+      "how": "Count the patches applied and skipped last quarter",
+      "role": "operations",
+      "listen": "If patching runs one server at a time at night, patching the whole fleet at once is the headline saving.",
+      "probe": "How many databases missed the last security patch, and why?"
+    },
+    {
+      "stage": "L3",
+      "q": "Do developers get databases themselves today, or only through a ticket?",
+      "why": "Self-service within limits is the change the business notices.",
+      "need": "Developers get approved databases without a ticket",
+      "how": "Agree a catalogue of database sizes and versions developers may request",
+      "role": "application",
+      "listen": "Tickets that take days push teams to cloud databases or to servers nobody knows about.",
+      "probe": "Which team has started using a cloud database to avoid waiting?"
+    },
+    {
+      "stage": "L4",
+      "q": "Who owns database standards (versions, sizes, backup policies), and how are they enforced?",
+      "why": "Standards held in a document drift; standards built into templates hold.",
+      "need": "Database standards are written down and applied by templates",
+      "how": "List the standards and check how many databases follow them",
+      "role": "data",
+      "listen": "Standards that live only on a wiki are ignored under pressure.",
+      "probe": "What share of databases follow the backup standard today?"
     }
   ]
 }

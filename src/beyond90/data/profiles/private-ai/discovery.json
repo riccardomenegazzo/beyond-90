@@ -5,112 +5,185 @@
       "q": "Which AI use case would make a difference this year, and what stops it from running on your own data today?",
       "why": "Anchors the platform in a real use case, not a lab.",
       "need": "One use case with a business owner and a measure of success is chosen",
-      "how": "Pick the use case with the owner and agree how success is measured"
+      "how": "Pick the use case with the owner and agree how success is measured",
+      "role": "executive",
+      "core": true,
+      "listen": "One named use case with an owner and a deadline is a project; a list of ideas is not yet.",
+      "probe": "What happens to that use case if it waits another year?"
     },
     {
       "stage": "value",
       "q": "Why does this need to run on your infrastructure: data sensitivity, sovereignty, cost, or latency?",
       "why": "The reason decides the architecture and the proof.",
       "need": "The reason to run AI in house is written down and agreed",
-      "how": "Write the reason with the sponsor: data, sovereignty, cost or latency"
+      "how": "Write the reason with the sponsor: data, sovereignty, cost or latency",
+      "role": "security",
+      "core": true,
+      "listen": "Sensitivity and sovereignty are lasting reasons; cost alone can change with the next price list.",
+      "probe": "Which data could never be sent to a hosted model, and who decided?"
     },
     {
       "stage": "L1",
       "q": "How many GPU servers exist today, who bought them, and how busy are they?",
       "why": "Scattered GPUs are expensive and invisible.",
       "need": "Every GPU server is known, with an owner and its utilisation",
-      "how": "List GPU servers and measure a week of utilisation"
+      "how": "List GPU servers and measure a week of utilisation",
+      "role": "architect",
+      "listen": "Idle or scattered GPUs are capacity to pool before buying more.",
+      "probe": "How busy were the GPUs last month, on average and at peak?"
     },
     {
       "stage": "L2",
       "q": "Which models are in use, and who approved them?",
       "why": "An approved catalogue is the start of governance.",
       "need": "The models in use are known and approved",
-      "how": "Build a catalogue of approved models with an owner"
+      "how": "Build a catalogue of approved models with an owner",
+      "role": "security",
+      "listen": "Models in use without approval are a governance gap.",
+      "probe": "Who checks a model's licence and origin before it is used?"
     },
     {
       "stage": "L3",
       "q": "Can an assistant reach documents a user is not allowed to read?",
       "why": "Permission-aware retrieval is where AI meets data protection.",
       "need": "Retrieval respects the same permissions as the source data",
-      "how": "Test retrieval as two users with different rights"
+      "how": "Test retrieval as two users with different rights",
+      "role": "security",
+      "core": true,
+      "listen": "Retrieval that ignores permissions leaks data: it must act with the user's own rights.",
+      "probe": "How do document permissions reach the assistant today?"
     },
     {
       "stage": "L3",
       "q": "Are prompts and responses kept where security can investigate them?",
       "why": "Without logs, an incident cannot be reconstructed.",
       "need": "Prompts and responses are logged and searchable, with agreed retention",
-      "how": "Turn on logging for the first endpoint and agree retention"
+      "how": "Turn on logging for the first endpoint and agree retention",
+      "role": "security",
+      "listen": "Without logs, misuse cannot be investigated.",
+      "probe": "How long must logs be kept, and who may read them?"
     },
     {
       "stage": "L3",
       "q": "What may an agent call or change, and who decided?",
       "why": "Agents act; their limits must be explicit.",
       "need": "Each agent has an owner and a policy on what it may call and change",
-      "how": "Write the policy for the first agent and enforce it"
+      "how": "Write the policy for the first agent and enforce it",
+      "role": "security",
+      "listen": "Agents that can act need the same controls as people.",
+      "probe": "Which action would you never let an agent take without a person approving it?"
     },
     {
       "stage": "L4",
       "q": "Who sees what AI costs each team, and decides when it grows?",
       "why": "Cost without an owner grows unchecked.",
       "need": "AI usage and cost per team are reviewed by a named owner",
-      "how": "Meter usage per team and review it monthly"
+      "how": "Meter usage per team and review it monthly",
+      "role": "finance",
+      "listen": "Without cost per team, GPU capacity goes to whoever asks first.",
+      "probe": "Who decides when to buy more GPUs?"
     },
     {
       "stage": "L1",
       "q": "Which parts of the business already use generative AI, through which services, and with which data?",
       "why": "Shadow AI is the first estate to bring under governance.",
       "need": "AI use across the business is known: who uses which models and services, with which data",
-      "how": "Survey teams and network logs for AI services already in use"
+      "how": "Survey teams and network logs for AI services already in use",
+      "role": "executive",
+      "listen": "Use through public services shows the demand and the risk at once.",
+      "probe": "Which of these services hold company data today?"
     },
     {
       "stage": "value",
       "q": "Who owns AI in the business, and is the programme followed by the board?",
       "why": "The owner of the AI programme decides what gets built and funded; infrastructure follows.",
       "need": "The AI programme has a named owner, goals the board follows, and a seat for infrastructure",
-      "how": "Find out who sponsors AI and bring them a concrete use case"
+      "how": "Find out who sponsors AI and bring them a concrete use case",
+      "role": "executive",
+      "listen": "Board attention brings budget and deadlines.",
+      "probe": "What did the board ask for at its last review?"
     },
     {
       "stage": "value",
       "q": "Is AI cost measured per finished piece of work rather than per token, and could the model behind an application be swapped without code changes?",
       "why": "Cheaper tokens can still make a dearer result if a model needs many more of them; and a model wired into code cannot follow better offers.",
       "need": "Each use case has a known cost per finished piece of work, and applications reach models through one shared endpoint, so the model can change",
-      "how": "Cost one use case end to end on two models, and put a shared endpoint between applications and models"
+      "how": "Cost one use case end to end on two models, and put a shared endpoint between applications and models",
+      "role": "finance",
+      "listen": "Cost per finished task is how the business will judge it.",
+      "probe": "Which task would you measure first, and what does it cost today by hand?"
     },
     {
       "stage": "L1",
       "q": "Where do your models run today (a hosted service, a public cloud, a GPU cloud, your own data centre), and how is each paid for?",
       "why": "Each place is billed differently: per token, per hour, or owned; the mix decides the cost.",
       "need": "Every place models run is known, with how it is billed",
-      "how": "List each model in use, where it runs and how it is paid for"
+      "how": "List each model in use, where it runs and how it is paid for",
+      "role": "architect",
+      "core": true,
+      "listen": "Several places with several sets of controls is the sprawl to bring together.",
+      "probe": "Which of these would you bring in-house first, and why?"
     },
     {
       "stage": "L2",
       "q": "Which AI work is at which stage: answers from your documents, coding assistants, applications with agents, agents that run on their own?",
       "why": "Each stage needs more control than the last; where each team is says what to build first.",
       "need": "Each AI initiative is placed at its stage, with the controls that stage needs",
-      "how": "Place each initiative at its stage, with its owner"
+      "how": "Place each initiative at its stage, with its owner",
+      "role": "application",
+      "listen": "Most work starts with answers from documents; agents raise the bar on control.",
+      "probe": "Which application is closest to production?"
     },
     {
       "stage": "L3",
       "q": "How will GPUs be shared between teams, with limits, isolation and usage per team?",
       "why": "Scarce GPUs without quotas go to whoever asks first, and nobody can see who uses what.",
       "need": "GPUs are shared with quotas, isolation and metering per team",
-      "how": "Agree quotas per team and turn on usage metering"
+      "how": "Agree quotas per team and turn on usage metering",
+      "role": "operations",
+      "listen": "Sharing with limits and isolation lets more teams use fewer GPUs.",
+      "probe": "How is a GPU given to a team today, and how long does it take?"
     },
     {
       "stage": "L3",
       "q": "Must any of it run disconnected from the internet, or to a hardening standard?",
       "why": "Air-gapped and hardened deployments change how models, updates and support reach the platform.",
       "need": "Use cases that need an air gap or a hardening standard are known and planned for",
-      "how": "List the use cases that need an air gap or a hardening standard"
+      "how": "List the use cases that need an air gap or a hardening standard",
+      "role": "security",
+      "listen": "Running disconnected changes how models and updates are delivered.",
+      "probe": "How are software updates brought into the isolated network today?"
     },
     {
       "stage": "L4",
       "q": "How much new data will each AI pipeline create, and where will it live and be protected?",
       "why": "Embeddings, checkpoints and logs multiply the data; unplanned, they fill the fastest storage.",
       "need": "The data each pipeline creates is sized, placed and protected",
-      "how": "Estimate the data each pipeline creates and give it a place and a protection policy"
+      "how": "Estimate the data each pipeline creates and give it a place and a protection policy",
+      "role": "data",
+      "listen": "Vector indexes, checkpoints and logs grow fast; they need sizing and protection too.",
+      "probe": "Who protects the data AI creates, and has it ever been restored?"
+    },
+    {
+      "stage": "L2",
+      "q": "For the first use case: what size of model, how many users at once, and what response time is acceptable?",
+      "why": "Model size, concurrency and response time size the GPUs.",
+      "need": "Model size, concurrent users and target response time are agreed for the first use case",
+      "how": "Agree a model class, peak users and a response time with the use case owner",
+      "role": "application",
+      "core": true,
+      "listen": "These three numbers size GPU memory and count; without them sizing is a guess.",
+      "probe": "How long a document or conversation must the model read at once?"
+    },
+    {
+      "stage": "L3",
+      "q": "How will answers be checked for quality and safety, before going live and after?",
+      "why": "Evaluation decides whether a use case reaches production.",
+      "need": "Quality and safety checks are agreed for the first use case",
+      "how": "Agree test questions and pass criteria with the use case owner",
+      "role": "application",
+      "listen": "A set of test questions with expected answers becomes the proof's success criteria.",
+      "probe": "Who signs off that the answers are good enough to release?"
     }
   ]
 }

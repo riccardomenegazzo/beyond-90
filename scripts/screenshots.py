@@ -91,7 +91,7 @@ def shoot(site: Path, out: Path) -> None:
             for prof, ans in (("hci", "pssps gsp"), ("dr-backup", "gggpgugu"), ("dbaas", "pgspgusp")):
                 d = pg.locator(f"#ws-{prof}")
                 if d.get_attribute("open") is None:
-                    d.locator("summary").click()
+                    d.locator(":scope > summary").click()
                 for i, a in enumerate(ans.replace(" ", "")):
                     d.locator(".wsq").nth(i).get_by_role("button", name=label[a], exact=True).click()
                     pg.wait_for_timeout(40)
@@ -101,6 +101,15 @@ def shoot(site: Path, out: Path) -> None:
             pg.locator("#ws-dr-backup").scroll_into_view_if_needed()
             pg.wait_for_timeout(300)
             pg.screenshot(path=str(out / "app-workshop.png"))
+            # a first meeting: the essential questions only, one of them opened on how to ask it
+            pg.get_by_role("button", name="Essential questions only").click()
+            pg.wait_for_timeout(200)
+            q = pg.locator("#ws-dr-backup .wsq:not([hidden])").nth(2)
+            q.locator(".wshow summary").click()
+            pg.evaluate("document.querySelector('.wsnarrow').scrollIntoView({block: 'start', behavior: 'instant'})")
+            pg.wait_for_timeout(300)
+            pg.screenshot(path=str(out / "app-questions.png"))
+            pg.get_by_role("button", name="Essential questions only").click()
             pg.click("#tabs [data-tab=journey]")
             pg.wait_for_timeout(500)
             pg.screenshot(path=str(out / "app-journey.png"))

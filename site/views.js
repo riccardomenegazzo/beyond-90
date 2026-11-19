@@ -1656,6 +1656,8 @@ export function growView({ estate, focus, startWorkshop }) {
 // ------------------------------------------------------------------ the discovery workshop: before there is any data
 const STAGE_TAG = { value: "Value", L1: "L1 connected", L2: "L2 seen", L3: "L3 switched on", L4: "L4 decided" };
 const painPct = (v) => `${Math.round(v * 100)}%`;
+// how the questions are narrowed for this meeting: kept while the page is open, never stored
+const wsFilter = { core: false, roles: [] };
 
 export function workshopView({ workshop: w, catalog, list, answer, worth, rename, preparedBy, setScope, inventory, sizing, waves, gpu, dr, obj, today, newWorkshop, openWorkshop, removeWorkshop, presets = [], go, focus }) {
   const say = h("p", { class: "note", role: "status" });
@@ -1708,21 +1710,28 @@ export function workshopView({ workshop: w, catalog, list, answer, worth, rename
         st.answered ? h("span", { class: "wspain " + (st.pain >= 0.6 ? "hi" : st.pain >= 0.35 ? "mid" : "lo"), text: `${painPct(st.pain)} missing` }) : null);
     };
     drawHead();
-    const items = line.questions.map((q, i) => {
-      const li = h("li", { class: "wsq" });
+    const items = WS.displayOrder(line).map(({ q, index: i }) => {
+      const li = h("li", { class: "wsq", "data-role": q.role || "", "data-core": q.core ? "1" : "" });
+      li.hidden = !WS.inMeeting(q, wsFilter);
+      // how to ask it: what a strong or a worrying answer sounds like, and the question that goes one level deeper
+      const howTo = q.listen || q.probe ? h("details", { class: "wshow" }, h("summary", { text: "How to ask it" }),
+        h("dl", { class: "objdl" }, q.listen ? [h("dt", { text: "Listen for" }), h("dd", { text: q.listen })] : null, q.probe ? [h("dt", { text: "Then ask" }), h("dd", { text: q.probe })] : null)) : null;
       const draw = () => {
         const ans = cur.answers[`${p}#${i}`];
         const note = h("input", { type: "text", class: "wsnote", maxlength: 300, value: ans ? ans.note : "", placeholder: "What they said, in a few words", "aria-label": `Note for: ${q.q}` });
         note.addEventListener("change", act(async () => { if (!cur.answers[`${p}#${i}`]) return; cur = await answer(p, i, cur.answers[`${p}#${i}`].a, note.value); }));
         put(li, 
-          h("div", { class: "wsqtext" }, h("span", { class: "wsstage s-" + q.stage, text: STAGE_TAG[q.stage] || q.stage }), h("span", { text: q.q }), q.why ? h("small", { class: "muted", text: q.why }) : null,
-            WS.factFor(cur, p, i) ? h("small", { class: "wsfact", text: "From their inventory: " + WS.factFor(cur, p, i) }) : null),
+          h("div", { class: "wsqtext" }, h("span", { class: "wsstage s-" + q.stage, text: STAGE_TAG[q.stage] || q.stage }), h("span", { text: q.q }),
+            q.role || q.core ? h("span", { class: "wstags" }, q.core ? h("span", { class: "wscore", text: "Essential" }) : null, q.role ? h("span", { class: "wsrole", text: "Ask: " + WS.ROLE_WORDS[q.role].toLowerCase() }) : null) : null,
+            q.why ? h("small", { class: "muted", text: q.why }) : null,
+            WS.factFor(cur, p, i) ? h("small", { class: "wsfact", text: "From their inventory: " + WS.factFor(cur, p, i) }) : null, howTo),
           h("div", { class: "wsans", role: "group", "aria-label": `Answer to: ${q.q}` }, Object.entries(WS.ANSWERS).map(([k, v]) =>
             h("button", { type: "button", class: "wsopt o-" + k, "aria-pressed": String(!!ans && ans.a === k), text: v.label,
               onclick: act(async () => {
                 const again = ans && ans.a === k; cur = await answer(p, i, again ? "" : k, again ? "" : note.value); draw(); drawHead(); drawProg();
                 // in a meeting the next question is the next thing to ask: select it, so the keys 1 to 4 answer it
-                const next = again ? null : li.nextElementSibling;
+                let next = again ? null : li.nextElementSibling;
+                while (next && next.hidden) next = next.nextElementSibling;
                 (next ? next.querySelector(".wsopt") : li.querySelector(`.o-${k}`)).focus();
               }) }))),
           ans ? note : null,
@@ -1750,9 +1759,36 @@ export function workshopView({ workshop: w, catalog, list, answer, worth, rename
     return h("details", { class: "card wsline", id: "ws-" + p, open: focus === p || (!focus && (li === 0 || (st.answered > 0 && st.answered < st.total))) ? "" : null }, h("summary", {}, head), h("ol", { class: "wslist" }, items));
   });
   if (focus) requestAnimationFrame(() => { const el = document.getElementById("ws-" + focus); if (el) el.scrollIntoView({ block: "start" }); });
+  // narrow the questions to this meeting: the essential ones for a first call, or those for the people in the room
+  const shown = h("span", { class: "muted", role: "status" });
+  const apply = () => {
+    let n = 0, all = 0;
+    for (const li of document.querySelectorAll(".wslist .wsq")) {
+      const on = (!wsFilter.core || li.dataset.core === "1") && (!wsFilter.roles.length || wsFilter.roles.includes(li.dataset.role));
+      li.hidden = !on; all++; if (on) n++;
+    }
+    shown.textContent = n === all ? `All ${all} questions shown.` : `${n} of ${all} questions shown.`;
+  };
+  const essential = h("button", { type: "button", class: "kindchip", "aria-pressed": String(wsFilter.core), text: "Essential questions only",
+    "data-tip": "The few questions not to leave a first meeting without, on each line.",
+    onclick: () => { wsFilter.core = !wsFilter.core; essential.setAttribute("aria-pressed", String(wsFilter.core)); apply(); } });
+  const used = Object.keys(WS.ROLE_WORDS).filter((r) => cur.scope.some((p) => catalog.lines[p] && catalog.lines[p].questions.some((q) => q.role === r)));
+  const roleChips = used.map((r) => {
+    const b = h("button", { type: "button", class: "kindchip", "aria-pressed": String(wsFilter.roles.includes(r)), text: WS.ROLE_WORDS[r],
+      onclick: () => { wsFilter.roles = wsFilter.roles.includes(r) ? wsFilter.roles.filter((x) => x !== r) : [...wsFilter.roles, r]; b.setAttribute("aria-pressed", String(wsFilter.roles.includes(r))); apply(); } });
+    return b;
+  });
+  const slug = (cur.customer || "customer").replace(/[^A-Za-z0-9]+/g, "-").replace(/^-|-$/g, "").toLowerCase() || "customer";
+  const narrow = used.length ? h("div", { class: "card wsnarrow" }, h("h2", { class: "sr-only", text: "Narrow the questions" }),
+    h("div", { class: "wsfam", role: "group", "aria-label": "Which questions to show" }, h("span", { class: "wsfamname", text: "This meeting" }), essential),
+    h("div", { class: "wsfam", role: "group", "aria-label": "Who is in the room" }, h("span", { class: "wsfamname", text: "Who is in the room" }), roleChips),
+    h("div", { class: "btnrow" }, shown,
+      h("button", { class: "btn small", type: "button", text: "Copy the question guide", onclick: (ev) => copyText(WS.questionGuide(catalog, cur, wsFilter)).then((ok) => { ev.target.textContent = ok ? "Copied" : "Not copied"; }) }),
+      h("button", { class: "btn small", type: "button", text: "Question guide (.md)", onclick: () => saveBlob(WS.questionGuide(catalog, cur, wsFilter), `${slug}-questions.md`, "text/markdown") }))) : null;
+  requestAnimationFrame(apply);
   return h("div", {}, meeting, inventory ? inventoryCard(w, inventory) : null, w.inventory && sizing ? sizingCard(w, sizing) : null,
     w.inventory && waves ? wavesCard(w, waves, today) : null, w.scope.includes("private-ai") && gpu ? gpuCard(w, gpu) : null,
-    w.scope.includes("dr-backup") && dr ? drCard(w, dr) : null, w.scope.includes("object-storage") && obj ? objCard(w, obj) : null, h("div", { class: "card wsprogcard" }, prog), lines);
+    w.scope.includes("dr-backup") && dr ? drCard(w, dr) : null, w.scope.includes("object-storage") && obj ? objCard(w, obj) : null, h("div", { class: "card wsprogcard" }, prog), narrow, lines);
 }
 
 /** The customer's VM inventory: read in the page, kept as totals, shown as the numbers a sizing starts from. */

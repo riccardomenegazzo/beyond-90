@@ -243,7 +243,8 @@ def workshop_catalog() -> dict[str, Any]:
         if not cat.discovery:
             continue
         lines[profile] = {"label": label(profile, cat), "description": cat.description, "units": cat.terms["units"],
-                          "questions": [{"stage": q["stage"], "q": q["q"], "why": q.get("why", ""), "need": q.get("need", ""), "how": q.get("how", "")} for q in cat.discovery],
+                          "questions": [{"stage": q["stage"], "q": q["q"], "why": q.get("why", ""), "need": q.get("need", ""), "how": q.get("how", ""),
+                                         **{k: q[k] for k in ("role", "core", "listen", "probe") if k in q}} for q in cat.discovery],
                           "proof": [{"text": c["text"], "how": c.get("how", "")} for c in cat.pov_criteria], "readiness": list(cat.pov_readiness), "story": cat.story}
     families = {name: [p for p in members if p in lines] for name, members in FAMILIES.items()}
     return {"families": families, "links": [list(x) for x in LINKS if x[0] in lines and x[1] in lines], "lines": lines}

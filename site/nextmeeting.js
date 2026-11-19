@@ -2,7 +2,7 @@
  * The next meeting, from what the last one left open: the questions nobody could answer, the concerns still to prove,
  * the conditions due soon, and who to bring. An agenda to copy into an invitation, or a calendar file that carries it.
  */
-import { assess, journey, datedPlan, stories, WHO } from "./workshop.js";
+import { assess, journey, datedPlan, stories, WHO, ROLE_WORDS, displayOrder } from "./workshop.js";
 import { calendar } from "./ics.js";
 
 const clean = (t) => String(t == null ? "" : t).replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim();
@@ -18,8 +18,14 @@ export function nextMeeting(catalog, w, today) {
   const late = datedPlan(j).filter((c) => today && c.by < today).slice(0, 5).map((c) => ({ text: clean(c.need), by: c.by, who: who(c) }));
   const told = res.land ? stories(catalog, w, res).find((x) => x.land) : null;
   const people = told ? told.people : [];
-  return { customer: w.customer, land: res.land ? res.land.label : "", settle, prove, due, late, people,
-    empty: !settle.length && !prove.length && !due.length && !late.length };
+  // the essential questions not asked yet, the line to start with first: a first meeting that missed them is not over
+  const order = [...(res.land ? [res.land.profile] : []), ...w.scope.filter((p) => catalog.lines[p] && (!res.land || p !== res.land.profile))];
+  const ask = order.flatMap((p) => displayOrder(catalog.lines[p]).filter(({ q, index }) => q.core && !w.answers[`${p}#${index}`])
+    .map(({ q }) => ({ text: clean(q.q), line: catalog.lines[p].label, role: q.role || "" }))).slice(0, 5);
+  // who can answer what is left: the roles behind the open questions, in the order they first appear
+  const roles = [...new Set([...res.unknowns.slice(0, 5), ...ask].map((x) => x.role).filter((r) => ROLE_WORDS[r]))];
+  return { customer: w.customer, land: res.land ? res.land.label : "", settle, ask, prove, due, late, people, roles,
+    empty: !settle.length && !ask.length && !prove.length && !due.length && !late.length };
 }
 
 /** The agenda as text: for an invitation, an email or the meeting notes. */
@@ -29,10 +35,12 @@ export function agendaText(m, when = "") {
   let i = 0;
   if (m.late.length) { out.push(`${++i}. What has slipped`); for (const c of m.late) out.push(`   - ${c.text} (was due ${c.by}${c.who ? `, ${c.who}` : ""})`); out.push(""); }
   if (m.settle.length) { out.push(`${++i}. Questions to answer together`); for (const q of m.settle) out.push(`   - ${q.text}`); out.push(""); }
+  if ((m.ask || []).length) { out.push(`${++i}. Questions we have not asked yet`); for (const q of m.ask) out.push(`   - ${q.text}`); out.push(""); }
   if (m.prove.length) { out.push(`${++i}. Your concerns, and how we will prove them`); for (const o of m.prove) out.push(`   - "${o.text}": ${o.how}`); out.push(""); }
   if (m.due.length) { out.push(`${++i}. Coming up`); for (const c of m.due) out.push(`   - ${c.text}, by ${c.by}${c.who ? ` (${c.who})` : ""}`); out.push(""); }
   out.push(`${++i}. Next steps, owners and dates`, "");
-  if (m.people.length) out.push("It helps to have in the room:", ...m.people.map((x) => `- ${x}`), "");
+  const can = (m.roles || []).map((r) => ROLE_WORDS[r].toLowerCase());
+  if (m.people.length || can.length) out.push("It helps to have in the room:", ...m.people.map((x) => `- ${x}`), ...(can.length ? [`- Someone who can answer for: ${can.join(", ")}`] : []), "");
   return out.join("\n");
 }
 

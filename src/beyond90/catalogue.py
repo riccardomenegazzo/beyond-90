@@ -85,6 +85,41 @@ AUDIENCES = ("executive", "technical", "financial")
 OBJECTION_KEYS = ("says", "clarify", "answer", "prove")
 
 
+# who in the customer's organisation a discovery question is for: the meeting can be narrowed to the people in the room
+ROLES = ("executive", "architect", "operations", "security", "application", "data", "finance")
+
+
+def read_discovery(path: Path) -> list[dict[str, Any]]:
+    """discovery.json: the questions to ask, each tied to a stage. Beyond the question, its reason ("why"), what would
+    need to be true ("need") and a first step ("how"), a question can say how to ask it: who to ask ("role"), whether
+    it is one of the few not to leave the first meeting without ("core"), what a strong or a worrying answer sounds
+    like ("listen") and the follow-up that goes one level deeper ("probe"). Checked here, so the page can trust it."""
+    out: list[dict[str, Any]] = []
+    for x in json.loads(path.read_text(encoding="utf-8"))["questions"]:
+        q: dict[str, Any] = {"stage": str(x["stage"]), "q": str(x["q"]), "why": str(x.get("why", "")), **{k: str(x[k]) for k in ("need", "how") if x.get(k)}}
+        if q["stage"] not in ("value", "L1", "L2", "L3", "L4"):
+            raise ValueError(f"catalogue: {path}: each question's stage is value, L1, L2, L3 or L4")
+        if "role" in x:
+            if x["role"] not in ROLES:
+                raise ValueError(f"catalogue: {path}: a question's role is one of {', '.join(ROLES)}")
+            q["role"] = x["role"]
+        if "core" in x:
+            if not isinstance(x["core"], bool):
+                raise ValueError(f"catalogue: {path}: core is true or false")
+            if x["core"]:
+                q["core"] = True
+        for k, most in (("listen", 240), ("probe", 220)):
+            if k in x:
+                v = x[k]
+                if not isinstance(v, str) or not v.strip() or len(v) > most:
+                    raise ValueError(f"catalogue: {path}: {k} is text of at most {most} characters")
+                if k == "probe" and not v.endswith("?"):
+                    raise ValueError(f"catalogue: {path}: a probe is a question, ending with a question mark")
+                q[k] = v
+        out.append(q)
+    return out
+
+
 def read_story(path: Path) -> dict[str, Any]:
     """story.json: the line in one sentence per audience, who to involve, and the objections to expect, each with
     the question to ask before answering, the answer, and how to prove it. Checked here, so the page can trust it."""
@@ -185,10 +220,7 @@ class Catalogue:
         pov_readiness = [str(x) for x in pov_doc.get("readiness", [])]
         disc_file = base / "discovery.json"   # never inherited either: another product has other questions
         # "need" says what would have to be true, "how" the first step towards it: the question turned into a path
-        discovery = [{"stage": str(x["stage"]), "q": str(x["q"]), "why": str(x.get("why", "")), **{k: str(x[k]) for k in ("need", "how") if x.get(k)}}
-                     for x in json.loads(disc_file.read_text(encoding="utf-8"))["questions"]] if disc_file.exists() else []
-        if any(x["stage"] not in ("value", "L1", "L2", "L3", "L4") for x in discovery):
-            raise ValueError(f"catalogue: {disc_file}: each question's stage is value, L1, L2, L3 or L4")
+        discovery = read_discovery(disc_file) if disc_file.exists() else []
         story_file = base / "story.json"   # never inherited: each kind of product is told, and challenged, its own way
         story = read_story(story_file) if story_file.exists() else {}
         validate_rubric(rubric)

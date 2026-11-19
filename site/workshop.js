@@ -417,6 +417,51 @@ export function assess(catalog, w) {
 const STAGE_ORDER = { value: 0, L1: 1, L2: 2, L3: 3, L4: 4 };
 const STATUS_ORDER = { gap: 0, unknown: 1, partly: 2 };
 
+/** Who in the customer's organisation a question is for: the meeting can be narrowed to the people in the room. */
+export const ROLE_WORDS = { executive: "Executive sponsor", architect: "Architect", operations: "Operations", security: "Security", application: "Application owner", data: "Data team", finance: "Finance" };
+
+/** A line's questions in the order of a conversation: value first, then the stages from connected to decided. Indexes are kept. */
+export function displayOrder(line) {
+  return line.questions.map((q, index) => ({ q, index })).sort((a, b) => STAGE_ORDER[a.q.stage] - STAGE_ORDER[b.q.stage] || a.index - b.index);
+}
+
+/** Does a question belong in this meeting: only the essential ones, or only those for the people in the room? */
+export const inMeeting = (q, { core = false, roles = [] } = {}) => (!core || !!q.core) && (!roles.length || roles.includes(q.role));
+
+const ANSWER_SHORT = { solved: "solved", partly: "partly", gap: "a real gap", unknown: "nobody knew" };
+
+/**
+ * The questions to take into a meeting, with how to ask each one: who to ask, what to listen for, what to ask next.
+ * Narrowed to the essential ones, or to the people who will be there; what was already answered says so.
+ */
+export function questionGuide(catalog, w, filter = {}) {
+  const roles = (filter.roles || []).filter((r) => ROLE_WORDS[r]);
+  const scope = w.scope.filter((p) => catalog.lines[p]);
+  const out = [`# Questions for ${w.customer}`, ""];
+  const narrow = [filter.core ? "the essential questions only" : "", roles.length ? `for ${roles.map((r) => ROLE_WORDS[r].toLowerCase()).join(", ")}` : ""].filter(Boolean).join(", ");
+  out.push(narrow ? `Narrowed to ${narrow}.` : "Every question for the lines in scope.", "");
+  let n = 0;
+  for (const p of scope) {
+    const line = catalog.lines[p];
+    const qs = displayOrder(line).filter(({ q }) => inMeeting(q, { core: !!filter.core, roles }));
+    if (!qs.length) continue;
+    out.push(`## ${line.label}`, "");
+    for (const { q, index } of qs) {
+      const ans = w.answers[`${p}#${index}`];
+      n++;
+      out.push(`${n}. ${q.q}${q.core ? " (essential)" : ""}${ans ? ` [answered: ${ANSWER_SHORT[ans.a]}]` : ""}`);
+      if (q.role) out.push(`   - Ask: ${ROLE_WORDS[q.role].toLowerCase()}`);
+      if (q.why) out.push(`   - Why it matters: ${q.why}`);
+      if (q.listen) out.push(`   - Listen for: ${q.listen}`);
+      if (q.probe) out.push(`   - Then ask: ${q.probe}`);
+    }
+    out.push("");
+  }
+  if (!n) out.push("No question matches: widen the filter.", "");
+  out.push("_Prepared with Beyond 90. The questions come from its product profiles; nothing left the browser it was written in._", "");
+  return out.join("\n");
+}
+
 /** One line's answers turned into conditions: what would need to be true, where the customer is today, the first step. */
 function conditions(l, w) {
   const of = (items, status) => items.map((q) => ({ fact: w ? factFor(w, l.profile, q.index) : "", need: q.need || q.q, how: q.how || "", q: q.q, note: q.note || "", status, stage: q.stage, profile: l.profile, index: q.index, who: q.who || "", by: q.by || "" }));

@@ -5,56 +5,115 @@
       "q": "If an attacker took one server today, how many others could it reach?",
       "why": "Lateral movement is how one compromised machine becomes a breach.",
       "need": "The reach of one compromised server is known, and limited to what its application needs",
-      "how": "Map what one critical server can reach today and agree what it should reach"
+      "how": "Map what one critical server can reach today and agree what it should reach",
+      "role": "security",
+      "core": true,
+      "listen": "If nobody knows, the answer is usually most of them.",
+      "probe": "In the last penetration test, how far did the testers get from one machine?"
     },
     {
       "stage": "value",
       "q": "Which audit or regulation asks you to separate environments, and how do you prove it today?",
       "why": "Evidence for auditors turns a security wish into a budget line.",
       "need": "The separation required by audit is known, with the evidence it needs",
-      "how": "List the requirements and the evidence each auditor expects"
+      "how": "List the requirements and the evidence each auditor expects",
+      "role": "security",
+      "core": true,
+      "listen": "Payment, health or critical-infrastructure rules make separation a requirement with a deadline.",
+      "probe": "When is the next audit, and what did the last one find?"
     },
     {
       "stage": "L1",
       "q": "Can you see which machines talk to which inside the data centre?",
       "why": "Policies cannot be written for traffic nobody can see.",
       "need": "East-west traffic is visible for every environment in scope",
-      "how": "Turn on traffic visibility, without enforcing anything, for each environment"
+      "how": "Turn on traffic visibility, without enforcing anything, for each environment",
+      "role": "architect",
+      "core": true,
+      "listen": "Without seeing the flows, rules are guesses: start by watching.",
+      "probe": "How long would it take to list every connection to the most sensitive database?"
     },
     {
       "stage": "L2",
       "q": "Are machines labelled by application, environment and role, or only known by their address?",
       "why": "Policies written on addresses break when machines move; policies on labels follow them.",
       "need": "Machines carry labels that policies can use, kept up to date by their owners",
-      "how": "Agree a labelling scheme and label the applications in scope"
+      "how": "Agree a labelling scheme and label the applications in scope",
+      "role": "operations",
+      "listen": "Rules written on addresses break when machines move; labels survive.",
+      "probe": "Who owns the naming and labelling standard?"
     },
     {
       "stage": "L3",
       "q": "Are test and production kept apart, or only on different address ranges?",
       "why": "Address ranges are not a control; an isolation policy is.",
       "need": "Environments are isolated by policy, and the isolation is tested",
-      "how": "Write isolation policies between environments and test a blocked connection"
+      "how": "Write isolation policies between environments and test a blocked connection",
+      "role": "security",
+      "listen": "Separated only by address ranges means one mistake joins them.",
+      "probe": "Can a test machine reach a production database today?"
     },
     {
       "stage": "L3",
       "q": "Could you isolate a machine suspected of compromise in a minute, and still investigate it?",
       "why": "Containment time decides how far an attacker gets.",
       "need": "A suspect machine can be quarantined in one step, with forensic access kept",
-      "how": "Prepare quarantine policies and rehearse one on a test machine"
+      "how": "Prepare quarantine policies and rehearse one on a test machine",
+      "role": "security",
+      "core": true,
+      "listen": "A quarantine that keeps the machine for investigation beats switching it off.",
+      "probe": "What did the incident team do the last time a machine was suspected?"
     },
     {
       "stage": "L3",
       "q": "Do security policies follow a machine when it moves or fails over to another site?",
       "why": "A recovery site without the same policies is an open door during the worst day.",
       "need": "Policies follow workloads across hosts, sites and failover",
-      "how": "Test a policy before and after a migration and a failover"
+      "how": "Test a policy before and after a migration and a failover",
+      "role": "architect",
+      "listen": "Policies left behind after a failover open a gap at the worst moment.",
+      "probe": "What happens to firewall rules when a machine fails over today?"
     },
     {
       "stage": "L4",
       "q": "Who decides on a blocked connection that an application needs, and how quickly?",
       "why": "Enforcement without an owner turns into exceptions nobody reviews.",
       "need": "A named owner reviews blocked connections and exceptions, with a response time",
-      "how": "Name the owner and agree how requests for new flows are handled"
+      "how": "Name the owner and agree how requests for new flows are handled",
+      "role": "operations",
+      "listen": "Slow exceptions push teams to ask for broad rules; a fast path keeps rules narrow.",
+      "probe": "How long does a firewall change take today, from request to done?"
+    },
+    {
+      "stage": "L1",
+      "q": "Which firewalls and network tools control traffic between machines inside the data centre today?",
+      "why": "Existing tools may be kept, connected or replaced.",
+      "need": "Controls on traffic inside the data centre are listed with owners",
+      "how": "List the firewalls and policies that control traffic between machines",
+      "role": "architect",
+      "listen": "Traffic between machines on the same network often passes no control at all.",
+      "probe": "How many rules does the core firewall hold, and how many are never used?"
+    },
+    {
+      "stage": "L2",
+      "q": "Which applications should be protected first, and who knows how they talk?",
+      "why": "Starting with a few critical applications makes progress visible.",
+      "need": "The first applications to protect are chosen with their owners",
+      "how": "Pick three applications and map their flows with their owners",
+      "role": "application",
+      "core": true,
+      "listen": "Protecting a few critical applications well beats a plan for everything that never starts.",
+      "probe": "Which application would hurt most if an attacker reached it?"
+    },
+    {
+      "stage": "L3",
+      "q": "Can a policy first run in watch mode, logging what it would block, before it enforces?",
+      "why": "Watching first lets teams build rules without outages.",
+      "need": "Policies are tried in watch mode before they enforce",
+      "how": "Agree a watch period per application before enforcing",
+      "role": "operations",
+      "listen": "Fear of outages is the main brake; a watch period removes it.",
+      "probe": "What happened the last time a firewall change broke an application?"
     }
   ]
 }

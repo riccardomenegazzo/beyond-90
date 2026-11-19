@@ -5,91 +5,165 @@
       "q": "What is pushing toward the cloud: a data-centre exit, recovery, peak demand, or sovereignty?",
       "why": "The driver decides which proof matters.",
       "need": "The reason to use cloud capacity is written down and agreed",
-      "how": "Name the driver with the sponsor and the date that matters"
+      "how": "Name the driver with the sponsor and the date that matters",
+      "role": "executive",
+      "core": true,
+      "listen": "Each driver points to a different design: an exit needs migration, recovery needs a standby, peaks need bursting.",
+      "probe": "If the cloud cost the same as today, would you still move, and why?"
     },
     {
       "stage": "value",
       "q": "Which data must stay in a country or under a given jurisdiction, and who checks it?",
       "why": "Sovereignty requirements shape every design choice.",
       "need": "The data with residency rules is known, with the rule and who checks it",
-      "how": "List the data with residency rules and the evidence each needs"
+      "how": "List the data with residency rules and the evidence each needs",
+      "role": "security",
+      "core": true,
+      "listen": "Sovereignty narrows regions and providers: name the rule and who audits it.",
+      "probe": "Who approved the current cloud contracts from a data-protection point of view?"
     },
     {
       "stage": "L1",
       "q": "Which cloud accounts and clusters exist today, and who manages them?",
       "why": "Cloud capacity run apart is where policies drift.",
       "need": "Every cloud cluster is known and managed with the data centre",
-      "how": "List cloud accounts and attach their clusters to the same management"
+      "how": "List cloud accounts and attach their clusters to the same management",
+      "role": "architect",
+      "listen": "Accounts opened by teams without IT are both a cost leak and a security gap.",
+      "probe": "How many cloud accounts show up on expense reports rather than central contracts?"
     },
     {
       "stage": "L2",
       "q": "Can workloads keep their addresses when they move, or must they be changed?",
       "why": "Re-addressing is what turns a move into a project.",
       "need": "The network design lets workloads move without changing addresses",
-      "how": "Agree the network extension design with the network team"
+      "how": "Agree the network extension design with the network team",
+      "role": "architect",
+      "core": true,
+      "listen": "Keeping addresses avoids touching applications, firewall rules and licences; changing them multiplies the work.",
+      "probe": "Which applications have addresses written into their configuration or licences?"
     },
     {
       "stage": "L3",
       "q": "Has a failover to the cloud been run, and how long did it take?",
       "why": "Cloud recovery is only real once tested.",
       "need": "A failover to the cloud has been run and met its objectives",
-      "how": "Run a test failover of one application to the cloud"
+      "how": "Run a test failover of one application to the cloud",
+      "role": "operations",
+      "listen": "A failover never run takes longer than its runbook says.",
+      "probe": "Which step was slowest, and was it technical or a decision?"
     },
     {
       "stage": "L3",
       "q": "Do the same security rules apply in the cloud as in the data centre?",
       "why": "Different rules in two places means gaps in both.",
       "need": "Security policies follow workloads wherever they run",
-      "how": "Compare policies in both places and close the differences"
+      "how": "Compare policies in both places and close the differences",
+      "role": "security",
+      "listen": "Two rule sets drift apart; one policy that follows the workload closes the gap.",
+      "probe": "Who maintains the cloud firewall rules, and are they reviewed with the data-centre ones?"
     },
     {
       "stage": "L3",
       "q": "Is cloud capacity paid for when nothing runs on it?",
       "why": "Idle capacity is where cloud budgets go.",
       "need": "Idle cloud capacity is hibernated or released by policy",
-      "how": "Set a policy for idle clusters and measure the saving"
+      "how": "Set a policy for idle clusters and measure the saving",
+      "role": "finance",
+      "listen": "Standby capacity paid around the clock is the first saving to model.",
+      "probe": "What does idle or standby cloud capacity cost each month?"
     },
     {
       "stage": "L4",
       "q": "Who decides what runs where, and reviews the cloud bill?",
       "why": "Without an owner, hybrid becomes two estates.",
       "need": "A named owner decides placement and reviews cloud cost monthly",
-      "how": "Name the owner and set a monthly review"
+      "how": "Name the owner and set a monthly review",
+      "role": "executive",
+      "listen": "Without an owner for placement, workloads land wherever was easiest at the time.",
+      "probe": "When was a workload last brought back from the cloud, and why?"
     },
     {
       "stage": "L3",
       "q": "Could a small cluster in the cloud wait for a disaster, and grow only when one happens?",
       "why": "Paying for a full second site that sits idle is what makes recovery expensive.",
       "need": "A small standing cluster in the cloud grows at failover, and the time it takes to grow has been tested",
-      "how": "Size the smallest standing cluster and time adding servers during a test failover"
+      "how": "Size the smallest standing cluster and time adding servers during a test failover",
+      "role": "architect",
+      "listen": "A small standby that grows only when needed makes cloud recovery affordable.",
+      "probe": "How quickly must recovery capacity be there after a disaster is declared?"
     },
     {
       "stage": "value",
       "q": "Which cloud providers do you already have commitments with, and how much of them is unused?",
       "why": "Unused commitments are budget already spent: workloads that consume them cost less than they seem.",
       "need": "The cloud commitments in place are known, with what is left and until when",
-      "how": "List the commitments per provider, with what each has left"
+      "how": "List the commitments per provider, with what each has left",
+      "role": "finance",
+      "core": true,
+      "listen": "Unused prepaid commitments can fund the move: often the fastest business case.",
+      "probe": "When do those commitments expire, and what happens to what is unused?"
     },
     {
       "stage": "L1",
       "q": "Which projects are on hold because servers are late or not yet priced?",
       "why": "A project on hold for servers is the clearest case for capacity that can be rented within days.",
       "need": "Projects on hold for hardware are listed, with what each month of delay costs",
-      "how": "List the projects on hold and the date their servers are expected"
+      "how": "List the projects on hold and the date their servers are expected",
+      "role": "executive",
+      "listen": "Projects waiting for hardware show what speed is worth.",
+      "probe": "What does a month of delay cost the project that has waited longest?"
     },
     {
       "stage": "L2",
       "q": "Which software is licensed per core, and where would it cost least to run?",
       "why": "Operating system and database licences can change the cost of a cloud more than the servers do.",
       "need": "Per-core licences are counted for every place a workload could run",
-      "how": "Count the licensed cores for operating systems and databases, workload by workload"
+      "how": "Count the licensed cores for operating systems and databases, workload by workload",
+      "role": "finance",
+      "listen": "Licences priced per core can cost more in the cloud than the infrastructure: run them where they cost least.",
+      "probe": "Which licence agreements allow use on dedicated cloud hosts?"
     },
     {
       "stage": "L3",
       "q": "Does the cloud provider fund assessments or migrations for this move, and has anyone asked?",
       "why": "Provider programmes can pay for part of a move, and are easier to get early than late.",
       "need": "Funding available from the provider is known and requested at the start",
-      "how": "Ask the provider's account team which programmes apply, before the plan is fixed"
+      "how": "Ask the provider's account team which programmes apply, before the plan is fixed",
+      "role": "finance",
+      "listen": "Providers often fund assessments and migration effort; it is worth asking early.",
+      "probe": "Who is your account manager at the provider, and do they know about this project?"
+    },
+    {
+      "stage": "L2",
+      "q": "Which applications regularly send data out of the cloud, and what does that traffic cost?",
+      "why": "Charges for data leaving the cloud, and latency, decide what should stay together.",
+      "need": "Traffic leaving the cloud and its cost are known per application",
+      "how": "Read the data-transfer lines of the last cloud bill by application",
+      "role": "finance",
+      "listen": "Chatty applications split across places pay twice: in transfer charges and in latency.",
+      "probe": "Which application's cloud bill surprised you most this year?"
+    },
+    {
+      "stage": "L1",
+      "q": "How are the data centres and the cloud connected today: private links, VPN, bandwidth, and who pays?",
+      "why": "The connection limits what can move, how fast, and at what cost.",
+      "need": "Links between sites and clouds are documented with their bandwidth",
+      "how": "List links, bandwidth and contracts between sites and clouds",
+      "role": "architect",
+      "core": true,
+      "listen": "A single VPN is enough for a pilot, not for recovering production: plan the link with the use case.",
+      "probe": "What is the lead time to order a faster private link?"
+    },
+    {
+      "stage": "L4",
+      "q": "Should the same people, tools and processes run workloads in the data centre and in the cloud?",
+      "why": "One way of operating both is where hybrid saves the most effort.",
+      "need": "One way of operating is agreed for both places",
+      "how": "Map which tools and teams run each environment today",
+      "role": "operations",
+      "listen": "Two teams with two toolsets is the cost hybrid should remove; keeping both shrinks the savings.",
+      "probe": "Which task is done twice today, once in each environment?"
     }
   ]
 }

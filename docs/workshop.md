@@ -7,7 +7,7 @@ The rest of Beyond 90 reads what a customer runs. The first meetings with a pros
 ## How it works
 
 1. **Start a discovery workshop** on the start page (or, from an estate, on a line the customer does not run yet), or **See a filled-in example** (an invented logistics company leaving its virtualisation platform, with its inventory, owners and dates, the concerns it raised and its case for change) to show the method in thirty seconds. Give the prospect a name (and yours, to sign the readout) and choose the product lines in scope, or start from a conversation (resilience and ransomware, leaving a virtualisation platform, modernising applications, securing the cloud) that sets the usual lines for you: platform, databases, disaster recovery, object storage, file storage, Kubernetes platform, or the security lines (cloud, identity, SaaS, monitoring, endpoint, AI).
-2. **Ask the questions.** Each line has eight discovery questions from its profile: two about business value, the others tied to a stage (connected, seen, switched on, decided), each with why it matters. Record what the customer says in one click (**Solved**, **Partly**, **A real gap**, **Nobody knows**) and, if you like, their words in a short note. After each answer the next question is selected, so the keys 1 to 4 keep up with the conversation. On a business-value question you can also put a figure on what is at stake, counted per hour, day, week, month, year or incident; it heads the journey and the readout.
+2. **Ask the questions.** Each line has its discovery questions from its profile (the infrastructure lines carry between 11 and 20), in the order of a conversation: business value first, then the stages (connected, seen, switched on, decided), each with why it matters. Record what the customer says in one click (**Solved**, **Partly**, **A real gap**, **Nobody knows**) and, if you like, their words in a short note. After each answer the next question is selected, so the keys 1 to 4 keep up with the conversation. On a business-value question you can also put a figure on what is at stake, counted per hour, day, week, month, year or incident; it heads the journey and the readout.
 3. **Where to start** updates as you go:
    - **Start here:** the line that hurts most, once at least three questions were answered on it, with the questions and the customer's own words that point there.
    - **The map:** each line in scope filled by how much is still missing there; lines not discussed yet are dashed; dashed links show where the first line leads.
@@ -23,6 +23,26 @@ The rest of Beyond 90 reads what a customer runs. The first meetings with a pros
 7. **Meeting summary:** what was heard line by line, the journey as a checklist (each condition with its first step and where the customer is today, what is already true ticked, how each step is validated), and the open questions. Copy it into the follow-up email or the CRM.
 
 ![Where to start: the first line, what is still missing and the path after](img/app-hurt.png)
+
+## How to ask: the essential questions, who is in the room, what to listen for
+
+The infrastructure questions are written to be asked, not read out. Each one says:
+
+- **who to ask:** the executive sponsor, an architect, operations, security, the application owner, the data team or finance;
+- **whether it is essential:** five to seven per line, value first, that a first meeting should not end without;
+- **what to listen for:** what a strong answer and a worrying one sound like, and what each means for the design or the deal ("under about five milliseconds allows zero-loss copies; beyond that, plan near-continuous or scheduled copies");
+- **then ask:** the follow-up that goes one level deeper, where the real figure or the real owner usually is.
+
+Open **How to ask it** under a question to see the last two. Above the lines, **This meeting** narrows the list:
+
+- **Essential questions only** turns a 60-question workshop into a 30-minute first call;
+- **Who is in the room** shows only the questions for the people there: a session with the database team gets the database questions, and the security review gets the security ones.
+
+**Copy the question guide** or **Question guide (.md)** gives the narrowed list with who to ask, why, what to listen for and what to ask next, for the meeting or for a colleague who will run it. The questions already answered say so. **The next meeting** lists the essential questions not asked yet, and the roles that can answer what is still open.
+
+The questions are built from how presales teams run discovery: the situation first, then the problems, what they cost and what a fix would be worth (the order of SPIN and of gap selling). What the customer must be able to do becomes the condition to prove (Command of the Message's required capabilities). The sizing inputs come from what a sizing needs: a week of performance data with its peaks, switched-off machines that still hold data, licences per core, the busy part of each database, the round-trip time between sites, peak concurrent users. The migration risks come from what makes moves fail: hard-coded addresses, licence servers tied to hardware, tools that call the old platform's management interface, and rollbacks never tried.
+
+![A first meeting: the essential questions, each with who to ask and how](img/app-questions.png)
 
 ## Prepare: the message, the people, the objections
 

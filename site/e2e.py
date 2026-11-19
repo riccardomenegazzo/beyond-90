@@ -679,14 +679,14 @@ def main(site: str) -> int:
         for prof, ans in answers.items():
             d = page.locator(f"#ws-{prof}")
             if d.get_attribute("open") is None:
-                d.locator("summary").click()
+                d.locator(":scope > summary").click()
             for i, a in enumerate(ans):
                 d.locator(".wsq").nth(i).get_by_role("button", name=label[a], exact=True).click()
                 page.wait_for_selector(f"#ws-{prof} .wsq:nth-child({i + 1}) .wsopt.o-{a}[aria-pressed=true]")
         # in a meeting: the next question is selected after an answer, and the keys 1 to 4 answer it
         d = page.locator("#ws-dbaas")
         if d.get_attribute("open") is None:
-            d.locator("summary").click()
+            d.locator(":scope > summary").click()
         d.locator(".wsq").nth(0).get_by_role("button", name="Partly", exact=True).click()
         page.wait_for_selector("#ws-dbaas .wsq:nth-child(1) .o-partly[aria-pressed=true]")
         page.keyboard.press("3")
@@ -696,6 +696,27 @@ def main(site: str) -> int:
         for i in (1, 0):
             d.locator(".wsq").nth(i).locator(".wsopt[aria-pressed=true]").click()     # pressing again clears: back to the two lines above
             page.wait_for_selector(f"#ws-dbaas .wsq:nth-child({i + 1}) .wsopt[aria-pressed=true]", state="detached")
+        # a first meeting: only the essential questions, then only those for the people in the room, each with how to ask it
+        disc = {pr: json.loads((ROOT / "src/beyond90/data/profiles" / pr / "discovery.json").read_text())["questions"] for pr in ("hci", "dbaas", "dr-backup", "hybrid-cloud")}
+        page.get_by_role("button", name="Essential questions only").click()
+        n_core = sum(1 for qs in disc.values() for q in qs if q.get("core"))
+        page.wait_for_function(f"document.querySelectorAll('#view .wsq:not([hidden])').length === {n_core}")
+        check(f"{n_core} of {sum(len(qs) for qs in disc.values())} questions shown" in page.inner_text("#view .wsnarrow"), "a first meeting narrows to the essential questions on every line")
+        page.get_by_role("group", name="Who is in the room").get_by_role("button", name="Security", exact=True).click()
+        n_sec = sum(1 for qs in disc.values() for q in qs if q.get("core") and q.get("role") == "security")
+        page.wait_for_function(f"document.querySelectorAll('#view .wsq:not([hidden])').length === {n_sec}")
+        first = page.locator("#view .wsq:not([hidden])").first
+        first.locator(".wshow summary").click()
+        check("Listen for" in first.inner_text() and "Then ask" in first.inner_text() and "Ask: security" in first.inner_text(),
+              "and to the people in the room, each question saying who to ask, what to listen for and what to ask next")
+        with page.expect_download() as dl:
+            page.get_by_role("button", name="Question guide (.md)").click()
+        guide = Path(dl.value.path()).read_text(encoding="utf-8")
+        check(guide.startswith("# Questions for Kestrel Logistics") and "Narrowed to the essential questions only, for security." in guide and guide.count("Then ask: ") == n_sec,
+              "the narrowed questions download as a guide to take into the meeting")
+        page.get_by_role("group", name="Who is in the room").get_by_role("button", name="Security", exact=True).click()
+        page.get_by_role("button", name="Essential questions only").click()
+        page.wait_for_function("document.querySelectorAll('#view .wsq[hidden]').length === 0")
         note = page.locator("#ws-dr-backup .wsq").first.locator("input.wsnote")
         note.fill("A day down is about 2M in lost orders")
         note.press("Tab")

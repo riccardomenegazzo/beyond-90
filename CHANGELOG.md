@@ -2,6 +2,17 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.107.0
+
+- **Discovery questions that dig.** The infrastructure lines carry 167 questions, up from 119. New ones are:
+  - hardware support dates and a week of performance data with its peaks;
+  - switched-off machines that still hold data, licences per core and the busy part of each database;
+  - the round-trip time between sites, peak concurrent users and user groups;
+  - clean recovery after ransomware and containers left on the old platform.
+- **How to ask each question.** Every question says who to ask (executive sponsor, architect, operations, security, application owner, data team or finance). It says whether it is one of the five to seven essential questions not to leave a first meeting without. Under **How to ask it**, it says what a strong or a worrying answer sounds like and the follow-up that goes one level deeper.
+- **This meeting.** The workshop narrows to the essential questions, or to the people in the room. The questions come in the order of a conversation: value first, then the stages. **Question guide** copies or downloads the narrowed list with who to ask, what to listen for and what to ask next. **The next meeting** lists the essential questions not asked yet, and who can answer what is open.
+- Profiles: discovery questions may carry `role`, `core`, `listen` and `probe`, each checked when the profile loads ([docs/profiles.md](docs/profiles.md)).
+
 ## 0.106.0
 
 - **Evidence of a technical win, per deal.** A checklist out of 100, read from what is recorded; it is not a probability. It counts:

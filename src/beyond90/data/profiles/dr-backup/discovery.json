@@ -5,77 +5,166 @@
       "q": "What would one day without your main site cost, and has anyone put a number on it?",
       "why": "Turns recovery objectives into a business decision.",
       "need": "The cost of a day without the main site is known and agreed",
-      "how": "Put a number on it with finance and the business owner"
+      "how": "Put a number on it with finance and the business owner",
+      "role": "executive",
+      "core": true,
+      "listen": "A figure per hour or per day turns recovery time into a budget line.",
+      "probe": "Which service would the business restore first, and has it agreed that order?"
     },
     {
       "stage": "value",
       "q": "When was the last full recovery test, and what went wrong in it?",
       "why": "Tests always find something; no test means it is still hidden.",
       "need": "A full recovery test runs regularly, and its findings are closed",
-      "how": "Schedule a non-disruptive test failover and track what it finds"
+      "how": "Schedule a non-disruptive test failover and track what it finds",
+      "role": "operations",
+      "listen": "No full test in the last year means every recovery time is a guess.",
+      "probe": "What did the test leave out because it was too risky or too hard?"
     },
     {
       "stage": "L1",
       "q": "Which sites and branches have no copy of their workloads anywhere?",
       "why": "Unprotected sites are the first gap to close.",
       "need": "Every site and branch has a copy of its workloads",
-      "how": "Connect the unprotected sites and start their first copies"
+      "how": "Connect the unprotected sites and start their first copies",
+      "role": "architect",
+      "listen": "Branches with no copy are where one fire or one attack becomes permanent loss.",
+      "probe": "What would be lost for good if the smallest site burned down tonight?"
     },
     {
       "stage": "L2",
       "q": "Has every workload been given a recovery point and a recovery time, agreed with the business?",
       "why": "Without objectives, nothing can be checked or prioritised.",
       "need": "Every workload has a recovery point and time agreed with the business",
-      "how": "Classify workloads in tiers with the business owners"
+      "how": "Classify workloads in tiers with the business owners",
+      "role": "application",
+      "core": true,
+      "listen": "Targets set by IT alone are wrong in both directions; agreed with the business they become a design input.",
+      "probe": "Which system has the strictest target, and who set it?"
     },
     {
       "stage": "L3",
       "q": "Could an administrator account delete your backups today?",
       "why": "If yes, ransomware can too.",
       "need": "No administrator account can delete the backups",
-      "how": "Keep an immutable copy that admins cannot remove"
+      "how": "Keep an immutable copy that admins cannot remove",
+      "role": "security",
+      "core": true,
+      "listen": "If one account can delete the copies, so can ransomware: copies nobody can change, and a second approver, close it.",
+      "probe": "Is there a copy that no administrator can change before it expires?"
     },
     {
       "stage": "L3",
       "q": "Does the recovery plan include the network: addresses, DNS, firewall rules?",
       "why": "Most failed recoveries fail on the network, not on the data.",
       "need": "The recovery plan includes the network",
-      "how": "Add addresses, DNS and firewall changes to the plan, and test them"
+      "how": "Add addresses, DNS and firewall changes to the plan, and test them",
+      "role": "architect",
+      "listen": "Failovers fail on addresses, name resolution and firewall rules more often than on data.",
+      "probe": "Will machines keep their addresses at the recovery site, or be given new ones?"
     },
     {
       "stage": "L3",
       "q": "Who can start a failover, and do they have the runbook at night?",
       "why": "Recovery depends on people as much as on copies.",
       "need": "Whoever starts a failover has the runbook, at night too",
-      "how": "Name who can start it, and give them a one-click plan"
+      "how": "Name who can start it, and give them a one-click plan",
+      "role": "operations",
+      "listen": "One named person with the runbook in hand saves the first hour of a disaster.",
+      "probe": "Who can declare a disaster when the head of IT cannot be reached?"
     },
     {
       "stage": "L4",
       "q": "When a replication falls behind, who is told and what do they do?",
       "why": "A silent missed recovery point is discovered on the worst day.",
       "need": "A replication that falls behind reaches a named owner",
-      "how": "Alert on missed recovery points with an owner and a response"
+      "how": "Alert on missed recovery points with an owner and a response",
+      "role": "operations",
+      "listen": "Silent lag is how a recovery point of minutes becomes hours on the day.",
+      "probe": "When did replication last fall behind, and how long before anyone noticed?"
     },
     {
       "stage": "L2",
       "q": "Which workloads can lose no data at all, which can lose minutes, and which can lose hours?",
       "why": "Zero, minutes and hours need different replication, distances and costs.",
       "need": "Every workload sits in a recovery tier (zero, minutes, hours) with the replication that matches it",
-      "how": "Group workloads into recovery tiers with the business and pick the replication for each"
+      "how": "Group workloads into recovery tiers with the business and pick the replication for each",
+      "role": "application",
+      "core": true,
+      "listen": "Zero loss needs synchronous copies over short distances; minutes or hours cost far less. Sort systems into these tiers.",
+      "probe": "How many systems truly need zero data loss, if each had to justify the cost?"
     },
     {
       "stage": "L2",
       "q": "How far back must you be able to go, and how close together must the recovery points be?",
       "why": "Keeping every point forever costs storage; keeping too few loses the point you need after ransomware went unnoticed for days.",
       "need": "Retention is agreed per tier: recent recovery points close together, older ones further apart",
-      "how": "Agree a retention scheme, for example hourly for a day, daily for a week, weekly for a month"
+      "how": "Agree a retention scheme, for example hourly for a day, daily for a week, weekly for a month",
+      "role": "security",
+      "listen": "An intruder may sit unnoticed for weeks: retention must reach further back than that.",
+      "probe": "How long could an intruder have been inside before your last incident or test found them?"
     },
     {
       "stage": "L3",
       "q": "Which machines must come back together, in the same state and in a set order: an application with its database, say?",
       "why": "Recovering machines one by one, from different moments, breaks applications that depend on each other.",
       "need": "Applications that depend on each other are protected as a group and recovered in a set order",
-      "how": "Group dependent machines, snapshot each group together, and write the power-on order into the plan"
+      "how": "Group dependent machines, snapshot each group together, and write the power-on order into the plan",
+      "role": "application",
+      "listen": "Applications whose parts must return to the same instant need consistency groups and a set start order.",
+      "probe": "Which application has the most parts that must come back in order?"
+    },
+    {
+      "stage": "L1",
+      "q": "Where is the second site, how far away, and what is the network round-trip time between them?",
+      "why": "Distance and latency decide whether copies can be synchronous.",
+      "need": "Distance and round-trip time between the sites are measured",
+      "how": "Measure round-trip time between the sites at peak",
+      "role": "architect",
+      "core": true,
+      "listen": "Under about five milliseconds allows zero-loss copies; beyond that, plan near-continuous or scheduled copies.",
+      "probe": "Is there a third place, a cloud or a partner site, that could hold a copy?"
+    },
+    {
+      "stage": "L2",
+      "q": "How much data changes per day on the systems to protect, and how much bandwidth is there for replication?",
+      "why": "Daily change and bandwidth decide which recovery points are achievable.",
+      "need": "Daily change and replication bandwidth are known",
+      "how": "Measure daily change per protected system",
+      "role": "operations",
+      "listen": "If the link cannot carry a day's change within the recovery point, the target or the link must change.",
+      "probe": "Does replication share the link with users, and at which hours?"
+    },
+    {
+      "stage": "L3",
+      "q": "Which backup software and storage are used today, and when do their contracts and support end?",
+      "why": "An existing backup stack can be kept, integrated or replaced: the dates decide which.",
+      "need": "The backup stack is listed with its contract dates",
+      "how": "List backup software, targets and renewal dates",
+      "role": "operations",
+      "listen": "A renewal in the same year as the platform decision is a chance to simplify both.",
+      "probe": "Which backup jobs fail most often, and why?"
+    },
+    {
+      "stage": "L3",
+      "q": "Must recovery be tested regularly for an auditor or a regulation, and how is the test documented today?",
+      "why": "Required tests make automated, non-disruptive testing worth money.",
+      "need": "Recovery tests and their evidence meet what the auditor asks",
+      "how": "Ask compliance for the test frequency and the evidence required",
+      "role": "security",
+      "listen": "A manual test once a year for the auditor costs weekends; one run monthly in an isolated network is the upgrade.",
+      "probe": "What did the last auditor ask for that took longest to produce?"
+    },
+    {
+      "stage": "L4",
+      "q": "If ransomware struck tonight, where would you restore to, and how would you know the copy is clean?",
+      "why": "Recovering from ransomware needs a clean place and a known-good point, not only a copy.",
+      "need": "A clean recovery environment and a way to find the last good copy are planned",
+      "how": "Agree where a clean restore would run and how copies are checked",
+      "role": "security",
+      "core": true,
+      "listen": "Restoring into the same infected network repeats the attack: an isolated recovery area is the requirement.",
+      "probe": "Who decides which copy is clean enough to restore, and on what evidence?"
     }
   ]
 }

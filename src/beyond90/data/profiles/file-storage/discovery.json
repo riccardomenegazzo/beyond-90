@@ -5,63 +5,145 @@
       "q": "What would a day without the shared drives cost the business?",
       "why": "Gives a price to downtime and to recovery.",
       "need": "The cost of a day without the shared drives is known",
-      "how": "Put a number on it with the departments that use them most"
+      "how": "Put a number on it with the departments that use them most",
+      "role": "executive",
+      "core": true,
+      "listen": "Shared drives are often the most used and least valued system: a figure changes that.",
+      "probe": "Which department would stop first if the shares went offline?"
     },
     {
       "stage": "value",
       "q": "Have you been hit by ransomware, or come close, and how did you recover?",
       "why": "A near miss is the strongest reason to act.",
       "need": "Recovery from ransomware is planned, not improvised",
-      "how": "Write the recovery steps and test them on a test share"
+      "how": "Write the recovery steps and test them on a test share",
+      "role": "security",
+      "core": true,
+      "listen": "A real incident means the board already cares; a near miss means it soon will.",
+      "probe": "How long did it take to find which files were encrypted, and by which account?"
     },
     {
       "stage": "L1",
       "q": "How many file servers do you have, including branches and old ones nobody turned off?",
       "why": "Forgotten file servers keep data nobody protects.",
       "need": "Every file server is known, old ones included",
-      "how": "List servers from the network and the directory, and retire the dead ones"
+      "how": "List servers from the network and the directory, and retire the dead ones",
+      "role": "operations",
+      "core": true,
+      "listen": "Old servers nobody switched off hold data nobody manages.",
+      "probe": "How many of them run operating systems out of support?"
     },
     {
       "stage": "L2",
       "q": "Do you know which shares hold sensitive data, and who owns each one?",
       "why": "Ownership decides who approves permissions and retention.",
       "need": "Shares with sensitive data are known and owned",
-      "how": "Scan shares and give each sensitive one an owner"
+      "how": "Scan shares and give each sensitive one an owner",
+      "role": "security",
+      "listen": "Without owners, nobody can approve who should have access.",
+      "probe": "When were permissions on the main shares last reviewed?"
     },
     {
       "stage": "L3",
       "q": "Can a user restore yesterday's version of a file without calling IT?",
       "why": "Self-service restore removes a large share of tickets.",
       "need": "Users restore yesterday's file without calling IT",
-      "how": "Turn on previous versions on every share"
+      "how": "Turn on previous versions on every share",
+      "role": "operations",
+      "listen": "Self-service restores remove a steady stream of tickets.",
+      "probe": "How many restore tickets did the service desk handle last month?"
     },
     {
       "stage": "L3",
       "q": "Would you notice if one account started encrypting thousands of files right now?",
       "why": "Detection time decides how much is lost.",
       "need": "Mass encryption by one account is stopped in minutes",
-      "how": "Switch on detection with automatic blocking, and test it"
+      "how": "Switch on detection with automatic blocking, and test it",
+      "role": "security",
+      "core": true,
+      "listen": "If nobody would notice, detection at the file layer is a direct answer.",
+      "probe": "What would raise the alarm today: the users, or a tool?"
     },
     {
       "stage": "L3",
       "q": "Who can open the shares marked for everyone, and does anyone check?",
       "why": "Over-broad permissions are where data walks out.",
       "need": "Shares open to everyone are known and justified",
-      "how": "Review open shares with their owners"
+      "how": "Review open shares with their owners",
+      "role": "security",
+      "listen": "Shares open to everyone are where data leaks start.",
+      "probe": "Has an audit found open shares holding personal data?"
     },
     {
       "stage": "L4",
       "q": "When an alert fires on a file server, who looks at it and how fast?",
       "why": "Detection without an owner does not stop anything.",
       "need": "A file server alert is looked at quickly by someone named",
-      "how": "Route alerts to an owner with a response time"
+      "how": "Route alerts to an owner with a response time",
+      "role": "operations",
+      "listen": "Alerts nobody owns are noise.",
+      "probe": "Who may block an account in the middle of the night?"
     },
     {
       "stage": "L3",
       "q": "How much of the file data has not been opened in a year?",
       "why": "Cold files moved to cheaper object storage free the fast tier without users noticing.",
       "need": "Cold file data is known and moves to cheaper storage by policy, with users still finding it where it was",
-      "how": "Run a file age analysis and set a tiering policy for data untouched for a year"
+      "how": "Run a file age analysis and set a tiering policy for data untouched for a year",
+      "role": "finance",
+      "listen": "Cold data on expensive storage is a saving: tier it or archive it.",
+      "probe": "Is there a retention rule that would allow some of it to be deleted?"
+    },
+    {
+      "stage": "L1",
+      "q": "How much file data is there, in how many files, and how fast does it grow?",
+      "why": "Capacity, file count and growth size the platform and the migration.",
+      "need": "Total size, file count and growth are measured",
+      "how": "Scan the main shares for size, file count and age",
+      "role": "operations",
+      "core": true,
+      "listen": "Hundreds of millions of small files are a different migration from a few large ones: measure both.",
+      "probe": "Which share grows fastest, and what fills it?"
+    },
+    {
+      "stage": "L2",
+      "q": "Which protocols and clients use the shares: Windows, Linux, Mac, applications writing directly?",
+      "why": "Mixed protocols and application writers change the design and the tests.",
+      "need": "Protocols and client types are listed per share",
+      "how": "List shares with their protocols and the applications that write to them",
+      "role": "architect",
+      "listen": "Applications writing straight to shares need a test of their own in the proof.",
+      "probe": "Which application breaks if a share's path changes?"
+    },
+    {
+      "stage": "L2",
+      "q": "How are users and permissions managed: one directory, several, any local accounts?",
+      "why": "Permissions must come through the move unchanged.",
+      "need": "The identity source and permission model are known",
+      "how": "Check directory domains and local accounts on the file servers",
+      "role": "security",
+      "listen": "Several directories or local accounts make moving permissions the critical path.",
+      "probe": "Are there trusts between directories that must keep working?"
+    },
+    {
+      "stage": "L3",
+      "q": "Do other sites need the same files, and how do they reach them today?",
+      "why": "Access from branches drives caching or replication design.",
+      "need": "Which sites use which shares, and how, is known",
+      "how": "Map which sites use which shares and the latency to them",
+      "role": "architect",
+      "listen": "Users copying files between sites point to a need for one namespace or local caching.",
+      "probe": "What happens when two sites edit the same file?"
+    },
+    {
+      "stage": "L4",
+      "q": "How are quotas, retention and the deletion of old data decided, and who approves them?",
+      "why": "Without rules, file data only grows.",
+      "need": "Quotas and retention rules are agreed with an owner",
+      "how": "Agree retention per share with its owner",
+      "role": "executive",
+      "listen": "If nobody may delete anything, storage cost only goes up: get a rule agreed.",
+      "probe": "Who would approve deleting data untouched for five years?"
     }
   ]
 }

@@ -413,3 +413,32 @@ test("the backup capacity sketch is kept with the workshop, checked on import, a
   assert.throws(() => setObj(w, { fill_pct: 99 }, "2026-11-02"));
   assert.equal("obj" in setObj(w, null, "2026-11-02"), false);
 });
+
+test("the questions come in the order of a conversation, can be narrowed to a meeting, and travel as a guide", async () => {
+  const { displayOrder, inMeeting, questionGuide, ROLE_WORDS, makeWorkshop: mk, setAnswer: sa } = await import("../workshop.js");
+  const line = CAT.lines.hci;
+  const order = displayOrder(line);
+  assert.equal(order.length, line.questions.length);
+  const rank = { value: 0, L1: 1, L2: 2, L3: 3, L4: 4 };
+  for (let i = 1; i < order.length; i++) assert.ok(rank[order[i - 1].q.stage] <= rank[order[i].q.stage]);
+  // the index is the one answers are stored under, whatever the order shown
+  for (const { q, index } of order) assert.equal(line.questions[index], q);
+  const core = line.questions.filter((q) => inMeeting(q, { core: true }));
+  assert.ok(core.length >= 5 && core.every((q) => q.core));
+  const sec = line.questions.filter((q) => inMeeting(q, { roles: ["security"] }));
+  assert.ok(sec.length >= 1 && sec.every((q) => q.role === "security"));
+  assert.equal(line.questions.filter((q) => inMeeting(q, {})).length, line.questions.length);
+  let w = mk({ customer: "Acme (mock)", scope: ["hci"], createdOn: "2026-11-02", nonce: "abcdef" });
+  const first = order[0].index;
+  w = sa(w, "hci", first, "gap", "", "2026-11-02");
+  const g = questionGuide(CAT, w, { core: true });
+  assert.match(g, /^# Questions for Acme \(mock\)/);
+  assert.match(g, /Narrowed to the essential questions only\./);
+  assert.match(g, /\[answered: a real gap\]/);
+  assert.match(g, /Listen for: /);
+  assert.match(g, /Then ask: .+\?/);
+  assert.equal((g.match(/^\d+\. /gm) || []).length, core.length);
+  const none = questionGuide(CAT, w, { core: true, roles: ["nobody", "finance"] });
+  assert.ok(Object.keys(ROLE_WORDS).includes("finance"));
+  assert.match(none, /for finance/);
+});

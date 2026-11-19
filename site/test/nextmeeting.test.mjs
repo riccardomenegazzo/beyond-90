@@ -33,9 +33,25 @@ test("the next meeting carries what the last one left open, and who to bring", (
   for (const line of ics.split("\r\n")) assert.ok(new TextEncoder().encode(line).length <= 75, line);
 });
 
-test("a workshop with nothing open says so", () => {
+test("a new workshop starts from the essential questions, and who can answer them", () => {
   const w = makeWorkshop({ customer: "Acme (mock)", scope: ["dr-backup"], createdOn: D, nonce: "abcdef" });
   const m = nextMeeting(CAT, w, D);
+  const core = CAT.lines["dr-backup"].questions.filter((q) => q.core);
+  assert.equal(m.empty, false);
+  assert.equal(m.ask.length, Math.min(5, core.length));
+  // in the order of a conversation: the value questions first
+  assert.equal(m.ask[0].text, core.find((q) => q.stage === "value").q);
+  assert.ok(m.roles.length >= 2 && m.roles.every((r) => typeof r === "string"));
+  const t = agendaText(m);
+  assert.match(t, /Questions we have not asked yet/);
+  assert.match(t, /Someone who can answer for: /);
+});
+
+test("once the essential questions are answered and nothing is open, the agenda says so", () => {
+  let w = makeWorkshop({ customer: "Acme (mock)", scope: ["dr-backup"], createdOn: D, nonce: "abcdef" });
+  CAT.lines["dr-backup"].questions.forEach((q, i) => { if (q.core) w = setAnswer(w, "dr-backup", i, "solved", "", D); });
+  const m = nextMeeting(CAT, w, D);
   assert.equal(m.empty, true);
+  assert.equal(m.ask.length, 0);
   assert.match(agendaText(m), /Next steps, owners and dates/);
 });

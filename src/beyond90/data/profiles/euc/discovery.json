@@ -5,56 +5,135 @@
       "q": "What is the cost of a slow or unavailable desktop for your users each day?",
       "why": "Puts a value on experience.",
       "need": "The cost of poor desktop experience is known",
-      "how": "Agree a figure with the business, per user per hour"
+      "how": "Agree a figure with the business, per user per hour",
+      "role": "executive",
+      "core": true,
+      "listen": "Minutes lost per user per day, times the users, is the figure.",
+      "probe": "Which team complains most, and what does it cost them?"
     },
     {
       "stage": "value",
       "q": "Which users must work from anywhere, and on which devices?",
       "why": "Decides access, security and capacity.",
       "need": "The user groups, their locations and their devices are known",
-      "how": "List the user groups with their needs"
+      "how": "List the user groups with their needs",
+      "role": "executive",
+      "listen": "Contractors, call centres and remote staff often justify virtual desktops on their own.",
+      "probe": "How are contractors given access today, and how long does it take?"
     },
     {
       "stage": "L1",
       "q": "How many desktop pools exist, and who manages each?",
       "why": "Pools run apart are updated apart.",
       "need": "Every desktop pool is known and managed in one place",
-      "how": "Register every pool with the console"
+      "how": "Register every pool with the console",
+      "role": "operations",
+      "core": true,
+      "listen": "Many small pools managed differently multiply the work.",
+      "probe": "Which brokering software runs them, and when does its contract end?"
     },
     {
       "stage": "L2",
       "q": "How many golden images are there, and how old are they?",
       "why": "Image sprawl is the main operational cost.",
       "need": "Images are few, current and owned",
-      "how": "Consolidate images and set an update cadence"
+      "how": "Consolidate images and set an update cadence",
+      "role": "operations",
+      "listen": "Many old images mean patching takes days.",
+      "probe": "How long does it take to roll a new image out to everyone?"
     },
     {
       "stage": "L3",
       "q": "How long does a logon take on a Monday morning?",
       "why": "Logon time is what users feel first.",
       "need": "Logon time meets the agreed target",
-      "how": "Measure logon times and fix the slowest step"
+      "how": "Measure logon times and fix the slowest step",
+      "role": "operations",
+      "core": true,
+      "listen": "Slow logons at peak point to storage or profiles: measure them in the proof.",
+      "probe": "What is the logon time target, and who measures it?"
     },
     {
       "stage": "L3",
       "q": "Can a user reach their desktop from a personal device without leaving data on it?",
       "why": "Secure access without data on the device is the point.",
       "need": "Remote access is secured and leaves no data on devices",
-      "how": "Put a gateway with strong sign-in in front of every pool"
+      "how": "Put a gateway with strong sign-in in front of every pool",
+      "role": "security",
+      "listen": "Access from personal devices with nothing left behind is a common driver.",
+      "probe": "Which users already work from personal devices?"
     },
     {
       "stage": "L3",
       "q": "What happens when demand peaks or a site fails?",
       "why": "Capacity for peaks and failures decides the design.",
       "need": "Peaks and site failures are absorbed without users noticing",
-      "how": "Plan burst capacity and test it once"
+      "how": "Plan burst capacity and test it once",
+      "role": "architect",
+      "listen": "Without a second site or room to grow, one failure stops everyone.",
+      "probe": "Has a site failure ever stopped the desktops, and for how long?"
     },
     {
       "stage": "L4",
       "q": "Who looks at experience data and decides what to fix?",
       "why": "Monitoring without an owner changes nothing.",
       "need": "A named owner reviews experience data and acts on it",
-      "how": "Name the owner and agree a monthly review"
+      "how": "Name the owner and agree a monthly review",
+      "role": "operations",
+      "listen": "Without experience data, fixes follow the loudest complaint.",
+      "probe": "Which tool measures the users' experience today?"
+    },
+    {
+      "stage": "L1",
+      "q": "How many users are there in all, and how many connect at the same time at peak?",
+      "why": "Concurrent users size the platform; named users size licences and profile storage.",
+      "need": "Named users and peak concurrent users are known",
+      "how": "Take the broker's peak concurrency over a month",
+      "role": "operations",
+      "core": true,
+      "listen": "Shift work can mean many named users for few desktops: size each separately.",
+      "probe": "When is the peak, and does it move with shifts or time zones?"
+    },
+    {
+      "stage": "L2",
+      "q": "Which groups need which desktops: task workers, knowledge workers, power users, graphics users?",
+      "why": "Each group has a profile that sets how many desktops fit on a server.",
+      "need": "User groups and their profiles are defined",
+      "how": "Group users by the applications and resources they use",
+      "role": "architect",
+      "core": true,
+      "listen": "Graphics or engineering users need GPUs and a test of their own.",
+      "probe": "Which applications need a graphics card, and how many monitors, at what resolution?"
+    },
+    {
+      "stage": "L2",
+      "q": "Do users need desktops that keep their changes, or fresh ones from a shared image, and why?",
+      "why": "The choice changes storage, density and day-to-day operations.",
+      "need": "Persistent and fresh desktops are decided per group",
+      "how": "Agree for each group whether its desktops keep changes",
+      "role": "architect",
+      "listen": "Desktops that keep everything are a common default and a costly one: ask who truly needs it.",
+      "probe": "Which users install their own software, and why?"
+    },
+    {
+      "stage": "L3",
+      "q": "Where do user profiles and data live, and how large are they per user?",
+      "why": "Profiles and home drives drive logon time and storage.",
+      "need": "Where profiles and user data live, and their size, is known",
+      "how": "Measure the average profile and home drive size",
+      "role": "operations",
+      "listen": "Large profiles loaded at logon slow the mornings; keeping data apart from the profile helps.",
+      "probe": "How long does logon take for the user with the largest profile?"
+    },
+    {
+      "stage": "L3",
+      "q": "Which security agents run inside the desktops, and how much do they slow them?",
+      "why": "Agents inside every desktop can cut density sharply.",
+      "need": "Security agents and their overhead are known",
+      "how": "List the agents in the golden image and test their load",
+      "role": "security",
+      "listen": "Scans running on every desktop at once can freeze a cluster: ask how they are scheduled.",
+      "probe": "When do full scans run, and on how many desktops at once?"
     }
   ]
 }

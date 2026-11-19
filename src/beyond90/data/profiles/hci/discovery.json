@@ -5,84 +5,187 @@
       "q": "What does an hour of downtime cost on your most important application?",
       "why": "Turns recovery features into money the sponsor recognises.",
       "need": "The cost of an hour down on the key application is known",
-      "how": "Put a number on it with the application owner"
+      "how": "Put a number on it with the application owner",
+      "role": "executive",
+      "core": true,
+      "listen": "A number with an owner is a business case. 'It would be bad' means nobody has counted it yet: count it with them.",
+      "probe": "Who would notice first, a customer or an internal team, and how long before it reached the board?"
     },
     {
       "stage": "value",
       "q": "When did you last restore a whole system, not a file, and how long did it take?",
       "why": "Untested recovery is the usual gap behind a confident answer.",
       "need": "A whole system can be restored in a known time",
-      "how": "Restore one complete system and time it"
+      "how": "Restore one complete system and time it",
+      "role": "operations",
+      "core": true,
+      "listen": "Never, or not end to end, is the gap. A timed test in the last quarter is a strength to build on.",
+      "probe": "What was slower than planned in that restore, and who was waiting for it?"
     },
     {
       "stage": "L1",
       "q": "How many clusters run outside the main data centre: plants, branches, edge sites?",
       "why": "Remote clusters are the ones the central console does not see.",
       "need": "Clusters outside the main data centre are known and managed",
-      "how": "Bring plant, branch and edge clusters under central management"
+      "how": "Bring plant, branch and edge clusters under central management",
+      "role": "architect",
+      "listen": "Sites with no local IT staff are where a platform that looks after itself pays most.",
+      "probe": "How is a failed disk at the furthest site replaced today, and how long does it take?"
     },
     {
       "stage": "L2",
       "q": "Do you know which virtual machines have no owner and what they run?",
       "why": "Unowned machines are skipped by protection and patching.",
       "need": "Every virtual machine has an owner and a purpose",
-      "how": "Tag machines with owners and retire the orphans"
+      "how": "Tag machines with owners and retire the orphans",
+      "role": "operations",
+      "listen": "If nobody can say, the estate is bigger than it needs to be: the first saving is what can be switched off.",
+      "probe": "When did anyone last switch off a machine nobody claimed, and what happened?"
     },
     {
       "stage": "L3",
       "q": "Which workloads have snapshots, and could an administrator account delete them?",
       "why": "Snapshots an attacker can delete are not ransomware protection.",
       "need": "Important workloads have snapshots that an admin cannot delete",
-      "how": "Apply protection policies with immutable copies"
+      "how": "Apply protection policies with immutable copies",
+      "role": "security",
+      "core": true,
+      "listen": "Yes, or 'not sure', means one stolen account can erase the safety net.",
+      "probe": "Who holds those administrator accounts, and does deleting a copy need a second person?"
     },
     {
       "stage": "L3",
       "q": "Is there a second site, and has failover to it been run end to end?",
       "why": "Replication without a tested recovery plan is a hope.",
       "need": "Failover to a second site has been run end to end",
-      "how": "Run a test failover of one application"
+      "how": "Run a test failover of one application",
+      "role": "operations",
+      "listen": "A runbook that has never been run end to end is a hope, not a plan.",
+      "probe": "What would you rather the auditor did not see in your last failover test?"
     },
     {
       "stage": "L3",
       "q": "How far behind on upgrades are you, and what makes upgrading hard?",
       "why": "Lifecycle debt is a security risk and the most common hidden effort.",
       "need": "Upgrades are routine, not a project",
-      "how": "Agree an upgrade cadence and remove what makes upgrading hard"
+      "how": "Agree an upgrade cadence and remove what makes upgrading hard",
+      "role": "operations",
+      "core": true,
+      "listen": "Upgrades planned around weekends and change boards cost people every time: that time is the saving.",
+      "probe": "How many people and nights did the last full upgrade take: firmware, hypervisor and storage?"
     },
     {
       "stage": "L4",
       "q": "When the platform raises an alert at night, who acts on it?",
       "why": "Alerts without an owner turn into noise, then into outages.",
       "need": "A platform alert at night reaches someone who acts",
-      "how": "Route platform alerts to a named on-call owner"
+      "how": "Route platform alerts to a named on-call owner",
+      "role": "operations",
+      "listen": "A named person with a runbook is mature. 'The supplier calls us', or nobody, means outages last longer than they should.",
+      "probe": "Which alert last woke someone up, and was it worth it?"
     },
     {
       "stage": "L2",
       "q": "Which failures must the platform ride through without stopping: a disk, a server, a whole rack, a room?",
       "why": "The answer decides how many copies of the data are kept and where they are placed.",
       "need": "The failures to survive are agreed, and every copy of the data sits in a different place for each of them",
-      "how": "Agree the failure domains (server, rack, room) and how many copies each group of workloads needs"
+      "how": "Agree the failure domains (server, rack, room) and how many copies each group of workloads needs",
+      "role": "architect",
+      "core": true,
+      "listen": "This decides how many copies of the data to keep and how much headroom to buy: write it down as a requirement.",
+      "probe": "Has a whole rack or room ever failed, and what stopped with it?"
     },
     {
       "stage": "L3",
       "q": "How full are storage and hosts today, and how much room is kept free for a server failure and for growth?",
       "why": "A platform run at the edge cannot rebuild after a failure, and the next purchase arrives as an emergency.",
       "need": "Capacity is planned with room to rebuild after a failure and to grow, with alerts before it runs short",
-      "how": "Measure today's use, keep a server's worth of room free, and set alerts at two thresholds"
+      "how": "Measure today's use, keep a server's worth of room free, and set alerts at two thresholds",
+      "role": "architect",
+      "listen": "Above about three quarters full, a server failure can leave no room to rebuild: a sizing input, not a detail.",
+      "probe": "How fast has used capacity grown over the last two years?"
     },
     {
       "stage": "L3",
       "q": "Which workloads need the fastest storage, and which can live on cheaper capacity?",
       "why": "Separating hot from cold data, and deciding where to compress or deduplicate, is where cost and performance are won.",
       "need": "Workloads are grouped by the performance they need, with data reduction used where it pays off",
-      "how": "Group workloads by performance tier and agree where compression and deduplication apply"
+      "how": "Group workloads by performance tier and agree where compression and deduplication apply",
+      "role": "application",
+      "listen": "A few latency-sensitive systems often drive the whole design: name them now so the proof measures them.",
+      "probe": "Which application owner complains first when storage slows down?"
     },
     {
       "stage": "L4",
       "q": "Could a tested platform update be pre-approved as routine and run during the working day?",
       "why": "Updates that need a weekend get postponed, and a platform that falls behind becomes a risk.",
       "need": "Tested platform updates are pre-approved and run during the working day, without downtime",
-      "how": "Agree with change management a pre-approved path for tested updates"
+      "how": "Agree with change management a pre-approved path for tested updates",
+      "role": "executive",
+      "listen": "If every update needs a change board at night, simple rolling updates are worth hours a month: agree it as a goal.",
+      "probe": "What would the change board need to see to treat a tested update as a standard change?"
+    },
+    {
+      "stage": "L1",
+      "q": "What hardware runs the estate today, how old is it, and when does its support end?",
+      "why": "The end of hardware support is often the real date behind the project.",
+      "need": "Servers and arrays are listed with their end-of-support dates",
+      "how": "Export the hardware list with purchase and support dates",
+      "role": "architect",
+      "core": true,
+      "listen": "An array or a server fleet out of support within 18 months is a reason to decide this year, with a date.",
+      "probe": "What would it cost to extend support on the oldest array for two more years?"
+    },
+    {
+      "stage": "L2",
+      "q": "Is there a week of performance data for the estate, processor, memory, storage and network, covering the busiest days?",
+      "why": "Sizing on what machines are given rather than what they use over-buys; a week of peaks sizes it right.",
+      "need": "A week of performance data covers the busiest days",
+      "how": "Run a collector for seven days that include month-end or the busiest day",
+      "role": "operations",
+      "core": true,
+      "listen": "Without measured peaks, sizing falls back on what was allocated, often several times what is used.",
+      "probe": "Which days of the month are the busiest, and can the collection include one?"
+    },
+    {
+      "stage": "L2",
+      "q": "How much storage belongs to machines that are switched off, and do they still need it?",
+      "why": "Switched-off machines still hold data: it must be sized, or retired.",
+      "need": "Switched-off machines are either sized or retired",
+      "how": "List switched-off machines with their storage and an owner's decision",
+      "role": "operations",
+      "listen": "A large share of switched-off capacity is an early win: retire it before buying for it.",
+      "probe": "Who can approve retiring a machine that has been off for six months?"
+    },
+    {
+      "stage": "L3",
+      "q": "Which software is licensed per processor core or per host, and does that shape how servers are built?",
+      "why": "Database and operating system licences can cost more than the platform; they decide the processor choice.",
+      "need": "Per-core licences are known and the design keeps them on the fewest cores",
+      "how": "List per-core licences and the hosts they are tied to",
+      "role": "finance",
+      "listen": "Per-core software calls for fewer, faster cores on dedicated hosts. Ignoring it can erase the savings.",
+      "probe": "What did the last licence true-up or audit cost, and for which product?"
+    },
+    {
+      "stage": "L2",
+      "q": "Which data must be encrypted at rest, and where are encryption keys managed today?",
+      "why": "Encryption and key management are often a gate in the security review.",
+      "need": "Encryption at rest and the key manager are agreed with security",
+      "how": "Ask security for the policy on encryption at rest and key management",
+      "role": "security",
+      "listen": "A key manager already in place is a requirement to test in the proof, not a footnote.",
+      "probe": "Who approves a new system that holds encrypted data, and how long does that review take?"
+    },
+    {
+      "stage": "L4",
+      "q": "How many people run the infrastructure, and what would they do with the time if routine work went away?",
+      "why": "The value of simpler operations is the work it frees, said by the team itself.",
+      "need": "The team's routine hours are known, and where freed time would go",
+      "how": "List the routine tasks of a typical month with their hours",
+      "role": "executive",
+      "listen": "A named project waiting for those hours makes the saving real. 'Nothing' means it will not be believed.",
+      "probe": "Which project was postponed this year for lack of people?"
     }
   ]
 }

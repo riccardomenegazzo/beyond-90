@@ -5,63 +5,145 @@
       "q": "How long does a team wait today for a new environment to run its application?",
       "why": "Platform speed is the main reason teams adopt it.",
       "need": "A team gets a new environment in under an hour",
-      "how": "Offer clusters or namespaces from templates, self-service"
+      "how": "Offer clusters or namespaces from templates, self-service",
+      "role": "application",
+      "core": true,
+      "listen": "Days of waiting for an environment is the delay the business feels.",
+      "probe": "What do teams do while they wait: build their own, or open a cloud account?"
     },
     {
       "stage": "value",
       "q": "Who is responsible for a cluster's upgrades today, and how far behind are they?",
       "why": "Upgrade debt is the most common hidden risk.",
       "need": "Cluster upgrades have an owner and are current",
-      "how": "Name the owner and agree an upgrade cadence"
+      "how": "Name the owner and agree an upgrade cadence",
+      "role": "operations",
+      "core": true,
+      "listen": "Clusters several versions behind are unsupported and risky; upgrading them by hand is the cost.",
+      "probe": "How long did the last cluster upgrade take, and what broke?"
     },
     {
       "stage": "L1",
       "q": "How many clusters exist, including the ones teams created themselves?",
       "why": "Unmanaged clusters escape every rule.",
       "need": "Every cluster is known, team-made ones included",
-      "how": "Attach every cluster to central management"
+      "how": "Attach every cluster to central management",
+      "role": "architect",
+      "core": true,
+      "listen": "Clusters built by teams themselves are the sprawl to bring under one management.",
+      "probe": "Which distributions and clouds are they on?"
     },
     {
       "stage": "L2",
       "q": "Which workloads keep data in volumes, and is that data backed up?",
       "why": "Stateful workloads are the ones that lose data.",
       "need": "Data in volumes is backed up and restorable",
-      "how": "Back up stateful workloads and test one restore"
+      "how": "Back up stateful workloads and test one restore",
+      "role": "operations",
+      "listen": "Stateful workloads without backups are a recovery gap; many assume the cluster protects them.",
+      "probe": "Has anyone restored a stateful application from backup, and how long did it take?"
     },
     {
       "stage": "L3",
       "q": "What stops a team from deploying an unapproved image or a privileged pod?",
       "why": "Policy at admission is where security becomes routine.",
       "need": "Unapproved images and privileged pods are refused",
-      "how": "Turn on admission policies, first in audit mode"
+      "how": "Turn on admission policies, first in audit mode",
+      "role": "security",
+      "core": true,
+      "listen": "Without admission rules, one deployment can open the whole cluster.",
+      "probe": "Who decides which base images are approved, and how is it enforced?"
     },
     {
       "stage": "L3",
       "q": "Are changes made through Git, or by hand on the cluster?",
       "why": "Hand changes are the source of drift and outages.",
       "need": "Changes go through Git, not by hand",
-      "how": "Move one team to GitOps and show the drift it removes"
+      "how": "Move one team to GitOps and show the drift it removes",
+      "role": "operations",
+      "listen": "Changes made by hand drift; Git gives history and clusters that can be rebuilt.",
+      "probe": "Could a lost cluster be rebuilt from Git alone?"
     },
     {
       "stage": "L3",
       "q": "Could each team tell you what its workloads cost last month?",
       "why": "Cost visibility changes behaviour more than budgets.",
       "need": "Each team sees what its workloads cost",
-      "how": "Turn on cost per namespace and share it monthly"
+      "how": "Turn on cost per namespace and share it monthly",
+      "role": "finance",
+      "listen": "No cost per team means no reason to clean up.",
+      "probe": "Who pays for cluster capacity today?"
     },
     {
       "stage": "L4",
       "q": "When a node or a workload fails at night, who knows first?",
       "why": "Observability without an owner is a dashboard nobody reads.",
       "need": "A failure at night is seen by someone who acts",
-      "how": "Route cluster alerts to a named owner"
+      "how": "Route cluster alerts to a named owner",
+      "role": "operations",
+      "listen": "If developers find out first, monitoring does not cover the platform.",
+      "probe": "What was the last cluster incident, and how long did it last?"
     },
     {
       "stage": "L2",
       "q": "Which clusters need to run directly on physical servers, for GPUs, latency or the edge?",
       "why": "Some workloads cannot afford a virtualisation layer; the same operations should still apply to them.",
       "need": "Clusters on physical servers are managed with the same lifecycle, policies and storage as the virtualised ones",
-      "how": "List the workloads that need physical servers and include them in the platform's scope"
+      "how": "List the workloads that need physical servers and include them in the platform's scope",
+      "role": "architect",
+      "listen": "GPUs, low latency or the edge can justify physical nodes; otherwise virtual nodes are easier to run.",
+      "probe": "Which workloads need direct access to the hardware?"
+    },
+    {
+      "stage": "L1",
+      "q": "Which applications run in containers today, and which are planned to move in the next year?",
+      "why": "Current and planned workloads size the platform and show its priority.",
+      "need": "Current and planned container workloads are listed",
+      "how": "List applications in containers and those planned, with dates",
+      "role": "application",
+      "listen": "A list of planned moves with dates gives the platform a deadline.",
+      "probe": "Which application would be the first on a new platform?"
+    },
+    {
+      "stage": "L2",
+      "q": "How do users and other clusters reach the applications: load balancers, ingress, service mesh?",
+      "why": "Networking is where clusters differ most and break most.",
+      "need": "Ingress, load balancing and traffic between clusters are documented",
+      "how": "Draw how traffic reaches one application from the user",
+      "role": "architect",
+      "listen": "Every cluster wired differently means every move needs network work.",
+      "probe": "Who manages load balancer addresses and certificates?"
+    },
+    {
+      "stage": "L3",
+      "q": "Where do teams keep images and secrets, and who can read them?",
+      "why": "Registries and secret handling are frequent audit findings.",
+      "need": "Registries and secret stores are agreed and controlled",
+      "how": "List registries and secret stores with their access rules",
+      "role": "security",
+      "listen": "Secrets in plain manifests or open registries are an early fix.",
+      "probe": "Are images scanned before they reach production?"
+    },
+    {
+      "stage": "L4",
+      "q": "Who runs the platform as a product: a platform team, each team for itself, or an outside provider?",
+      "why": "Ownership decides whether self-service within limits can exist.",
+      "need": "A platform owner and its service are named",
+      "how": "Name who owns clusters, upgrades and the catalogue",
+      "role": "executive",
+      "core": true,
+      "listen": "Without a platform owner, every team rebuilds the same things.",
+      "probe": "What would the platform team stop doing if clusters looked after themselves?"
+    },
+    {
+      "stage": "L3",
+      "q": "Do some applications need virtual machines and containers side by side for a while?",
+      "why": "Mixed estates need one platform for both, or clear boundaries.",
+      "need": "Workloads that need machines and containers together are known",
+      "how": "List applications that span virtual machines and containers",
+      "role": "architect",
+      "listen": "Applications half moved need one network and one policy across both.",
+      "probe": "Which database stays on a virtual machine while its application moves to containers?"
     }
   ]
 }

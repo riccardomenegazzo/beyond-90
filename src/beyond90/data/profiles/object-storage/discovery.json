@@ -5,56 +5,135 @@
       "q": "What data would hurt most if it were encrypted or deleted tomorrow?",
       "why": "Points straight at the buckets that need immutability first.",
       "need": "The data that would hurt most is known and protected first",
-      "how": "Name it with the business, and protect it first"
+      "how": "Name it with the business, and protect it first",
+      "role": "executive",
+      "core": true,
+      "listen": "Backups and records under legal hold usually top the list; they set the level of protection.",
+      "probe": "Which of that data has a legal retention period?"
     },
     {
       "stage": "value",
       "q": "What do you pay today per terabyte, including egress and requests?",
       "why": "Request and egress fees are where storage bills surprise people.",
       "need": "The full cost per terabyte is known",
-      "how": "Add up storage, egress and requests for a typical month"
+      "how": "Add up storage, egress and requests for a typical month",
+      "role": "finance",
+      "core": true,
+      "listen": "Charges for retrieval and requests often double the headline price.",
+      "probe": "What did retrieving data cost the last time you restored from the cloud?"
     },
     {
       "stage": "L1",
       "q": "Which applications and backup jobs write to object storage, and where?",
       "why": "Unknown writers mean unknown tenants and keys.",
       "need": "Every application and backup job writing to object storage is known",
-      "how": "List writers and their buckets"
+      "how": "List writers and their buckets",
+      "role": "architect",
+      "listen": "Each application that writes is a compatibility test for the proof.",
+      "probe": "Which of them use more than simple reads and writes: versioning, lifecycle rules, notifications?"
     },
     {
       "stage": "L2",
       "q": "Do you know how many access keys exist, who owns them and when they were last used?",
       "why": "Old keys with broad rights are the easiest way in.",
       "need": "Every access key has an owner and is used",
-      "how": "Review keys, give owners, and remove unused ones"
+      "how": "Review keys, give owners, and remove unused ones",
+      "role": "security",
+      "listen": "Old keys with broad rights are a common way in.",
+      "probe": "When was a key last rotated, and what broke?"
     },
     {
       "stage": "L3",
       "q": "Are your backup copies under object lock, and for how long?",
       "why": "Backups an administrator can delete do not survive ransomware.",
       "need": "Backup copies are under object lock for long enough",
-      "how": "Turn on object lock with the agreed retention"
+      "how": "Turn on object lock with the agreed retention",
+      "role": "security",
+      "core": true,
+      "listen": "Backups that can be deleted with the right keys can be deleted by an attacker.",
+      "probe": "Which lock mode is used: one even administrators cannot override, or one they can?"
     },
     {
       "stage": "L3",
       "q": "Must any data stay in a given country, and can you prove where it is?",
       "why": "Residency is often a legal requirement before it is a technical one.",
       "need": "Data that must stay in a country stays there, with proof",
-      "how": "Pin buckets to regions and keep the evidence"
+      "how": "Pin buckets to regions and keep the evidence",
+      "role": "security",
+      "listen": "Being able to prove where data is matters as much as where it is.",
+      "probe": "Who would ask for that proof: a regulator, a customer, an auditor?"
     },
     {
       "stage": "L3",
       "q": "When did you last restore from these backups, and how long did it take?",
       "why": "The restore is the only test that counts.",
       "need": "A restore from object storage has been tested and timed",
-      "how": "Restore one backup end to end and time it"
+      "how": "Restore one backup end to end and time it",
+      "role": "operations",
+      "listen": "Restore speed depends on throughput, not capacity: measure it.",
+      "probe": "How long would restoring the largest system from these copies take?"
     },
     {
       "stage": "L4",
       "q": "Who is alerted when someone reads or deletes far more than usual?",
       "why": "Mass reads and deletes are the first signs of theft or ransomware.",
       "need": "Unusual reads or deletes alert someone named",
-      "how": "Alert on unusual volumes, routed to an owner"
+      "how": "Alert on unusual volumes, routed to an owner",
+      "role": "security",
+      "listen": "Mass reads can mean theft; mass deletes can mean an attack.",
+      "probe": "Who can stop a key from working within minutes?"
+    },
+    {
+      "stage": "L1",
+      "q": "How much data will be stored, in how many objects, and how much is written each day?",
+      "why": "Capacity, object count and daily writes size the platform.",
+      "need": "Capacity, object count and daily writes are estimated",
+      "how": "Collect current size and daily writes per bucket or application",
+      "role": "architect",
+      "core": true,
+      "listen": "Billions of small objects stress metadata more than capacity: ask about object size too.",
+      "probe": "What is the typical object size, and the largest?"
+    },
+    {
+      "stage": "L2",
+      "q": "How fast must data be written and read back, in the backup window and during a restore?",
+      "why": "Throughput, not capacity, decides backup and restore times.",
+      "need": "The throughput needed for backup and restore is known",
+      "how": "Divide the size of the backup set by its window to get the throughput needed",
+      "role": "operations",
+      "core": true,
+      "listen": "A nightly window and a restore target give a throughput the design must meet.",
+      "probe": "What is the restore time target for the largest backup set?"
+    },
+    {
+      "stage": "L3",
+      "q": "Which data should move to cheaper storage, or be deleted, automatically as it ages?",
+      "why": "Lifecycle rules keep cost down without anyone acting.",
+      "need": "Lifecycle and retention rules are agreed per data set",
+      "how": "Agree tiering and expiry per bucket with its owner",
+      "role": "finance",
+      "listen": "Data kept forever by default is the cost to cut: give each rule an owner.",
+      "probe": "Which data set has no retention rule at all today?"
+    },
+    {
+      "stage": "L3",
+      "q": "Do analytics or AI teams need to read this data where it is, and with which tools?",
+      "why": "Data read in place avoids copies and transfer charges.",
+      "need": "Needs to read data in place for analytics or AI are known",
+      "how": "Ask the data teams which tools and protocols they would read with",
+      "role": "data",
+      "listen": "Reading in place turns a backup target into a data platform: a strong second use.",
+      "probe": "How much data is copied today only to be analysed elsewhere?"
+    },
+    {
+      "stage": "L4",
+      "q": "Will the storage serve several teams or customers, each seeing only its own data and usage?",
+      "why": "Serving several tenants needs isolation, quotas and usage per tenant.",
+      "need": "Tenants, quotas and usage reporting are agreed",
+      "how": "List the teams or customers and what each must see",
+      "role": "executive",
+      "listen": "Charging back per team needs usage per tenant from the first day.",
+      "probe": "How is the cost of storage split between teams today?"
     }
   ]
 }
