@@ -2,6 +2,36 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.111.0
+
+- **Partners on a deal.** Under "The meeting", **Partners** records:
+  - the partners working a deal, up to four: reseller, systems integrator, service provider, distributor or consulting partner;
+  - which one leads;
+  - the deal registration and when it runs out;
+  - the lines each partner has skills on;
+  - the route to purchase: direct, reseller, distributor, public framework or marketplace, or as a service;
+  - who does what from discovery to support: us, the partner or together.
+
+  It says what to settle:
+  - a registration that has run out or runs out within two weeks;
+  - no registration;
+  - discovery, the proof or the deployment owned by nobody;
+  - a partner asked to deliver lines it has no skills on;
+  - no route set.
+- **A brief for the partner and a discovery kit for partners.** The brief carries:
+  - who does what;
+  - where the customer stands and what a proof would have to show;
+  - the concerns raised;
+  - what the deal still needs and the skills to line up.
+
+  It includes the customer's words only when asked. The kit holds no customer's data, so it can go to any partner. For each line in scope it has the essential questions with how to ask them, the objections with answers and proof, the proof criteria and the proof's first-day checklist, then the ten qualification questions.
+- **The partner review on the desk.** **Partners across your deals** shows each partner's live deals, the ones it leads, registrations to renew or file, wins and losses, and skills to line up, with a review to copy. A registration about to run out is a risk on the deal.
+- **The way forward** asks, when a deal has partners:
+  - that the registration is in place;
+  - who runs the proof with them;
+  - that delivery has an owner with the skills.
+- The example prospects are sold with an integrator, a distributor and a service provider. The question helpers moved to their own module.
+
 ## 0.110.0
 
 - **The desk's next step follows the way forward.** With nothing late and nothing dated, a prospect's next step on the presales desk is the first thing still to do in the phase it is in. For example, "Demo built for them: plan it from what they said, under The way forward". The Monday note and the CSV carry it.

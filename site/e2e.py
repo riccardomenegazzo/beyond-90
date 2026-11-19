@@ -777,6 +777,34 @@ def main(site: str) -> int:
         hero = page.inner_text("#view .qdhero")
         check("Ready for a demo built for them" in hero and "To be ready to propose a proof of value, find out" in hero and "Economic buyer:" in hero,
               "three answers make it ready for a demo built for them, and say what a proof of value still needs")
+        # partners on the deal: who brings it, the registration, who does what, and what to hand them
+        page.click("[data-tab=wspartners]")
+        page.wait_for_selector("#view .ptlist")
+        check("No partner yet" in page.inner_text("#view"), "a deal starts without partners, saying most come through one")
+        page.get_by_role("button", name="Add a partner").click()
+        page.get_by_label("Partner 1: name").fill("Verdi Sistemi (mock)")
+        page.get_by_label("Partner 1: kind").select_option("integrator")
+        page.get_by_label("Partner 1: registered on").fill("2026-11-01")
+        page.get_by_label("Partner 1: registration until").fill("2027-02-01")
+        page.get_by_label("Partner 1: registration until").press("Tab")
+        page.get_by_role("group", name="Partner 1: lines it has skills on").get_by_role("button").first.click()
+        page.get_by_label("Who does: Deployment and migration").select_option(label="Verdi Sistemi (mock)")
+        page.get_by_label("Who does: Proof of value").select_option(label="Together")
+        page.get_by_label("Route to purchase").select_option("distribution")
+        page.wait_for_selector("#view .ptwarn li")
+        settle = page.inner_text("#view")
+        check("Verdi Sistemi (mock) leads." in settle and "Nobody owns discovery" in settle and "without skills on" in settle,
+              "the partner leads; what nobody owns and the lines it would deliver without skills are what to settle")
+        with page.expect_download() as dl:
+            page.get_by_role("button", name="Brief for the partner (.md)").click()
+        brief = Path(dl.value.path()).read_text(encoding="utf-8")
+        check(brief.startswith("# Brief for Verdi Sistemi (mock): Kestrel Logistics") and "| Deployment and migration | Verdi Sistemi (mock) |" in brief and "2M in lost orders" not in brief,
+              "the brief for the partner says who does what, without the customer's words unless asked")
+        with page.expect_download() as dl:
+            page.get_by_role("button", name="Discovery kit for partners (.md)").click()
+        kit = Path(dl.value.path()).read_text(encoding="utf-8")
+        check(kit.startswith("# Discovery kit for partners") and "Kestrel" not in kit and "Ready on the proof's first day" in kit,
+              "the discovery kit for partners holds the questions, the proof and its first day, and no customer")
         # the way forward: the phase now, what moves it on, how to run it, and the demo planned from what was said
         page.click("[data-tab=wsforward]")
         page.wait_for_selector("#view .fwhero")
@@ -987,7 +1015,7 @@ def main(site: str) -> int:
         check(page.is_visible("#desk-btn"), "choosing pre-sales engineer adds a desk to the menu")
         page.click("#desk-btn")
         page.wait_for_selector("#desk-body .deskfunnel")
-        check("Your presales desk" in page.inner_text("#desk-body") and "Kestrel Logistics" in page.inner_text("#desk-body table"), "the desk lists every prospect kept in this browser")
+        check("Your presales desk" in page.inner_text("#desk-body") and page.locator("#desk-body table", has_text="Kestrel Logistics").count() >= 1, "the desk lists every prospect kept in this browser")
         check(page.locator("#desk-body .deskfunnel li").count() == 4 and "Proof of value" in page.inner_text("#desk-body .deskfunnel"), "with the stages from discovery to decision")
         with page.expect_download() as dl:
             page.get_by_role("button", name="Download it (.md)").click()
@@ -1006,6 +1034,13 @@ def main(site: str) -> int:
         lessons_card = page.locator("#desk-body .card").filter(has_text="What the deals teach")
         check(lessons_card.count() == 1 and "What customers push back on" in lessons_card.inner_text() and "Ransomware would encrypt the backups too" in lessons_card.inner_text(),
               "what the deals teach: what customers push back on, read from every prospect")
+        # the partners across the desk: their deals, registrations to act on, what was won and lost with them
+        partner_card = page.locator("#desk-body .card").filter(has_text="Partners across your deals")
+        pt = partner_card.inner_text() if partner_card.count() == 1 else ""
+        check("Verdi Sistemi (mock)" in pt and "Lago Cloud (mock)" in pt and "6 days left" in pt and "not registered" in pt and "1 won, 0 lost" in pt,
+              "the partners across every deal: live deals, registrations to renew or file, wins and losses with each")
+        check(page.locator("#desk-body").get_by_text("Verdi Sistemi (mock)'s deal registration runs out in 6 days").count() >= 1,
+              "a registration about to run out is a risk that can lose the deal")
         # the team: each engineer shares a snapshot, the manager reads them together
         page.get_by_label("Your name, as your manager should see it").fill("Giulia R. (mock)")
         with page.expect_download() as dl:
@@ -1482,6 +1517,13 @@ def main(site: str) -> int:
                 apage.wait_for_selector("#view .fwhero")
                 apage.locator("#view details.fwphase summary").first.click()
                 bad += [f"forward: {v}" for v in audit()]
+                apage.click("[data-tab=wspartners]")
+                apage.wait_for_selector("#view .ptlist")
+                apage.get_by_role("button", name="Add a partner").click()
+                apage.get_by_label("Partner 1: name").fill("Audit partner (mock)")
+                apage.get_by_label("Partner 1: name").press("Tab")
+                apage.wait_for_selector("#view .pttable")
+                bad += [f"partners: {v}" for v in audit()]
                 apage.click("[data-tab=wscase]")
                 apage.wait_for_selector("#view .vcgroups")
                 for label, value in (("What the current platform costs per year (licences, subscriptions, support)", "100000"), ("What the new platform would cost per year", "80000")):

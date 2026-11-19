@@ -71,6 +71,10 @@ The page says what to do at the gate reached and what the next gate still needs,
 
 ![Qualify the deal: where it stands and what the next gate needs](img/app-qualify.png)
 
+## Partners
+
+**Partners** records who is on the deal: the reseller, integrator, service provider or distributor working it, which one leads, the deal registration and when it runs out, the route to purchase, and who does what from discovery to support. It says what to settle, and gives a brief for the partner and a discovery kit any partner can use. See [partners.md](partners.md).
+
 ## The way forward
 
 **The way forward** places the prospect on the path from the first meeting to the handover: **Discovery**, **Demo built for them**, **Proof of value**, **Decision**, **Handover to delivery**. Each phase says what it is for, what must be true to move on (read from what is recorded, each with what to do and a link to where to do it), how to run it and what to avoid:

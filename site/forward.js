@@ -10,6 +10,7 @@ import { assess, displayOrder, stories, worthText, ROLE_WORDS } from "./workshop
 import { dealState } from "./qualify.js";
 import { qualify as povReady, progress as povProgress } from "./pov.js";
 import { hasCase } from "./valuecase.js";
+import { registrationOf, channelState } from "./partners.js";
 
 export const PHASES = [
   { id: "discover", label: "Discovery", goal: "Know where it hurts, what it is worth to them, and who decides.",
@@ -120,12 +121,19 @@ export function forward(catalog, w, pov, today = "") {
   const inProof = new Set(pov ? pov.criteria.filter((c) => c.status !== "dropped").map((c) => clean(c.text).toLowerCase()) : []);
   const outside = (res.raised || []).filter((o) => !inProof.has(clean(o.prove).toLowerCase()));
   const outcome = pov && pov.outcome ? pov.outcome.result : "";
+  // with partners on the deal: their registration, who runs the proof with them, and who delivers with the skills
+  const reg = registrationOf(w.channel, today || w.updated_on);
+  const cs = w.channel ? channelState(catalog, w, today || w.updated_on) : null;
+  const split = (w.channel && w.channel.split) || {};
+  const withPartners = (list) => list.filter((c) => c.partner === undefined || cs);
   const checks = {
     discover: [
       { text: "The line to start with is known", ok: !!res.land, fix: res.waiting || "Answer a few more questions on the lines in scope.", go: "workshop" },
       { text: `The essential questions are answered (${coreDone} of ${core.length})`, ok: core.length > 0 && coreDone >= Math.ceil(core.length * 0.8), fix: "Ask the essential questions still open: narrow the questions to them.", go: "workshop" },
       { text: "Something is at stake, in their words or as a figure", ok: atStake, fix: "Ask what a day without it would cost, and note their words.", go: "workshop" },
       { text: "Ready for a demo built for them", ok: gate("demo"), fix: "Ask why they would change, the result they want, and what would convince them.", go: "wsqualify" },
+      { partner: true, text: "The partner's deal registration is in place", ok: !!reg && (reg.status === "active" || reg.status === "expiring" || reg.lead.kind === "distributor"),
+        fix: reg && reg.status === "expired" ? `${reg.lead.name}'s registration ran out on ${reg.until}: renew it.` : "Ask the partner that brought the deal to register it.", go: "wspartners" },
     ],
     demo: [
       { text: "The demo was given", ok: !!(w.demo && w.demo.on), fix: "Plan it from what they said, under The way forward, and mark it given once it is.", go: "" },
@@ -136,6 +144,7 @@ export function forward(catalog, w, pov, today = "") {
       { text: "Ready to start: criteria signed off, sponsor and champion, a realistic window, scope", ok: !!pov && povReady(pov).ready, fix: pov ? povReady(pov).items.filter((x) => !x.ok).map((x) => x.fix).join(" ") : "Plan the proof first.", go: "wspov" },
       { text: "Every concern they raised is a criterion", ok: !!pov && !outside.length, fix: outside.length ? `Add as criteria: ${outside.map((o) => `"${clean(o.says)}"`).join(", ")}.` : "Plan the proof first.", go: "wspov" },
       { text: "Every criterion has been tried", ok: !!pr && pr.total > 0 && pr.open === 0, fix: pr ? `${pr.open} of ${pr.total} still to try.` : "Plan the proof first.", go: "wspov" },
+      { partner: true, text: "Who runs the proof with the partner is agreed", ok: !!split.proof, fix: "Agree whether you, the partner or both run it, and who hosts it.", go: "wspartners" },
     ],
     decision: [
       { text: "The readout to the sponsor is done", ok: !!pov && (pov.stage === "done" || !!outcome), fix: "Hold the readout and mark the proof done.", go: "wspov" },
@@ -145,11 +154,14 @@ export function forward(catalog, w, pov, today = "") {
     ],
     handover: [
       { text: "Won", ok: outcome === "won", fix: outcome ? "This one was not won: what it teaches is on the presales desk." : "Not decided yet.", go: outcome ? "" : "wspov" },
+      { partner: true, text: "Delivery has an owner with the skills for every line", ok: !!split.delivery && !(cs && cs.gaps.some((g) => g.activities.includes("deployment and migration"))),
+        fix: split.delivery ? "The partner delivering lacks skills on some lines: plan their enablement, or bring a specialist." : "Agree who deploys and migrates: you, the partner, or both.", go: "wspartners" },
     ],
   };
   // the phase now is the furthest one started; once it is done, the one after it. A phase passed with something
   // still open says so, rather than pulling the prospect back to it.
   const started = { discover: true, demo: !!(w.demo && w.demo.on) || gate("demo"), proof: !!pov, decision: !!pov && (pov.stage === "done" || !!outcome), handover: outcome === "won" };
+  for (const id of Object.keys(checks)) checks[id] = withPartners(checks[id]).map(({ partner, ...c }) => c);
   const done = (id) => checks[id].every((c) => c.ok);
   let at = 0;
   PHASES.forEach((ph, i) => { if (started[ph.id]) at = i; });

@@ -16,6 +16,10 @@ import { validGpu, gpuSketch, gpuMarkdown } from "./gpu.js";
 import { validDr, drSketch, drMarkdown } from "./drsketch.js";
 import { validObj, objSketch, objMarkdown } from "./objsketch.js";
 import { validDeal, withDealAnswer, dealMarkdown } from "./qualify.js";
+import { ROLE_WORDS, displayOrder, inMeeting } from "./questions.js";
+import { validChannel, cleanChannel, KINDS, ROUTES, ACTIVITIES, whoLabel } from "./partners.js";
+
+export { ROLE_WORDS, displayOrder, inMeeting };
 
 export const ANSWERS = {
   solved: { label: "Solved", weight: 0 },
@@ -78,6 +82,7 @@ export function validWorkshop(w) {
   if (w.dr != null && !validDr(w.dr)) return false;
   if (w.obj != null && !validObj(w.obj)) return false;
   if (w.deal != null && !validDeal(w.deal)) return false;
+  if (w.channel != null && !validChannel(w.channel)) return false;
   if (w.demo != null && !(w.demo && typeof w.demo === "object" && !Array.isArray(w.demo) && Object.keys(w.demo).length === 1 && isDate(w.demo.on) && w.demo.on >= w.created_on)) return false;
   if (w.raised != null && !(Array.isArray(w.raised) && w.raised.length && w.raised.length <= MAX_RAISED && w.raised.every((k) => typeof k === "string" && RAISED.test(k)) && new Set(w.raised).size === w.raised.length)) return false;
   const m = /^ws\|(\d{4}-\d{2}-\d{2})\|([a-z0-9]+)$/.exec(w.id || "");
@@ -265,6 +270,15 @@ export function setDeal(w, id, a, note, today) {
   return changed(next, {}, today);
 }
 
+/** The partners on this deal, the route to purchase and who does what; null removes them all. */
+export function setChannel(w, given, today) {
+  const channel = given ? cleanChannel(given) : null;
+  const next = { ...w };
+  delete next.channel;
+  if (channel) next.channel = channel;
+  return changed(next, {}, today);
+}
+
 /** The day the demo built for this customer was given, or "" to clear it: the way forward moves on from there. */
 export function setDemo(w, on, today) {
   const next = { ...w };
@@ -356,6 +370,12 @@ const EXAMPLE = {
   plan: { "dr-backup#2": ["together", 21], "dr-backup#4": ["us", 10], "platform-migration#3": ["customer", 14] },
   raised: [["dr-backup", 3], ["platform-migration", 1], ["hci", 2]],
   sizing: { growth_pct: 15 },
+  // sold with partners: an integrator that leads and will deliver, through a distributor; the integrator knows two of the four lines
+  channel: {
+    partners: [{ name: "Verdi Sistemi (mock)", kind: "integrator", lead: true, reg: [-9, 80], skills: ["hci", "dr-backup"] }, { name: "Nord Distribuzione (mock)", kind: "distributor" }],
+    route: "distribution",
+    split: { discovery: "both", demo: "us", sizing: "both", proof: "both", proposal: "p0", delivery: "p0", support: "p0" },
+  },
   // the deal, as far as the first meetings got: ready for a demo built for them, not yet for a proof
   deal: {
     why_change: ["known", "The hosting renewal triples the cost; operations already works weekends on upgrades"],
@@ -389,6 +409,8 @@ export function exampleWorkshop(createdOn) {
   for (const [profile, i] of EXAMPLE.raised) w = setRaised(w, profile, i, true, createdOn);
   w = setCase(setSizing(w, EXAMPLE.sizing, createdOn), EXAMPLE.case, createdOn);
   for (const [id, [a, note]] of Object.entries(EXAMPLE.deal)) w = setDeal(w, id, a, note, createdOn);
+  const shift = (n) => new Date(Date.parse(createdOn + "T00:00:00Z") + n * 86400000).toISOString().slice(0, 10);
+  w = setChannel(w, { ...EXAMPLE.channel, partners: EXAMPLE.channel.partners.map((p) => (p.reg ? { ...p, reg: { on: shift(p.reg[0]), until: shift(p.reg[1]) } } : p)) }, createdOn);
   return w;
 }
 export const isExample = (w) => /\|example\d$/.test(w.id);
@@ -451,17 +473,6 @@ export function assess(catalog, w) {
 
 const STAGE_ORDER = { value: 0, L1: 1, L2: 2, L3: 3, L4: 4 };
 const STATUS_ORDER = { gap: 0, unknown: 1, partly: 2 };
-
-/** Who in the customer's organisation a question is for: the meeting can be narrowed to the people in the room. */
-export const ROLE_WORDS = { executive: "Executive sponsor", architect: "Architect", operations: "Operations", security: "Security", application: "Application owner", data: "Data team", finance: "Finance" };
-
-/** A line's questions in the order of a conversation: value first, then the stages from connected to decided. Indexes are kept. */
-export function displayOrder(line) {
-  return line.questions.map((q, index) => ({ q, index })).sort((a, b) => STAGE_ORDER[a.q.stage] - STAGE_ORDER[b.q.stage] || a.index - b.index);
-}
-
-/** Does a question belong in this meeting: only the essential ones, or only those for the people in the room? */
-export const inMeeting = (q, { core = false, roles = [] } = {}) => (!core || !!q.core) && (!roles.length || roles.includes(q.role));
 
 const ANSWER_SHORT = { solved: "solved", partly: "partly", gap: "a real gap", unknown: "nobody knew" };
 
@@ -601,6 +612,11 @@ export function summaryMarkdown(catalog, w, res) {
     out.push("## To find out before the next meeting", "");
     for (const u of res.unknowns) out.push(`- ${u.label}: ${u.q}`);
     out.push("");
+  }
+  if (w.channel) {
+    const c = w.channel;
+    out.push("## Partners", "", ...c.partners.map((p) => `- ${p.name}: ${KINDS[p.kind].toLowerCase()}${p.lead ? ", leads the deal" : ""}${p.reg ? `, registered ${p.reg.on} to ${p.reg.until}` : ""}`), "");
+    out.push(`Route to purchase: ${c.route ? ROUTES[c.route].toLowerCase() : "not set"}.`, "", ...ACTIVITIES.map((a) => `- ${a.label}: ${whoLabel(c, (c.split || {})[a.id] || "")}`), "");
   }
   const deal = dealMarkdown(w.deal);
   if (deal) out.push(deal);

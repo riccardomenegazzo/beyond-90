@@ -5,9 +5,10 @@
 // answers the questions of a Monday morning: where is each one, what is due this week, what is late, and what do I tell
 // the account team. Pure functions over plain records; the page and the tests share them.
 
-import { assess, journey, datedPlan, exampleWorkshop, makeWorkshop, setAnswer, setPlan, setWorth, setRaised, setDeal } from "./workshop.js";
+import { assess, journey, datedPlan, exampleWorkshop, makeWorkshop, setAnswer, setPlan, setWorth, setRaised, setDeal, setChannel } from "./workshop.js";
 import { hasCase } from "./valuecase.js";
 import { forward } from "./forward.js";
+import { registrationOf, channelState, KINDS, ACTIVITIES } from "./partners.js";
 import { progress, makePov, setCriterion, setOutcome, edit as editPov } from "./pov.js";
 
 export const STAGES = [
@@ -81,6 +82,10 @@ export function risksOf({ w, p, res, pr, stage, overdue, today }) {
     if (later && !(w.case && hasCase(w.case))) add("watch", "Finance has no case for change yet: ask for the cost of staying and of moving.");
     if (later && w.inventory && !w.sizing) add("watch", "The sizing sketch still uses the defaults: agree the assumptions with the customer.");
     if (res.unknowns.length >= 3) add("watch", `${res.unknowns.length} questions nobody could answer: book the people who can.`);
+    // the partner's protection: a registration that lapses leaves the deal open to anyone
+    const reg = registrationOf(w.channel, today);
+    if (reg && reg.status === "expired") add("high", `${reg.lead.name}'s deal registration ran out on ${reg.until}: renew it, or the deal is unprotected.`);
+    else if (reg && reg.status === "expiring") add("high", `${reg.lead.name}'s deal registration runs out in ${reg.days} day${reg.days === 1 ? "" : "s"}: ask for an extension.`);
     // the deal itself: a proof can be won and the deal still lost without the decider, and without a date it slips
     const deal = w.deal || {};
     const known = (id) => deal[id] && deal[id].a === "known";
@@ -255,11 +260,17 @@ export function exampleDesk(today) {
   valle = setRaised(valle, "hybrid-cloud", 1, true, ago(14));
   for (const [id, a, note] of [["why_change", "known", "The auditors found patient data copied outside Italy"], ["why_now", "known", "The audit follow-up is due in March"],
     ["outcome", "partly", "Prove where every copy lives, on demand"], ["proof", "partly", "A recovery test the auditors can watch"]]) valle = setDeal(valle, id, a, note, ago(14));
+  // the same integrator as Kestrel, with a registration about to run out
+  valle = setChannel(valle, { partners: [{ name: "Verdi Sistemi (mock)", kind: "integrator", lead: true, reg: { on: ago(80), until: shiftDay(today, 6) }, skills: ["hci", "dr-backup"] }],
+    route: "reseller", split: { discovery: "both", demo: "us", sizing: "p0", proof: "both", proposal: "p0", delivery: "p0", support: "p0" } }, ago(14));
   // still listening: a first meeting about AI on their own infrastructure
   let orsa = makeWorkshop({ customer: "Orsa Manufacturing (mock)", scope: ["private-ai", "kubernetes-platform", "object-storage"], createdOn: ago(1), nonce: "example3" });
   ["gap", "unknown"].forEach((a, i) => { orsa = setAnswer(orsa, "private-ai", i, a, i === 0 ? "Quality inspection on the line, with images that cannot leave the plant" : "", ago(1)); });
   orsa = setRaised(orsa, "private-ai", 0, true, ago(1));
   orsa = setDeal(orsa, "why_change", "partly", "Defects found late cost a shift of rework", ago(1));
+  // brought by a service provider that would run it as a service; nothing registered yet
+  orsa = setChannel(orsa, { partners: [{ name: "Lago Cloud (mock)", kind: "service_provider", lead: true, skills: ["kubernetes-platform", "object-storage"] }], route: "service",
+    split: { discovery: "both", delivery: "p0", support: "p0" } }, ago(1));
   // decision: a proof of value finished, the result with the customer
   let pietra = makePov({ customer: "Pietra Bank (mock)", createdOn: ago(40), nonce: "example4", start: ago(30), end: ago(9),
     criteria: [{ text: "A representative application group is migrated within its window", target: "Time it end to end" },
@@ -272,6 +283,8 @@ export function exampleDesk(today) {
   ["gap", "gap", "partly", "gap", "unknown", "gap"].forEach((a, i) => { brina = setAnswer(brina, "platform-migration", i, a, "", ago(95)); });
   ["gap", "partly", "gap"].forEach((a, i) => { brina = setAnswer(brina, "dr-backup", i, a, "", ago(95)); });
   brina = setRaised(setRaised(brina, "platform-migration", 0, true, ago(95)), "hci", 2, true, ago(95));
+  brina = setChannel(brina, { partners: [{ name: "Verdi Sistemi (mock)", kind: "integrator", lead: true, reg: { on: ago(100), until: ago(10) }, skills: ["platform-migration", "hci", "dr-backup"] }],
+    route: "reseller", split: { discovery: "both", proof: "both", delivery: "p0" } }, ago(95));
   let bpov = makePov({ customer: brina.customer, createdOn: ago(70), nonce: "example6", start: ago(60), end: ago(40),
     criteria: [{ text: "A representative application group is migrated within its window", target: "Time it end to end" },
       { text: "A rollback completes within the agreed time", target: "Fail a cutover on purpose and roll back" },
@@ -282,10 +295,67 @@ export function exampleDesk(today) {
   ["gap", "gap", "gap", "unknown", "gap"].forEach((a, i) => { ardesia = setAnswer(ardesia, "dr-backup", i, a, "", ago(120)); });
   ["gap", "partly", "unknown"].forEach((a, i) => { ardesia = setAnswer(ardesia, "hybrid-cloud", i, a, "", ago(120)); });
   ardesia = setRaised(setRaised(ardesia, "dr-backup", 1, true, ago(120)), "hybrid-cloud", 1, true, ago(120));
+  ardesia = setChannel(ardesia, { partners: [{ name: "Lago Cloud (mock)", kind: "service_provider", lead: true, reg: { on: ago(125), until: ago(35) }, skills: ["hybrid-cloud"] }],
+    route: "service", split: { discovery: "us", proof: "p0", delivery: "p0" } }, ago(120));
   let apov = makePov({ customer: ardesia.customer, createdOn: ago(100), nonce: "example7", start: ago(90), end: ago(75),
     criteria: [{ text: "A business application recovers in the cloud within the agreed time", target: "Run the recovery plan in test mode" },
       { text: "A copy an administrator cannot delete is restored", target: "Try to delete, then restore" }] });
   apov = setCriterion(setCriterion(apov, "c1", { status: "not_met", evidence: "Recovered in 3 h, target 1 h: the cloud cluster took too long to grow" }, ago(76)), "c2", { status: "met", evidence: "Delete refused; restore in 40 minutes" }, ago(76));
   apov = setOutcome(editPov(apov, { stage: "done", sponsor: "COO (mock)", summary: "One criterion met, one not: recovery in the cloud was too slow." }, ago(75)), { result: "lost", reason: "price", note: "A standing second site cost more than the budget for this year", on: ago(60) }, ago(60));
   return { workshops: [kestrel, valle, orsa, brina, ardesia], povs: [kpov, pietra, bpov, apov] };
+}
+
+/**
+ * The partners across every deal on the desk: for each, the live deals and their stages, the ones it leads, the
+ * steps it owns, registrations running out, what was won and lost with it, and the lines it is asked to deliver
+ * without the skills. What a presales engineer brings to the review with the partner or the channel manager.
+ */
+export function partnerReview(workshops, povs, catalog, today) {
+  const opps = pipeline(workshops, povs, catalog, today);
+  const byCustomer = new Map(opps.map((o) => [o.customer, o]));
+  const latest = new Map();
+  for (const w of workshops || []) { const had = latest.get(w.customer); if (!had || w.updated_on > had.updated_on) latest.set(w.customer, w); }
+  const out = new Map();
+  for (const w of latest.values()) {
+    if (!w.channel) continue;
+    const o = byCustomer.get(w.customer);
+    const st = catalog ? channelState(catalog, w, today) : null;
+    w.channel.partners.forEach((p, i) => {
+      const key = p.name.trim().toLowerCase();
+      if (!out.has(key)) out.set(key, { name: p.name, kinds: new Set(), deals: [], won: 0, lost: 0, expiring: [], lines: new Set(), example: true });
+      const x = out.get(key);
+      x.kinds.add(KINDS[p.kind]);
+      x.example = x.example && !!(o && o.example);
+      const lead = st ? st.lead === p : !!p.lead;
+      const owns = ACTIVITIES.filter((a) => (w.channel.split || {})[a.id] === `p${i}` || ((w.channel.split || {})[a.id] === "both" && lead)).map((a) => a.label.toLowerCase());
+      const outcome = o ? o.outcome : "";
+      if (outcome === "won") x.won++;
+      else if (outcome === "lost") x.lost++;
+      const live = !(o && o.stopped);
+      if (live) x.deals.push({ customer: w.customer, stage: o ? o.stage : "discovery", lead, owns });
+      if (lead && live) {
+        const reg = registrationOf(w.channel, today);
+        if (reg && (reg.status === "expired" || reg.status === "expiring")) x.expiring.push({ customer: w.customer, until: reg.until, status: reg.status, days: reg.days });
+        if (reg && reg.status === "none" && p.kind !== "distributor") x.expiring.push({ customer: w.customer, until: "", status: "none", days: null });
+      }
+      if (st && live) for (const g of st.gaps) if (g.partner === p.name) g.lines.forEach((l) => x.lines.add(l));
+    });
+  }
+  return [...out.values()].map((x) => ({ ...x, kinds: [...x.kinds], lines: [...x.lines] }))
+    .sort((a, b) => b.deals.length - a.deals.length || b.expiring.length - a.expiring.length || a.name.localeCompare(b.name));
+}
+
+/** The partner review as text: one section per partner, for the meeting with them or with the channel manager. */
+export function partnerReviewMarkdown(list, today) {
+  const out = [`# Partner review, ${today}`, ""];
+  if (!list.length) return out.concat(["No partner on any deal yet.", ""]).join("\n");
+  for (const x of list) {
+    out.push(`## ${x.name}`, "", `${x.kinds.join(", ")}. ${x.deals.length} live deal${x.deals.length === 1 ? "" : "s"}, ${x.deals.filter((d) => d.lead).length} led by them; won ${x.won}, lost ${x.lost}.`, "");
+    for (const d of x.deals) out.push(`- ${d.customer}: ${d.stage}${d.lead ? ", they lead" : ""}${d.owns.length ? `; they own ${d.owns.join(", ")}` : ""}`);
+    if (x.deals.length) out.push("");
+    if (x.expiring.length) out.push("Registrations to act on:", "", ...x.expiring.map((e) => `- ${e.customer}: ${e.status === "none" ? "not registered" : e.status === "expired" ? `ran out on ${e.until}` : `runs out on ${e.until}`}`), "");
+    if (x.lines.length) out.push(`Skills to line up: ${x.lines.join(", ")}.`, "");
+  }
+  out.push("_Prepared with Beyond 90. It names your customers and every partner: share each partner's section only with that partner._", "");
+  return out.join("\n");
 }

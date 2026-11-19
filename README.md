@@ -33,7 +33,7 @@ Leading a presales team? [docs/leaders.md](docs/leaders.md) shows what the team 
 - **Shows what waiting costs:** every drop already dated in the data (secrets, accepted risks, deadlines), and what the work of a quarter was worth.
 - **Writes for the customer:** a CISO one-pager, an executive QBR and slides, a status page, all through a preview that can swap names for aliases.
 - **Works across a book of customers:** this week's priorities, shared patterns, and one budget of hours where it gains most.
-- **Gives a pre-sales engineer a desk of their own:** every prospect from discovery to decision, what is due and what is late, what could stop each deal, how deals ended and what they teach, and the weekly update for the account team. A presales manager reads the team's desk snapshots together ([docs/presales.md](docs/presales.md), [docs/leaders.md](docs/leaders.md)).
+- **Gives a pre-sales engineer a desk of their own:** every prospect from discovery to decision, what is due and what is late, what could stop each deal, how deals ended and what they teach, the partners on each deal and the review with them, and the weekly update for the account team. A presales manager reads the team's desk snapshots together ([docs/presales.md](docs/presales.md), [docs/leaders.md](docs/leaders.md)).
 - **Starts before there is any data:** a discovery workshop records what a prospect says to each product line's questions and turns it into a journey: "yes, this is possible", what would need to be true, the first step towards each condition and the test that proves it. It ends in a readout for the customer and a proof of value with that line's own criteria ([docs/workshop.md](docs/workshop.md)).
 - **Prepares the conversation and does the presales arithmetic:**
   - the message for the executive, the technical team and finance, who to bring, and the objections to expect with the question to ask first and how to prove the answer;
@@ -215,6 +215,7 @@ beyond90 explain acme --store history.db   # what changed since the last stored 
 - [docs/guide.md](docs/guide.md): how it fits into a TAM's month
 - [docs/leaders.md](docs/leaders.md): for presales leaders: what the team gets, the team view, what the deals teach, a five-minute tour
 - [docs/presales.md](docs/presales.md): the presales desk and the path from discovery to handover
+- [docs/partners.md](docs/partners.md): working with partners: who leads, the deal registration, who does what, a brief and a discovery kit for them, the partner review
 - [docs/workshop.md](docs/workshop.md): the discovery workshop, its sketches, the case for change and the handover
 - [SPEC.md](SPEC.md): formulas and rules; the contract for the code
 - [docs/data-format.md](docs/data-format.md): input files

@@ -24,6 +24,7 @@ import * as LS from "./lessons.js";
 import * as TEAM from "./team.js";
 import * as QD from "./qualify.js";
 import * as FW from "./forward.js";
+import * as PT from "./partners.js";
 import { connections } from "./graph.js";
 import { headline, firstMinute, rankActions, chainText, doneSummary, funnelSegments, preview } from "./today.js";
 import { stageBars } from "./nav.js";
@@ -2236,6 +2237,98 @@ export function hurtView({ workshop: w, catalog, go, startPov, today }) {
 
 /** Before and during the meeting: the line in one sentence for each audience, who to bring, and the objections to expect,
  *  each with the question to ask before answering, the answer, and how to prove it. Raised objections go to the proof. */
+// ------------------------------------------------------------------ partners on the deal: who brings it, who does what
+export function partnersView({ workshop: w, catalog, today, setChannel }) {
+  let cur = w;
+  const lines = cur.scope.filter((p) => catalog.lines[p]);
+  const fromStored = (c) => ({ partners: (c ? c.partners : []).map((p) => ({ name: p.name, kind: p.kind, lead: !!p.lead, reg: p.reg ? { ...p.reg } : null, skills: [...(p.skills || [])] })),
+    route: c && c.route ? c.route : "", split: { ...(c && c.split ? c.split : {}) } });
+  const state = fromStored(cur.channel);
+  const say = h("p", { class: "note", role: "status" });
+  const editor = h("div", { class: "ptlist" });
+  const derived = h("div", {});
+  const save = async () => {
+    const draft = { partners: state.partners.map((p) => ({ name: p.name, kind: p.kind, ...(p.lead ? { lead: true } : {}), ...(p.reg && p.reg.on && p.reg.until ? { reg: p.reg } : {}), skills: p.skills })),
+      route: state.route, split: state.split };
+    try { cur = await setChannel(PT.cleanChannel(draft)); say.textContent = ""; } catch (e) { say.textContent = e.message; }
+    drawDerived();
+  };
+  const drawEditor = () => {
+    put(editor, state.partners.length ? state.partners.map((p, i) => {
+      const name = h("input", { type: "text", maxlength: 80, value: p.name, placeholder: "Partner's company name", "aria-label": `Partner ${i + 1}: name` });
+      name.addEventListener("change", () => { p.name = name.value; save(); });
+      const kind = h("select", { "aria-label": `Partner ${i + 1}: kind` }, Object.entries(PT.KINDS).map(([k, v]) => h("option", { value: k, text: v, selected: k === p.kind })));
+      kind.addEventListener("change", () => { p.kind = kind.value; save(); });
+      const on = h("input", { type: "date", value: p.reg ? p.reg.on : "", "aria-label": `Partner ${i + 1}: registered on` });
+      const until = h("input", { type: "date", value: p.reg ? p.reg.until : "", "aria-label": `Partner ${i + 1}: registration until` });
+      const reg = () => { p.reg = on.value && until.value ? { on: on.value, until: until.value } : null; if (on.value && until.value && until.value < on.value) say.textContent = "The registration cannot end before it starts."; save(); };
+      on.addEventListener("change", reg); until.addEventListener("change", reg);
+      const lead = h("button", { type: "button", class: "kindchip", "aria-pressed": String(p.lead), text: p.lead ? "Leads the deal" : "Make lead",
+        onclick: () => { state.partners.forEach((x, j) => { x.lead = j === i; }); drawEditor(); save(); } });
+      const skills = h("div", { class: "wsfam", role: "group", "aria-label": `Partner ${i + 1}: lines it has skills on` }, h("span", { class: "wsfamname", text: "Skills on" }),
+        lines.map((l) => h("button", { type: "button", class: "kindchip", "aria-pressed": String(p.skills.includes(l)), text: catalog.lines[l].label,
+          onclick: (ev) => { p.skills = p.skills.includes(l) ? p.skills.filter((x) => x !== l) : [...p.skills, l]; ev.currentTarget.setAttribute("aria-pressed", String(p.skills.includes(l))); save(); } })));
+      const remove = h("button", { type: "button", class: "btn small quiet", text: "Remove", "aria-label": `Remove partner ${i + 1}`,
+        onclick: () => {
+          state.partners.splice(i, 1);
+          // who-does-what points at partners by position: drop the removed one, shift the ones after it
+          for (const [k, v] of Object.entries(state.split)) {
+            if (v === `p${i}`) delete state.split[k];
+            else if (/^p[0-3]$/.test(v) && Number(v.slice(1)) > i) state.split[k] = `p${Number(v.slice(1)) - 1}`;
+          }
+          if (state.partners.length && !state.partners.some((x) => x.lead)) state.partners[0].lead = true;
+          drawEditor(); save();
+        } });
+      return h("div", { class: "card ptcard" }, h("div", { class: "ptrow" }, h("label", {}, h("span", { text: "Name" }), name), h("label", {}, h("span", { text: "Kind" }), kind), lead),
+        h("div", { class: "ptrow" }, h("label", {}, h("span", { text: "Deal registered on" }), on), h("label", {}, h("span", { text: "Until" }), until), remove), skills);
+    }) : h("p", { class: "note first", text: "No partner yet. Most deals in the territory come through one: add the reseller, integrator, service provider or distributor working it." }));
+  };
+  const add = h("button", { type: "button", class: "btn small", text: "Add a partner", onclick: () => {
+    if (state.partners.length >= PT.MAX_PARTNERS) { say.textContent = `At most ${PT.MAX_PARTNERS} partners on one deal.`; return; }
+    state.partners.push({ name: "", kind: state.partners.length ? "distributor" : "reseller", lead: !state.partners.length, reg: null, skills: [] });
+    drawEditor();
+    const inputs = editor.querySelectorAll("input[type=text]");
+    if (inputs.length) inputs[inputs.length - 1].focus();
+  } });
+  const route = h("select", { "aria-label": "Route to purchase" }, h("option", { value: "", text: "Not set yet" }), Object.entries(PT.ROUTES).map(([k, v]) => h("option", { value: k, text: v, selected: k === state.route })));
+  route.addEventListener("change", () => { state.route = route.value; save(); });
+  const words = h("input", { type: "checkbox", id: "ptwords" });
+  const slug = cur.customer.replace(/[^A-Za-z0-9]+/g, "-").replace(/^-|-$/g, "").toLowerCase() || "customer";
+  const brief = () => PT.partnerBrief(catalog, cur, WS.assess(catalog, cur), { today, words: words.checked });
+  function drawDerived() {
+    const st = PT.channelState(catalog, cur, today);
+    if (!st) { put(derived, h("p", { class: "note", text: "Name a partner to see who does what, the registration and what to settle." })); return; }
+    const named = state.partners.map((p, i) => ({ v: `p${i}`, name: p.name.trim() })).filter((x) => x.name);
+    const table = h("table", { class: "pttable" }, h("thead", {}, h("tr", {}, h("th", { scope: "col", text: "Step" }), h("th", { scope: "col", text: "Who does it" }))),
+      h("tbody", {}, PT.ACTIVITIES.map((a) => {
+        const sel = h("select", { "aria-label": `Who does: ${a.label}` }, h("option", { value: "", text: "Not agreed" }), h("option", { value: "us", text: "Us" }), h("option", { value: "both", text: "Together" }),
+          named.map((x) => h("option", { value: x.v, text: x.name })));
+        sel.value = state.split[a.id] || "";
+        sel.addEventListener("change", () => { if (sel.value) state.split[a.id] = sel.value; else delete state.split[a.id]; save(); });
+        return h("tr", {}, h("th", { scope: "row", text: a.label }), h("td", {}, sel));
+      })));
+    const regText = st.reg.status === "none" ? "No deal registration yet." : `Registered ${st.reg.on} to ${st.reg.until}: ${st.reg.status === "expired" ? "ran out" : `${st.reg.days} day${st.reg.days === 1 ? "" : "s"} left`}.`;
+    put(derived,
+      card("Who does what", h("div", {}, table, h("p", { class: "muted", text: `${st.lead.name} leads. ${regText}` })),
+        { sub: "Agree it with the partner early: the steps nobody owns are the ones that slip." }),
+      card("What to settle with the partners", st.warnings.length ? h("ul", { class: "growwhy ptwarn" }, st.warnings.map((x) => h("li", { class: x.level === "high" ? "high" : "" },
+        x.level === "high" ? h("b", { text: "Now: " }) : null, x.text))) : h("p", { class: "note first", text: "Nothing to settle: registered, every key step owned, and the partners have the skills they are asked for." })));
+  }
+  drawEditor();
+  drawDerived();
+  return h("div", {},
+    card("Partners on this deal", h("div", {}, editor, h("div", { class: "btnrow" }, add, h("label", { class: "ptroute" }, h("span", { text: "Route to purchase" }), route)), say),
+      { sub: "Who brings the deal, who sells it with you, who will deliver it, and through which route the customer buys. Kept in this browser, with the workshop." }),
+    derived,
+    card("Share with the partners", h("div", {},
+      h("p", { class: "note first", text: "The brief tells the partner on this deal who does what, where the customer stands, what would convince them and what is still open. The kit lets any partner's engineers run the same discovery: it holds no customer's data." }),
+      h("label", { class: "ptcheck", for: "ptwords" }, words, " Include what the customer said, in their words"),
+      h("div", { class: "btnrow" },
+        h("button", { class: "btn small", type: "button", text: "Copy the brief", onclick: (ev) => copyText(brief()).then((ok) => { ev.target.textContent = ok ? "Copied" : "Not copied"; }) }),
+        h("button", { class: "btn small", type: "button", text: "Brief for the partner (.md)", onclick: () => { const t = brief(); if (t) saveBlob(t, `${slug}-partner-brief.md`, "text/markdown"); else say.textContent = "Name a partner first."; } }),
+        h("button", { class: "btn small", type: "button", text: "Discovery kit for partners (.md)", onclick: () => saveBlob(PT.enablementKit(catalog, lines), "discovery-kit-for-partners.md", "text/markdown") })))));
+}
+
 // ------------------------------------------------------------------ the way forward: from discovery to handover
 const FW_STATE = { done: "Done", open: "Passed, with something left open", now: "Now", later: "Later" };
 export function forwardView({ workshop: w, catalog, povs, today, go, setDemo }) {
@@ -2509,6 +2602,20 @@ export function deskView({ workshops, povs, catalog, today, openOpp, newWorkshop
   const onlyExamples = facts.length && facts.every((x) => x.example);
   const ls = LS.lessons(facts, { includeExamples: onlyExamples });
   const lessonsCard = ls.deals ? lessonsView(ls, onlyExamples) : null;
+  // the partners across every deal: what to bring to the review with each of them
+  const partners = DESK.partnerReview(workshops, povs, catalog, today);
+  const partnerCard = partners.length ? card("Partners across your deals", h("div", {},
+    h("div", { class: "tablewrap", tabindex: "0", role: "region", "aria-label": "Partners across your deals" }, h("table", { class: "pttable ptdesk" },
+      h("thead", {}, h("tr", {}, ["Partner", "Live deals", "They lead", "Registrations to act on", "Won and lost", "Skills to line up"].map((t) => h("th", { scope: "col", text: t })))),
+      h("tbody", {}, partners.map((x) => h("tr", {},
+        h("th", { scope: "row" }, h("b", { text: x.name }), h("small", { class: "muted", text: ` ${x.kinds.join(", ").toLowerCase()}${x.example ? " (example)" : ""}` })),
+        h("td", { text: String(x.deals.length) }), h("td", { text: String(x.deals.filter((d) => d.lead).length) }),
+        h("td", {}, x.expiring.length ? h("ul", { class: "ptmini" }, x.expiring.map((e) => h("li", { class: e.status === "none" ? "" : "late",
+          text: `${e.customer}: ${e.status === "none" ? "not registered" : e.status === "expired" ? `ran out ${e.until}` : `${e.days} day${e.days === 1 ? "" : "s"} left`}` }))) : h("span", { class: "muted", text: "None" })),
+        h("td", { text: `${x.won} won, ${x.lost} lost` }),
+        h("td", { text: x.lines.length ? x.lines.join(", ") : "None" })))))),
+    h("div", { class: "btnrow" }, h("button", { class: "btn small", type: "button", text: "Copy the partner review", onclick: (ev) => copyText(DESK.partnerReviewMarkdown(partners, today)).then((ok) => { ev.target.textContent = ok ? "Copied" : "Not copied"; }) }))),
+  { sub: "Each partner's live deals, the registrations to renew or file, what was won and lost with them, and the lines they are asked to deliver without the skills: the agenda for the review with the partner or the channel manager." }) : null;
   const agendaCard = card("This week and next", items.length
     ? h("ul", { class: "jdated deskagenda" }, items.map((i) => h("li", { class: i.late ? "late" : "" },
       h("span", { class: "jdate", text: i.late ? "late" : i.on.slice(8) }),
@@ -2554,7 +2661,7 @@ export function deskView({ workshops, povs, catalog, today, openOpp, newWorkshop
       h("button", { class: "btn small", type: "button", text: "Snapshot for my manager (.json)",
         onclick: () => saveBlob(JSON.stringify(snapshot(), null, 1), `desk-snapshot-${(me.value || "engineer").replace(/[^A-Za-z0-9]+/g, "-").replace(/^-|-$/g, "").toLowerCase() || "engineer"}-${today}.json`, "application/json") })))
   );
-  return h("div", {}, hero, h("div", { class: "card deskfunnelcard" }, funnelRow), riskCard, lessonsCard, h("div", { class: "col2" }, agendaCard, docs), card("Opportunities", table.el, { sub: "Furthest along first. Open one to carry on: its questions, its journey, its proof of value." }),
+  return h("div", {}, hero, h("div", { class: "card deskfunnelcard" }, funnelRow), riskCard, lessonsCard, partnerCard, h("div", { class: "col2" }, agendaCard, docs), card("Opportunities", table.el, { sub: "Furthest along first. Open one to carry on: its questions, its journey, its proof of value." }),
     teamCard(catalog, today));
 }
 

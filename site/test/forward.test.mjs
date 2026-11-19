@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { PHASES, forward, demoPlan, demoMarkdown } from "../forward.js";
-import { makeWorkshop, exampleWorkshop, setDemo, setDeal, setAnswer, validWorkshop, assess } from "../workshop.js";
+import { makeWorkshop, exampleWorkshop, setDemo, setDeal, setAnswer, setChannel, validWorkshop, assess } from "../workshop.js";
 import { makePov, edit as editPov, setOutcome, setCriterion } from "../pov.js";
 
 const CAT = JSON.parse(readFileSync(new URL("./workshop-catalog.json", import.meta.url), "utf-8"));
@@ -71,7 +71,16 @@ test("the way forward follows the demo, the proof and the outcome, and says what
   f = forward(CAT, w, pov, D);
   assert.equal(f.now, "handover");
   assert.equal(f.closed, false);
+  // won, but the integrator delivering it has no skills on two of the four lines: the handover is not done yet
+  const deliver = f.phases[4].checks.find((c) => /Delivery has an owner/.test(c.text));
+  assert.equal(f.phases[4].state, "now");
+  assert.equal(deliver.ok, false);
+  assert.equal(deliver.go, "wspartners");
+  w = setChannel(w, { ...w.channel, partners: w.channel.partners.map((p) => (p.lead ? { ...p, skills: [...w.scope] } : p)) }, D);
+  f = forward(CAT, w, pov, D);
   assert.equal(f.phases[4].state, "done");
+  // with no partner on the deal, the partner checks are not asked at all
+  assert.ok(forward(CAT, setChannel(w, null, D), pov, D).phases.every((ph) => ph.checks.every((c) => !/partner|Delivery has an owner/.test(c.text))));
   const lost = forward(CAT, w, setOutcome(pov, { result: "lost", reason: "price", note: "", on: D }, D), D);
   assert.equal(lost.closed, true);
   assert.equal(lost.now, "decision");

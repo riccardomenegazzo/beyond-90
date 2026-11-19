@@ -40,6 +40,17 @@ Each says what decided the result and what to check before relying on it. None i
 
 ![What the deals teach: outcomes, objections, gaps, tests not met and time per stage](img/app-lessons.png)
 
+## Selling with partners
+
+In most territories the deal comes through a partner. Every deal records:
+
+- who is on it and who leads;
+- the partner's registration and when it runs out;
+- the route to purchase;
+- who does what, from discovery to support.
+
+A registration about to lapse is a risk on the desk, next to a proof without a sponsor. A partner asked to deliver a line it has no skills for is an enablement gap, named per partner. The partner review gathers each partner's live deals, registrations, wins and losses for the meeting with the partner or the channel manager. The discovery kit lets a partner's engineers run the same discovery as yours, without any customer's data ([docs/partners.md](partners.md)).
+
 ## Why it can be adopted tomorrow
 
 - **Nothing to install or approve.** It runs in the browser, works offline, and installs as an app on a laptop or a phone. Customer data stays on the engineer's device, under a strict content security policy. Sending anything is an explicit act, through a preview that can swap names for aliases.

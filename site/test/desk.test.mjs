@@ -157,3 +157,27 @@ test("the next step of a prospect without dates comes from the way forward", asy
   [o] = pipeline([w], [], CAT, day);
   assert.match(o.next, /^Demo built for them: Plan it from what they said/);
 });
+
+test("the partner review gathers each partner across the desk: deals, registrations to act on, wins and skills", async () => {
+  const { exampleDesk, partnerReview, partnerReviewMarkdown } = await import("../desk.js");
+  const day = "2026-11-19";
+  const ex = exampleDesk(day);
+  const list = partnerReview(ex.workshops, ex.povs, CAT, day);
+  const verdi = list.find((x) => x.name === "Verdi Sistemi (mock)");
+  const lago = list.find((x) => x.name === "Lago Cloud (mock)");
+  assert.ok(verdi && lago);
+  assert.equal(verdi.deals.length, 2, "Kestrel and Valle are live; Brina is won and off the live list");
+  assert.equal(verdi.won, 1);
+  assert.equal(lago.lost, 1);
+  assert.ok(verdi.expiring.some((e) => e.customer === "Valle Health (mock)" && e.status === "expiring"));
+  assert.ok(lago.expiring.some((e) => e.customer === "Orsa Manufacturing (mock)" && e.status === "none"));
+  assert.ok(list.every((x) => x.example));
+  const md = partnerReviewMarkdown(list, day);
+  assert.match(md, /^# Partner review, 2026-11-19/);
+  assert.match(md, /## Verdi Sistemi \(mock\)\n\nSystems integrator\. 2 live deals, 2 led by them; won 1, lost 0\./);
+  assert.match(md, /Valle Health \(mock\): runs out on /);
+  const opps = pipeline(ex.workshops, ex.povs, CAT, day);
+  const valle = opps.find((o) => o.customer === "Valle Health (mock)");
+  assert.ok(valle.risks.some((r) => r.level === "high" && /registration runs out in 6 days/.test(r.text)));
+  assert.equal(partnerReviewMarkdown([], day).includes("No partner on any deal yet."), true);
+});
