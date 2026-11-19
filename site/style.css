@@ -1331,20 +1331,45 @@ ol.deskfunnel{list-style:none;margin:0;padding:0;display:grid;grid-template-colu
 /* bid or no bid: the review, and the team's call */
 .rfpverdict.nobid{border-left-color:var(--ink2)}.rfpverdictpill.nobid{background:var(--muted)}
 .rfpcall{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;margin:-4px 0 12px;font-size:14.5px;color:var(--ink2)}
-.bidrec{display:grid;grid-template-columns:auto 1fr;gap:2px 14px;align-items:baseline;padding:12px 16px;border-radius:var(--r);background:var(--sunk);border-left:5px solid var(--ink2);margin-bottom:6px}
-.bidrec b{font-size:18px}.bidrec small{grid-column:2}
-@media (max-width:600px){.bidrec{grid-template-columns:1fr}.bidrec small{grid-column:1}}
+.bidrec{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:baseline;padding:12px 16px;border-radius:var(--r);background:var(--sunk);border-left:5px solid var(--ink2)}
+.bidrec b{font-size:18px}
 .bidrec.l-bid{border-left-color:var(--pos)}.bidrec.l-no_bid{border-left-color:var(--bad)}.bidrec.l-doubt,.bidrec.l-check{border-left-color:var(--warn)}
-.bidgroups{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 28px}
-@media (max-width:1100px){.bidgroups{grid-template-columns:1fr}}
-.bidgroup h3{font-size:15px;margin:16px 0 6px}
-.bidlist{list-style:none;margin:0;padding:0;display:grid;gap:8px}
-.bidq{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:start;padding:10px 0 10px 12px;border-left:3px solid var(--line)}
-.bidq.a-yes{border-left-color:var(--pos)}.bidq.a-partly{border-left-color:var(--warn)}.bidq.a-no{border-left-color:var(--bad)}
-.bidqtext{display:flex;flex-direction:column;gap:3px}.bidqtext>span:first-child{font-weight:600}
-.bidstop{align-self:flex-start;font-size:12px}
-.bidread{color:var(--ink2)}.bidread .linkbtn{padding:0 0 0 4px;font-size:13px}
-.bidcall h3{font-size:15px;margin:18px 0 6px}
-.bidcalled{font-weight:700;padding-left:10px;border-left:4px solid var(--ink2)}.bidcalled.c-bid{border-left-color:var(--pos)}.bidcalled.c-no_bid{border-left-color:var(--bad)}
-.bidwhy{width:100%;max-width:560px;margin-bottom:6px}
-@media (max-width:600px){.bidq{grid-template-columns:1fr}}
+.bidmore{display:grid;gap:4px}.bidread{color:var(--ink2)}.bidread .linkbtn{padding:0 0 0 4px;font-size:13px}
+.bidcall{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;margin-top:14px;padding-top:12px;border-top:1px solid var(--grid)}
+.bidcalllabel{font-weight:700;margin-right:4px}
+.bidcalled{font-weight:700;margin:0;padding-left:10px;border-left:4px solid var(--ink2)}.bidcalled.c-bid{border-left-color:var(--pos)}.bidcalled.c-no_bid{border-left-color:var(--bad)}
+.bidwhy{flex:1;min-width:220px;max-width:420px}
+
+/* a list of questions: one line each, the answer in line, one opened at a time; a strip of groups on top */
+.qlstrip{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin:12px 0 8px}
+.qlgroup{display:grid;gap:5px;justify-items:start;text-align:left;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;padding:9px 12px;font:inherit;cursor:pointer}
+.qlgroup:hover{border-color:var(--accent)}
+.qlgroup[aria-pressed=true]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);background:var(--accent-soft)}
+.qlglabel{font-weight:700;font-size:14px}
+.qldots{display:flex;flex-wrap:wrap;gap:4px}
+.qldot{display:inline-block;width:10px;height:10px;border-radius:50%;flex:none;background:transparent;box-shadow:inset 0 0 0 1.5px var(--ink2)}
+.qldot.t-good{background:var(--pos);box-shadow:none}.qldot.t-mid{background:var(--warn);box-shadow:none}.qldot.t-bad{background:var(--bad);box-shadow:none}.qldot.t-unknown{background:var(--ink2);box-shadow:none}
+.qltools{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:4px 0 6px}
+.qltools .linkbtn{padding:0 4px}
+.qlrows{list-style:none;margin:0;padding:0}
+.qlsect{font-weight:700;font-size:13.5px;color:var(--muted);margin:14px 0 2px}
+.qlrow{border-bottom:1px solid var(--grid)}
+.qlrow.open{background:var(--sunk);border-radius:10px;border-bottom-color:transparent;margin:4px -10px;padding:0 10px}
+.qlline{display:flex;align-items:center;gap:10px;min-height:44px}
+.qlhead{flex:1;display:flex;align-items:center;gap:10px;min-width:0;border:0;background:none;font:inherit;color:var(--ink);text-align:left;padding:8px 4px;cursor:pointer;border-radius:6px}
+.qlhead:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.qllabel{font-weight:600;flex:none;max-width:60%}
+.qlaside{color:var(--muted);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.qlstop{flex:none;font-size:12px;font-weight:600;color:var(--bad);border:1px solid currentColor;border-radius:999px;padding:0 7px}
+.qlans{display:flex;gap:4px;flex:none}
+.qlopt{border:1px solid var(--line);background:var(--surface);color:var(--ink2);border-radius:999px;padding:4px 11px;min-height:32px;font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.qlopt:hover{border-color:var(--accent);color:var(--ink)}
+.qlopt kbd{font:inherit;font-size:11px;color:var(--muted);margin-right:5px;background:none;border:0;box-shadow:none;padding:0;min-width:0}
+.qlopt[aria-pressed=true]{color:var(--on)}.qlopt[aria-pressed=true] kbd{color:inherit;opacity:.8}
+.qlopt[aria-pressed=true].t-good{background:var(--pos);border-color:var(--pos)}.qlopt[aria-pressed=true].t-mid{background:var(--warn);border-color:var(--warn)}
+.qlopt[aria-pressed=true].t-bad{background:var(--bad);border-color:var(--bad)}.qlopt[aria-pressed=true].t-unknown{background:var(--ink2);border-color:var(--ink2)}
+.qldetail{display:grid;gap:8px;padding:0 4px 14px 24px}
+.qltext{margin:0;font-weight:600;max-width:75ch}
+.qlempty{padding:10px 0}
+@media (max-width:700px){.qlline{flex-wrap:wrap;gap:4px}.qlhead{flex-basis:100%}.qllabel{max-width:none}.qlaside{display:none}.qlans{padding:0 0 8px 24px}
+  .qlstrip{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.qlgroup{padding:7px 10px;gap:3px}.qlglabel{font-size:13px}.qlopt kbd{display:none}}

@@ -237,6 +237,12 @@ The other buttons give:
 - **Is it worth it:** its value, and what it opens next, justify what answering costs; the contract terms are acceptable.
 - **Can we deliver:** a partner able to deliver is on the deal and leads it; we and the partner have the people for the dates the tender sets.
 
+The questions are a short list:
+- a tile per group counts its answers with a dot each, and narrows the list to that group;
+- filters show all, those not answered, or those answered partly or no, with their counts;
+- each question is one line with its answer in line; opened, it shows the whole question and why it matters;
+- in an opened question, the keys 1 to 3 answer it (yes, partly, no) and open the next one still open; Escape closes it.
+
 Each is answered yes, partly or no. Four are read from the tender unless answered by hand, each saying what it read:
 - the mandatory requirements, from the answers;
 - the time left, from the bid's date and the requirements still open;

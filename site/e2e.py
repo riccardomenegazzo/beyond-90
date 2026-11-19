@@ -894,11 +894,24 @@ def main(site: str) -> int:
         check(page.get_by_label("Price, rival 1", exact=True).input_value() == "1150000", "the comparison is kept with the tender")
         # bid or no bid: four answers read from the tender, the rest by hand; a no that can exclude the bid stops it
         bid = page.locator("#rfpbid")
-        check("Read from the tender:" in bid.inner_text() and "can exclude the bid" in bid.inner_text(), "the bid review reads what the tender already says, and marks what can exclude the bid")
+        check("read from the tender:" in bid.inner_text() and bid.locator(".qlstop").count() == 3 and bid.locator(".qlgroup").count() == 4,
+              "the bid review reads what the tender already says, marks what can exclude the bid, and counts each group")
+        # a group alone, then the keys: open a question, 1 to 3 answer it and move to the next one still open
+        bid.locator(".qlgroup", has_text="Is it worth it").click()
+        check(bid.locator(".qlrow").count() == 2, "a group's tile narrows the list to its questions")
+        bid.locator(".qlrow[data-id=value] .qlhead").click()
+        check("The hours of presales" in bid.locator(".qlrow[data-id=value]").inner_text(), "an opened question shows all of it, and why it matters")
+        page.keyboard.press("2")
+        page.wait_for_selector("#rfpbid .qlrow.t-mid[data-id=value]")
+        check(bid.locator(".qlrow.open[data-id=terms]").count() == 1, "a key answers and opens the next question still open")
+        page.keyboard.press("Escape")
+        bid.locator(".qlrow[data-id=value]").get_by_role("button", name="Partly").click()
+        page.wait_for_selector("#rfpbid .qlrow.t-open[data-id=value]")
+        bid.get_by_role("button", name="Show every group").click()
         bid.get_by_role("group", name="Answer: We, or the partner who bids").get_by_role("button", name="Yes").click()
-        page.wait_for_selector("#rfpbid .bidq.a-yes:has-text('We, or the partner who bids')")
+        page.wait_for_selector("#rfpbid .qlrow.t-good[data-id=standing]")
         bid.get_by_role("group", name="Answer: The contract terms are acceptable").get_by_role("button", name="No").click()
-        page.wait_for_selector("#rfpbid .bidq.a-no:has-text('The contract terms are acceptable')")
+        page.wait_for_selector("#rfpbid .qlrow.t-bad[data-id=terms]")
         check("Do not bid as it stands" in bid.inner_text() and "the contract terms are acceptable" in bid.inner_text(), "a no on the contract terms stops the bid, saying why")
         check("Do not bid as it stands" in page.inner_text("#view .rfphero .rfpnext"), "and leads what to do next")
         page.get_by_label("Why the team decided").fill("The terms ask for unlimited liability (mock)")
@@ -912,7 +925,7 @@ def main(site: str) -> int:
             pressed = bid.get_by_role("group", name=group).locator("button[aria-pressed=true]")
             pressed.click()
             page.wait_for_timeout(300)
-        check(page.locator("#view .rfpverdict.nobid").count() == 0 and bid.locator(".bidq.a-yes").count() <= 2, "a call taken back puts the tender back in play")
+        check(page.locator("#view .rfpverdict.nobid").count() == 0 and bid.locator(".qlrow.t-good").count() <= 2, "a call taken back puts the tender back in play")
         # the tender's own workbook: the sheet holding the requirements is found and read
         page.locator("#view .rfploader > summary").click()
         page.locator("#view .filebtn input[type=file]").set_input_files(files=[{"name": "tender.xlsx", "mimeType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",

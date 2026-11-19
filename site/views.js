@@ -25,6 +25,7 @@ import * as UNIT from "./unitcost.js";
 import * as RFP from "./rfp.js";
 import * as AWD from "./award.js";
 import * as BID from "./bidcall.js";
+import * as QL from "./qlist.js";
 import * as LS from "./lessons.js";
 import * as TEAM from "./team.js";
 import * as QD from "./qualify.js";
@@ -2929,49 +2930,53 @@ export function rfpView({ workshop: w, catalog, today, addReqs, setReq, removeRe
     h("div", { class: "rfptools" }, search, byLine, grouped, fill), chips, shown, list, say),
   { sub: "Open a requirement to answer it: the keys 1 to 4 answer (met, partly, not met, to check) and the next one still open opens. Escape closes it. A mandatory requirement not met can exclude the bid." });
   // ---------------------------------------------------------------- bid or no bid: the review, and the team's call
-  const bidBody = h("div", { class: "bidbody" });
+  const bidRec = h("div", { class: "bidrec" });
+  const bidCallBox = h("div", { class: "bidcall" });
   const bidMsg = h("p", { class: "note", role: "status" });
   const why = h("input", { type: "text", maxlength: String(BID.WHY_MAX), placeholder: "why, in a sentence (optional)", "aria-label": "Why the team decided", class: "bidwhy" });
-  const drawBid = () => {
-    const st = RFP.rfpState(catalog, cur, today);
-    const rv = st.review;
-    if (rv.why && !why.value) why.value = rv.why;
-    const count = (a) => rv.questions.filter((q) => q.a === a).length;
-    const answer = (q, a) => h("button", { type: "button", text: BID.ANSWERS[a], "aria-pressed": String(q.a === a), onclick: async () => {
-      try { cur = await setBidAnswer(q.id, q.a === a && q.from === "typed" ? "" : a); bidMsg.textContent = ""; } catch (e) { bidMsg.textContent = e.message; }
-      drawBid(); drawHero();
-    } });
-    const row = (q) => h("li", { class: `bidq a-${q.a || "none"}` },
-      h("div", { class: "bidqtext" }, h("span", { text: q.text }), q.stop ? h("span", { class: "chip bidstop", text: "can exclude the bid" }) : null,
-        q.from === "read" ? null : h("small", { class: "muted", text: q.hint }),
-        q.read && q.from ? h("small", { class: "bidread" }, q.from === "read" ? `Read from the tender: ${q.why}.` : q.why ? `Answered by hand; the tender says: ${q.why}. ` : "Answered by hand. ",
-          q.from === "typed" ? h("button", { type: "button", class: "linkbtn", text: "Use what the tender says", onclick: async () => {
+  const review = () => RFP.rfpState(catalog, cur, today).review;
+  const bidList = QL.questionList({
+    label: "Bid or no bid questions",
+    groups: Object.entries(BID.GROUPS).map(([key, label]) => ({ key, label })),
+    answers: [{ key: "yes", label: "Yes", tone: "good" }, { key: "partly", label: "Partly", tone: "mid" }, { key: "no", label: "No", tone: "bad" }],
+    filters: [{ key: "all", label: "All" }, { key: "open", label: "Not answered", test: (x) => !x.a }, { key: "against", label: "Partly or no", test: (x) => x.a === "partly" || x.a === "no" }],
+    items: () => review().questions.map((q) => ({ id: q.id, group: q.group, label: q.label, text: q.text, a: q.a, stop: q.stop,
+      aside: q.from === "read" ? `read from the tender: ${q.why}` : q.from === "typed" && q.read ? "answered by hand" : "" })),
+    answer: async (id, a) => { cur = await setBidAnswer(id, a); },
+    onAnswered: () => { drawBidRest(); drawHero(); },
+    detail: (x) => {
+      const q = review().questions.find((y) => y.id === x.id);
+      return h("div", { class: "bidmore" }, h("small", { class: "muted", text: q.hint }),
+        q.read && q.from === "typed" ? h("small", { class: "bidread" }, q.why ? `The tender says: ${q.why}. ` : "",
+          h("button", { type: "button", class: "linkbtn", text: "Use what the tender says", onclick: async () => {
             try { cur = await setBidAnswer(q.id, ""); } catch (e) { bidMsg.textContent = e.message; } drawBid(); drawHero();
-          } }) : null) : null),
-      h("div", { class: "seg", role: "group", "aria-label": `Answer: ${q.text}` }, Object.keys(BID.ANSWERS).map((a) => answer(q, a))));
+          } })) : null);
+    },
+  });
+  // the recommendation and the team's call, around the list
+  const drawBidRest = () => {
+    const rv = review();
+    if (rv.why && !why.value) why.value = rv.why;
+    bidRec.className = `bidrec l-${rv.level}`;
+    put(bidRec, h("b", { text: rv.head }), h("span", { text: rv.detail }));
     const decide = (call) => async () => {
       try { cur = await setBidCall(call, why.value); bidMsg.textContent = ""; } catch (e) { bidMsg.textContent = e.message; }
       drawBid(); drawHero(); drawDeliver();
     };
-    put(bidBody,
-      h("div", { class: `bidrec l-${rv.level}` }, h("b", { text: rv.head }), h("span", { text: rv.detail }),
-        h("small", { class: "muted", text: `${count("yes")} yes, ${count("partly")} partly, ${count("no")} no, ${rv.unknown.length} not known` })),
-      h("div", { class: "bidgroups" }, Object.entries(BID.GROUPS).map(([g, label]) => h("section", { class: "bidgroup" }, h("h3", { text: label }),
-        h("ul", { class: "bidlist" }, rv.questions.filter((q) => q.group === g).map(row))))),
-      h("div", { class: "bidcall" }, h("h3", { text: "The team's call" }),
-        rv.call ? h("p", { class: `bidcalled c-${rv.call}`, text: `Decided on ${rv.on}: ${BID.CALLS[rv.call].toLowerCase()}.${rv.why ? ` ${rv.why}` : ""}` })
-          : h("p", { class: "note", text: "Decide at the bid review, with the seller and whoever answers. The review advises; the team decides." }),
-        rv.call ? null : why,
-        h("div", { class: "btnrow" },
-          rv.call ? h("button", { type: "button", class: "btn small quiet", text: "Take the call back", onclick: decide("") })
-            : [h("button", { type: "button", class: "btn small", text: "We bid", onclick: decide("bid") }), h("button", { type: "button", class: "btn small", text: "We do not bid", onclick: decide("no_bid") })],
-          rv.call === "no_bid" ? h("button", { type: "button", class: "btn small", text: "Copy the letter declining it", onclick: (ev) => act("copy-letter", ev.currentTarget) }) : null,
-          h("button", { type: "button", class: "btn small quiet", text: "Copy for the bid review", onclick: (ev) => copyText(BID.reviewMarkdown(cur, rv)).then((ok) => { ev.target.textContent = ok ? "Copied" : "Not copied"; }) }))),
-      bidMsg);
+    put(bidCallBox,
+      rv.call ? h("p", { class: `bidcalled c-${rv.call}`, text: `Decided on ${rv.on}: ${BID.CALLS[rv.call].toLowerCase()}.${rv.why ? ` ${rv.why}` : ""}` })
+        : h("span", { class: "bidcalllabel", text: "The team's call" }),
+      rv.call ? null : why,
+      rv.call ? h("button", { type: "button", class: "btn small quiet", text: "Take the call back", onclick: decide("") })
+        : [h("button", { type: "button", class: "btn small", text: "We bid", onclick: decide("bid") }), h("button", { type: "button", class: "btn small", text: "We do not bid", onclick: decide("no_bid") })],
+      rv.call === "no_bid" ? h("button", { type: "button", class: "btn small", text: "Copy the letter declining it", onclick: (ev) => act("copy-letter", ev.currentTarget) }) : null,
+      h("button", { type: "button", class: "btn small quiet", text: "Copy for the bid review", onclick: (ev) => copyText(BID.reviewMarkdown(cur, rv)).then((ok) => { ev.target.textContent = ok ? "Copied" : "Not copied"; }) }));
   };
-  const bidCard = card("Bid or no bid", bidBody, { sub: "Whether the tender is worth answering: decided before the work starts, and reviewed as it goes. Four answers are read from the tender unless you answer them; the rest are yours. A no on a question that can exclude the bid stops it." });
+  const drawBid = () => { bidList.draw(); drawBidRest(); };
+  const bidCard = card("Bid or no bid", h("div", { class: "bidbody" }, bidRec, bidList.el, bidCallBox, bidMsg),
+    { sub: "Whether the tender is worth answering, reviewed as it goes. Four answers are read from the tender unless you give them; a no on a question that can exclude the bid stops it. The review advises, the team decides." });
   bidCard.id = "rfpbid";
-  drawBid();
+  drawBidRest();
 
   // ---------------------------------------------------------------- what wins it: quality and price, ours against the rivals' guessed bids
   const a0 = AWD.cleanAward((cur.rfp && cur.rfp.award) || {});

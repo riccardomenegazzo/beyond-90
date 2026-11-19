@@ -2,6 +2,16 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.127.0
+
+- **Bid or no bid, shorter.** The first view redone as a compact list of questions, the pattern the questions of discovery and qualification will follow:
+  - a tile per group (can we take part, can we win, is it worth it, can we deliver) counts its answers with a dot each, and narrows the list to that group;
+  - filters: all, not answered, partly or no, with their counts;
+  - each question is one line, with a short name, what was read from the tender, and the answer in line;
+  - opened, a question shows all of it and why it matters; the keys 1 to 3 answer it and open the next one still open, Escape closes it;
+  - the team's call sits on one line under the list.
+- On a phone, the group tiles sit two per row and each question's answers go under it.
+
 ## 0.126.0
 
 - **Bid or no bid.** A review of whether a tender is worth answering, in the tender's page. Eleven questions bid teams ask, in four groups: can we take part, can we win, is it worth it, can we deliver.
