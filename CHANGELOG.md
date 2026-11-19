@@ -2,6 +2,24 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.120.0
+
+- **The tender meets the conversation.**
+  - **Read from a file:**
+    - a tender's workbook (.xlsx), read by the engine in the page; the sheet with the requirements is found, and header rows, Italian ones included, are skipped;
+    - a CSV, whatever its delimiter;
+    - plain text.
+  - **Linked to the discovery questions.** Each requirement leads to the question of its line it touches most, by shared words weighted by rarity (two at least; none is forced). In the questions:
+    - "The tender asks" shows under each question a requirement touches;
+    - **Asked by the tender** narrows the meeting to those questions.
+  - **Who issued it.**
+    - A public body takes questions only through the formal channel, so nothing of its tender goes on a meeting agenda.
+    - A company's requirements marked to check go on the next meeting's agenda.
+    - Until it is said, nothing does.
+  - **Matched on:** each requirement shows the words that pointed it at its line.
+- Spreadsheet columns that say whether a requirement counts read more wording: obbligatorio, requisito minimo, migliorativo, premiante, preferenziale, valutabile.
+- The engine reads any workbook as rows for the page (`workbook_rows_json`), with the same caps and refusals as the customer's workbooks.
+
 ## 0.119.0
 
 - **What else they weigh, line by line.** Each line in scope adds the alternatives particular to it, grouped under its name in qualification:

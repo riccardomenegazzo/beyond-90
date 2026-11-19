@@ -258,12 +258,14 @@ export function removeRequirement(w, id, today) {
 }
 
 /** The tender's name, the deadline for questions to the contracting authority, and the bid's due date. */
-export function setRfpMeta(w, { title = "", due = "", questions_due: q = "" } = {}, today) {
+export function setRfpMeta(w, { title = "", due = "", questions_due: q = "", issuer = "" } = {}, today) {
   const t = text(title, TITLE_MAX);
   if (due && q && q > due) throw new Error("Questions are due before the bid, not after.");
   const rfp = { ...(w.rfp || emptyRfp()), title: t, due: due || "", questions_due: q || "" };
+  delete rfp.issuer;
+  if (issuer) rfp.issuer = issuer;
   const next = { ...w, rfp };
-  if (!rfp.reqs.length && !t && !rfp.due && !rfp.questions_due) delete next.rfp;
+  if (!rfp.reqs.length && !t && !rfp.due && !rfp.questions_due && !issuer) delete next.rfp;
   return changed(next, {}, today);
 }
 

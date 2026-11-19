@@ -1,7 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { parseRequirements, suggestLine, lineOrder, rfpState, clarificationQuestions, rfpCsv, rfpMarkdown, bidCommitments, validRfp, withRequirement, EXAMPLE_TENDER, KEYWORDS, MAX_REQS } from "../rfp.js";
+import { parseRequirements, suggestLine, lineOrder, rfpState, clarificationQuestions, rfpCsv, rfpMarkdown, bidCommitments, validRfp, withRequirement, EXAMPLE_TENDER, KEYWORDS, MAX_REQS,
+  sheetsToText, csvToText, matchedWords, questionFor, tenderAsks } from "../rfp.js";
+import { nextMeeting, agendaText } from "../nextmeeting.js";
 import { makeWorkshop, addRequirements, setRequirement, removeRequirement, setRfpMeta, clearRfp, validWorkshop, summaryMarkdown, assess } from "../workshop.js";
 import { pipeline, agenda } from "../desk.js";
 import { forward } from "../forward.js";
@@ -158,3 +160,54 @@ test("anything off in a stored tender refuses it", () => {
     { ...w.rfp, due: "2026-11-20", questions_due: "2026-11-30" }, { ...w.rfp, reqs: [w.rfp.reqs[0], w.rfp.reqs[0]] }, { ...w.rfp, smuggled: 1 }, { ...w.rfp, title: "x".repeat(121) }]) assert.equal(validRfp(t), false, JSON.stringify(t).slice(0, 80));
   assert.throws(() => withRequirement(w.rfp, "r1", { who: "boss" }), /not valid/);
 });
+
+test("a tender's own sheet: header rows in Italian are skipped, the type column says mandatory or scored", () => {
+  const rs = parseRequirements("N.\tRequisito\tTipologia (Obbligatorio/Migliorativo)\tPunteggio\n1\tLa soluzione deve garantire la replica dei dati verso il sito secondario\tObbligatorio\t\n2\tCopie immutabili per 30 giorni\tMigliorativo\t6\n3\tAssistenza in lingua italiana\tPremiante\t4");
+  assert.deepEqual(rs.map((r) => [r.ref, r.must, r.points]), [["1", true, null], ["2", false, 6], ["3", false, 4]]);
+});
+
+test("a workbook: the sheet with the requirements is found; a CSV is read whatever its delimiter", () => {
+  const sheets = [{ name: "Cover", rows: [["Tender", "Lot 1"], ["Date", "2026-11-19"]] },
+    { name: "Requirements", rows: [["Ref", "Requirement", "Mandatory"], ["1.1", "The platform must keep running when a node fails, with no data loss", "Yes"], ["1.2", "Upgrades without downtime of the virtual machines are preferred", "No"]] }];
+  const got = sheetsToText(sheets);
+  assert.equal(got.sheet, "Requirements");
+  assert.deepEqual(parseRequirements(got.text).map((r) => [r.ref, r.must]), [["1.1", true], ["1.2", false]]);
+  assert.deepEqual(sheetsToText([{ name: "Cover", rows: [["a", "b"]] }]), { text: "", sheet: "" });
+  const csv = 'Ref;Requirement;Points\n2.1;"Backups must be immutable; for 30 days";\n2.2;"Recovery plans are desirable";8\n';
+  assert.deepEqual(parseRequirements(csvToText(csv)).map((r) => [r.ref, r.must, r.points]), [["2.1", true, null], ["2.2", false, 8]]);
+});
+
+test("the words a requirement was matched on are shown, so the match can be trusted or fixed", () => {
+  assert.deepEqual(matchedWords("Backup and disaster recovery must protect 400 machines with an RPO of 15 minutes", "dr-backup"), ["backup", "disaster recovery", "rpo"]);
+  assert.deepEqual(matchedWords("Anything", "nope"), []);
+});
+
+test("a requirement leads to the discovery question it touches most, and only when the words say so", () => {
+  let w = addRequirements(ws(["hci", "dr-backup", "cloud-operations", "edge-sites"]), parseRequirements(EXAMPLE_TENDER), CAT, D);
+  const q = (id) => questionFor(CAT, w.rfp.reqs.find((r) => r.id === id));
+  assert.match(q("r6").q, /administrator account delete your backups/, "immutable copies, administrators included");
+  assert.match(q("r8").q, /come back together, in the same state and in a set order/, "recovery plans with a power-on order");
+  assert.match(q("r14").q, /How are upgrades done across the sites/, "sites upgraded without a visit");
+  assert.match(q("r16").q, /management plane and its data stay on your own premises/, "data that must stay in the European Union");
+  assert.equal(q("r1"), null, "no question shares enough words: none is forced");
+  const asks = tenderAsks(CAT, w);
+  assert.ok([...asks.keys()].every((k) => /^[a-z-]+#\d+$/.test(k)));
+  assert.ok([...asks.values()].flat().some((r) => r.id === "r6"));
+});
+
+test("who issued it decides where questions go: a company's requirements to check reach the next meeting, a public body's never", () => {
+  let w = addRequirements(ws(), parseRequirements(EXAMPLE_TENDER), CAT, D);
+  w = setRequirement(w, "r7", { a: "check" }, D);
+  assert.deepEqual(nextMeeting(CAT, w, D).tender, [], "not said yet: nothing goes on an agenda");
+  const pub = setRfpMeta(w, { issuer: "public" }, D);
+  assert.equal(pub.rfp.issuer, "public");
+  assert.equal(validRfp(pub.rfp), true);
+  assert.deepEqual(nextMeeting(CAT, pub, D).tender, []);
+  const co = setRfpMeta(w, { issuer: "company" }, D);
+  const m = nextMeeting(CAT, co, D);
+  assert.equal(m.tender.length, 1);
+  assert.match(agendaText(m, ""), /Your requirements we want to understand well\n   - 2\.3: A test failover must be possible/);
+  assert.equal(validRfp({ ...co.rfp, issuer: "someone" }), false);
+  assert.equal("issuer" in setRfpMeta(co, { issuer: "" }, D).rfp, false);
+});
+

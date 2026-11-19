@@ -436,6 +436,18 @@ def workbook_json(name: str, data_b64: str) -> str:
     return json.dumps(out, ensure_ascii=False)
 
 
+def workbook_rows_json(name: str, data_b64: str) -> str:
+    """An .xlsx the person wants read as rows, such as a tender's requirements: each sheet's text values, capped."""
+    from . import xlsx
+
+    try:
+        sheets = xlsx.read_workbook(base64.b64decode(data_b64, validate=True))
+        out = {"ok": True, "sheets": [{"name": n[:100], "rows": [[c[:1000] for c in r[:30]] for r in rows[:2000]]} for n, rows in sheets[:20]]}
+    except (ValueError, KeyError) as e:              # WorkbookError, bad base64, a part missing
+        out = {"ok": False, "sheets": [], "error": f"{name}: {e}"}
+    return json.dumps(out, ensure_ascii=False)
+
+
 def calibrate_json(outcomes_json: str) -> str:
     """The outcomes a person recorded, compared with the health readings that came before them."""
     from . import calibrate

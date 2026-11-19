@@ -7,8 +7,11 @@
  * for the bid. Plain functions, no DOM, so Node can test them; nothing here names a product.
  */
 import { csvCell } from "./ui.js";
+import { parseCsv } from "./inventory.js";
 
 export const ANSWERS = { yes: "Met", partly: "Partly", no: "Not met", check: "To check" };
+/** Who issued it: a public body takes questions only through the formal channel; a company can be asked in a meeting. */
+export const ISSUERS = { public: "A public body", company: "A company" };
 export const WHO = { presales: "Presales", specialist: "A specialist", partner: "The partner", product: "The product team", commercial: "Commercial or legal" };
 export const MAX_REQS = 400;
 export const TEXT_MAX = 500;
@@ -36,6 +39,11 @@ const POINTS = [/(\d{1,4}(?:[.,]\d{1,2})?)\s*(?:points?|pts?\.?|punti|punto|pt\.
 const REF = /^\s*((?:(?:req(?:uirement)?|item|rt|rf)\s*[.\-_#:]?\s*|[A-Za-z]{1,5}[.\-_]?)?\d{1,4}(?:[.\-]\d{1,4}){0,5}[a-z]?)(\s*[).:\]–]\s*|\s+-\s+|\s+)(\S.*)$/i;
 const BULLET = /^\s*(?:[-•*·▪]\s+)+/;
 const HEADER = /^(?:ref(?:erence)?|id|n\.?|no\.?|#|requirement|requirements|requisito|requisiti|description|descrizione|text|testo|mandatory|obbligatorio|points|punti|weight|peso)$/i;
+// a header row: short cells, no digits, and at least one column title (a tender's sheet often repeats it by section)
+const TITLE = /^(?:n\.?|no\.?|nr\.?|id|#|ref\p{L}*|req\p{L}*|descr\p{L}*|testo|text|tipolog\p{L}*|type|categor\p{L}*|punt\p{L}*|point\p{L}*|score|peso|weight|mandatory|obbligator\p{L}*|migliorativ\p{L}*|note|answer|risposta|compliance|conformit\p{L}*|section|sezione|lotto|lot)\b/iu;
+const isHeader = (c) => c.some((x) => TITLE.test(x)) && c.every((x) => x.length <= 60 && !/\d/.test(x));
+const MUST_CELL = /^(yes|y|must|mandatory|required|minimum|si|sì|s|obbligatori[oa]|requisito minimo|minimo|x)$/i;
+const SHOULD_CELL = /^(no|n|optional|scored|should|desirable|facoltativ[oa]|migliorativ[oa]|premiante|preferenziale|valutabile|opzionale)$/i;
 
 function pointsIn(text) {
   for (const re of POINTS) {
@@ -67,7 +75,7 @@ function refOf(line) {
 
 function fromRow(cells) {
   const c = cells.map((x) => flat(x));
-  if (c.every((x) => !x || HEADER.test(x))) return null;
+  if (c.every((x) => !x || HEADER.test(x)) || isHeader(c.filter(Boolean))) return null;
   let ti = 0;
   c.forEach((x, i) => { if (x.length > c[ti].length) ti = i; });
   const text = c[ti];
@@ -78,8 +86,8 @@ function fromRow(cells) {
   let must = null;
   for (const [i, x] of c.entries()) {
     if (i === ti || x === ref) continue;
-    if (/^(yes|y|m|must|mandatory|required|si|sì|s|obbligatorio|x)$/i.test(x)) must = true;
-    else if (/^(no|n|optional|scored|should|facoltativo|migliorativo|desirable)$/i.test(x)) must = false;
+    if (MUST_CELL.test(x)) must = true;
+    else if (SHOULD_CELL.test(x)) must = false;
   }
   const pts = numeric.find((v) => v > 0 && v <= POINTS_MAX) ?? pointsIn(text);
   return { ref, text, must: must ?? mustOf(text, pts ?? null), points: pts ?? null };
@@ -110,6 +118,22 @@ export function parseRequirements(pasted) {
     const points = pointsIn(text);
     return { ref: r.ref.slice(0, REF_MAX), text, must: mustOf(text, points), points };
   });
+}
+
+/**
+ * A workbook's sheets as text to read: the sheet that holds the requirements is the one with the most rows carrying a
+ * long cell. Cells are joined with tabs, so the rows are read like rows copied from a spreadsheet.
+ */
+export function sheetsToText(sheets) {
+  const score = (rows) => rows.filter((r) => r.some((c) => flat(c).length >= 30)).length;
+  const best = [...(sheets || [])].sort((a, b) => score(b.rows) - score(a.rows))[0];
+  if (!best || !score(best.rows)) return { text: "", sheet: "" };
+  return { text: best.rows.map((r) => r.map((c) => flat(c).replace(/\t/g, " ")).join("\t")).join("\n"), sheet: best.name };
+}
+
+/** A CSV file as text to read: its rows joined with tabs, whatever its delimiter. */
+export function csvToText(text) {
+  return parseCsv(text).map((r) => r.map((c) => flat(c)).join("\t")).join("\n");
 }
 
 // ------------------------------------------------------------------ which line a requirement asks about
@@ -159,6 +183,62 @@ export function suggestLine(text, lines) {
   return best;
 }
 
+/** The words of a requirement that pointed it at a line: shown beside the line, so the match can be trusted or fixed. */
+export function matchedWords(text, line) {
+  return (KEYWORDS[line] || []).filter((kw) => reFor(kw).test(text));
+}
+
+// ------------------------------------------------------------------ which discovery question a requirement touches
+
+// words that carry no meaning of their own in a requirement, in English and Italian
+const STOP = new Set(("must shall should will would could which their there these those with without from into each every other also than then that this what when where while about after before under over more most least "
+  + "solution system systems platform provide provided offer supplier vendor customer required requirement requirements including include included least minimum maximum "
+  + "virtual virtuali machine machines macchine data dati "
+  + "deve devono dovrà dovranno della delle degli dello nella nelle negli sono essere fornitore soluzione sistema requisito requisiti almeno ogni anche come dove quando").split(" "));
+const stems = (t) => new Set((String(t).toLowerCase().match(/\p{L}{4,}/gu) || []).filter((x) => !STOP.has(x)).map((x) => x.slice(0, 6)));
+
+/**
+ * The discovery question of a requirement's line that it touches most, by the words they share (two at least), or
+ * null. It says which question to bring the tender's demand to, and which answers the bid will rest on.
+ */
+const qStems = new WeakMap();
+function lineStems(line) {
+  if (!qStems.has(line)) {
+    const each = line.questions.map((q) => stems(`${q.q} ${q.need || ""} ${q.how || ""}`));
+    const df = new Map();
+    for (const set of each) for (const x of set) df.set(x, (df.get(x) || 0) + 1);
+    qStems.set(line, { each, df });
+  }
+  return qStems.get(line);
+}
+
+export function questionFor(catalog, r) {
+  const line = r.line && catalog && catalog.lines ? catalog.lines[r.line] : null;
+  if (!line || !line.questions.length) return null;
+  const mine = stems(r.text);
+  const { each, df } = lineStems(line);
+  // a shared word counts more the fewer questions of the line use it: "immutable" says more than "machines"
+  let best = null, top = 0;
+  each.forEach((theirs, index) => {
+    let score = 0, n = 0;
+    for (const x of mine) if (theirs.has(x)) { score += 1 / df.get(x); n++; }
+    if (n >= 2 && score >= 1 && score > top) { top = score; best = { profile: r.line, index, q: line.questions[index].q, shared: n }; }
+  });
+  return best;
+}
+
+/** For each discovery question, the tender's requirements that touch it: `profile#index` to the requirements. */
+export function tenderAsks(catalog, w) {
+  const out = new Map();
+  for (const r of (w.rfp && w.rfp.reqs) || []) {
+    const q = questionFor(catalog, r);
+    if (!q) continue;
+    const k = `${q.profile}#${q.index}`;
+    out.set(k, [...(out.get(k) || []), r]);
+  }
+  return out;
+}
+
 /** Lines to match against: those in scope first, then the rest of the catalogue that has keywords. */
 export function lineOrder(catalog, scope) {
   const all = Object.keys((catalog && catalog.lines) || {}).filter((p) => KEYWORDS[p]);
@@ -185,7 +265,8 @@ export function validRequirement(r) {
 /** Stored with a workshop: the tender's name and dates, and its requirements, each checked. */
 export function validRfp(t) {
   if (!t || typeof t !== "object" || Array.isArray(t)) return false;
-  if (!Object.keys(t).every((k) => ["title", "due", "questions_due", "reqs"].includes(k))) return false;
+  if (!Object.keys(t).every((k) => ["title", "due", "questions_due", "reqs", "issuer"].includes(k))) return false;
+  if (t.issuer !== undefined && !Object.hasOwn(ISSUERS, t.issuer)) return false;
   if (typeof t.title !== "string" || t.title.length > TITLE_MAX || CONTROL.test(t.title)) return false;
   for (const k of ["due", "questions_due"]) if (!(t[k] === "" || isDate(t[k]))) return false;
   if (t.due && t.questions_due && t.questions_due > t.due) return false;

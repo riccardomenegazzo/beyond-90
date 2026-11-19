@@ -126,7 +126,24 @@ Each requirement is read and matched:
 - **its points,** when the text gives them ("(8 points)", "punteggio max 6").
 - **the product line it asks about,** from the words it uses, in English and in the wording of Italian tenders. Lines in the conversation come first. The platform line counts half, since nearly everything touches it.
 
-Correct any of these in one click. **Try it with an invented tender** loads sixteen requirements.
+Beside each requirement are the words it was matched on, so the match can be trusted or fixed in one click. **Try it with an invented tender** loads sixteen requirements.
+
+**Or read the tender's own file.** **Read from a file** takes:
+- a workbook (.xlsx): the sheet holding the requirements is the one with the most rows carrying a long cell, and header rows, Italian ones included ("N.", "Requisito", "Tipologia"), are skipped;
+- a CSV, whatever its delimiter;
+- plain text.
+
+The file is read in the page and never leaves it.
+
+**Who issued it** decides where questions go:
+- a **public body** takes questions only through the tender's formal channel, by its deadline. The questions are drafts for it, and nothing of the tender goes on a meeting agenda.
+- a **company** can be asked in a meeting: the requirements marked to check go on the next meeting's agenda, under "Your requirements we want to understand well".
+- until it is said, nothing goes on an agenda.
+
+**The tender meets the discovery questions.** A requirement leads to the discovery question of its line that it touches most: by the words they share, two at least, a rare word counting more than a common one. Nothing is forced when none fits.
+- In the tender, each requirement links to its question.
+- In the questions, "The tender asks" shows under each question a requirement touches.
+- **Asked by the tender** narrows the meeting to those questions: what to understand before answering the bid.
 
 **Answer each one:**
 - **Met**, **Partly**, **Not met** or **To check**;

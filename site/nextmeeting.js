@@ -24,8 +24,11 @@ export function nextMeeting(catalog, w, today) {
     .map(({ q }) => ({ text: clean(q.q), line: catalog.lines[p].label, role: q.role || "" }))).slice(0, 5);
   // who can answer what is left: the roles behind the open questions, in the order they first appear
   const roles = [...new Set([...res.unknowns.slice(0, 5), ...ask].map((x) => x.role).filter((r) => ROLE_WORDS[r]))];
-  return { customer: w.customer, land: res.land ? res.land.label : "", settle, ask, prove, due, late, people, roles,
-    empty: !settle.length && !ask.length && !prove.length && !due.length && !late.length };
+  // a company's request for proposal: the requirements to check are understood best by asking, in the meeting.
+  // A public body takes questions only through the tender's formal channel, so nothing of its tender goes here.
+  const tender = w.rfp && w.rfp.issuer === "company" ? w.rfp.reqs.filter((r) => r.a === "check").slice(0, 5).map((r) => ({ text: clean(r.text), ref: clean(r.ref) })) : [];
+  return { customer: w.customer, land: res.land ? res.land.label : "", settle, ask, prove, due, late, people, roles, tender,
+    empty: !settle.length && !ask.length && !prove.length && !due.length && !late.length && !tender.length };
 }
 
 /** The agenda as text: for an invitation, an email or the meeting notes. */
@@ -36,6 +39,7 @@ export function agendaText(m, when = "") {
   if (m.late.length) { out.push(`${++i}. What has slipped`); for (const c of m.late) out.push(`   - ${c.text} (was due ${c.by}${c.who ? `, ${c.who}` : ""})`); out.push(""); }
   if (m.settle.length) { out.push(`${++i}. Questions to answer together`); for (const q of m.settle) out.push(`   - ${q.text}`); out.push(""); }
   if ((m.ask || []).length) { out.push(`${++i}. Questions we have not asked yet`); for (const q of m.ask) out.push(`   - ${q.text}`); out.push(""); }
+  if ((m.tender || []).length) { out.push(`${++i}. Your requirements we want to understand well`); for (const r of m.tender) out.push(`   - ${r.ref ? `${r.ref}: ` : ""}${r.text}`); out.push(""); }
   if (m.prove.length) { out.push(`${++i}. Your concerns, and how we will prove them`); for (const o of m.prove) out.push(`   - "${o.text}": ${o.how}`); out.push(""); }
   if (m.due.length) { out.push(`${++i}. Coming up`); for (const c of m.due) out.push(`   - ${c.text}, by ${c.by}${c.who ? ` (${c.who})` : ""}`); out.push(""); }
   out.push(`${++i}. Next steps, owners and dates`, "");

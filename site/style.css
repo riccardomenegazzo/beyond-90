@@ -1205,3 +1205,5 @@ ol.deskfunnel{list-style:none;margin:0;padding:0;display:grid;grid-template-colu
 .rfpq .wsopt[aria-pressed=true].rfp-no{background:var(--bad);border-color:var(--bad);color:var(--on)}
 .rfpq .wsopt[aria-pressed=true].rfp-check{background:var(--ink2);border-color:var(--ink2);color:var(--on)}
 @media (max-width:700px){.rfpmore{grid-template-columns:1fr}.rfpmore select{max-width:none}}
+.rfpdq{justify-self:start;text-align:left;font-size:13.5px}
+.rfpasks{color:var(--ink2)}

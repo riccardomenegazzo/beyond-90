@@ -65,3 +65,13 @@ def test_the_page_gets_an_answer_even_for_a_broken_file():
     assert json.loads(workbook_json("x.xlsx", "%%%"))["ok"] is False
     ok = json.loads(workbook_json("northwind.xlsx", base64.b64encode(BOOK.read_bytes()).decode()))
     assert ok["ok"] and "customer.toml" in ok["files"]
+
+
+def test_a_workbook_read_as_rows_for_a_tender():
+    from beyond90.web import workbook_rows_json
+
+    out = json.loads(workbook_rows_json("tender.xlsx", base64.b64encode(BOOK.read_bytes()).decode()))
+    assert out["ok"] and out["sheets"] and all(isinstance(r, list) for s in out["sheets"] for r in s["rows"])
+    assert any(s["name"] == "accounts" for s in out["sheets"])
+    bad = json.loads(workbook_rows_json("tender.xlsx", base64.b64encode(b"not a zip").decode()))
+    assert not bad["ok"] and "tender.xlsx" in bad["error"]

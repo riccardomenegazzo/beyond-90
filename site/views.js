@@ -1667,7 +1667,7 @@ export function growView({ estate, focus, startWorkshop }) {
 const STAGE_TAG = { value: "Value", L1: "L1 connected", L2: "L2 seen", L3: "L3 switched on", L4: "L4 decided" };
 const painPct = (v) => `${Math.round(v * 100)}%`;
 // how the questions are narrowed for this meeting: kept while the page is open, never stored
-const wsFilter = { core: false, roles: [] };
+const wsFilter = { core: false, roles: [], tender: false };
 
 export function workshopView({ workshop: w, catalog, list, answer, worth, rename, preparedBy, setScope, inventory, sizing, waves, gpu, dr, obj, edge, unit, today, newWorkshop, openWorkshop, removeWorkshop, presets = [], go, focus }) {
   const say = h("p", { class: "note", role: "status" });
@@ -1711,6 +1711,8 @@ export function workshopView({ workshop: w, catalog, list, answer, worth, rename
   };
   drawProg();
 
+  // the tender's requirements that touch each question: the demand to bring to it, and the answers the bid rests on
+  const asks = RFP.tenderAsks(catalog, cur);
   const lines = cur.scope.filter((p) => catalog.lines[p]).map((p, li) => {
     const line = catalog.lines[p];
     const head = h("span", { class: "wshead" });
@@ -1721,8 +1723,10 @@ export function workshopView({ workshop: w, catalog, list, answer, worth, rename
     };
     drawHead();
     const items = WS.displayOrder(line).map(({ q, index: i }) => {
-      const li = h("li", { class: "wsq", "data-role": q.role || "", "data-core": q.core ? "1" : "" });
-      li.hidden = !WS.inMeeting(q, wsFilter);
+      const asked = asks.get(`${p}#${i}`) || [];
+      const li = h("li", { class: "wsq", "data-role": q.role || "", "data-core": q.core ? "1" : "", "data-tender": asked.length ? "1" : "" });
+      li.hidden = !WS.inMeeting(q, wsFilter) || (wsFilter.tender && !asked.length);
+      const tenderNote = asked.length ? h("small", { class: "wsfact rfpasks", text: `The tender asks${asked.length > 1 ? ` (${asked.length} requirements)` : ""}: ${asked[0].ref ? `${asked[0].ref}: ` : ""}${asked[0].text.length > 160 ? asked[0].text.slice(0, 159) + "…" : asked[0].text}` }) : null;
       // how to ask it: what a strong or a worrying answer sounds like, and the question that goes one level deeper
       const howTo = q.listen || q.probe ? h("details", { class: "wshow" }, h("summary", { text: "How to ask it" }),
         h("dl", { class: "objdl" }, q.listen ? [h("dt", { text: "Listen for" }), h("dd", { text: q.listen })] : null, q.probe ? [h("dt", { text: "Then ask" }), h("dd", { text: q.probe })] : null)) : null;
@@ -1734,7 +1738,7 @@ export function workshopView({ workshop: w, catalog, list, answer, worth, rename
           h("div", { class: "wsqtext" }, h("span", { class: "wsstage s-" + q.stage, text: STAGE_TAG[q.stage] || q.stage }), h("span", { text: q.q }),
             q.role || q.core ? h("span", { class: "wstags" }, q.core ? h("span", { class: "wscore", text: "Essential" }) : null, q.role ? h("span", { class: "wsrole", text: "Ask: " + WS.ROLE_WORDS[q.role].toLowerCase() }) : null) : null,
             q.why ? h("small", { class: "muted", text: q.why }) : null,
-            WS.factFor(cur, p, i) ? h("small", { class: "wsfact", text: "From their inventory: " + WS.factFor(cur, p, i) }) : null, howTo),
+            WS.factFor(cur, p, i) ? h("small", { class: "wsfact", text: "From their inventory: " + WS.factFor(cur, p, i) }) : null, tenderNote, howTo),
           h("div", { class: "wsans", role: "group", "aria-label": `Answer to: ${q.q}` }, Object.entries(WS.ANSWERS).map(([k, v]) =>
             h("button", { type: "button", class: "wsopt o-" + k, "aria-pressed": String(!!ans && ans.a === k), text: v.label,
               onclick: act(async () => {
@@ -1774,7 +1778,7 @@ export function workshopView({ workshop: w, catalog, list, answer, worth, rename
   const apply = () => {
     let n = 0, all = 0;
     for (const li of document.querySelectorAll(".wslist .wsq")) {
-      const on = (!wsFilter.core || li.dataset.core === "1") && (!wsFilter.roles.length || wsFilter.roles.includes(li.dataset.role));
+      const on = (!wsFilter.core || li.dataset.core === "1") && (!wsFilter.roles.length || wsFilter.roles.includes(li.dataset.role)) && (!wsFilter.tender || li.dataset.tender === "1");
       li.hidden = !on; all++; if (on) n++;
     }
     shown.textContent = n === all ? `All ${all} questions shown.` : `${n} of ${all} questions shown.`;
@@ -1782,6 +1786,9 @@ export function workshopView({ workshop: w, catalog, list, answer, worth, rename
   const essential = h("button", { type: "button", class: "kindchip", "aria-pressed": String(wsFilter.core), text: "Essential questions only",
     "data-tip": "The few questions not to leave a first meeting without, on each line.",
     onclick: () => { wsFilter.core = !wsFilter.core; essential.setAttribute("aria-pressed", String(wsFilter.core)); apply(); } });
+  const fromTender = h("button", { type: "button", class: "kindchip", "aria-pressed": String(wsFilter.tender), text: "Asked by the tender",
+    "data-tip": "Only the questions a requirement of the tender touches: what to understand before answering it.",
+    onclick: () => { wsFilter.tender = !wsFilter.tender; fromTender.setAttribute("aria-pressed", String(wsFilter.tender)); apply(); } });
   const used = Object.keys(WS.ROLE_WORDS).filter((r) => cur.scope.some((p) => catalog.lines[p] && catalog.lines[p].questions.some((q) => q.role === r)));
   const roleChips = used.map((r) => {
     const b = h("button", { type: "button", class: "kindchip", "aria-pressed": String(wsFilter.roles.includes(r)), text: WS.ROLE_WORDS[r],
@@ -1790,7 +1797,7 @@ export function workshopView({ workshop: w, catalog, list, answer, worth, rename
   });
   const slug = (cur.customer || "customer").replace(/[^A-Za-z0-9]+/g, "-").replace(/^-|-$/g, "").toLowerCase() || "customer";
   const narrow = used.length ? h("div", { class: "card wsnarrow" }, h("h2", { class: "sr-only", text: "Narrow the questions" }),
-    h("div", { class: "wsfam", role: "group", "aria-label": "Which questions to show" }, h("span", { class: "wsfamname", text: "This meeting" }), essential),
+    h("div", { class: "wsfam", role: "group", "aria-label": "Which questions to show" }, h("span", { class: "wsfamname", text: "This meeting" }), essential, asks.size ? fromTender : null),
     h("div", { class: "wsfam", role: "group", "aria-label": "Who is in the room" }, h("span", { class: "wsfamname", text: "Who is in the room" }), roleChips),
     h("div", { class: "btnrow" }, shown,
       h("button", { class: "btn small", type: "button", text: "Copy the question guide", onclick: (ev) => copyText(WS.questionGuide(catalog, cur, wsFilter)).then((ok) => { ev.target.textContent = ok ? "Copied" : "Not copied"; }) }),
@@ -2562,7 +2569,7 @@ export function qualifyView({ workshop: w, catalog, setDeal, setAlt, go }) {
 }
 
 /** A tender or a request for proposal, requirement by requirement: whether to bid, what to ask, the points, the matrix. */
-export function rfpView({ workshop: w, catalog, today, addReqs, setReq, removeReq, setRfpMeta, clearRfp, setScope, go }) {
+export function rfpView({ workshop: w, catalog, today, addReqs, setReq, removeReq, setRfpMeta, clearRfp, setScope, readRows, go }) {
   let cur = w;
   const filter = { only: "all", line: "" };
   const say = h("p", { class: "note", role: "status" });
@@ -2594,24 +2601,53 @@ export function rfpView({ workshop: w, catalog, today, addReqs, setReq, removeRe
   const title = h("input", { type: "text", maxlength: RFP.TITLE_MAX, value: t.title, placeholder: "e.g. Data centre modernisation, lot 2", "aria-label": "Tender name" });
   const qdue = h("input", { type: "date", value: t.questions_due, "aria-label": "Questions to the contracting authority due" });
   const due = h("input", { type: "date", value: t.due, "aria-label": "Bid due" });
-  const saveMeta = async () => {
-    try { cur = await setRfpMeta({ title: title.value, due: due.value, questions_due: qdue.value }); say.textContent = ""; } catch (e) { say.textContent = e.message; }
-    drawHero();
+  const issuer = h("select", { "aria-label": "Who issued it" }, [["", "Not said yet"], ...Object.entries(RFP.ISSUERS)].map(([v, l]) => h("option", { value: v, text: l, selected: v === (t.issuer || "") })));
+  const channel = h("p", { class: "note" });
+  const drawChannel = () => {
+    channel.textContent = issuer.value === "company" ? "A company can be asked in a meeting: the requirements to check go on the next meeting's agenda, and the questions below can go by email."
+      : issuer.value === "public" ? "A public body takes questions only through the tender's formal channel, by its deadline: the questions below are drafts for it, and nothing of the tender goes on a meeting agenda."
+        : "Say who issued it: a public body takes questions only through the formal channel; a company can be asked in a meeting.";
   };
-  for (const el of [title, qdue, due]) el.addEventListener("change", saveMeta);
+  drawChannel();
+  const saveMeta = async () => {
+    try { cur = await setRfpMeta({ title: title.value, due: due.value, questions_due: qdue.value, issuer: issuer.value }); say.textContent = ""; } catch (e) { say.textContent = e.message; }
+    drawHero(); drawChannel();
+  };
+  for (const el of [title, qdue, due, issuer]) el.addEventListener("change", saveMeta);
   // the requirements, pasted
   const paste = h("textarea", { rows: 6, class: "rfppaste", placeholder: "Paste the requirements: one per line (3.2.1 The solution must...), or rows copied from a spreadsheet.", "aria-label": "Requirements to add" });
   const addSay = h("p", { class: "note", role: "status" });
-  const add = async (text) => {
+  const add = async (text, from = "") => {
     const parsed = RFP.parseRequirements(text);
     try {
       cur = await addReqs(parsed);
       const must = parsed.filter((r) => r.must).length;
-      addSay.textContent = `Added ${parsed.length} requirement${parsed.length === 1 ? "" : "s"}: ${must} mandatory, ${parsed.length - must} scored or optional. Check what each was matched to.`;
+      addSay.textContent = `${from ? `${from}: added` : "Added"} ${parsed.length} requirement${parsed.length === 1 ? "" : "s"}: ${must} mandatory, ${parsed.length - must} scored or optional. Check what each was matched to.`;
       paste.value = "";
     } catch (e) { addSay.textContent = e.message; return; }
     drawHero(); drawList(); drawLines();
   };
+  // or from the tender's own file: a workbook (the sheet with the requirements is found), a CSV, or plain text
+  const file = h("input", { type: "file", accept: ".xlsx,.csv,.txt", "aria-label": "Read the requirements from a file: a workbook, a CSV or plain text" });
+  file.addEventListener("change", async () => {
+    const f = file.files && file.files[0];
+    file.value = "";
+    if (!f) return;
+    if (f.size > 20 * 1024 * 1024) { addSay.textContent = `${f.name} is larger than 20 MB.`; return; }
+    try {
+      if (/\.xlsx$/i.test(f.name)) {
+        if (!readRows) { addSay.textContent = "Workbooks are read once the engine has started: try again in a moment."; return; }
+        const r = await readRows(f);
+        if (!r.ok) { addSay.textContent = r.error; return; }
+        const got = RFP.sheetsToText(r.sheets);
+        if (!got.text) { addSay.textContent = `${f.name}: no sheet holds rows long enough to be requirements.`; return; }
+        await add(got.text, `${f.name}, sheet "${got.sheet}"`);
+      } else {
+        const text = await f.text();
+        await add(/\.csv$/i.test(f.name) ? RFP.csvToText(text) : text, f.name);
+      }
+    } catch (e) { addSay.textContent = `${f.name}: ${e.message}`; }
+  });
   // the list, narrowed
   const list = h("ol", { class: "wslist rfplist" });
   const shown = h("span", { class: "muted", role: "status" });
@@ -2631,9 +2667,13 @@ export function rfpView({ workshop: w, catalog, today, addReqs, setReq, removeRe
         onclick: () => save({ must: !x.must }) });
       const pts = h("input", { type: "number", min: "0", step: "any", value: x.points == null ? "" : String(x.points), placeholder: "points", class: "rfppts", "aria-label": `Points: ${x.ref || x.text.slice(0, 40)}` });
       pts.addEventListener("change", () => save({ points: pts.value }));
+      const words = x.line ? RFP.matchedWords(x.text, x.line) : [];
+      const dq = RFP.questionFor(catalog, x);
       put(li, h("div", { class: "wsqtext" },
         h("div", { class: "rfptags" }, x.ref ? h("span", { class: "wsstage", text: x.ref }) : null, must, pts, line),
-        h("span", { text: x.text })),
+        h("span", { text: x.text }),
+        words.length ? h("small", { class: "muted", text: `Matched on: ${words.join(", ")}` }) : null,
+        dq && cur.scope.includes(dq.profile) ? h("button", { type: "button", class: "link rfpdq", text: `Discovery question: ${dq.q}`, onclick: () => go("workshop", { open: dq.profile }) }) : null),
       h("div", { class: "wsans", role: "group", "aria-label": `Answer to ${x.ref || "this requirement"}` }, Object.entries(RFP.ANSWERS).map(([k, v]) =>
         h("button", { type: "button", class: `wsopt rfp-${k}`, "aria-pressed": String(x.a === k), text: v, onclick: () => save({ a: x.a === k ? "" : k }, `.rfp-${k}`) }))),
       h("div", { class: "rfpmore" }, note, who,
@@ -2687,10 +2727,12 @@ export function rfpView({ workshop: w, catalog, today, addReqs, setReq, removeRe
   } });
   return h("div", {}, hero,
     card("The tender", h("div", {}, h("div", { class: "szgrid" }, h("label", { class: "szf" }, h("span", { text: "Name" }), title),
-      h("label", { class: "szf" }, h("span", { text: "Questions to the contracting authority due" }), qdue), h("label", { class: "szf" }, h("span", { text: "Bid due" }), due))),
+      h("label", { class: "szf" }, h("span", { text: "Who issued it" }), issuer),
+      h("label", { class: "szf" }, h("span", { text: "Questions to the contracting authority due" }), qdue), h("label", { class: "szf" }, h("span", { text: "Bid due" }), due)), channel),
     { sub: "The deadline for questions is the last chance to ask whether an equivalent is accepted for a requirement you meet differently." }),
     card("Add requirements", h("div", {}, paste, h("div", { class: "btnrow" },
       h("button", { class: "btn", type: "button", text: "Add the requirements", onclick: () => add(paste.value) }),
+      h("label", { class: "btn small filebtn" }, "Read from a file (.xlsx, .csv, .txt)", file),
       h("button", { class: "btn small quiet", type: "button", text: "Try it with an invented tender", onclick: () => add(RFP.EXAMPLE_TENDER) })), addSay),
     { sub: "Numbered lines, bullets, or rows copied from a spreadsheet. Each is read as mandatory or scored (with its points when the text gives them) and matched to the product line it asks about; correct either in one click. English and Italian wording are recognised. Nothing leaves this browser." }),
     card("The requirements", h("div", {}, h("div", { class: "card wsnarrow" }, chips, h("div", { class: "wsfam" }, h("span", { class: "wsfamname", text: "Line" }), byLine), shown), list, say),
