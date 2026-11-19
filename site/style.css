@@ -1207,3 +1207,9 @@ ol.deskfunnel{list-style:none;margin:0;padding:0;display:grid;grid-template-colu
 @media (max-width:700px){.rfpmore{grid-template-columns:1fr}.rfpmore select{max-width:none}}
 .rfpdq{justify-self:start;text-align:left;font-size:13.5px}
 .rfpasks{color:var(--ink2)}
+.rfphelp{grid-column:1/-1;display:grid;gap:8px}
+.rfphelp:empty{display:none}
+.rfpsuggest{display:grid;gap:4px;padding:10px 12px;border:1px dashed var(--line);border-radius:10px;background:var(--sunk)}
+.rfpsuggest p{margin:0}
+.rfpsuggest .btn{justify-self:start}
+.rfpev{display:block}

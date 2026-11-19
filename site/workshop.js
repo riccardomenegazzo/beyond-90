@@ -17,7 +17,7 @@ import { validDr, drSketch, drMarkdown } from "./drsketch.js";
 import { validObj, objSketch, objMarkdown } from "./objsketch.js";
 import { validEdge, edgeSketch, edgeMarkdown } from "./edgesketch.js";
 import { validUnit, unitSketch, unitMarkdown } from "./unitcost.js";
-import { validRfp, withRequirements, withRequirement, lineOrder, emptyRfp, rfpState, TITLE_MAX } from "./rfp.js";
+import { validRfp, withRequirements, withRequirement, lineOrder, emptyRfp, rfpState, suggestAnswer, TITLE_MAX } from "./rfp.js";
 import { validDeal, withDealAnswer, dealMarkdown } from "./qualify.js";
 import { ROLE_WORDS, displayOrder, inMeeting } from "./questions.js";
 import { validChannel, cleanChannel, KINDS, ROUTES, ACTIVITIES, whoLabel } from "./partners.js";
@@ -267,6 +267,18 @@ export function setRfpMeta(w, { title = "", due = "", questions_due: q = "", iss
   const next = { ...w, rfp };
   if (!rfp.reqs.length && !t && !rfp.due && !rfp.questions_due && !issuer) delete next.rfp;
   return changed(next, {}, today);
+}
+
+/** The kit's answer put in every requirement that has none yet, to adapt: square brackets mark what to fill in. */
+export function fillSuggestedNotes(w, catalog, today) {
+  if (!w.rfp) return w;
+  let rfp = w.rfp;
+  for (const r of w.rfp.reqs) {
+    if (r.note) continue;
+    const a = suggestAnswer(catalog, r);
+    if (a) rfp = withRequirement(rfp, r.id, { note: a.answer });
+  }
+  return rfp === w.rfp ? w : changed({ ...w, rfp }, {}, today);
 }
 
 /** Start again: the tender and its answers go. */

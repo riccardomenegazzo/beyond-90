@@ -127,6 +127,16 @@ TOOL_DEFS: list[dict[str, Any]] = [
         }, ["customer"]),
     },
     {
+        "name": "tender_answer_kit",
+        "title": "Answer kit for tenders",
+        "description": (
+            "Neutral answers to typical tender requirements for a product line (and for any line): the answer to adapt, with "
+            "square brackets marking what to fill in for the customer, the evidence to attach, and what to check before using it. "
+            "Vendor-neutral: the bid team names the product."
+        ),
+        "inputSchema": _schema({"profile": {"type": "string", "description": "A product line, such as dr-backup; omit for the answers that fit any line."}}, []),
+    },
+    {
         "name": "what_else_they_weigh",
         "title": "What else the customer weighs",
         "description": (
@@ -171,7 +181,7 @@ class Server:
         self.profile, self.catalogue_dir = profile, catalogue_dir
         self.tools: dict[str, Tool] = {
             "list_customers": self._list, "score": self._score, "actions": self._actions,
-            "what_if": self._what_if, "path_to_target": self._path, "discovery_questions": self._discovery, "what_else_they_weigh": self._alternatives,
+            "what_if": self._what_if, "path_to_target": self._path, "discovery_questions": self._discovery, "what_else_they_weigh": self._alternatives, "tender_answer_kit": self._answers,
         }
 
     # -- data ---------------------------------------------------------------------------------------------
@@ -255,6 +265,15 @@ class Server:
         keep = ("stage", "q", "why", "role", "listen", "probe", "focus")
         return {"customer": s.customer, "profile": cat.profile, "total": len(qs),
                 "questions": [{**{k: x.get(k) for k in keep if x.get(k) not in (None, "")}, "essential": bool(x.get("core"))} for x in qs[:40]]}
+
+    def _answers(self, args: Mapping[str, Any]) -> Any:
+        from .estate import FAMILIES, read_answers
+
+        profile = args.get("profile")
+        if profile is not None and (not isinstance(profile, str) or profile not in {p for ps in FAMILIES.values() for p in ps}):
+            raise ToolError("'profile' must be a product line")
+        kit = read_answers()
+        return {"line": profile or "", "answers": kit.get(profile, []) if profile else [], "any_line": kit.get("any", [])}
 
     def _alternatives(self, args: Mapping[str, Any]) -> Any:
         from .estate import FAMILIES, read_alternatives

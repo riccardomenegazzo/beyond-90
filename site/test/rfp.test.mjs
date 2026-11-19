@@ -2,9 +2,9 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { parseRequirements, suggestLine, lineOrder, rfpState, clarificationQuestions, rfpCsv, rfpMarkdown, bidCommitments, validRfp, withRequirement, EXAMPLE_TENDER, KEYWORDS, MAX_REQS,
-  sheetsToText, csvToText, matchedWords, questionFor, tenderAsks } from "../rfp.js";
+  sheetsToText, csvToText, matchedWords, questionFor, tenderAsks, suggestAnswer, pastAnswer, evidenceFor } from "../rfp.js";
 import { nextMeeting, agendaText } from "../nextmeeting.js";
-import { makeWorkshop, addRequirements, setRequirement, removeRequirement, setRfpMeta, clearRfp, validWorkshop, summaryMarkdown, assess } from "../workshop.js";
+import { makeWorkshop, addRequirements, setRequirement, removeRequirement, setRfpMeta, clearRfp, validWorkshop, summaryMarkdown, assess, fillSuggestedNotes } from "../workshop.js";
 import { pipeline, agenda } from "../desk.js";
 import { forward } from "../forward.js";
 import { handoverMarkdown } from "../delivery.js";
@@ -110,7 +110,8 @@ test("the compliance matrix and the bid summary", () => {
   w = setRequirement(w, "r1", { a: "yes", note: "=SUM(A1) three nodes", who: "partner" }, D);
   w = setRfpMeta(w, { title: "Data centre renewal (mock)", questions_due: "2026-11-24", due: "2026-12-05" }, D);
   const csv = rfpCsv(CAT, w);
-  assert.match(csv, /^ref,requirement,mandatory,points,product_line,answer,how_it_is_met,who_answers\r\n/);
+  assert.match(csv, /^ref,requirement,mandatory,points,product_line,answer,how_it_is_met,who_answers,evidence_to_attach\r\n/);
+  assert.match(csv, /The proposed design, with the failures it tolerates; The failure test from the proof of value/, "the evidence for a requirement met");
   assert.match(csv, /'=SUM\(A1\) three nodes/, "a formula is defused");
   assert.equal(csv.trim().split("\r\n").length, 17);
   const md = rfpMarkdown(CAT, w, D);
@@ -209,5 +210,52 @@ test("who issued it decides where questions go: a company's requirements to chec
   assert.match(agendaText(m, ""), /Your requirements we want to understand well\n   - 2\.3: A test failover must be possible/);
   assert.equal(validRfp({ ...co.rfp, issuer: "someone" }), false);
   assert.equal("issuer" in setRfpMeta(co, { issuer: "" }, D).rfp, false);
+});
+
+test("the answer kit: each requirement gets its line's answer, or one for any line, with the evidence to attach", () => {
+  const w = addRequirements(ws(["hci", "dr-backup", "object-storage", "cloud-operations", "edge-sites"]), parseRequirements(EXAMPLE_TENDER), CAT, D);
+  const kit = (id) => suggestAnswer(CAT, w.rfp.reqs.find((r) => r.id === id));
+  assert.equal(kit("r1").id, "ha", "no single point of failure");
+  assert.equal(kit("r3").id, "upgrades");
+  assert.equal(kit("r5").id, "rpo_rto");
+  assert.equal(kit("r6").id, "immutable");
+  assert.equal(kit("r7").id, "test_failover");
+  assert.equal(kit("r8").id, "recovery_plans");
+  assert.equal(kit("r9").id, "object_api", "S3-compatible object storage, its main ask");
+  assert.equal(kit("r16").id, "data_residency", "an answer for any line");
+  assert.ok(kit("r1").answer.length <= 300 && kit("r1").evidence.length);
+  assert.equal(suggestAnswer(CAT, { text: "The supplier shall deliver a printed manual", line: "" }), null, "nothing is forced");
+});
+
+test("the kit's answers fill the empty notes in one go; notes already written are kept", () => {
+  let w = addRequirements(ws(["hci", "dr-backup"]), parseRequirements(EXAMPLE_TENDER), CAT, D);
+  w = setRequirement(w, "r1", { note: "Three nodes, two copies" }, D);
+  const filled = fillSuggestedNotes(w, CAT, D);
+  assert.equal(filled.rfp.reqs[0].note, "Three nodes, two copies");
+  assert.match(filled.rfp.reqs.find((r) => r.id === "r6").note, /^At least one copy is immutable for \[days\]/);
+  assert.equal(validWorkshop(filled), true);
+  assert.equal(fillSuggestedNotes(filled, CAT, D), filled, "nothing left to fill: unchanged");
+});
+
+test("answers given before, in another tender in this browser, are offered for a similar requirement", () => {
+  let old = addRequirements(makeWorkshop({ customer: "Regione Esempio (mock)", scope: ["hci", "dr-backup"], createdOn: D, nonce: "fedcba" }), parseRequirements("4.2 Backup copies must be immutable for at least 30 days, including for administrators"), CAT, D);
+  old = setRequirement(old, "r1", { a: "yes", note: "Immutable copies for 30 days on the backup target, tested in the proof of value" }, D);
+  const now = addRequirements(ws(), parseRequirements(EXAMPLE_TENDER), CAT, D);
+  const got = pastAnswer([old], now.rfp.reqs.find((r) => r.id === "r6"));
+  assert.equal(got.customer, "Regione Esempio (mock)");
+  assert.match(got.note, /Immutable copies for 30 days/);
+  assert.equal(pastAnswer([old], now.rfp.reqs.find((r) => r.id === "r12")), null, "an unrelated requirement gets nothing");
+  const unanswered = setRequirement(old, "r1", { a: "" }, D);
+  assert.equal(pastAnswer([unanswered], now.rfp.reqs.find((r) => r.id === "r6")), null, "only notes of requirements met or partly");
+});
+
+test("the evidence to gather, for the requirements answered met or partly", () => {
+  let w = addRequirements(ws(["hci", "dr-backup"]), parseRequirements(EXAMPLE_TENDER), CAT, D);
+  w = setRequirement(setRequirement(w, "r1", { a: "yes" }, D), "r6", { a: "partly" }, D);
+  const ev = evidenceFor(CAT, w);
+  assert.deepEqual(ev.map((e) => e.item), ["The proposed design, with the failures it tolerates", "The failure test from the proof of value",
+    "How the immutable copy is enforced, and by what", "A delete refused during the proof of value"]);
+  assert.deepEqual(ev[0].refs, ["1.1"]);
+  assert.match(rfpMarkdown(CAT, w, D), /## Evidence to gather\n\n- The proposed design, with the failures it tolerates \(for 1\.1\)/);
 });
 

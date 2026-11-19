@@ -2,6 +2,24 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.121.0
+
+- **The answer kit for tenders.** Neutral answers to the typical requirements of each line, and of any line. Each comes with the evidence to attach and what to check before using it; square brackets mark what to fill in for the customer. 33 answers cover:
+  - the platform: node failures, upgrades without stopping, moving running machines, growing the cluster;
+  - recovery: recovery points and times, copies nobody can delete, test failover, recovery plans, retention;
+  - object storage and file storage;
+  - cloud operations, edge sites, desktops, migration, Kubernetes, AI, databases, segmentation and providers;
+  - for any line: data residency, certifications, training, support and service levels, encryption and keys.
+- **In tender requirements,** each requirement without a note offers:
+  - the kit's answer;
+  - the note written for the most similar requirement in another tender in this browser ("answered before", with the customer and the date).
+
+  **Use it** puts it in the note to adapt. **Use the kit's answers where there is no note yet** fills every empty note at once.
+- **The evidence to gather:**
+  - a column in the compliance matrix;
+  - a section of the bid summary, with the requirements each item backs.
+- **Outside the page:** `beyond90 answers --profile <line>` (Markdown or JSON), and a read-only assistant tool, `tender_answer_kit`.
+
 ## 0.120.0
 
 - **The tender meets the conversation.**

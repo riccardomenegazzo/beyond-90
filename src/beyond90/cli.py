@@ -319,6 +319,32 @@ def cmd_alternatives(args: argparse.Namespace) -> int:
     return 0
 
 
+def answers_markdown(key: str, items: list[dict[str, Any]]) -> str:
+    """The answer kit for one line, for the bid team: each answer to adapt, the evidence to attach, what to check."""
+    title = "any line" if key == "any" else key
+    lines = [f"# Answer kit: {title}", "", "Neutral answers to adapt: square brackets mark what to fill in for the customer.", ""]
+    for a in items:
+        lines += [f"## {a['topic']}", "", a["answer"], "", "Attach:", *[f"- {e}" for e in a["evidence"]], "", f"Check first: {a['check']}", ""]
+    return "\n".join(lines)
+
+
+def cmd_answers(args: argparse.Namespace) -> int:
+    from .estate import FAMILIES, read_answers
+
+    kit = read_answers()
+    members = {p for ps in FAMILIES.values() for p in ps}
+    if args.profile and args.profile not in members:
+        print(f"{args.profile} is not a product line: see `beyond90 profiles`.", file=sys.stderr)
+        return 2
+    keys = [args.profile, "any"] if args.profile else ["any"]
+    found = {k: kit[k] for k in keys if k in kit}
+    if args.format == "json":
+        _emit(json.dumps(found, indent=2, ensure_ascii=False) + "\n", args.out)
+    else:
+        _emit("\n".join(answers_markdown(k, v) for k, v in found.items()), args.out)
+    return 0
+
+
 def cmd_explain(args: argparse.Namespace) -> int:
     cat = _catalogue(args)
     data, _ = load_customer(args.directory, cat, require_accounts=True)
@@ -922,6 +948,12 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--out")
     sp.set_defaults(func=cmd_alternatives)
 
+    sp = sub.add_parser("answers", help="the answer kit for tenders: neutral answers per line to adapt, the evidence to attach, what to check first")
+    sp.add_argument("--profile", help="the product line; its answers come before those for any line")
+    sp.add_argument("--format", choices=["md", "json"], default="md")
+    sp.add_argument("--out")
+    sp.set_defaults(func=cmd_answers)
+
     sp = sub.add_parser("explain", help="attribute the change in Yield: what the customer did and what the bar did")
     common(sp, store=True, ceiling=False)
     sp.add_argument("--since", help="an older data directory of the same customer")
@@ -1149,7 +1181,7 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("config")
     sp.add_argument("--at", default="05:17", help="time of day in UTC, HH:MM")
     sp.add_argument("--every", choices=["hour", "day", "week"], default="day")
-    sp.add_argument("--install-from", default="beyond90", help='pip requirement for the workflow, e.g. "beyond90 @ git+https://github.com/OWNER/beyond-90@v0.120.0"')
+    sp.add_argument("--install-from", default="beyond90", help='pip requirement for the workflow, e.g. "beyond90 @ git+https://github.com/OWNER/beyond-90@v0.121.0"')
     sp.add_argument("--out")
     sp.set_defaults(func=cmd_schedule)
 

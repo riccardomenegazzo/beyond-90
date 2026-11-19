@@ -1,0 +1,628 @@
+{
+  "any": [
+    {
+      "id": "data_residency",
+      "topic": "Data kept in the country or the EU",
+      "match": [
+        "european union",
+        "unione europea",
+        "residency",
+        "residenza",
+        "sovereign",
+        "sovran",
+        "territorio nazionale",
+        "gdpr",
+        "within the eu",
+        "nell'ue"
+      ],
+      "answer": "All customer data, copies, and management and monitoring data stay in [the EU / the country], in [the customer's data centres / the named region]. Nothing leaves it for support or telemetry unless the customer allows it.",
+      "evidence": [
+        "Where every component and its data run",
+        "The data processing terms for support and telemetry"
+      ],
+      "check": "Check where the management plane, support uploads and telemetry go, not only the workloads."
+    },
+    {
+      "id": "certifications",
+      "topic": "Certifications",
+      "match": [
+        "iso 27001",
+        "iso/iec 27001",
+        "certificat",
+        "certificazion",
+        "accredit",
+        "qualificat"
+      ],
+      "answer": "[The vendor / the partner] holds [the certifications, with their scope and expiry]; the certificates are attached.",
+      "evidence": [
+        "The certificates, with scope and expiry"
+      ],
+      "check": "Check that each certificate's scope covers what is offered, and that it is still valid on the due date."
+    },
+    {
+      "id": "training",
+      "topic": "Training",
+      "match": [
+        "training",
+        "formazione",
+        "knowledge transfer",
+        "trasferimento di competenze",
+        "corso",
+        "corsi",
+        "addestramento"
+      ],
+      "answer": "Training for [number] administrators is included: [courses, hands-on sessions, knowledge transfer during delivery], in [language], with [the materials].",
+      "evidence": [
+        "The training plan: topics, hours, format"
+      ],
+      "check": "Agree who delivers it: the vendor, the partner, or both."
+    },
+    {
+      "id": "support",
+      "topic": "Support and service levels",
+      "match": [
+        "support",
+        "assistenza",
+        "24x7",
+        "24/7",
+        "service level",
+        "livelli di servizio",
+        "sla",
+        "maintenance",
+        "manutenzione"
+      ],
+      "answer": "Support is available [24x7 / in business hours] in [language], with response times of [times by severity]; [the vendor / the partner] is the first point of contact.",
+      "evidence": [
+        "The support terms, with response times by severity"
+      ],
+      "check": "Match the response times to the tender's service levels and penalties."
+    },
+    {
+      "id": "encryption",
+      "topic": "Encryption and keys",
+      "match": [
+        "encrypt",
+        "cifratur",
+        "crittograf",
+        "at rest",
+        "a riposo",
+        "key management",
+        "gestione delle chiavi",
+        "kms"
+      ],
+      "answer": "Data is encrypted at rest [with software or self-encrypting drives], with keys held in [a built-in key manager / the customer's key manager]; data between sites is encrypted [how].",
+      "evidence": [
+        "The encryption design and the key manager used",
+        "The cryptographic validation, if the tender asks for one"
+      ],
+      "check": "Check whether the tender requires an external key manager or a validated cryptographic module."
+    }
+  ],
+  "hci": [
+    {
+      "id": "ha",
+      "topic": "Keeps running through a node failure",
+      "match": [
+        "single point of failure",
+        "high availability",
+        "alta affidabilità",
+        "node fail",
+        "guasto",
+        "resilien",
+        "ridondan",
+        "fault toleran",
+        "point of failure"
+      ],
+      "answer": "The platform keeps running when a node fails: data is kept in [two / three] copies across nodes, and the machines of a failed node restart on the others automatically. The design tolerates [the failures].",
+      "evidence": [
+        "The proposed design, with the failures it tolerates",
+        "The failure test from the proof of value"
+      ],
+      "check": "Confirm the number of nodes and the copy setting in the sizing."
+    },
+    {
+      "id": "upgrades",
+      "topic": "Upgrades without stopping the machines",
+      "match": [
+        "upgrade",
+        "aggiornament",
+        "firmware",
+        "without downtime",
+        "senza interruzion",
+        "senza fermo",
+        "without stopping",
+        "rolling"
+      ],
+      "answer": "The whole stack (firmware, hypervisor and storage software) is upgraded one node at a time, with the machines moved off each node first, so they keep running; upgrades start from the management console.",
+      "evidence": [
+        "The upgrade procedure",
+        "An upgrade run during the proof of value, with its log"
+      ],
+      "check": "Check which components the platform's upgrade covers and which the hardware maker's tools do."
+    },
+    {
+      "id": "live_migration",
+      "topic": "Running machines move between nodes",
+      "match": [
+        "live migration",
+        "migrazione a caldo",
+        "without downtime",
+        "spostamento a caldo",
+        "hypervisor"
+      ],
+      "answer": "Running machines move between nodes without stopping, for maintenance or balancing; the hypervisor is included in the offer.",
+      "evidence": [
+        "The hypervisor features included in the offer"
+      ],
+      "check": "Check that the licence edition offered includes it."
+    },
+    {
+      "id": "scale",
+      "topic": "Growing the cluster",
+      "match": [
+        "scalab",
+        "add nodes",
+        "adding nodes",
+        "aggiunta di nodi",
+        "expansion",
+        "espansion",
+        "different generation",
+        "generazioni diverse",
+        "mixed"
+      ],
+      "answer": "Capacity grows by adding nodes to a running cluster, without stopping it; nodes of [different generations or sizes] can be mixed within [the limits].",
+      "evidence": [
+        "The expansion procedure and its limits"
+      ],
+      "check": "State the limits of mixing node models and generations honestly."
+    }
+  ],
+  "dr-backup": [
+    {
+      "id": "rpo_rto",
+      "topic": "Recovery point and recovery time",
+      "match": [
+        "rpo",
+        "rto",
+        "recovery point",
+        "recovery time",
+        "punto di ripristino",
+        "tempo di ripristino",
+        "disaster recovery"
+      ],
+      "answer": "Each tier gets its own recovery point and time: [tier 1: RPO, RTO; tier 2: ...]. Replication to [the second site / the cloud] runs [continuously / every N minutes], within [the bandwidth measured].",
+      "evidence": [
+        "The recovery design per tier, with the bandwidth it needs",
+        "A test failover's measured times"
+      ],
+      "check": "Check the recovery point against the measured change rate and bandwidth before promising it."
+    },
+    {
+      "id": "immutable",
+      "topic": "Copies nobody can delete",
+      "match": [
+        "immutab",
+        "worm",
+        "object lock",
+        "ransomware",
+        "administrators included",
+        "amministratori compresi",
+        "non cancellabil",
+        "cannot be deleted"
+      ],
+      "answer": "At least one copy is immutable for [days]: nobody, administrators included, can delete or change it before then. Restores from it are tested [how often].",
+      "evidence": [
+        "How the immutable copy is enforced, and by what",
+        "A delete refused during the proof of value"
+      ],
+      "check": "Check whether an administrator could shorten the retention or reset the system."
+    },
+    {
+      "id": "test_failover",
+      "topic": "Testing failover without touching production",
+      "match": [
+        "test failover",
+        "failover di prova",
+        "isolated network",
+        "rete isolata",
+        "dr test",
+        "test di dr",
+        "esercitazion",
+        "without affecting production"
+      ],
+      "answer": "Failover is tested on an isolated network while production runs: the recovery plan starts the copies, checks them, and cleans up afterwards. Test reports are kept.",
+      "evidence": [
+        "A test failover report"
+      ],
+      "check": "Agree how often it is tested and who reads the report."
+    },
+    {
+      "id": "recovery_plans",
+      "topic": "Recovery plans",
+      "match": [
+        "recovery plan",
+        "piano di ripristino",
+        "power-on",
+        "ordine di accensione",
+        "runbook",
+        "network mapping",
+        "mappatura"
+      ],
+      "answer": "Recovery plans set which machines start, in what order, with which addresses and networks at the recovery site; they run with one action, for a test or a real failover.",
+      "evidence": [
+        "A recovery plan for one application"
+      ],
+      "check": "Check that network changes (addresses, DNS, firewall rules) are covered, not only the machines."
+    },
+    {
+      "id": "retention",
+      "topic": "How long copies are kept",
+      "match": [
+        "retention",
+        "conservazione",
+        "long-term",
+        "lungo termine",
+        "years",
+        "anni",
+        "versions",
+        "versioni"
+      ],
+      "answer": "Copies are kept for [retention per tier], [on local storage / object storage / off site], with [the number of] versions.",
+      "evidence": [
+        "The retention design, with the capacity it needs"
+      ],
+      "check": "Size the capacity for the whole retention, not for one copy."
+    }
+  ],
+  "object-storage": [
+    {
+      "id": "object_api",
+      "topic": "S3-compatible object storage",
+      "match": [
+        "s3",
+        "object storage",
+        "storage a oggetti",
+        "compatib"
+      ],
+      "answer": "Object storage with an S3-compatible interface is offered for [usable capacity], with [versioning, lifecycle rules, replication between sites] as needed.",
+      "evidence": [
+        "The S3 operations supported",
+        "A test with the customer's backup software"
+      ],
+      "check": "Check that the customer's applications and backup software are validated with it."
+    },
+    {
+      "id": "object_lock",
+      "topic": "Object lock",
+      "match": [
+        "object lock",
+        "worm",
+        "compliance mode",
+        "governance mode",
+        "immutab"
+      ],
+      "answer": "Objects can be locked for a set time, so nobody can delete or overwrite them before it ends; in [compliance mode] not even administrators can shorten it.",
+      "evidence": [
+        "The lock modes, and who can change what"
+      ],
+      "check": "Check which mode the backup software uses."
+    },
+    {
+      "id": "capacity",
+      "topic": "Usable capacity",
+      "match": [
+        "tib",
+        "petabyte",
+        "capacity",
+        "capacità",
+        "usable",
+        "utile",
+        "netta"
+      ],
+      "answer": "[Usable capacity] after protection, from [the design]; capacity grows by adding [nodes / disks] without stopping the service.",
+      "evidence": [
+        "The capacity calculation, raw to usable"
+      ],
+      "check": "State usable capacity, not raw, and the protection setting behind it."
+    }
+  ],
+  "file-storage": [
+    {
+      "id": "protocols",
+      "topic": "SMB and NFS shares",
+      "match": [
+        "smb",
+        "nfs",
+        "cifs",
+        "file share",
+        "condivision",
+        "cartelle condivise"
+      ],
+      "answer": "File shares over SMB [versions] and NFS [versions] are provided, with permissions from [the directory], for [the departments and sites].",
+      "evidence": [
+        "The protocols and versions supported"
+      ],
+      "check": "Check shares used over both protocols at once, if any."
+    },
+    {
+      "id": "self_restore",
+      "topic": "Users restore their own files",
+      "match": [
+        "snapshot",
+        "self-service restore",
+        "previous versions",
+        "versioni precedenti",
+        "restore themselves",
+        "ripristino autonomo"
+      ],
+      "answer": "Snapshots are taken [every N hours] and kept for [days]; users restore their own files from previous versions, without a ticket.",
+      "evidence": [
+        "The snapshot schedule and retention"
+      ],
+      "check": "Size the capacity for the snapshot retention."
+    },
+    {
+      "id": "audit",
+      "topic": "Who opened or changed what",
+      "match": [
+        "audit",
+        "access log",
+        "log degli accessi",
+        "tracciab",
+        "who opened",
+        "chi ha aperto",
+        "anomal"
+      ],
+      "answer": "Every access and change to files can be recorded and searched (who, what, when), and unusual activity such as mass encryption raises an alert [and blocks the user].",
+      "evidence": [
+        "An audit search and an anomaly alert from the proof of value"
+      ],
+      "check": "Check how long audit records are kept, and where."
+    }
+  ],
+  "cloud-operations": [
+    {
+      "id": "self_service",
+      "topic": "Self-service with quotas and approvals",
+      "match": [
+        "self-service",
+        "self service",
+        "catalog",
+        "catalogo",
+        "quota",
+        "approval",
+        "approvazion"
+      ],
+      "answer": "Teams order approved services from a catalog, within quotas and with approvals where required; every request is logged. The first items are [the catalog items].",
+      "evidence": [
+        "The catalog design, with quotas and approvals"
+      ],
+      "check": "Agree who owns each catalog item."
+    },
+    {
+      "id": "showback",
+      "topic": "Cost per team",
+      "match": [
+        "showback",
+        "chargeback",
+        "cost per",
+        "costo per",
+        "ripartizione dei costi",
+        "costs per department"
+      ],
+      "answer": "Each team's or project's cost is shown monthly, from a unit cost agreed with finance; it can be charged back once agreed.",
+      "evidence": [
+        "The cost model, and one month's report"
+      ],
+      "check": "Agree the cost elements with finance first."
+    },
+    {
+      "id": "monitoring",
+      "topic": "Monitoring and capacity forecasts",
+      "match": [
+        "monitoring",
+        "monitoraggio",
+        "capacity planning",
+        "pianificazione della capacità",
+        "forecast",
+        "previsione",
+        "alert"
+      ],
+      "answer": "Health, performance and capacity are monitored from one console, with a forecast of when each cluster runs out and alerts on unusual behaviour.",
+      "evidence": [
+        "A capacity forecast report"
+      ],
+      "check": "Check how long monitoring data is kept, and where."
+    }
+  ],
+  "edge-sites": [
+    {
+      "id": "central",
+      "topic": "Remote sites managed centrally",
+      "match": [
+        "remote site",
+        "sedi remote",
+        "sedi periferiche",
+        "branch",
+        "filial",
+        "managed centrally",
+        "gestione centralizzata",
+        "centralmente"
+      ],
+      "answer": "Every site is managed from one central console (health, versions, upgrades, alerts). Sites run [one / two / three]-node clusters sized per kind of site, and keep working if their link drops.",
+      "evidence": [
+        "The design per kind of site"
+      ],
+      "check": "Check where the witness runs for two-node sites."
+    },
+    {
+      "id": "remote_upgrade",
+      "topic": "Upgrades without a visit",
+      "match": [
+        "without a visit",
+        "senza intervento",
+        "da remoto",
+        "remotely",
+        "remote upgrade",
+        "upgrades without"
+      ],
+      "answer": "Sites are upgraded remotely in waves, starting with a pilot site of each kind; no visit is needed.",
+      "evidence": [
+        "The upgrade plan in waves"
+      ],
+      "check": "Check each link's bandwidth for the upgrade downloads."
+    },
+    {
+      "id": "zero_touch",
+      "topic": "New sites without IT staff",
+      "match": [
+        "zero-touch",
+        "zero touch",
+        "without it staff",
+        "senza personale",
+        "plug and play"
+      ],
+      "answer": "Servers ship ready to join the central console on their own: someone without IT skills plugs them in.",
+      "evidence": [
+        "The procedure for a new site"
+      ],
+      "check": "Agree who ships the servers and who plugs them in."
+    }
+  ],
+  "euc": [
+    {
+      "id": "vdi",
+      "topic": "Virtual desktops for the peak",
+      "match": [
+        "virtual desktop",
+        "desktop virtual",
+        "vdi",
+        "postazioni",
+        "concurrent users",
+        "utenti contemporanei",
+        "at peak"
+      ],
+      "answer": "Virtual desktops for [number] users at peak are sized at [resources per user], with [the desktop software offered], on the same platform; logon time is measured in the proof of value.",
+      "evidence": [
+        "The desktop sizing",
+        "The logon times measured"
+      ],
+      "check": "Check that the desktop software licence is in the offer, and who supplies it."
+    }
+  ],
+  "platform-migration": [
+    {
+      "id": "migration",
+      "topic": "Moving the existing machines",
+      "match": [
+        "migration",
+        "migrazione",
+        "migrate",
+        "rollback",
+        "test wave",
+        "cutover",
+        "ondate"
+      ],
+      "answer": "Existing machines move in waves after a test wave; each wave has a window, a checklist and a rollback to the source platform. [The tool, and who runs it.]",
+      "evidence": [
+        "The migration plan in waves",
+        "The test wave's report"
+      ],
+      "check": "Check the inventory first: machines switched off or out of support should not move as they are."
+    }
+  ],
+  "kubernetes-platform": [
+    {
+      "id": "kubernetes",
+      "topic": "Kubernetes clusters",
+      "match": [
+        "kubernetes",
+        "container",
+        "microservic",
+        "microserviz"
+      ],
+      "answer": "Kubernetes clusters are created, upgraded and scaled from one console, with persistent storage and backup of workloads with their data. [The versions supported.]",
+      "evidence": [
+        "The Kubernetes versions supported, and the upgrade policy"
+      ],
+      "check": "Check the supported versions against the customer's."
+    }
+  ],
+  "private-ai": [
+    {
+      "id": "models",
+      "topic": "Models on own infrastructure",
+      "match": [
+        "gpu",
+        "llm",
+        "inference",
+        "inferenza",
+        "intelligenza artificiale",
+        "artificial intelligence",
+        "generative",
+        "generativa"
+      ],
+      "answer": "Models run on [GPUs] in the customer's data centre: data and prompts stay there. Endpoints have access control and quotas. [The models validated.]",
+      "evidence": [
+        "The GPU sizing for the models and users"
+      ],
+      "check": "Check each model's licence for the intended use."
+    }
+  ],
+  "dbaas": [
+    {
+      "id": "databases",
+      "topic": "Databases as a service",
+      "match": [
+        "database",
+        "point-in-time",
+        "basi di dati",
+        "banche dati",
+        "clone"
+      ],
+      "answer": "Databases are created, patched, copied and restored to a point in time from one console; copies for testing can be masked.",
+      "evidence": [
+        "A point-in-time restore and a copy, timed"
+      ],
+      "check": "Check the database engines and versions supported."
+    }
+  ],
+  "microsegmentation": [
+    {
+      "id": "segmentation",
+      "topic": "Traffic between machines restricted",
+      "match": [
+        "microsegment",
+        "east-west",
+        "est-ovest",
+        "segmentation",
+        "segmentazione",
+        "zero trust",
+        "firewall"
+      ],
+      "answer": "Traffic between machines is seen first, then restricted by policies that follow the machines when they move or fail over; environments can be isolated and a machine quarantined.",
+      "evidence": [
+        "Traffic seen before the policies, from the proof of value"
+      ],
+      "check": "Agree who owns the policies after delivery."
+    }
+  ],
+  "service-provider-cloud": [
+    {
+      "id": "tenants",
+      "topic": "Tenants kept apart",
+      "match": [
+        "multi-tenant",
+        "multitenant",
+        "tenant",
+        "isolation",
+        "isolamento"
+      ],
+      "answer": "Tenants are kept apart on shared infrastructure, each with its own networks (overlapping addresses allowed), identity and quotas, and manage their resources within the provider's limits.",
+      "evidence": [
+        "The isolation design and its test"
+      ],
+      "check": "Check that the metering export fits the billing system."
+    }
+  ]
+}

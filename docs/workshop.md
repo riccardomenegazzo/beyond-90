@@ -152,6 +152,22 @@ The file is read in the page and never leaves it.
 
 The list narrows to the mandatory requirements, those not answered, not met or to clarify, or one line.
 
+**What to write.** Under each requirement without a note, two offers appear:
+- **from the answer kit:** a neutral answer for its line or for any line, with the evidence to attach and what to check before using it. Square brackets mark what to fill in for the customer.
+- **answered before:** the note written for the most similar requirement in another tender in this browser, with the customer and the date. Similar means sharing most of their meaningful words.
+
+**Use it** puts either in the note, to adapt. **Use the kit's answers where there is no note yet** fills every empty note at once; notes already written are kept. Once a requirement is met or partly, its line shows what to attach.
+
+The kit covers:
+- the platform: node failures, upgrades without stopping, moving running machines, growing the cluster;
+- recovery: recovery points and times, copies nobody can delete, test failover, recovery plans, retention;
+- object and file storage, cloud operations, edge sites, desktops, migration, Kubernetes, AI, databases, segmentation and providers;
+- for any line: data kept in the country or the EU, certifications, training, support and service levels, encryption and keys.
+
+It is in `src/beyond90/data/answers.json`. `beyond90 answers --profile <line>` prints it, and an assistant gets it from the `tender_answer_kit` tool.
+
+![The answer kit: a neutral answer to adapt under each requirement, with the evidence to attach and what to check](img/app-rfp-kit.png)
+
 **Where the bid stands** says:
 - whether to bid: a mandatory requirement not met can exclude the bid; partly met or unclear ones are to clarify;
 - the counts;
@@ -160,8 +176,8 @@ The list narrows to the mandatory requirements, those not answered, not met or t
 - the lines the tender asks about that the conversation has not covered yet, which can be added in one click.
 
 **For the bid** gives:
-- **the compliance matrix** (.csv), for the bid team. Cells a spreadsheet would run as formulas are defused.
-- **the bid summary** (.md), for the seller.
+- **the compliance matrix** (.csv), for the bid team, with the evidence to attach for each requirement met or partly. Cells a spreadsheet would run as formulas are defused.
+- **the bid summary** (.md), for the seller, with the evidence to gather and the requirements each backs.
 - **the questions for the contracting authority:**
   - whether an equivalent is accepted, where a mandatory requirement is not met or only partly, with what is offered;
   - what is expected, where its meaning is unclear.

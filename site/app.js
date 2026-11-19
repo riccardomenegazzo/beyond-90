@@ -951,6 +951,9 @@ function workshopContext() {
     removeReq: async (id) => edit((x) => WSHOP.removeRequirement(x, id, today)),
     setRfpMeta: async (meta) => edit((x) => WSHOP.setRfpMeta(x, meta, today)),
     clearRfp: async () => edit((x) => WSHOP.clearRfp(x, today)),
+    fillNotes: async () => edit((x) => WSHOP.fillSuggestedNotes(x, cat, today)),
+    // the other tenders in this browser, for the answers given before
+    others: state.workshops.filter((x) => x.id !== (w ? w.id : "") && x.rfp),
     // a tender's workbook, read by the engine into rows; the file never leaves the page
     readRows: state.engine ? async (file) => { await state.engine.ready; return JSON.parse(await state.engine.call("rows", { name: file.name, data: toBase64(new Uint8Array(await file.arrayBuffer())) })); } : null,
     setDemo: async (on) => { await edit((x) => WSHOP.setDemo(x, on, today)); selectTab("wsforward"); },

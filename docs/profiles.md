@@ -125,3 +125,16 @@ Each alternative has:
 - how to `prove` it.
 
 The file is checked when it is read, and a test keeps vendor names out. They are written to be fair: every alternative says when it wins.
+
+## The answer kit for tenders
+
+`src/beyond90/data/answers.json` holds neutral answers to typical tender requirements, keyed by line, or by `any` for those that fit every line. Each answer has:
+- an `id`;
+- a `topic`;
+- the words that point a requirement at it (`match`, lower case, in English and in Italian tender wording);
+- the `answer` to adapt, short enough to fit a requirement's note, with square brackets marking what to fill in;
+- one to three items of `evidence` to attach;
+- what to `check` before using it.
+
+It is checked when read, and a test keeps vendor names out: the bid team names the product.
+

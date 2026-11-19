@@ -23,6 +23,7 @@ beyond90 mcp ~/customers
 | `path_to_target` | the steps that reach a target Yield, biggest gain first |
 | `discovery_questions` | the questions to ask, value first and then the weakest stage, each with who to ask, whether it is essential, what to listen for and the follow-up; narrowed to the essential ones or to one role |
 | `what_else_they_weigh` | the alternatives a deal is measured against for a product line's family (renewing, a public cloud, another platform, building it, waiting): why customers consider each, what to ask, when the proposal fits, when the other choice is the better one, and how to prove it |
+| `tender_answer_kit` | neutral answers to typical tender requirements for a product line and for any line: the answer to adapt (square brackets mark what to fill in), the evidence to attach, and what to check first |
 
 ## Prompts
 

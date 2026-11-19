@@ -239,6 +239,58 @@ export function tenderAsks(catalog, w) {
   return out;
 }
 
+// ------------------------------------------------------------------ the answer kit, and answers given before
+
+/**
+ * The kit's answer for a requirement: among its line's answers and those for any line, the one whose words it uses
+ * most. A neutral text to adapt (square brackets mark what to fill in), the evidence to attach, what to check first.
+ */
+export function suggestAnswer(catalog, r) {
+  const kit = (catalog && catalog.answers) || {};
+  const pool = [...(r.line ? (kit[r.line] || []).map((a) => ({ ...a, key: r.line })) : []), ...(kit.any || []).map((a) => ({ ...a, key: "any" }))];
+  let best = null, top = 0;
+  for (const a of pool) {
+    let score = 0;
+    for (const kw of a.match) if (reFor(kw).test(r.text)) score += kw.includes(" ") ? 2 : 1;
+    if (a.key !== "any") score += score ? 0.5 : 0;                // the line's own answer wins a tie with a generic one
+    if (score > top) { top = score; best = a; }
+  }
+  return best;
+}
+
+/**
+ * The note written for the most similar requirement in another tender in this browser: what was answered before, so
+ * nobody starts from zero. Similar means sharing most of their meaningful words (three at least).
+ */
+export function pastAnswer(others, r) {
+  const mine = stems(r.text);
+  if (mine.size < 3) return null;
+  let best = null, top = 0;
+  for (const o of others || []) {
+    for (const x of (o.rfp && o.rfp.reqs) || []) {
+      if (!x.note || (x.a !== "yes" && x.a !== "partly")) continue;
+      const theirs = stems(x.text);
+      let n = 0;
+      for (const t of mine) if (theirs.has(t)) n++;
+      const share = n / Math.min(mine.size, theirs.size);
+      if (n >= 3 && share >= 0.5 && share > top) { top = share; best = { customer: o.customer, on: o.updated_on || "", text: x.text, note: x.note, ref: x.ref }; }
+    }
+  }
+  return best;
+}
+
+/** The evidence to gather for the bid: from the kit, for the requirements answered met or partly, each with the requirements it backs. */
+export function evidenceFor(catalog, w) {
+  const out = new Map();
+  for (const r of (w.rfp && w.rfp.reqs) || []) {
+    if (r.a !== "yes" && r.a !== "partly") continue;
+    const a = suggestAnswer(catalog, r);
+    if (!a) continue;
+    for (const e of a.evidence) out.set(e, [...(out.get(e) || []), r.ref || r.id]);
+  }
+  return [...out.entries()].map(([item, refs]) => ({ item, refs }));
+}
+
 /** Lines to match against: those in scope first, then the rest of the catalogue that has keywords. */
 export function lineOrder(catalog, scope) {
   const all = Object.keys((catalog && catalog.lines) || {}).filter((p) => KEYWORDS[p]);
@@ -368,8 +420,11 @@ export function clarificationQuestions(w) {
 
 /** The compliance matrix for the bid. Cells a spreadsheet would run as formulas are defused. */
 export function rfpCsv(catalog, w) {
-  const head = ["ref", "requirement", "mandatory", "points", "product_line", "answer", "how_it_is_met", "who_answers"];
-  const rows = ((w.rfp && w.rfp.reqs) || []).map((r) => [r.ref, r.text, r.must ? "yes" : "no", r.points ?? "", r.line ? label(catalog, r.line) : "", r.a ? ANSWERS[r.a] : "", r.note, r.who ? WHO[r.who] : ""]);
+  const head = ["ref", "requirement", "mandatory", "points", "product_line", "answer", "how_it_is_met", "who_answers", "evidence_to_attach"];
+  const rows = ((w.rfp && w.rfp.reqs) || []).map((r) => {
+    const kit = r.a === "yes" || r.a === "partly" ? suggestAnswer(catalog, r) : null;
+    return [r.ref, r.text, r.must ? "yes" : "no", r.points ?? "", r.line ? label(catalog, r.line) : "", r.a ? ANSWERS[r.a] : "", r.note, r.who ? WHO[r.who] : "", kit ? kit.evidence.join("; ") : ""];
+  });
   return [head, ...rows].map((r) => r.map(csvCell).join(",")).join("\r\n") + "\r\n";
 }
 
@@ -391,6 +446,8 @@ export function rfpMarkdown(catalog, w, today) {
   out.push("## Coverage by product line", "", "| Line | Requirements | Mandatory | Met | Partly | Not met | To check | Open |", "|---|---|---|---|---|---|---|---|",
     ...st.lines.map((l) => `| ${l.label.replace(/\|/g, "/")}${l.in_scope ? "" : " (not in scope)"} | ${l.count} | ${l.must} | ${l.yes} | ${l.partly} | ${l.no} | ${l.check} | ${l.open} |`), "");
   if (st.outside.length) out.push(`The tender also asks about ${st.outside.map((l) => `${l.label.toLowerCase()} (${plural(l.count, "requirement")})`).join(", ")}: lines not in this conversation yet.`, "");
+  const ev = evidenceFor(catalog, w);
+  if (ev.length) out.push("## Evidence to gather", "", ...ev.map((e) => `- ${e.item} (for ${e.refs.slice(0, 6).join(", ")}${e.refs.length > 6 ? `, and ${e.refs.length - 6} more` : ""})`), "");
   if (st.owed.length || st.unassigned) out.push("## Still to answer, by who", "", ...st.owed.map((x) => `- ${x.label}: ${x.count}`), ...(st.unassigned ? [`- Nobody asked yet: ${st.unassigned}`] : []), "");
   out.push("_Prepared with Beyond 90. The requirements stay in the browser they were pasted into._", "");
   return out.join("\n");

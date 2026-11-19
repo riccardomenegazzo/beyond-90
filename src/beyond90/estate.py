@@ -287,6 +287,43 @@ def read_alternatives(path: Path = ALTERNATIVES_FILE) -> dict[str, list[dict[str
     return out
 
 
+ANSWERS_FILE = Path(__file__).resolve().parent / "data" / "answers.json"
+ANSWER_LIMITS = {"topic": 80, "answer": 300, "check": 220}
+
+
+def read_answers(path: Path = ANSWERS_FILE) -> dict[str, list[dict[str, Any]]]:
+    """The answer kit for tenders: per line (or `any`), typical requirements with a neutral answer to adapt (square
+    brackets mark what to fill in), the evidence to attach, and what to check before using it. Answers fit in a
+    requirement's note."""
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as e:
+        raise DataError([f"{path.name}: {e}"]) from e
+    if not isinstance(data, dict):
+        raise DataError([f"{path.name}: expected an object keyed by line"])
+    members = {p for ps in FAMILIES.values() for p in ps}
+    seen: set[tuple[str, str]] = set()
+    for key, items in data.items():
+        if key != "any" and key not in members:
+            raise DataError([f"{path.name}: {key!r} is not a product line"])
+        if not isinstance(items, list) or not 1 <= len(items) <= 12:
+            raise DataError([f"{path.name}: {key}: between 1 and 12 answers"])
+        for a in items:
+            if not isinstance(a, dict) or set(a) != {"id", "match", "evidence", *ANSWER_LIMITS}:
+                raise DataError([f"{path.name}: {key}: each answer has id, topic, match, answer, evidence and check"])
+            if not isinstance(a["id"], str) or not ALT_ID.match(a["id"]) or (key, a["id"]) in seen:
+                raise DataError([f"{path.name}: {key}: ids are short, lower case and unique within a line ({a.get('id')!r})"])
+            seen.add((key, a["id"]))
+            for k, most in ANSWER_LIMITS.items():
+                if not isinstance(a[k], str) or not 3 <= len(a[k]) <= most:
+                    raise DataError([f"{path.name}: {a['id']}.{k}: between 3 and {most} characters"])
+            if not isinstance(a["match"], list) or not 1 <= len(a["match"]) <= 12 or not all(isinstance(m, str) and 2 <= len(m) <= 40 and m == m.lower() for m in a["match"]):
+                raise DataError([f"{path.name}: {a['id']}.match: one to twelve lower-case words or phrases"])
+            if not isinstance(a["evidence"], list) or not 1 <= len(a["evidence"]) <= 3 or not all(isinstance(e, str) and 3 <= len(e) <= 140 for e in a["evidence"]):
+                raise DataError([f"{path.name}: {a['id']}.evidence: one to three items to attach"])
+    return data
+
+
 def workshop_catalog() -> dict[str, Any]:
     """What a discovery workshop needs, for every profile that ships discovery questions: built into the page once."""
     from .catalogue import available_profiles
@@ -302,5 +339,6 @@ def workshop_catalog() -> dict[str, Any]:
                           "proof": [{"text": c["text"], "how": c.get("how", "")} for c in cat.pov_criteria], "readiness": list(cat.pov_readiness), "story": cat.story}
     families = {name: [p for p in members if p in lines] for name, members in FAMILIES.items()}
     alternatives = {k: v for k, v in read_alternatives().items() if families.get(k) or k in lines}
-    return {"families": families, "links": [list(x) for x in LINKS if x[0] in lines and x[1] in lines], "lines": lines, "alternatives": alternatives}
+    answers = {k: v for k, v in read_answers().items() if k == "any" or k in lines}
+    return {"families": families, "links": [list(x) for x in LINKS if x[0] in lines and x[1] in lines], "lines": lines, "alternatives": alternatives, "answers": answers}
 

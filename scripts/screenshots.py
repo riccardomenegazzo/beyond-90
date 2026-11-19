@@ -158,6 +158,9 @@ def shoot(site: Path, out: Path) -> None:
             pg.evaluate("window.scrollTo({ top: 0, behavior: 'instant' })")
             pg.wait_for_timeout(300)
             pg.screenshot(path=str(out / "app-rfp.png"))
+            pg.evaluate("(() => { const c = document.querySelector('#view .rfpq[data-id=\"r14\"]'); window.scrollTo({ top: c.getBoundingClientRect().top + window.scrollY - 76, behavior: 'instant' }); })()")
+            pg.wait_for_timeout(300)
+            pg.screenshot(path=str(out / "app-rfp-kit.png"))
             # the way forward: the phase now, what moves it on, and the demo planned from what was said
             pg.click("#tabs [data-tab=wsforward]")
             pg.wait_for_selector("#view .fwhero")
