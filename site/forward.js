@@ -122,13 +122,13 @@ export function forward(catalog, w, pov, today = "") {
   const outcome = pov && pov.outcome ? pov.outcome.result : "";
   const checks = {
     discover: [
-      { text: "The line to start with is known", ok: !!res.land, fix: "Answer at least three questions on the lines in scope.", go: "workshop" },
+      { text: "The line to start with is known", ok: !!res.land, fix: res.waiting || "Answer a few more questions on the lines in scope.", go: "workshop" },
       { text: `The essential questions are answered (${coreDone} of ${core.length})`, ok: core.length > 0 && coreDone >= Math.ceil(core.length * 0.8), fix: "Ask the essential questions still open: narrow the questions to them.", go: "workshop" },
       { text: "Something is at stake, in their words or as a figure", ok: atStake, fix: "Ask what a day without it would cost, and note their words.", go: "workshop" },
       { text: "Ready for a demo built for them", ok: gate("demo"), fix: "Ask why they would change, the result they want, and what would convince them.", go: "wsqualify" },
     ],
     demo: [
-      { text: "The demo was given", ok: !!(w.demo && w.demo.on), fix: "Plan it from what they said, below; mark it given once it is.", go: "" },
+      { text: "The demo was given", ok: !!(w.demo && w.demo.on), fix: "Plan it from what they said, under The way forward, and mark it given once it is.", go: "" },
       { text: "Ready to propose a proof of value", ok: gate("proof"), fix: "Settle what the proof gate still needs.", go: "wsqualify" },
     ],
     proof: [

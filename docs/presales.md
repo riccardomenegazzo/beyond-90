@@ -48,7 +48,7 @@ A pre-sales engineer carries many prospects at once, each at a different point: 
 ![Your team: each engineer's pipeline, the deals at risk, and what the team's deals teach](img/app-team.png)
 
 - **This week and next.** The dated conditions from every journey, and the start and end of every proof of value, for the next two weeks; what is late comes first.
-- **Opportunities.** One row per prospect: its stage, the line to start with, how much of the discovery is done, what is at stake in the customer's own figures, how the proof is going, and the next thing to do (what is late first, then what the proof needs, then the next dated condition). Open one to carry on where it stands: its questions, its journey or its proof of value.
+- **Opportunities.** One row per prospect: its stage, the line to start with, how much of the discovery is done, what is at stake in the customer's own figures, how the proof is going, and the next thing to do (what is late first, then what the proof needs, then the next dated condition; with nothing dated, the first thing still to do in the phase the prospect is in, from [the way forward](workshop.md#the-way-forward)). Open one to carry on where it stands: its questions, its journey or its proof of value.
 - **For the account team.** The Monday note, in Markdown: where each opportunity stands, what is late, what is next. And the pipeline as a CSV for a forecast call or a CRM import; cells a spreadsheet would run as formulas are defused.
 - **Invented examples.** "Fill it with invented examples" adds four made-up prospects at four stages, dated around today, so the desk can be shown at work; "Remove the invented examples" takes them away without touching real work.
 

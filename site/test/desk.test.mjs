@@ -144,3 +144,16 @@ test("the evidence of a technical win is a checklist out of 100, with what would
   assert.ok(late.missing.includes("No agreed condition is late"));
   assert.equal(late.score, e.score - 10);
 });
+
+test("the next step of a prospect without dates comes from the way forward", async () => {
+  const { makeWorkshop, setAnswer, setDeal } = await import("../workshop.js");
+  const day = "2026-11-19";
+  let w = makeWorkshop({ customer: "Tessera (mock)", scope: ["dr-backup"], createdOn: day, nonce: "abcdef" });
+  ["gap", "gap", "gap", "partly"].forEach((a, i) => { w = setAnswer(w, "dr-backup", i, a, "", day); });
+  let [o] = pipeline([w], [], CAT, day);
+  assert.equal(o.stage, "journey");
+  assert.match(o.next, /^Discovery: /);
+  for (const id of ["why_change", "outcome", "proof"]) w = setDeal(w, id, "partly", "", day);
+  [o] = pipeline([w], [], CAT, day);
+  assert.match(o.next, /^Demo built for them: Plan it from what they said/);
+});

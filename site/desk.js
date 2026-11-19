@@ -7,6 +7,7 @@
 
 import { assess, journey, datedPlan, exampleWorkshop, makeWorkshop, setAnswer, setPlan, setWorth, setRaised, setDeal } from "./workshop.js";
 import { hasCase } from "./valuecase.js";
+import { forward } from "./forward.js";
 import { progress, makePov, setCriterion, setOutcome, edit as editPov } from "./pov.js";
 
 export const STAGES = [
@@ -120,8 +121,13 @@ export function pipeline(workshops, povs, catalog, today) {
     else if (stage === "proof") next = "Agree the dates of the proof of value";
     else if (upcoming.length) next = `By ${upcoming[0].by}: ${upcoming[0].need}`;
     else if (stage === "decision") next = `Hand over the result: ${pr.verdict}`;
-    else if (stage === "journey") next = "Start the proof of value, or give the conditions an owner and a date";
-    else if (res) next = res.waiting || "Ask the next questions";
+    else if (w && res && (stage === "journey" || stage === "discovery")) {
+      // what moves this prospect on, from the way forward: the first thing still to do in the phase it is in
+      const fw = forward(catalog, w, p, today);
+      const ph = fw.phases.find((x) => x.id === fw.now);
+      const c = ph.checks.find((x) => !x.ok);
+      next = c ? `${ph.label}: ${c.fix}` : stage === "journey" ? "Start the proof of value, or give the conditions an owner and a date" : res.waiting || "Ask the next questions";
+    }
     out.push({
       customer: o.customer, stage, stopped, outcome, workshop: w ? w.id : null, pov: p ? p.id : null,
       updated_on: [w && w.updated_on, p && p.updated_on].filter(Boolean).sort().pop() || "",

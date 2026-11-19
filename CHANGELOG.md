@@ -2,6 +2,11 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.110.0
+
+- **The desk's next step follows the way forward.** With nothing late and nothing dated, a prospect's next step on the presales desk is the first thing still to do in the phase it is in. For example, "Demo built for them: plan it from what they said, under The way forward". The Monday note and the CSV carry it.
+- The screenshots show the questions narrowed to a first meeting, qualifying the deal, the way forward and the demo plan.
+
 ## 0.109.0
 
 - **The way forward.** Each prospect is placed on the path from discovery to handover: discovery, a demo built for them, proof of value, decision, handover to delivery. Each phase says:
