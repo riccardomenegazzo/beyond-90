@@ -2,6 +2,19 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.124.0
+
+- **Tenders in progress, on the presales desk.** Every tender kept in this browser, the nearest deadline first:
+  - whether the bid can go ahead, with who issues it;
+  - a bar of the answers (met, partly, not met, to check) and how many are answered;
+  - the next deadline, questions or bid, with the days left; a past one shows as late;
+  - **Open the tender** opens it where the bid stands.
+- **A message for whoever still owes answers.** Next to who still owes answers, **Copy for the partner** (or a specialist, the product team, commercial and legal) gives a message ready to send:
+  - that person's requirements still open or to check, numbered, with mandatory or points;
+  - what has been written so far for each;
+  - the date to answer by, three days before the next deadline.
+- **The invented examples** now include a public tender, half answered, with a mandatory requirement not met and the questions due in four days. It shows on the desk, in the agenda, among the risks and in Tenders in progress.
+
 ## 0.123.0
 
 - **The technical response.** Generated from the tender itself, section by section as the tender numbers it (2.3.1 in section 2, RT-05 in RT).

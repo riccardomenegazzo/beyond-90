@@ -5,9 +5,9 @@
 // answers the questions of a Monday morning: where is each one, what is due this week, what is late, and what do I tell
 // the account team. Pure functions over plain records; the page and the tests share them.
 
-import { assess, journey, datedPlan, exampleWorkshop, makeWorkshop, setAnswer, setPlan, setWorth, setRaised, setDeal, setChannel, setAlt } from "./workshop.js";
+import { assess, journey, datedPlan, exampleWorkshop, makeWorkshop, setAnswer, setPlan, setWorth, setRaised, setDeal, setChannel, setAlt, setRfpMeta, setRequirement } from "./workshop.js";
 import { hasCase } from "./valuecase.js";
-import { rfpState } from "./rfp.js";
+import { rfpState, withRequirements, parseRequirements, EXAMPLE_TENDER, KEYWORDS } from "./rfp.js";
 import { registrationOf, channelState, KINDS, ROUTES, ACTIVITIES } from "./partners.js";
 import { dealState } from "./qualify.js";
 import { forward, PHASES } from "./forward.js";
@@ -303,6 +303,15 @@ export function exampleDesk(today) {
   // the same integrator as Kestrel, with a registration about to run out
   valle = setChannel(valle, { partners: [{ name: "Verdi Sistemi (mock)", kind: "integrator", lead: true, reg: { on: ago(80), until: shiftDay(today, 6) }, skills: ["hci", "dr-backup"] }],
     route: "reseller", split: { discovery: "both", demo: "us", sizing: "p0", proof: "both", proposal: "p0", delivery: "p0", support: "p0" } }, ago(14));
+  // a public tender for the recovery site, half answered: questions due in four days, the bid in fifteen
+  valle = { ...valle, rfp: withRequirements(null, parseRequirements(EXAMPLE_TENDER), [...valle.scope, ...Object.keys(KEYWORDS).filter((k) => !valle.scope.includes(k))]) };
+  valle = setRfpMeta(valle, { title: "Recovery site and data platform (mock)", issuer: "public", questions_due: shiftDay(today, 4), due: shiftDay(today, 15), pages: 30 }, ago(10));
+  for (const [id, patch] of [["r1", { a: "yes", note: "Three nodes a site, two copies of every block: one node can fail" }], ["r2", { a: "yes", note: "Included, with live migration" }],
+    ["r3", { a: "yes", note: "One node at a time, from the console" }], ["r5", { a: "yes", note: "Tier 1 every 15 minutes, tier 2 hourly, to the second site" }],
+    ["r6", { a: "partly", note: "Immutable copies for 30 days on the backup target; administrators cannot shorten it" }], ["r7", { a: "check", who: "specialist" }],
+    ["r9", { a: "no", note: "Object lock on a separate appliance" }], ["r11", { who: "partner" }], ["r16", { a: "yes", note: "Every copy and the management plane stay in Italy" }]]) {
+    valle = setRequirement(valle, id, patch, ago(10));
+  }
   // still listening: a first meeting about AI on their own infrastructure
   let orsa = makeWorkshop({ customer: "Orsa Manufacturing (mock)", scope: ["private-ai", "kubernetes-platform", "object-storage"], createdOn: ago(1), nonce: "example3" });
   ["gap", "unknown"].forEach((a, i) => { orsa = setAnswer(orsa, "private-ai", i, a, i === 0 ? "Quality inspection on the line, with images that cannot leave the plant" : "", ago(1)); });

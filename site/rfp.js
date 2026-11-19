@@ -373,6 +373,44 @@ blockquote{margin:0 0 8px;padding:8px 12px;border-left:3px solid #9aa5ad;backgro
   return out.join("\n");
 }
 
+// ------------------------------------------------------------------ across tenders, and the people who answer
+
+/**
+ * Every tender in this browser, the nearest deadline first: where each bid stands, how far it is answered, what is
+ * due next. For the presales desk, where several tenders run at once.
+ */
+export function tendersOverview(workshops, catalog, today) {
+  const out = [];
+  for (const w of workshops || []) {
+    if (!w.rfp || !w.rfp.reqs.length) continue;
+    const st = rfpState(catalog, w, today);
+    const dl = st.deadlines;
+    // the next date that matters: the questions while they can still be sent, then the bid
+    const next = dl.questions_in != null && dl.questions_in >= 0 ? { what: "Questions due", on: dl.questions_due, in: dl.questions_in }
+      : dl.due_in != null ? { what: dl.due_in < 0 ? "Bid was due" : "Bid due", on: dl.due, in: dl.due_in } : null;
+    out.push({ workshop: w.id, customer: w.customer, title: st.title, issuer: (w.rfp.issuer && ISSUERS[w.rfp.issuer]) || "", total: st.total, answered: st.total - st.open,
+      must: st.must, must_no: st.must_no.length, yes: st.yes, partly: st.partly, no: st.no, check: st.check, verdict: st.verdict, next, ready: responseChecks(catalog, w).ready });
+  }
+  const key = (t) => (t.next ? (t.next.in < 0 ? 100000 + t.next.in : t.next.in) : 1e9);
+  return out.sort((a, b) => key(a) - key(b) || a.customer.localeCompare(b.customer));
+}
+
+/**
+ * A message for whoever answers part of a tender (a specialist, the partner, legal): their requirements, what we have
+ * so far for each, and the date we need the answers by, a few days before the questions or the bid are due.
+ */
+export function ownerBrief(catalog, w, who, today) {
+  const t = w.rfp || emptyRfp();
+  const mine = t.reqs.filter((r) => r.who === who && (!r.a || r.a === "check"));
+  if (!mine.length || !Object.hasOwn(WHO, who)) return "";
+  const deadline = [t.questions_due, t.due].filter(Boolean).find((d) => !today || d >= today);
+  const by = deadline ? new Date(Date.parse(deadline + "T00:00:00Z") - 3 * 86400000).toISOString().slice(0, 10) : "";
+  const back = by && today && by < today ? today : by;
+  return [`For ${WHO[who].toLowerCase()}: ${plural(mine.length, "requirement")} of ${t.title ? `"${flat(t.title)}"` : "the tender"} for ${flat(w.customer)} to answer${back ? ` by ${back}` : ""}.`,
+    "For each: met, partly, not met or to check, how it is met, and what we can attach as evidence.", "",
+    ...mine.map((r, i) => `${i + 1}. ${r.ref ? `${r.ref} ` : ""}(${r.must ? "mandatory" : r.points != null ? `${r.points} points` : "optional"}): ${r.text}${r.note ? `\n   So far: ${r.note}` : ""}`), ""].join("\n");
+}
+
 // ------------------------------------------------------------------ the answer kit, and answers given before
 
 /**

@@ -192,7 +192,10 @@ It is in `src/beyond90/data/answers.json`. `beyond90 answers --profile <line>` p
   - mandatory requirements still open ("Answer them" opens the first);
   - requirements answered without saying how;
   - and, when all is done, the matrix to download.
-- who still owes answers;
+- who still owes answers. **Copy for the partner** (or a specialist, the product team, commercial and legal) gives a message for that person:
+  - their requirements still open or to check, with mandatory or points;
+  - what has been written so far for each;
+  - the date to answer by, three days before the next deadline;
 - the lines the tender asks about that the conversation has not covered yet, which can be added in one click.
 
 **Deliver the bid** starts with **Before it leaves**, a check of the response, each item passed or with the button that fixes it:
@@ -232,7 +235,8 @@ The tender also reaches other places:
 - **On the presales desk:**
   - a mandatory requirement not met is a risk that can lose the deal;
   - so are questions due within a week with requirements to raise, and a bid due within ten days with requirements still open;
-  - both deadlines go in the agenda.
+  - both deadlines go in the agenda;
+  - **Tenders in progress** lists every tender in this browser, the nearest deadline first: whether the bid can go ahead, a bar of the answers, the next deadline, and a button that opens the tender.
 - **On [the way forward](#the-way-forward),** the decision waits until every mandatory requirement is answered and none fails.
 - **In the [handover to delivery](#handover-to-delivery):** the mandatory requirements answered met or partly, with how. These are what the bid committed to, and delivery has to keep them.
 

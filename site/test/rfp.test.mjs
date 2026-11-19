@@ -3,10 +3,10 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { parseRequirements, suggestLine, lineOrder, rfpState, clarificationQuestions, rfpCsv, rfpMarkdown, bidCommitments, validRfp, withRequirement, EXAMPLE_TENDER, KEYWORDS, MAX_REQS,
   sheetsToText, csvToText, matchedWords, questionFor, tenderAsks, suggestAnswer, pastAnswer, evidenceFor, nextSteps, filterCounts, keepReq, matchesSearch, FILTERS,
-  blanks, sectionOf, sections, mentionsOfOthers, responseChecks, responseMarkdown, responseHtml } from "../rfp.js";
+  blanks, sectionOf, sections, mentionsOfOthers, responseChecks, responseMarkdown, responseHtml, tendersOverview, ownerBrief } from "../rfp.js";
 import { nextMeeting, agendaText } from "../nextmeeting.js";
 import { makeWorkshop, addRequirements, setRequirement, removeRequirement, setRfpMeta, clearRfp, validWorkshop, summaryMarkdown, assess, fillSuggestedNotes, setSectionTitle } from "../workshop.js";
-import { pipeline, agenda } from "../desk.js";
+import { pipeline, agenda, exampleDesk } from "../desk.js";
 import { forward } from "../forward.js";
 import { handoverMarkdown } from "../delivery.js";
 
@@ -366,5 +366,45 @@ test("the technical response: section by section, each requirement with its answ
   assert.match(html, /&lt;script&gt;/);
   assert.match(html, /<mark>\[two\]<\/mark>/, "unfinished text is highlighted");
   assert.match(html, /<span class="status s-no">Not met<\/span>/);
+});
+
+test("every tender in this browser, the nearest deadline first, with where each bid stands", () => {
+  let a = addRequirements(ws(), parseRequirements(EXAMPLE_TENDER), CAT, D);
+  a = setRfpMeta(a, { title: "Lot 1 (mock)", questions_due: "2026-11-30", due: "2026-12-10" }, D);
+  let b = addRequirements(makeWorkshop({ customer: "Regione Esempio (mock)", scope: ["hci"], createdOn: D, nonce: "fedcba" }), parseRequirements(EXAMPLE_TENDER), CAT, D);
+  b = setRequirement(setRfpMeta(b, { questions_due: "2026-11-22", due: "2026-12-01", issuer: "public" }, D), "r9", { a: "no" }, D);
+  const none = makeWorkshop({ customer: "No tender (mock)", scope: ["hci"], createdOn: D, nonce: "aaaaaa" });
+  const list = tendersOverview([a, none, b], CAT, D);
+  assert.deepEqual(list.map((t) => t.customer), ["Regione Esempio (mock)", "Comune di Esempio (mock)"], "the nearest deadline first; workshops without a tender are left out");
+  assert.deepEqual(list[0].next, { what: "Questions due", on: "2026-11-22", in: 3 });
+  assert.deepEqual([list[0].verdict.level, list[0].must_no, list[0].issuer, list[0].answered, list[0].total], ["risk", 1, "A public body", 1, 16]);
+  // once the questions' date has passed, the bid's date is next
+  assert.deepEqual(tendersOverview([b], CAT, "2026-11-25")[0].next, { what: "Bid due", on: "2026-12-01", in: 6 });
+  assert.deepEqual(tendersOverview([b], CAT, "2026-12-03")[0].next, { what: "Bid was due", on: "2026-12-01", in: -2 });
+});
+
+test("a message for whoever answers part of a tender: their requirements, what we have so far, and by when", () => {
+  let w = addRequirements(ws(), parseRequirements(EXAMPLE_TENDER), CAT, D);
+  w = setRfpMeta(w, { title: "Lot 1 (mock)", questions_due: "2026-11-30", due: "2026-12-10" }, D);
+  w = setRequirement(setRequirement(w, "r7", { who: "partner", note: "A test network exists" }, D), "r12", { who: "partner" }, D);
+  w = setRequirement(w, "r3", { who: "partner", a: "yes" }, D);
+  const msg = ownerBrief(CAT, w, "partner", D);
+  assert.match(msg, /^For the partner: 2 requirements of "Lot 1 \(mock\)" for Comune di Esempio \(mock\) to answer by 2026-11-27\./, "three days before the questions are due; answered ones left out");
+  assert.match(msg, /1\. 2\.3 \(mandatory\): A test failover must be possible.*\n   So far: A test network exists/);
+  assert.match(msg, /2\. 4\.2 \(10 points\): A self-service catalog/);
+  assert.equal(ownerBrief(CAT, w, "legal", D), "", "not an owner");
+  assert.equal(ownerBrief(CAT, w, "product", D), "", "nobody asked");
+});
+
+test("the invented desk has a public tender, half answered, at risk, on the desk and in the agenda", () => {
+  const ex = exampleDesk(D);
+  const valle = ex.workshops.find((w) => w.customer === "Valle Health (mock)");
+  assert.equal(validWorkshop(valle), true);
+  const t = tendersOverview(ex.workshops, CAT, D);
+  assert.equal(t.length, 1);
+  assert.deepEqual([t[0].verdict.level, t[0].issuer, t[0].next.what, t[0].next.in], ["risk", "A public body", "Questions due", 4]);
+  assert.ok(pipeline(ex.workshops, ex.povs, CAT, D).find((o) => o.customer === "Valle Health (mock)").risks.some((r) => /mandatory requirement of the tender is not met/.test(r.text)));
+  assert.ok(agenda(ex.workshops, ex.povs, CAT, D).some((i) => i.kind === "tender" && i.customer === "Valle Health (mock)"));
+  assert.match(ownerBrief(CAT, valle, "specialist", D), /For a specialist: 1 requirement/);
 });
 

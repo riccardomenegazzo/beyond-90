@@ -2612,7 +2612,9 @@ export function rfpView({ workshop: w, catalog, today, addReqs, setReq, removeRe
         when(dl.questions_due, dl.questions_in, "Questions due"), when(dl.due, dl.due_in, "Bid due")) : null,
       h("div", { class: "rfpnext" }, h("h3", { text: "Do next" }), h("ul", {}, steps.map((x) => h("li", { class: `rfpstep k-${x.id}` }, h("span", { text: x.text }),
         h("button", { type: "button", class: "btn small", text: x.label, onclick: (ev) => act(x.act, ev.currentTarget) }))))),
-      st.owed.length || (st.total && st.unassigned) ? h("p", { class: "note rfpowed", text: `Still to answer: ${[...st.owed.map((x) => `${x.label.toLowerCase()} ${x.count}`), ...(st.unassigned ? [`nobody asked yet ${st.unassigned}`] : [])].join(", ")}.` }) : null,
+      st.owed.length || (st.total && st.unassigned) ? h("div", { class: "rfpowed" }, h("span", { class: "note", text: `Still to answer: ${[...st.owed.map((x) => `${x.count} with ${x.label.toLowerCase()}`), ...(st.unassigned ? [`${st.unassigned} with nobody named yet (pick who answers in each requirement)`] : [])].join(", ")}.` }),
+        st.owed.map((x) => h("button", { type: "button", class: "btn small", text: `Copy for ${x.label.toLowerCase()} (${x.count})`, "data-tip": "Their requirements, what we have so far, and the date we need the answers by.",
+          onclick: (ev) => copyText(RFP.ownerBrief(catalog, cur, x.who, today)).then((ok) => { ev.target.textContent = ok ? "Copied" : "Not copied"; }) }))) : null,
       st.outside.length ? h("div", { class: "growproof" }, h("small", { text: "The tender also asks about" }),
         h("p", { text: st.outside.map((l) => `${l.label} (${l.count})`).join(", ") + ": lines not in this conversation yet." }),
         setScope ? h("div", { class: "btnrow" }, h("button", { class: "btn small", type: "button", text: "Add them to the conversation", onclick: async () => {
@@ -3079,7 +3081,7 @@ function lessonsView(ls, examples, title = "What the deals teach") {
   { sub: "Across every prospect: how deals ended and why, what customers push back on, the gaps heard most, the tests not met, and how long each stage takes. Record the outcome of each proof of value to complete it." });
 }
 
-export function deskView({ workshops, povs, catalog, today, openOpp, newWorkshop, example, fillExamples, removeExamples }) {
+export function deskView({ workshops, povs, catalog, today, openOpp, openTender, newWorkshop, example, fillExamples, removeExamples }) {
   const opps = DESK.pipeline(workshops, povs, catalog, today);
   const items = DESK.agenda(workshops, povs, catalog, today);
   const f = DESK.funnel(opps);
@@ -3167,7 +3169,18 @@ export function deskView({ workshops, povs, catalog, today, openOpp, newWorkshop
       h("button", { class: "btn small", type: "button", text: "Snapshot for my manager (.json)",
         onclick: () => saveBlob(JSON.stringify(snapshot(), null, 1), `desk-snapshot-${(me.value || "engineer").replace(/[^A-Za-z0-9]+/g, "-").replace(/^-|-$/g, "").toLowerCase() || "engineer"}-${today}.json`, "application/json") })))
   );
-  return h("div", {}, hero, h("div", { class: "card deskfunnelcard" }, funnelRow), riskCard, lessonsCard, partnerCard, h("div", { class: "col2" }, agendaCard, docs), card("Opportunities", table.el, { sub: "Furthest along first. Open one to carry on: its questions, its journey, its proof of value." }),
+  // tenders in progress, the nearest deadline first: where each bid stands and what is due next
+  const tenders = RFP.tendersOverview(workshops, catalog, today);
+  const tenderCard = tenders.length ? card("Tenders in progress", h("ul", { class: "desktenders" }, tenders.map((t) => h("li", {},
+    h("div", { class: "dtname" }, h("b", { text: t.customer }), h("small", { class: "muted", text: [t.title, t.issuer].filter(Boolean).join(", ") || "Tender" })),
+    h("span", { class: `rfpverdictpill ${t.verdict.level}`, text: { risk: "At risk", clarify: "To clarify", go: "Can bid", empty: "Empty" }[t.verdict.level] }),
+    h("span", { class: "dtbar" }, h("span", { class: "rfpbartrack rfpmini", role: "img", "aria-label": `${t.answered} of ${t.total} answered` },
+      ["yes", "partly", "no", "check"].filter((k) => t[k]).map((k) => h("i", { class: `seg s-${k}`, style: `width:${((t[k] / t.total) * 100).toFixed(2)}%` }))),
+      h("small", { class: "muted", text: `${t.answered} of ${t.total}${t.must_no ? `, ${t.must_no} mandatory not met` : ""}` })),
+    t.next ? h("span", { class: "chip" + (t.next.in <= 7 ? " warn" : ""), text: `${t.next.what} ${t.next.on}${t.next.in < 0 ? `, ${-t.next.in} days ago` : t.next.in === 0 ? ", today" : `, in ${t.next.in} days`}` }) : h("span", { class: "muted", text: "No date yet" }),
+    openTender ? h("button", { type: "button", class: "btn small", text: "Open the tender", "aria-label": `Open the tender of ${t.customer}`, onclick: () => openTender(t.workshop) }) : null))),
+  { sub: "Every tender kept in this browser, the nearest deadline first: whether it can bid, how far it is answered, and what is due next." }) : null;
+  return h("div", {}, hero, h("div", { class: "card deskfunnelcard" }, funnelRow), riskCard, tenderCard, lessonsCard, partnerCard, h("div", { class: "col2" }, agendaCard, docs), card("Opportunities", table.el, { sub: "Furthest along first. Open one to carry on: its questions, its journey, its proof of value." }),
     teamCard(catalog, today));
 }
 

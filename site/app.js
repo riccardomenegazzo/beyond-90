@@ -837,6 +837,7 @@ async function renderDesk() {
   const ctx = {
     workshops: state.workshops, povs: state.povs, catalog: cat, today: todayIso(),
     openOpp: (o) => openWorkshop(o.workshop, o.stage === "proof" || o.stage === "decision" ? "wspov" : o.stage === "journey" ? "journey" : "workshop"),
+    openTender: (id) => openWorkshop(id, "wsrfp"),
     newWorkshop: () => newWorkshop().catch((e) => say(e.message)), example: () => openExampleWorkshop().catch((e) => say(e.message)),
     fillExamples: async () => { await fillDeskExamples(); renderDesk().catch((e) => say(e.message)); },
     removeExamples: async () => {

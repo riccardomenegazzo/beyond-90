@@ -1186,6 +1186,18 @@ def main(site: str) -> int:
         check("Verdi Sistemi (mock)'s deal registration runs out" in page.inner_text("#desk-body .deskagenda") and "with Verdi Sistemi (mock); now: " in desk_text,
               "the registration's end is on the agenda, and each prospect says who it is sold with and the phase it is in")
 
+        # tenders across the desk: the nearest deadline first, and one click into the tender
+        tender_card = page.locator("#desk-body .card").filter(has_text="Tenders in progress")
+        tt = tender_card.inner_text() if tender_card.count() == 1 else ""
+        check("Valle Health (mock)" in tt and "At risk" in tt and "Questions due" in tt and "A public body" in tt,
+              "the tenders in progress, with whether each can bid and the next deadline")
+        tender_card.get_by_role("button", name="Open the tender of Valle Health (mock)").click()
+        page.wait_for_selector("#view .rfphero")
+        check("Recovery site and data platform (mock)" in page.inner_text("#view .rfphero") and page.locator("#view .rfpowed button").count() >= 1,
+              "which opens the tender, with a message ready for each person who still owes answers")
+        page.click(".rail [data-place=desk]")
+        page.wait_for_selector("#desk-body :text('Pietra Bank')")
+
         # the team: each engineer shares a snapshot, the manager reads them together
         page.get_by_label("Your name, as your manager should see it").fill("Giulia R. (mock)")
         with page.expect_download() as dl:

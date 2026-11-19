@@ -1289,3 +1289,12 @@ ol.deskfunnel{list-style:none;margin:0;padding:0;display:grid;grid-template-colu
 .rfppages{max-width:22rem;margin-bottom:10px}
 
 .rfpcover .rfpbartrack{min-width:0}
+.rfpowed{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0 14px}
+.desktenders{list-style:none;margin:0;padding:0;display:grid;gap:2px}
+.desktenders li{display:grid;grid-template-columns:minmax(0,1.4fr) 6.5rem minmax(0,1fr) auto auto;gap:12px;align-items:center;padding:10px 4px;border-bottom:1px solid var(--line)}
+.desktenders .dtname{display:grid}
+.dtbar{display:grid;gap:4px}
+.rfpverdictpill{font-size:12.5px;font-weight:700;padding:3px 10px;border-radius:9px;text-align:center;color:var(--on)}
+.rfpverdictpill.risk{background:var(--bad)}.rfpverdictpill.clarify{background:var(--warn)}.rfpverdictpill.go{background:var(--pos)}.rfpverdictpill.empty{background:var(--ink2)}
+@media (max-width:900px){.desktenders li{grid-template-columns:1fr auto}.dtbar{grid-column:1/-1}}
+

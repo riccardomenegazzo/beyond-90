@@ -158,6 +158,12 @@ def shoot(site: Path, out: Path) -> None:
                 pg.keyboard.press(key)
                 pg.wait_for_timeout(80)
             pg.keyboard.press("Escape")
+            # two requirements for the partner, one for a specialist: a message ready for each
+            for rid, who in (("r11", "partner"), ("r12", "partner"), ("r7", "specialist")):
+                pg.locator(f"#view .rfprow[data-id={rid}] .rfphead").click()
+                pg.locator(f"#view .rfprow[data-id={rid}] select[aria-label^='Who answers']").select_option(who)
+                pg.wait_for_timeout(150)
+                pg.keyboard.press("Escape")
             pg.evaluate("window.scrollTo({ top: 0, behavior: 'instant' })")
             pg.wait_for_timeout(300)
             pg.screenshot(path=str(out / "app-rfp.png"))
@@ -273,6 +279,9 @@ def shoot(site: Path, out: Path) -> None:
             pg.wait_for_selector("#desk-body :text('Pietra Bank')")
             pg.wait_for_timeout(400)
             pg.screenshot(path=str(out / "app-desk.png"))
+            pg.evaluate("(() => { const c = [...document.querySelectorAll('#desk-body .card')].find((x) => x.textContent.includes('Tenders in progress')); if (c) window.scrollTo({ top: c.getBoundingClientRect().top + window.scrollY - 76, behavior: 'instant' }); })()")
+            pg.wait_for_timeout(300)
+            pg.screenshot(path=str(out / "app-desk-tenders.png"))
             pg.evaluate("(() => { const c = [...document.querySelectorAll('#desk-body .card')].find((x) => x.textContent.includes('What the deals teach')); if (c) window.scrollTo({ top: c.getBoundingClientRect().top + window.scrollY - 76, behavior: 'instant' }); })()")
             pg.wait_for_timeout(300)
             pg.screenshot(path=str(out / "app-lessons.png"))
