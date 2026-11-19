@@ -2,6 +2,19 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.130.0
+
+- **A new look: the whiteboard session.** The whole app restyled, the same everywhere:
+  - a board-white ground with a heavy marker rule under the top bar, and a light menu in place of the dark one;
+  - marker colours that mean something: blue for structure, red for a gap, green for solved, ochre for partly;
+  - headings in Bricolage Grotesque, heavier and tighter; the text stays in Atkinson Hyperlegible;
+  - flat panels without shadows; switches and chips filled with ink when on;
+  - **a chosen answer is circled by hand**, in the colour of what it means, wherever answers are given: discovery, qualification, bid or no bid, tender requirements;
+  - verdicts are highlighted as with a marker instead of boxed; lists that matter (risks, what to keep an eye on, the journey's conditions) are flat rows with a mark in the margin;
+  - the one number that matters (the score, the estate, the journey, the desk) is written on a blackboard panel.
+- The dark theme follows: the board at night, with the same marks.
+- Every colour passes the accessibility audit (4.5:1 for text) in both themes.
+
 ## 0.129.0
 
 - **Qualify the deal, shorter.** The third view on the compact pattern:

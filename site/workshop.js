@@ -841,13 +841,13 @@ export function readoutHtml(catalog, w, res, { preparedBy = "", today = "" } = {
     *{box-sizing:border-box}
     body{margin:0;font:15px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#142029;background:#fff}
     main{max-width:820px;margin:0 auto;padding:40px 32px 56px}
-    header.top{border-bottom:3px solid #0f766e;padding-bottom:18px;margin-bottom:26px}
+    header.top{border-bottom:3px solid #2148C0;padding-bottom:18px;margin-bottom:26px}
     header.top p{margin:0;color:#43515b}
     h1{font-size:30px;line-height:1.15;margin:6px 0 10px;letter-spacing:-.01em}
     h2{font-size:20px;margin:34px 0 10px;color:#0b5f59}
     h3{font-size:16px;margin:20px 0 6px}
     .lead{font-size:19px;font-weight:600;color:#0b5f59;margin:0 0 6px}
-    .stake{border-left:4px solid #0f766e;background:#f1f6f5;padding:10px 14px;margin:14px 0;border-radius:0 8px 8px 0}
+    .stake{border-left:4px solid #2148C0;background:#F1F4FB;padding:10px 14px;margin:14px 0;border-radius:0 8px 8px 0}
     .stake small{display:block;color:#43515b;font-size:12.5px;font-weight:700}
     .stake .fig{font-size:20px;color:#0b5f59}
     .stake .q{font-size:12.5px;color:#43515b}
@@ -856,7 +856,7 @@ export function readoutHtml(catalog, w, res, { preparedBy = "", today = "" } = {
     .stats div span{font-size:12.5px;color:#43515b}
     ol.steps{list-style:none;padding:0;margin:0;counter-reset:s}
     ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 48px;break-inside:avoid}
-    ol.steps>li::before{content:counter(s);position:absolute;left:0;top:0;width:32px;height:32px;border-radius:50%;background:#0f766e;color:#fff;display:grid;place-items:center;font-weight:800}
+    ol.steps>li::before{content:counter(s);position:absolute;left:0;top:0;width:32px;height:32px;border-radius:50%;background:#2148C0;color:#fff;display:grid;place-items:center;font-weight:800}
     ol.steps>li>h3{margin:4px 0 6px}
     .why{color:#43515b;margin:0 0 8px}
     table{width:100%;border-collapse:collapse;margin:6px 0}
