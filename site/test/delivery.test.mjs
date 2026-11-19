@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { makeWorkshop, setAnswer, setPlan, setRaised, setWorth, assess } from "../workshop.js";
+import { makeWorkshop, setAnswer, setPlan, setRaised, setWorth, assess, exampleWorkshop } from "../workshop.js";
 import { makePov, setCriterion } from "../pov.js";
 import { povFor, promisesFrom, handoverMarkdown } from "../delivery.js";
 
@@ -60,4 +60,14 @@ test("the proof of value is found by the prospect's name, the latest first", () 
   assert.equal(povFor([a, b, c], "Acme (mock)").id, "b");
   assert.equal(povFor([c], "Acme (mock)"), null);
   assert.equal(povFor(null, "x"), null);
+});
+
+test("the handover says who delivers, with the skills still to line up before go-live", () => {
+  const w = exampleWorkshop("2026-11-19");
+  const md = handoverMarkdown(CAT, w, null, "2026-11-19");
+  assert.match(md, /## Who delivers\n\n- Deployment and migration: Verdi Sistemi \(mock\)\.\n- Support after go-live: Verdi Sistemi \(mock\)\./);
+  assert.match(md, /- Nord Distribuzione \(mock\): distributor\./);
+  assert.match(md, /To line up before go-live: Verdi Sistemi \(mock\) has no skills yet on /);
+  const bare = handoverMarkdown(CAT, { ...w, channel: undefined }, null, "2026-11-19");
+  assert.doesNotMatch(bare, /## Who delivers/);
 });

@@ -2,6 +2,18 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.112.0
+
+- **One picture of each deal, everywhere it goes.**
+  - Each prospect on the presales desk says who it is sold with and the phase it is in on the way forward.
+  - The agenda lists the day a partner's deal registration runs out, next to the dated conditions and the proofs of value.
+  - The Monday note says who each deal is sold with and how far it is qualified.
+  - The pipeline CSV gains the partner, its kind, the route to purchase, the end of the registration, the qualification and the phase.
+- **The handover says who delivers:** who deploys and who supports, each partner and its skills, and the lines to line up before go-live.
+- **What the deals teach** adds what the deals not won had not established (for example, the economic buyer never met), and how deals ended by route to purchase and by the kind of partner leading them.
+- **The team view** reads the route to purchase, the kind of partner and the qualification from each engineer's snapshot. It shows how many open deals each engineer has qualified for a proof of value, and what the team's deals not won had left open. The new fields are optional, so older snapshots stay readable, and each is checked against its fixed list. Partner names are not a field.
+- The invented won and lost deals carry their qualification, so the lessons show it at once. The screenshots are refreshed.
+
 ## 0.111.0
 
 - **Partners on a deal.** Under "The meeting", **Partners** records:

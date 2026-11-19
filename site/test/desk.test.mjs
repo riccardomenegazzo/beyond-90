@@ -181,3 +181,43 @@ test("the partner review gathers each partner across the desk: deals, registrati
   assert.ok(valle.risks.some((r) => r.level === "high" && /registration runs out in 6 days/.test(r.text)));
   assert.equal(partnerReviewMarkdown([], day).includes("No partner on any deal yet."), true);
 });
+
+test("each opportunity carries who it is sold with, how far it is qualified and its phase, in the note and the sheet", async () => {
+  const { exampleDesk, agenda, weeklyMarkdown, pipelineCsv } = await import("../desk.js");
+  const day = "2026-11-19";
+  const ex = exampleDesk(day);
+  const opps = pipeline(ex.workshops, ex.povs, CAT, day);
+  const kestrel = opps.find((o) => o.customer === "Kestrel Logistics (mock)");
+  assert.equal(kestrel.partner, "Verdi Sistemi (mock)");
+  assert.equal(kestrel.partner_kind, "integrator");
+  assert.equal(kestrel.route, "distribution");
+  assert.equal(kestrel.qualified, "Ready for a demo built for them");
+  assert.ok(kestrel.phase.length > 0);
+  const brina = opps.find((o) => o.customer === "Brina Retail (mock)");
+  assert.equal(brina.phase, "", "a decided deal has no phase left on the way");
+  const items = agenda(ex.workshops, ex.povs, CAT, day);
+  const reg = items.find((i) => i.kind === "registration");
+  assert.ok(reg && reg.customer === "Valle Health (mock)" && /Verdi Sistemi \(mock\)'s deal registration runs out/.test(reg.what) && !reg.late);
+  assert.ok(!items.some((i) => i.kind === "registration" && /Brina|Ardesia/.test(i.customer)), "registrations of decided deals are not on the agenda");
+  const note = weeklyMarkdown(opps, items, day);
+  assert.match(note, /with Verdi Sistemi \(mock\)/);
+  assert.match(note, /deal registration runs out/);
+  const csv = pipelineCsv(opps).split("\r\n");
+  assert.match(csv[0], /,partner,partner_kind,route_to_purchase,registration_until,qualification,phase$/);
+  const valleRow = csv.find((r) => r.startsWith("Valle Health (mock)"));
+  assert.match(valleRow, /Verdi Sistemi \(mock\),systems integrator,through a reseller,2026-11-25,Keep discovering|Verdi Sistemi \(mock\),systems integrator,through a reseller,2026-11-25,Ready for a demo built for them/);
+});
+
+test("what the deals teach includes the qualification the deals not won left open, and the routes they took", async () => {
+  const { exampleDesk } = await import("../desk.js");
+  const { dealFacts, lessons, lessonsMarkdown } = await import("../lessons.js");
+  const ex = exampleDesk("2026-11-19");
+  const l = lessons(dealFacts(ex.workshops, ex.povs, CAT), { includeExamples: true });
+  assert.equal(l.not_established.of, 1);
+  assert.ok(l.not_established.tags.some((t) => t.tag === "Economic buyer" && t.count === 1));
+  assert.deepEqual(l.routes.map((r) => [r.key, r.won, r.count]).sort(), [["reseller", 1, 1], ["service", 0, 1]]);
+  const md = lessonsMarkdown(l);
+  assert.match(md, /## What the deals not won had not established\n\n- /);
+  assert.match(md, /Through a reseller: 1 won of 1/);
+  assert.match(md, /Led by a systems integrator: 1 won of 1/);
+});

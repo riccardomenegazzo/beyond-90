@@ -76,3 +76,31 @@ test("two invented engineers, for a demonstration", async () => {
   assert.equal(t.engineers.length, 2);
   assert.ok(t.deals >= 9);
 });
+
+test("a snapshot carries how each deal is sold and how far it is qualified, as kinds and tags only", async () => {
+  const { exampleDesk, pipeline } = await import("../desk.js");
+  const { dealFacts } = await import("../lessons.js");
+  const { snapshotFrom, validSnapshot, teamView, teamMarkdown } = await import("../team.js");
+  const day = "2026-11-19";
+  const ex = exampleDesk(day);
+  const snap = snapshotFrom(pipeline(ex.workshops, ex.povs, CAT, day), dealFacts(ex.workshops, ex.povs, CAT), "Giulia R. (mock)", day);
+  assert.ok(validSnapshot(snap));
+  const k = snap.deals.find((d) => d.customer === "Kestrel Logistics (mock)");
+  assert.equal(k.route, "distribution");
+  assert.equal(k.partner_kind, "integrator");
+  assert.equal(k.qualified, "demo");
+  assert.ok(k.not_known.includes("Decision criteria"));
+  // the structured fields carry the kind and the route, not the partner's name (a risk's text may name it)
+  assert.ok(snap.deals.every((d) => !("partner" in d)));
+  assert.doesNotMatch(JSON.stringify(snap), /Nord Distribuzione/);
+  // anything off in the new fields refuses the file
+  for (const bad of [{ route: "smuggled" }, { partner_kind: "friend" }, { qualified: "nearly", not_known: [] }, { qualified: "demo" }, { qualified: "", not_known: ["Gossip"] }]) {
+    const t = structuredClone(snap);
+    Object.assign(t.deals[0], bad);
+    assert.equal(validSnapshot(t), false, JSON.stringify(bad));
+  }
+  const tv = teamView([snap], { includeExamples: true });
+  assert.ok(tv.engineers[0].qualified >= 0);
+  assert.ok(tv.lessons.routes.length >= 1);
+  assert.match(teamMarkdown(tv, day), /Qualified for a proof/);
+});

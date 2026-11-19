@@ -791,7 +791,7 @@ def main(site: str) -> int:
         page.get_by_label("Who does: Deployment and migration").select_option(label="Verdi Sistemi (mock)")
         page.get_by_label("Who does: Proof of value").select_option(label="Together")
         page.get_by_label("Route to purchase").select_option("distribution")
-        page.wait_for_selector("#view .ptwarn li")
+        page.wait_for_selector("#view .ptwarn li:has-text('without skills on')")
         settle = page.inner_text("#view")
         check("Verdi Sistemi (mock) leads." in settle and "Nobody owns discovery" in settle and "without skills on" in settle,
               "the partner leads; what nobody owns and the lines it would deliver without skills are what to settle")
@@ -1041,6 +1041,10 @@ def main(site: str) -> int:
               "the partners across every deal: live deals, registrations to renew or file, wins and losses with each")
         check(page.locator("#desk-body").get_by_text("Verdi Sistemi (mock)'s deal registration runs out in 6 days").count() >= 1,
               "a registration about to run out is a risk that can lose the deal")
+        desk_text = page.inner_text("#desk-body")
+        check("Verdi Sistemi (mock)'s deal registration runs out" in page.inner_text("#desk-body .deskagenda") and "with Verdi Sistemi (mock); now: " in desk_text,
+              "the registration's end is on the agenda, and each prospect says who it is sold with and the phase it is in")
+
         # the team: each engineer shares a snapshot, the manager reads them together
         page.get_by_label("Your name, as your manager should see it").fill("Giulia R. (mock)")
         with page.expect_download() as dl:
@@ -1263,6 +1267,9 @@ def main(site: str) -> int:
         fp.wait_for_selector("#desk-body :text('Pietra Bank')", timeout=30_000)
         check("start=" not in fp.url and "What the deals teach" in fp.inner_text("#desk-body") and "Your team" in fp.inner_text("#desk-body"),
               "one link opens the presales desk at work, with the invented examples, for a first visit")
+        fresh_desk = fp.inner_text("#desk-body")
+        check("What the deals not won had not established" in fresh_desk and "Economic buyer: 1 of 1" in fresh_desk and "Through a reseller: 1 won of 1" in fresh_desk,
+              "what the deals teach includes the qualification the deals not won left open, and the routes to purchase")
         fresh.close()
         role_was = page.evaluate("localStorage.getItem('beyond90.role')")
         page.goto(base + "?start=presales")

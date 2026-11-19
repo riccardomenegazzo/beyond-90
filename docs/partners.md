@@ -78,6 +78,15 @@ A registration that runs out within two weeks, or has run out, is also on the de
 
 ![The partner review across the desk](img/app-desk-partners.png)
 
+## Everywhere else the deal goes
+
+- **The desk's agenda** lists the day a registration runs out, two weeks ahead, next to the dated conditions and the proofs of value.
+- **Each prospect** on the desk says who it is sold with, and the Monday note does too.
+- **The pipeline CSV** has columns for the partner, its kind, the route to purchase, the end of the registration, the qualification and the phase.
+- **The handover to delivery** opens with who deploys and who supports. It lists each partner and its skills, and the lines to line up before go-live.
+- **What the deals teach** counts how deals ended by route to purchase and by the kind of partner leading them.
+- **The team view** reads the route and the kind of partner from each engineer's snapshot. The partner's name is not a field there, though the text of a risk may name it.
+
 ## In the way forward
 
 When a deal has partners, [the way forward](workshop.md#the-way-forward) asks three more things:

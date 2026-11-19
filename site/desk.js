@@ -7,8 +7,9 @@
 
 import { assess, journey, datedPlan, exampleWorkshop, makeWorkshop, setAnswer, setPlan, setWorth, setRaised, setDeal, setChannel } from "./workshop.js";
 import { hasCase } from "./valuecase.js";
-import { forward } from "./forward.js";
-import { registrationOf, channelState, KINDS, ACTIVITIES } from "./partners.js";
+import { registrationOf, channelState, KINDS, ROUTES, ACTIVITIES } from "./partners.js";
+import { dealState } from "./qualify.js";
+import { forward, PHASES } from "./forward.js";
 import { progress, makePov, setCriterion, setOutcome, edit as editPov } from "./pov.js";
 
 export const STAGES = [
@@ -133,8 +134,16 @@ export function pipeline(workshops, povs, catalog, today) {
       const c = ph.checks.find((x) => !x.ok);
       next = c ? `${ph.label}: ${c.fix}` : stage === "journey" ? "Start the proof of value, or give the conditions an owner and a date" : res.waiting || "Ask the next questions";
     }
+    // the deal around the technical work: who sells it with us, how far it is qualified, which phase it is in
+    const reg = w ? registrationOf(w.channel, today) : null;
+    const ds = w ? dealState(w.deal) : null;
+    const fwd = w && catalog && !stopped ? forward(catalog, w, p, today) : null;
     out.push({
       customer: o.customer, stage, stopped, outcome, workshop: w ? w.id : null, pov: p ? p.id : null,
+      partner: reg ? reg.lead.name : "", partner_kind: reg ? reg.lead.kind : "", route: w && w.channel && w.channel.route ? w.channel.route : "",
+      registration: reg && reg.status !== "none" ? { status: reg.status, until: reg.until, days: reg.days } : null,
+      qualified: ds && ds.answered ? ds.verdict : "", qualified_gate: ds ? ds.passed : "",
+      phase: fwd ? PHASES.find((ph) => ph.id === fwd.now).label : "",
       updated_on: [w && w.updated_on, p && p.updated_on].filter(Boolean).sort().pop() || "",
       coverage: res ? res.coverage : 0, answered: res ? res.answered : 0, total: res ? res.total : 0,
       land: res && res.land ? res.land.label : "", unknowns: res ? res.unknowns.length : 0,
@@ -167,6 +176,15 @@ export function agenda(workshops, povs, catalog, today, span = 14) {
     for (const c of datedPlan(j)) {
       if (c.by <= horizon) items.push({ on: c.by, customer: w.customer, what: c.need, kind: "condition", who: c.who || "", late: c.by < today, workshop: w.id });
     }
+  }
+  // a partner's deal registration that runs out: on live deals only, from the newest workshop of each prospect
+  const closed = new Set((povs || []).filter((p) => p.stage === "stopped" || p.outcome).map((p) => p.customer));
+  const newest = new Map();
+  for (const w of workshops || []) { const had = newest.get(w.customer); if (!had || w.updated_on > had.updated_on) newest.set(w.customer, w); }
+  for (const w of newest.values()) {
+    const reg = registrationOf(w.channel, today);
+    if (!reg || reg.status === "none" || closed.has(w.customer) || reg.until > horizon) continue;
+    items.push({ on: reg.until, customer: w.customer, what: `${reg.lead.name}'s deal registration ${reg.until < today ? "ran out" : "runs out"}`, kind: "registration", who: "", late: reg.until < today, workshop: w.id });
   }
   for (const p of povs || []) {
     if (p.stage === "done" || p.stage === "stopped") continue;
@@ -205,7 +223,7 @@ export function weeklyMarkdown(opps, items, today) {
     for (const o of list) {
       const bits = [o.land ? `start with ${o.land.toLowerCase()}` : "", o.stakes.length ? `at stake ${o.stakes.join(", ")}` : "",
         o.pov_total ? `proof ${o.pov_met} of ${o.pov_total} criteria met` : "", o.unknowns ? `${o.unknowns} question${o.unknowns === 1 ? "" : "s"} nobody could answer` : "",
-        o.evidence ? `evidence of a technical win ${o.evidence.score}/100` : ""].filter(Boolean);
+        o.evidence ? `evidence of a technical win ${o.evidence.score}/100` : "", o.partner ? `with ${o.partner}` : "", o.qualified ? o.qualified.toLowerCase() : ""].filter(Boolean);
       out.push(`- **${o.customer}**${bits.length ? `: ${bits.join("; ")}` : ""}. Next: ${o.next || "nothing planned"}.`);
     }
     out.push("");
@@ -222,8 +240,10 @@ const csvCell = (v) => { const t = String(v == null ? "" : v); const safe = /^[=
 
 /** The pipeline as a sheet, for a CRM import or a forecast call. Cells that a spreadsheet would run as formulas are defused. */
 export function pipelineCsv(opps) {
-  const head = ["customer", "stage", "start_with", "answered", "questions", "at_stake", "unknowns", "conditions_to_make_true", "already_true", "proof_met", "proof_criteria", "proof_ends", "next", "risks", "evidence", "updated_on"];
-  const rows = opps.map((o) => [o.customer, o.outcome ? OUTCOME_WORDS[o.outcome].toLowerCase() : o.stopped ? "stopped" : o.stage, o.land, o.answered, o.total, o.stakes.join("; "), o.unknowns, o.need, o.done, o.pov_met, o.pov_total, o.pov_end, o.next, (o.risks || []).map((r) => r.text).join(" "), o.evidence ? o.evidence.score : "", o.updated_on]);
+  const head = ["customer", "stage", "start_with", "answered", "questions", "at_stake", "unknowns", "conditions_to_make_true", "already_true", "proof_met", "proof_criteria", "proof_ends", "next", "risks", "evidence", "updated_on",
+    "partner", "partner_kind", "route_to_purchase", "registration_until", "qualification", "phase"];
+  const rows = opps.map((o) => [o.customer, o.outcome ? OUTCOME_WORDS[o.outcome].toLowerCase() : o.stopped ? "stopped" : o.stage, o.land, o.answered, o.total, o.stakes.join("; "), o.unknowns, o.need, o.done, o.pov_met, o.pov_total, o.pov_end, o.next, (o.risks || []).map((r) => r.text).join(" "), o.evidence ? o.evidence.score : "", o.updated_on,
+    o.partner || "", o.partner_kind ? KINDS[o.partner_kind].toLowerCase() : "", o.route ? ROUTES[o.route].toLowerCase() : "", o.registration ? o.registration.until : "", o.qualified || "", o.phase || ""]);
   return [head, ...rows].map((r) => r.map(csvCell).join(",")).join("\r\n") + "\r\n";
 }
 
@@ -283,6 +303,7 @@ export function exampleDesk(today) {
   ["gap", "gap", "partly", "gap", "unknown", "gap"].forEach((a, i) => { brina = setAnswer(brina, "platform-migration", i, a, "", ago(95)); });
   ["gap", "partly", "gap"].forEach((a, i) => { brina = setAnswer(brina, "dr-backup", i, a, "", ago(95)); });
   brina = setRaised(setRaised(brina, "platform-migration", 0, true, ago(95)), "hci", 2, true, ago(95));
+  for (const [id, a] of [["why_change", "known"], ["why_now", "known"], ["outcome", "known"], ["decider", "known"], ["criteria", "known"], ["process", "known"], ["paper", "partly"], ["proof", "known"], ["champion", "known"], ["alternatives", "known"]]) brina = setDeal(brina, id, a, "", ago(60));
   brina = setChannel(brina, { partners: [{ name: "Verdi Sistemi (mock)", kind: "integrator", lead: true, reg: { on: ago(100), until: ago(10) }, skills: ["platform-migration", "hci", "dr-backup"] }],
     route: "reseller", split: { discovery: "both", proof: "both", delivery: "p0" } }, ago(95));
   let bpov = makePov({ customer: brina.customer, createdOn: ago(70), nonce: "example6", start: ago(60), end: ago(40),
@@ -295,6 +316,8 @@ export function exampleDesk(today) {
   ["gap", "gap", "gap", "unknown", "gap"].forEach((a, i) => { ardesia = setAnswer(ardesia, "dr-backup", i, a, "", ago(120)); });
   ["gap", "partly", "unknown"].forEach((a, i) => { ardesia = setAnswer(ardesia, "hybrid-cloud", i, a, "", ago(120)); });
   ardesia = setRaised(setRaised(ardesia, "dr-backup", 1, true, ago(120)), "hybrid-cloud", 1, true, ago(120));
+  // lost on price: the budget holder was never met, and nobody knew how the options would be compared
+  for (const [id, a] of [["why_change", "known"], ["why_now", "partly"], ["outcome", "known"], ["decider", "unknown"], ["criteria", "unknown"], ["paper", "unknown"], ["proof", "known"], ["champion", "partly"], ["alternatives", "partly"]]) ardesia = setDeal(ardesia, id, a, "", ago(100));
   ardesia = setChannel(ardesia, { partners: [{ name: "Lago Cloud (mock)", kind: "service_provider", lead: true, reg: { on: ago(125), until: ago(35) }, skills: ["hybrid-cloud"] }],
     route: "service", split: { discovery: "us", proof: "p0", delivery: "p0" } }, ago(120));
   let apov = makePov({ customer: ardesia.customer, createdOn: ago(100), nonce: "example7", start: ago(90), end: ago(75),

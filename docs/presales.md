@@ -30,6 +30,8 @@ A pre-sales engineer carries many prospects at once, each at a different point: 
   - what customers push back on, with how many of those deals were won;
   - the gaps heard most (questions answered "a real gap" or "nobody knows");
   - the tests not met;
+  - what the deals not won had not established: the qualification questions still open when they ended (for example, "Economic buyer: 2 of 3");
+  - how deals ended by route to purchase and by the kind of partner leading them;
   - the median days from first meeting to proof, of the proof itself, and from its end to the decision;
   - where deals start.
 
@@ -47,9 +49,9 @@ A pre-sales engineer carries many prospects at once, each at a different point: 
 
 ![Your team: each engineer's pipeline, the deals at risk, and what the team's deals teach](img/app-team.png)
 
-- **This week and next.** The dated conditions from every journey, and the start and end of every proof of value, for the next two weeks; what is late comes first.
-- **Opportunities.** One row per prospect: its stage, the line to start with, how much of the discovery is done, what is at stake in the customer's own figures, how the proof is going, and the next thing to do (what is late first, then what the proof needs, then the next dated condition; with nothing dated, the first thing still to do in the phase the prospect is in, from [the way forward](workshop.md#the-way-forward)). Open one to carry on where it stands: its questions, its journey or its proof of value.
-- **For the account team.** The Monday note, in Markdown: where each opportunity stands, what is late, what is next. And the pipeline as a CSV for a forecast call or a CRM import; cells a spreadsheet would run as formulas are defused.
+- **This week and next.** The dated conditions from every journey, the start and end of every proof of value, and the day a partner's deal registration runs out, for the next two weeks; what is late comes first.
+- **Opportunities.** One row per prospect: its stage, the partner it is sold with and the phase it is in on [the way forward](workshop.md#the-way-forward), the line to start with, how much of the discovery is done, what is at stake in the customer's own figures, how the proof is going, and the next thing to do (what is late first, then what the proof needs, then the next dated condition; with nothing dated, the first thing still to do in the phase the prospect is in, from [the way forward](workshop.md#the-way-forward)). Open one to carry on where it stands: its questions, its journey or its proof of value.
+- **For the account team.** The Monday note, in Markdown: where each opportunity stands, who it is sold with and how far it is qualified, what is late, what is next. And the pipeline as a CSV for a forecast call or a CRM import, with the partner, its kind, the route to purchase, the end of the registration, the qualification and the phase; cells a spreadsheet would run as formulas are defused.
 - **Invented examples.** "Fill it with invented examples" adds four made-up prospects at four stages, dated around today, so the desk can be shown at work; "Remove the invented examples" takes them away without touching real work.
 
 ## The path through one prospect

@@ -5,6 +5,8 @@
  */
 import { assess } from "./workshop.js";
 import { progress, OUTCOMES, REASONS } from "./pov.js";
+import { DEAL, dealState } from "./qualify.js";
+import { ROUTES, KINDS } from "./partners.js";
 
 const isExampleId = (id) => /\|example\d$/.test(id || "");
 const cmp = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
@@ -45,6 +47,11 @@ export function dealFacts(workshops, povs, catalog) {
       pov: p ? { stage: p.stage, start: p.start || "", end: p.end || "", verdict: pr.verdict, met: pr.met, total: pr.total,
         not_met: p.criteria.filter((c) => c.status === "not_met").map((c) => clean(c.text)) } : null,
       outcome: p && p.outcome ? { result: p.outcome.result, reason: p.outcome.reason, on: p.outcome.on } : null,
+      // who it was sold with and how far it was qualified: kinds, routes and tags only, never notes
+      route: w && w.channel && w.channel.route ? w.channel.route : "",
+      partner_kind: w && w.channel ? (w.channel.partners.find((x) => x.lead) || w.channel.partners[0]).kind : "",
+      qualified: w && w.deal ? dealState(w.deal).passed : "",
+      not_known: w && w.deal ? DEAL.filter((d) => !(w.deal[d.id] && w.deal[d.id].a === "known")).map((d) => d.tag) : null,
     });
   }
   return out.sort((a, b) => cmp(a.customer, b.customer));
@@ -92,6 +99,21 @@ export function lessons(facts, { includeExamples = false } = {}) {
   for (const f of deals) for (const t of (f.pov ? f.pov.not_met : [])) notMet.set(t, { key: t, text: t, count: (notMet.get(t) || { count: 0 }).count + 1 });
   const lands = new Map();
   for (const f of deals.filter((x) => x.land)) lands.set(f.land, { key: f.land, label: f.land, count: (lands.get(f.land) || { count: 0 }).count + 1 });
+  // how deals ended by route to purchase and by the kind of partner leading them
+  const tally = (key, words) => {
+    const m = new Map();
+    for (const f of decided.filter((x) => x[key])) {
+      const have = m.get(f[key]) || { key: f[key], label: words[f[key]] || f[key], count: 0, won: 0 };
+      have.count += 1;
+      if (f.outcome.result === "won") have.won += 1;
+      m.set(f[key], have);
+    }
+    return top(m, 6);
+  };
+  // what the deals that were not won had not established: the qualification left open when they ended
+  const notWon = decided.filter((f) => f.outcome.result !== "won" && Array.isArray(f.not_known));
+  const missing = new Map();
+  for (const f of notWon) for (const t of f.not_known) missing.set(t, { key: t, tag: t, count: (missing.get(t) || { count: 0 }).count + 1 });
   const proofs = deals.filter((f) => f.pov && f.pov.stage === "done");
   const technical = proofs.filter((f) => f.pov.verdict === "all criteria met" || f.pov.verdict === "mostly met").length;
   return {
@@ -99,6 +121,7 @@ export function lessons(facts, { includeExamples = false } = {}) {
     win_rate: decided.length ? Math.round((won / decided.length) * 100) : null,
     proofs: proofs.length, technical_wins: technical, technical_rate: proofs.length ? Math.round((technical / proofs.length) * 100) : null,
     reasons: top(reasons, 6), objections: top(objections, 6), gaps: top(gaps, 6), not_met: top(notMet, 5), lands: top(lands, 5),
+    routes: tally("route", ROUTES), partner_kinds: tally("partner_kind", KINDS), not_established: { of: notWon.length, tags: top(missing, 5) },
     cycle: {
       to_proof: median(deals.filter((f) => f.pov && f.pov.start && f.started_on).map((f) => days(f.started_on, f.pov.start))),
       proof: median(deals.filter((f) => f.pov && f.pov.start && f.pov.end && f.pov.stage === "done").map((f) => days(f.pov.start, f.pov.end))),
@@ -116,6 +139,13 @@ export function lessonsMarkdown(l, title = "What our deals teach") {
   if (l.proofs) out.push(`- Proofs of value finished: ${l.proofs}, with the criteria met or mostly met in ${l.technical_wins} (${l.technical_rate}%).`);
   if (l.reasons.length) out.push(`- When not won: ${l.reasons.map((r) => `${r.label.toLowerCase()} (${r.count})`).join(", ")}.`);
   if (l.decided || l.proofs) out.push("");
+  if (l.not_established && l.not_established.tags.length) out.push("## What the deals not won had not established", "", ...l.not_established.tags.map((t) => `- ${t.tag}: ${t.count} of ${l.not_established.of}`), "");
+  if ((l.routes || []).length || (l.partner_kinds || []).length) {
+    out.push("## How deals ended, by route and partner", "");
+    for (const r of l.routes || []) out.push(`- ${r.label}: ${r.won} won of ${r.count}`);
+    for (const k of l.partner_kinds || []) out.push(`- Led by a ${k.label.toLowerCase()}: ${k.won} won of ${k.count}`);
+    out.push("");
+  }
   if (l.objections.length) out.push("## What customers push back on", "", ...l.objections.map((o) => `- "${o.says}" (${o.line.toLowerCase()}): ${plural(o.count, "prospect")}${o.won + o.lost ? `, ${o.won} won and ${o.lost} not` : ""}.`), "");
   if (l.gaps.length) out.push("## The gaps heard most", "", ...l.gaps.map((g) => `- ${g.q} (${g.line.toLowerCase()}): ${plural(g.count, "prospect")}${g.unknown ? `, ${g.unknown} where nobody knew` : ""}.`), "");
   if (l.not_met.length) out.push("## Tests not met", "", ...l.not_met.map((t) => `- ${t.text} (${t.count})`), "");

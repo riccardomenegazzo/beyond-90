@@ -11,6 +11,7 @@ import { buildCase, caseLine } from "./valuecase.js";
 import { gpuSketch } from "./gpu.js";
 import { drSketch } from "./drsketch.js";
 import { objSketch } from "./objsketch.js";
+import { channelState, KINDS } from "./partners.js";
 
 const clean = (t) => String(t == null ? "" : t).replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim();
 const cell = (t) => clean(t).replace(/\|/g, "/");
@@ -101,6 +102,14 @@ export function handoverMarkdown(catalog, w, pov, today) {
   if (os && os.ok) facts.push(`Backup capacity: ${os.usable} TiB usable, ${os.raw} TiB raw, about ${os.gbps} Gbit/s in the nightly window; to confirm with the backup product's own calculator.`);
   if (gs && gs.ok) facts.push(`GPU sketch: ${gs.gpus} GPUs in ${gs.servers} server${gs.servers === 1 ? "" : "s"}, ${gs.copies} copies of the model, decided by ${gs.decided}; to confirm with a benchmark on the customer's own prompts.`);
   if (facts.length) L.push("## The numbers it rests on", "", ...facts.map((x) => `- ${x}`), "");
+  // who delivers: the partners on the deal and who owns deployment and support, with the skills still to line up
+  if (w.channel) {
+    const st = channelState(catalog, w, today);
+    const own = (id) => st.rows.find((r) => r.id === id);
+    L.push("## Who delivers", "", `- Deployment and migration: ${own("delivery").whoText}.`, `- Support after go-live: ${own("support").whoText}.`,
+      ...st.partners.map((p) => `- ${p.name}: ${KINDS[p.kind].toLowerCase()}${p.lead ? ", led the deal" : ""}${(p.skills || []).length ? `; skills on ${p.skills.map((x) => (catalog.lines[x] ? catalog.lines[x].label.toLowerCase() : x)).join(", ")}` : ""}.`),
+      ...st.gaps.filter((g) => g.activities.some((a) => a !== "proof of value")).map((g) => `- To line up before go-live: ${g.partner} has no skills yet on ${g.lines.join(", ").toLowerCase()}.`), "");
+  }
   // who
   const told = res.land ? stories(catalog, w, res).find((x) => x.land) : null;
   if (told && told.people.length) L.push("## Who to keep involved", "", ...told.people.map((x) => `- ${x}`), "");
