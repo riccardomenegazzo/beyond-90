@@ -188,6 +188,15 @@ def shoot(site: Path, out: Path) -> None:
             pg.evaluate("(() => { const c = document.getElementById('rfpaward'); window.scrollTo({ top: c.getBoundingClientRect().top + window.scrollY - 76, behavior: 'instant' }); })()")
             pg.wait_for_timeout(300)
             pg.screenshot(path=str(out / "app-rfp-award.png"))
+            # bid or no bid: a few answers by hand, the rest read from the tender
+            bid = pg.locator("#rfpbid")
+            for start, answer in (("We, or the partner who bids", "Yes"), ("We knew of it", "Partly"), ("It is not written around", "Yes"),
+                                  ("We have the references", "Partly"), ("Its value", "Yes"), ("The contract terms", "Yes"), ("We, and the partner, have the people", "Partly")):
+                bid.get_by_role("group", name=f"Answer: {start}").get_by_role("button", name=answer).click()
+                pg.wait_for_timeout(120)
+            pg.evaluate("(() => { const c = document.getElementById('rfpbid'); window.scrollTo({ top: c.getBoundingClientRect().top + window.scrollY - 76, behavior: 'instant' }); document.activeElement && document.activeElement.blur(); })()")
+            pg.wait_for_timeout(300)
+            pg.screenshot(path=str(out / "app-rfp-bid.png"))
             # the way forward: the phase now, what moves it on, and the demo planned from what was said
             pg.click("#tabs [data-tab=wsforward]")
             pg.wait_for_selector("#view .fwhero")

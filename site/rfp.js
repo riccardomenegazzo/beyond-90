@@ -9,6 +9,7 @@
 import { csvCell } from "./ui.js";
 import { parseCsv } from "./inventory.js";
 import { validAward, standings, awardSay, awardMarkdown } from "./award.js";
+import { validDecision, review, reviewMarkdown } from "./bidcall.js";
 
 export const ANSWERS = { yes: "Met", partly: "Partly", no: "Not met", check: "To check" };
 /** Who issued it: a public body takes questions only through the formal channel; a company can be asked in a meeting. */
@@ -387,11 +388,12 @@ export function tendersOverview(workshops, catalog, today) {
     const st = rfpState(catalog, w, today);
     const dl = st.deadlines;
     // the next date that matters: the questions while they can still be sent, then the bid
-    const next = dl.questions_in != null && dl.questions_in >= 0 ? { what: "Questions due", on: dl.questions_due, in: dl.questions_in }
+    const next = notBidding(w) ? null : dl.questions_in != null && dl.questions_in >= 0 ? { what: "Questions due", on: dl.questions_due, in: dl.questions_in }
       : dl.due_in != null ? { what: dl.due_in < 0 ? "Bid was due" : "Bid due", on: dl.due, in: dl.due_in } : null;
     out.push({ workshop: w.id, customer: w.customer, title: st.title, issuer: (w.rfp.issuer && ISSUERS[w.rfp.issuer]) || "", total: st.total, answered: st.total - st.open,
       must: st.must, must_no: st.must_no.length, yes: st.yes, partly: st.partly, no: st.no, check: st.check, verdict: st.verdict, next, ready: responseChecks(catalog, w).ready,
-      award: st.award && st.award.ready ? { rank: st.award.rank, of: st.award.bids.length, margin: st.award.margin } : null });
+      award: st.award && st.award.ready ? { rank: st.award.rank, of: st.award.bids.length, margin: st.award.margin } : null,
+      call: st.review.call, review: st.review.level });
   }
   const key = (t) => (t.next ? (t.next.in < 0 ? 100000 + t.next.in : t.next.in) : 1e9);
   return out.sort((a, b) => key(a) - key(b) || a.customer.localeCompare(b.customer));
@@ -491,7 +493,8 @@ export function validRequirement(r) {
 /** Stored with a workshop: the tender's name and dates, and its requirements, each checked. */
 export function validRfp(t) {
   if (!t || typeof t !== "object" || Array.isArray(t)) return false;
-  if (!Object.keys(t).every((k) => ["title", "due", "questions_due", "reqs", "issuer", "sections", "pages", "award"].includes(k))) return false;
+  if (!Object.keys(t).every((k) => ["title", "due", "questions_due", "reqs", "issuer", "sections", "pages", "award", "decision"].includes(k))) return false;
+  if (t.decision !== undefined && !validDecision(t.decision)) return false;
   if (t.award !== undefined && !validAward(t.award)) return false;
   if (t.pages !== undefined && !(Number.isInteger(t.pages) && t.pages >= 1 && t.pages <= MAX_PAGES)) return false;
   if (t.sections !== undefined && !validSections(t.sections)) return false;
@@ -571,17 +574,23 @@ export function rfpState(catalog, w, today) {
   else if (mustNo.length) verdict = { level: "risk", text: `${plural(mustNo.length, "mandatory requirement")} not met: ask whether an equivalent is accepted${t.questions_due ? ` before ${t.questions_due}` : ""}, or decide not to bid.` };
   else if (clarify.length || openMust.length) verdict = { level: "clarify", text: `No mandatory requirement fails so far: ${plural(clarify.length, "to clarify", "to clarify")}${openMust.length ? `, ${openMust.length} still to answer` : ""}.` };
   else verdict = { level: "go", text: "Every mandatory requirement is met: the bid rests on the scored ones." };
+  if (t.decision && t.decision.call === "no_bid") verdict = { level: "nobid", text: `We decided not to bid, on ${t.decision.on}.${t.decision.why ? ` ${t.decision.why}` : ""}` };
   // who still owes an answer: the requirements not answered or to check, by who was asked
   const owed = Object.entries(WHO).map(([k, v]) => ({ who: k, label: v, count: reqs.filter((r) => r.who === k && (!r.a || r.a === "check")).length })).filter((x) => x.count);
   const unassigned = reqs.filter((r) => !r.who && (!r.a || r.a === "check")).length;
-  return {
+  const out = {
     owed, unassigned,
     title: t.title, total: reqs.length, must: must.length, scored: scored.length,
     yes: count(reqs, "yes"), partly: count(reqs, "partly"), no: count(reqs, "no"), check: count(reqs, "check"), open: reqs.filter((r) => !r.a).length,
     must_no: mustNo, clarify, open_must: openMust, points, lines, outside: lines.filter((l) => l.profile && !l.in_scope), deadlines, verdict,
     award: t.award ? standings(t.award, points) : null,
   };
+  out.review = review(w, out);
+  return out;
 }
+
+/** Whether the team decided not to bid: its deadlines and risks then leave the desk, and the letter declining is what is left. */
+export const notBidding = (w) => !!(w.rfp && w.rfp.decision && w.rfp.decision.call === "no_bid");
 
 // ------------------------------------------------------------------ finding your way through the list
 
@@ -623,9 +632,12 @@ export function matchesSearch(r, query) {
  */
 export function nextSteps(catalog, w, today, others = []) {
   const st = rfpState(catalog, w, today);
+  if (notBidding(w)) return [{ id: "nobid", text: `We decided not to bid, on ${w.rfp.decision.on}: the letter declining it is ready to adapt.`, act: "copy-letter", label: "Copy the letter" }];
   if (!st.total) return [{ id: "load", text: "Load the tender's requirements: paste them, or read the tender's file.", act: "load", label: "Load them" }];
   const out = [];
   const dl = st.deadlines;
+  // the review says no on a question that can exclude the bid, other than the requirements (shown on their own)
+  if (!st.review.call && st.review.stops.some((q) => q.id !== "musts")) out.push({ id: "review", text: st.review.text, act: "review", label: "See the review" });
   if (st.must_no.length) out.push({ id: "no", text: `${plural(st.must_no.length, "mandatory requirement")} not met: ask whether an equivalent is accepted${dl.questions_due ? ` by ${dl.questions_due}` : ""}, or decide not to bid.`, act: "filter:no", label: "See them" });
   // an answer reused from another tender that still names that customer must never reach a bid
   const named = mentionsOfOthers(w, others);
@@ -698,6 +710,7 @@ export function rfpMarkdown(catalog, w, today) {
   const ev = evidenceFor(catalog, w);
   if (ev.length) out.push("## Evidence to gather", "", ...ev.map((e) => `- ${e.item} (for ${e.refs.slice(0, 6).join(", ")}${e.refs.length > 6 ? `, and ${e.refs.length - 6} more` : ""})`), "");
   if (w.rfp.award) out.push(awardMarkdown(w.rfp.award, st.award));
+  if (w.rfp.decision) out.push(reviewMarkdown(w, st.review));
   if (st.owed.length || st.unassigned) out.push("## Still to answer, by who", "", ...st.owed.map((x) => `- ${x.label}: ${x.count}`), ...(st.unassigned ? [`- Nobody asked yet: ${st.unassigned}`] : []), "");
   out.push("_Prepared with Beyond 90. The requirements stay in the browser they were pasted into._", "");
   return out.join("\n");

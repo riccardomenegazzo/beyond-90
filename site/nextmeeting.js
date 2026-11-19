@@ -26,7 +26,7 @@ export function nextMeeting(catalog, w, today) {
   const roles = [...new Set([...res.unknowns.slice(0, 5), ...ask].map((x) => x.role).filter((r) => ROLE_WORDS[r]))];
   // a company's request for proposal: the requirements to check are understood best by asking, in the meeting.
   // A public body takes questions only through the tender's formal channel, so nothing of its tender goes here.
-  const tender = w.rfp && w.rfp.issuer === "company" ? w.rfp.reqs.filter((r) => r.a === "check").slice(0, 5).map((r) => ({ text: clean(r.text), ref: clean(r.ref) })) : [];
+  const tender = w.rfp && w.rfp.issuer === "company" && !(w.rfp.decision && w.rfp.decision.call === "no_bid") ? w.rfp.reqs.filter((r) => r.a === "check").slice(0, 5).map((r) => ({ text: clean(r.text), ref: clean(r.ref) })) : [];
   return { customer: w.customer, land: res.land ? res.land.label : "", settle, ask, prove, due, late, people, roles, tender,
     empty: !settle.length && !ask.length && !prove.length && !due.length && !late.length && !tender.length };
 }

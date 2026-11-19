@@ -953,6 +953,8 @@ function workshopContext() {
     setRfpMeta: async (meta) => edit((x) => WSHOP.setRfpMeta(x, meta, today)),
     clearRfp: async () => edit((x) => WSHOP.clearRfp(x, today)),
     setAward: async (given) => edit((x) => WSHOP.setAward(x, given, today)),
+    setBidAnswer: async (id, a) => edit((x) => WSHOP.setBidAnswer(x, id, a, today)),
+    setBidCall: async (call, why) => edit((x) => WSHOP.setBidCall(x, call, why, today)),
     fillNotes: async () => edit((x) => WSHOP.fillSuggestedNotes(x, cat, today)),
     setSection: async (key, title) => edit((x) => WSHOP.setSectionTitle(x, key, title, today)),
     // the other tenders in this browser, for the answers given before

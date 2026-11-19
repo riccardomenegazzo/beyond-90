@@ -11,7 +11,7 @@ import { dealState } from "./qualify.js";
 import { qualify as povReady, progress as povProgress } from "./pov.js";
 import { hasCase } from "./valuecase.js";
 import { registrationOf, channelState } from "./partners.js";
-import { rfpState } from "./rfp.js";
+import { rfpState, notBidding } from "./rfp.js";
 
 export const PHASES = [
   { id: "discover", label: "Discovery", goal: "Know where it hurts, what it is worth to them, and who decides.",
@@ -123,7 +123,7 @@ export function forward(catalog, w, pov, today = "") {
   const outside = (res.raised || []).filter((o) => !inProof.has(clean(o.prove).toLowerCase()));
   const outcome = pov && pov.outcome ? pov.outcome.result : "";
   const onTable = alternativesFor(catalog, w).filter((a) => a.on);
-  const tender = w.rfp && w.rfp.reqs.length ? rfpState(catalog, w, today || w.updated_on) : null;
+  const tender = w.rfp && w.rfp.reqs.length && !notBidding(w) ? rfpState(catalog, w, today || w.updated_on) : null;
   // with partners on the deal: their registration, who runs the proof with them, and who delivers with the skills
   const reg = registrationOf(w.channel, today || w.updated_on);
   const cs = w.channel ? channelState(catalog, w, today || w.updated_on) : null;

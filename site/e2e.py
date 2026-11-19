@@ -892,6 +892,27 @@ def main(site: str) -> int:
         page.click("[data-tab=wsrfp]")
         page.wait_for_selector("#rfpaward .awardlead.first")
         check(page.get_by_label("Price, rival 1", exact=True).input_value() == "1150000", "the comparison is kept with the tender")
+        # bid or no bid: four answers read from the tender, the rest by hand; a no that can exclude the bid stops it
+        bid = page.locator("#rfpbid")
+        check("Read from the tender:" in bid.inner_text() and "can exclude the bid" in bid.inner_text(), "the bid review reads what the tender already says, and marks what can exclude the bid")
+        bid.get_by_role("group", name="Answer: We, or the partner who bids").get_by_role("button", name="Yes").click()
+        page.wait_for_selector("#rfpbid .bidq.a-yes:has-text('We, or the partner who bids')")
+        bid.get_by_role("group", name="Answer: The contract terms are acceptable").get_by_role("button", name="No").click()
+        page.wait_for_selector("#rfpbid .bidq.a-no:has-text('The contract terms are acceptable')")
+        check("Do not bid as it stands" in bid.inner_text() and "the contract terms are acceptable" in bid.inner_text(), "a no on the contract terms stops the bid, saying why")
+        check("Do not bid as it stands" in page.inner_text("#view .rfphero .rfpnext"), "and leads what to do next")
+        page.get_by_label("Why the team decided").fill("The terms ask for unlimited liability (mock)")
+        bid.get_by_role("button", name="We do not bid").click()
+        page.wait_for_selector("#view .rfpverdict.nobid")
+        check("We decided not to bid, on " in page.inner_text("#view .rfphero") and bid.get_by_role("button", name="Copy the letter declining it").count() == 1,
+              "the team's call is kept, dated, and the letter declining it is ready")
+        bid.get_by_role("button", name="Take the call back").click()
+        page.wait_for_selector("#rfpbid .bidcall button:has-text('We do not bid')")
+        for group in ("Answer: The contract terms are acceptable", "Answer: We, or the partner who bids"):
+            pressed = bid.get_by_role("group", name=group).locator("button[aria-pressed=true]")
+            pressed.click()
+            page.wait_for_timeout(300)
+        check(page.locator("#view .rfpverdict.nobid").count() == 0 and bid.locator(".bidq.a-yes").count() <= 2, "a call taken back puts the tender back in play")
         # the tender's own workbook: the sheet holding the requirements is found and read
         page.locator("#view .rfploader > summary").click()
         page.locator("#view .filebtn input[type=file]").set_input_files(files=[{"name": "tender.xlsx", "mimeType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",

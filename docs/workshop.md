@@ -231,6 +231,33 @@ The other buttons give:
 
   They are drafts, to put in the tender's language.
 
+**Bid or no bid.** Whether the tender is worth answering, decided before the work starts and reviewed as it goes. Eleven questions bid teams ask, in four groups:
+- **Can we take part:** the standing the tender asks of the bidder (turnover, certifications, registrations, references); every mandatory requirement can be met; there is time to write a good response.
+- **Can we win:** we knew of it before it was published; it is not written around a rival; we can come first on price and quality; we have the references and evidence it rewards.
+- **Is it worth it:** its value, and what it opens next, justify what answering costs; the contract terms are acceptable.
+- **Can we deliver:** a partner able to deliver is on the deal and leads it; we and the partner have the people for the dates the tender sets.
+
+Each is answered yes, partly or no. Four are read from the tender unless answered by hand, each saying what it read:
+- the mandatory requirements, from the answers;
+- the time left, from the bid's date and the requirements still open;
+- price and quality, from What wins it;
+- the partner, from Partners.
+
+Three can exclude the bid: the standing, the mandatory requirements, the terms. The review then advises:
+- **Do not bid** when one of those is no, saying which;
+- **Find out first** while questions are not known;
+- **Think twice** when much is against it;
+- **Bid** otherwise, saying what is against it.
+
+**The team's call** is separate: "We bid" or "We do not bid", dated, with why in a sentence. The review advises; the team decides. When the call is not to bid:
+- the tender leaves the desk's risks and agenda, the way forward and the next meeting's agenda;
+- **Tenders in progress** shows it as not bidding;
+- **Do next** offers a short, polite letter declining it, to adapt.
+
+**Copy for the bid review** gives the review in Markdown, and the bid summary carries it.
+
+![Bid or no bid: the recommendation, eleven questions in four groups, what was read from the tender, and the team's call](img/app-rfp-bid.png)
+
 **What wins it: price and quality.** When the tender goes to the best ratio of quality to price, the card compares our bid with the rivals' guessed ones:
 - **How the tender scores**, as the tender states it:
   - the points for quality and for price (70 and 30, say);

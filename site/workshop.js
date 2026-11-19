@@ -18,6 +18,7 @@ import { validObj, objSketch, objMarkdown } from "./objsketch.js";
 import { validEdge, edgeSketch, edgeMarkdown } from "./edgesketch.js";
 import { validUnit, unitSketch, unitMarkdown } from "./unitcost.js";
 import { cleanAward } from "./award.js";
+import { withAnswer, withCall, emptyDecision } from "./bidcall.js";
 import { validRfp, withRequirements, withRequirement, lineOrder, emptyRfp, rfpState, suggestAnswer, TITLE_MAX, MAX_PAGES, SECTION_MAX } from "./rfp.js";
 import { validDeal, withDealAnswer, dealMarkdown } from "./qualify.js";
 import { ROLE_WORDS, displayOrder, inMeeting } from "./questions.js";
@@ -272,9 +273,32 @@ export function setRfpMeta(w, { title = "", due = "", questions_due: q = "", iss
     rfp.pages = n;
   }
   const next = { ...w, rfp };
-  if (!rfp.reqs.length && !t && !rfp.due && !rfp.questions_due && !issuer && !rfp.award) delete next.rfp;
+  if (!rfp.reqs.length && !t && !rfp.due && !rfp.questions_due && !issuer && !rfp.award && !rfp.decision) delete next.rfp;
   return changed(next, {}, today);
 }
+
+/** One answer of the bid or no bid review; "" takes it back. */
+export function setBidAnswer(w, id, a, today) {
+  const rfp = { ...(w.rfp || emptyRfp()) };
+  rfp.decision = withAnswer(rfp.decision, id, a);
+  return changed(tidyDecision(w, rfp), {}, today);
+}
+
+/** The team's call on the tender, bid or not, dated today, with why; "" takes it back. */
+export function setBidCall(w, call, why, today) {
+  const rfp = { ...(w.rfp || emptyRfp()) };
+  rfp.decision = withCall(rfp.decision, call, today, why);
+  return changed(tidyDecision(w, rfp), {}, today);
+}
+
+// a review with nothing in it is not kept; nor is a tender with nothing in it
+const tidyDecision = (w, rfp) => {
+  const d = rfp.decision || emptyDecision();
+  if (!Object.keys(d.a).length && !d.call && !d.why) delete rfp.decision;
+  const next = { ...w, rfp };
+  if (!rfp.reqs.length && !rfp.title && !rfp.due && !rfp.questions_due && !rfp.issuer && !rfp.award && !rfp.decision) delete next.rfp;
+  return next;
+};
 
 /** How the tender is awarded on price and quality, with our offer and the rivals' guessed ones; null takes it away. */
 export function setAward(w, given, today) {
@@ -282,7 +306,7 @@ export function setAward(w, given, today) {
   if (given == null) delete rfp.award;
   else rfp.award = cleanAward(given);
   const next = { ...w, rfp };
-  if (!rfp.reqs.length && !rfp.title && !rfp.due && !rfp.questions_due && !rfp.issuer && !rfp.award) delete next.rfp;
+  if (!rfp.reqs.length && !rfp.title && !rfp.due && !rfp.questions_due && !rfp.issuer && !rfp.award && !rfp.decision) delete next.rfp;
   return changed(next, {}, today);
 }
 

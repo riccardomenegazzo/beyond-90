@@ -50,7 +50,7 @@ A pre-sales engineer carries many prospects at once, each at a different point: 
 ![Your team: each engineer's pipeline, the deals at risk, and what the team's deals teach](img/app-team.png)
 
 - **Tenders in progress.** Every tender kept in this browser, the nearest deadline first:
-  - whether the bid can go ahead (a mandatory requirement not met puts it at risk);
+  - whether the bid can go ahead (a mandatory requirement not met puts it at risk), or that the team decided not to bid;
   - who issues it;
   - a bar of the answers, and how many are answered;
   - where we stand on price and quality, once a comparison is filled in ("second of 3 on price and quality");

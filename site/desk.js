@@ -5,9 +5,9 @@
 // answers the questions of a Monday morning: where is each one, what is due this week, what is late, and what do I tell
 // the account team. Pure functions over plain records; the page and the tests share them.
 
-import { assess, journey, datedPlan, exampleWorkshop, makeWorkshop, setAnswer, setPlan, setWorth, setRaised, setDeal, setChannel, setAlt, setRfpMeta, setRequirement } from "./workshop.js";
+import { assess, journey, datedPlan, exampleWorkshop, makeWorkshop, setAnswer, setPlan, setWorth, setRaised, setDeal, setChannel, setAlt, setRfpMeta, setRequirement, setBidAnswer } from "./workshop.js";
 import { hasCase } from "./valuecase.js";
-import { rfpState, withRequirements, parseRequirements, EXAMPLE_TENDER, KEYWORDS } from "./rfp.js";
+import { rfpState, notBidding, withRequirements, parseRequirements, EXAMPLE_TENDER, KEYWORDS } from "./rfp.js";
 import { registrationOf, channelState, KINDS, ROUTES, ACTIVITIES } from "./partners.js";
 import { dealState } from "./qualify.js";
 import { forward, PHASES } from "./forward.js";
@@ -93,7 +93,7 @@ export function risksOf({ w, p, res, pr, stage, overdue, today }) {
     const known = (id) => deal[id] && deal[id].a === "known";
     if (later && !known("decider")) add("high", "We have not heard from who decides: the proof can be won and the deal still lost.");
     // a tender: a mandatory requirement not met can exclude the bid; the deadline for questions is the last chance to fix it
-    if (w.rfp && w.rfp.reqs.length) {
+    if (w.rfp && w.rfp.reqs.length && !notBidding(w)) {
       const t = rfpState(null, w, today);
       const dl = t.deadlines;
       if (t.must_no.length) add("high", `${t.must_no.length} mandatory requirement${t.must_no.length === 1 ? " of the tender is" : "s of the tender are"} not met: ask whether an equivalent is accepted, or decide not to bid.`);
@@ -201,7 +201,7 @@ export function agenda(workshops, povs, catalog, today, span = 14) {
   }
   // a tender's deadlines: questions to the contracting authority, and the bid itself
   for (const w of newest.values()) {
-    if (!w.rfp || closed.has(w.customer)) continue;
+    if (!w.rfp || closed.has(w.customer) || notBidding(w)) continue;
     const name = w.rfp.title ? `"${w.rfp.title}"` : "the tender";
     if (w.rfp.questions_due && w.rfp.questions_due >= today && w.rfp.questions_due <= horizon) items.push({ on: w.rfp.questions_due, customer: w.customer, what: `Questions on ${name} due to the contracting authority`, kind: "tender", who: "", late: false, workshop: w.id });
     if (w.rfp.due && w.rfp.due <= horizon && w.rfp.due >= shiftDay(today, -3)) items.push({ on: w.rfp.due, customer: w.customer, what: w.rfp.due < today ? `Bid for ${name} was due` : `Bid for ${name} due`, kind: "tender", who: "", late: w.rfp.due < today, workshop: w.id });
@@ -312,6 +312,8 @@ export function exampleDesk(today) {
     ["r9", { a: "no", note: "Object lock on a separate appliance" }], ["r11", { who: "partner" }], ["r16", { a: "yes", note: "Every copy and the management plane stay in Italy" }]]) {
     valle = setRequirement(valle, id, patch, ago(10));
   }
+  // the bid review, half done: known to the customer, terms fine, the references still to find
+  for (const [id, a] of [["standing", "yes"], ["known", "partly"], ["fair", "yes"], ["value", "yes"], ["terms", "yes"]]) valle = setBidAnswer(valle, id, a, ago(10));
   // still listening: a first meeting about AI on their own infrastructure
   let orsa = makeWorkshop({ customer: "Orsa Manufacturing (mock)", scope: ["private-ai", "kubernetes-platform", "object-storage"], createdOn: ago(1), nonce: "example3" });
   ["gap", "unknown"].forEach((a, i) => { orsa = setAnswer(orsa, "private-ai", i, a, i === 0 ? "Quality inspection on the line, with images that cannot leave the plant" : "", ago(1)); });

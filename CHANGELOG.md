@@ -2,6 +2,21 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.126.0
+
+- **Bid or no bid.** A review of whether a tender is worth answering, in the tender's page. Eleven questions bid teams ask, in four groups: can we take part, can we win, is it worth it, can we deliver.
+  - Four are read from the tender unless answered by hand, each saying what it read: the mandatory requirements, the time left, price and quality, the partner leading the deal.
+  - Three can exclude the bid: the bidder's standing, the mandatory requirements, the contract terms.
+  - **The review advises:** do not bid (naming the question that excludes it), find out first, think twice, or bid (naming what is against it).
+- **The team's call,** kept apart from the advice: we bid or we do not bid, dated, with why.
+  - Not bidding takes the tender off the desk's risks and agenda, the way forward and the next meeting.
+  - **Do next** then offers a short, polite letter declining it, to adapt.
+  - **Tenders in progress** shows it as not bidding.
+- The tender's header says where the review stands. A no that excludes the bid, other than a mandatory requirement, leads **Do next**.
+- **Copy for the bid review** gives the review in Markdown; the bid summary carries it.
+- The invented public tender on the desk has a review half done.
+- Stored with the tender and checked field by field on the way in; it never reaches the customer readout.
+
 ## 0.125.0
 
 - **What wins it: price and quality.** For a tender awarded on the best ratio of quality to price, a new card compares our bid with the rivals' guessed ones.
