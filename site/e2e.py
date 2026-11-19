@@ -807,10 +807,18 @@ def main(site: str) -> int:
         # qualify the deal: the same ten questions on every line, and the gate they open
         page.click("[data-tab=wsqualify]")
         page.wait_for_selector("#view .qdhero")
-        check("Not qualified yet" in page.inner_text("#view .qdhero") and page.locator("#view .qdq").count() == 10, "the deal starts unqualified, with ten questions")
+        check("Not qualified yet" in page.inner_text("#view .qdhero") and page.locator("#view .qdlist .qlrow").count() == 10 and page.locator("#view .qdlist .qlgroup").count() == 3,
+              "the deal starts unqualified, with ten questions in three groups")
         for tag, ans in (("Pain", "Known"), ("Metrics", "Partly"), ("Technical validation", "Partly")):
-            page.locator("#view .qdq").filter(has_text=tag).get_by_role("button", name=ans, exact=True).click()
-            page.wait_for_selector(f"#view .qdq:has-text('{tag}') .wsopt[aria-pressed=true]")
+            page.locator("#view .qdlist .qlrow").filter(has_text=tag).get_by_role("button", name=ans, exact=True).click()
+            page.wait_for_selector(f"#view .qdlist .qlrow:has-text('{tag}') .qlopt[aria-pressed=true]")
+        pain = page.locator("#view .qdlist .qlrow").filter(has_text="Pain")
+        pain.locator(".qlhead").click()
+        pain = page.locator("#view .qdlist .qlrow.open")
+        pain.locator("input.wsnote").fill("Two outages this year, the operations director carries them (mock)")
+        pain.locator("input.wsnote").press("Tab")
+        page.wait_for_selector("#view .qdlist .qlrow:has-text('Two outages this year')")
+        check("“Two outages this year" in page.inner_text("#view .qdlist"), "an opened question takes what was heard, and its row shows it")
         hero = page.inner_text("#view .qdhero")
         check("Ready for a demo built for them" in hero and "To be ready to propose a proof of value, find out" in hero and "Economic buyer:" in hero,
               "three answers make it ready for a demo built for them, and say what a proof of value still needs")
@@ -1749,9 +1757,10 @@ def main(site: str) -> int:
                 bad += [f"prepare: {v}" for v in audit()]
                 apage.click("[data-tab=wsqualify]")
                 apage.wait_for_selector("#view .qdhero")
-                apage.locator("#view .qdq").first.get_by_role("button", name="Known", exact=True).click()
-                apage.wait_for_selector("#view .qdq .wsopt[aria-pressed=true]")
-                apage.locator("#view .qdq").first.locator(".wshow summary").click()
+                apage.locator("#view .qdlist .qlrow").first.get_by_role("button", name="Known", exact=True).click()
+                apage.wait_for_selector("#view .qdlist .qlopt[aria-pressed=true]")
+                apage.locator("#view .qdlist .qlrow").first.locator(".qlhead").click()
+                apage.locator("#view .qdlist .qlrow.open .wshow summary").click()
                 bad += [f"qualify: {v}" for v in audit()]
                 apage.click("[data-tab=wsforward]")
                 apage.wait_for_selector("#view .fwhero")

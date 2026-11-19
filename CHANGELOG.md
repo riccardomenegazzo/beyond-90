@@ -2,6 +2,15 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.129.0
+
+- **Qualify the deal, shorter.** The third view on the compact pattern:
+  - the ten questions come first, grouped as a deal is won: why they would buy, how they decide, how we win it, each group a tile with a dot per question;
+  - each question is one line: its tag, what was heard or, until then, the question itself, and the answer in line;
+  - opened, a question shows all of it, why it matters, how to ask it and the note of what was heard; the keys 1 to 3 answer it and open the next one still open;
+  - filters: all, not answered, partly or not yet.
+- **What else they weigh** follows the ten questions; the introduction is no longer repeated in the card.
+
 ## 0.128.0
 
 - **The discovery questions, shorter.** The second view redone on the compact pattern of bid or no bid:

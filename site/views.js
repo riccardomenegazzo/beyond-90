@@ -2552,7 +2552,6 @@ export function qualifyView({ workshop: w, catalog, setDeal, setAlt, go }) {
     const st = QD.dealState(cur.deal);
     const at = st.passed ? QD.GATES.findIndex((g) => g.id === st.passed) : -1;
     put(hero, h("h2", { text: "Where the deal stands" }),
-      h("p", { class: "note first", text: "Ten questions that are the same whatever the product: is there a reason to change, a date, a measured result, someone who decides, a way to decide, and a proof that would convince? Ask them alongside the technical ones. For you and the seller: they never appear in the customer readout." }),
       h("div", { class: "qdverdict" }, h("b", { text: st.verdict }), h("span", { class: "muted", text: `${st.answered} of ${QD.DEAL.length} answered, ${st.score} out of 100` })),
       h("ol", { class: "qdgates", "aria-label": "How far the deal is qualified" }, QD.GATES.map((g, i) => h("li", { class: i <= at ? "on" : i === at + 1 ? "next" : "" },
         h("span", { class: "sr-only", text: i <= at ? "Passed: " : i === at + 1 ? "Next: " : "Later: " }), g.label))),
@@ -2561,32 +2560,35 @@ export function qualifyView({ workshop: w, catalog, setDeal, setAlt, go }) {
         h("ul", {}, st.missing.map((m) => h("li", {}, h("b", { text: m.tag + ": " }), m.probe, m.min === "known" && m.a === "partly" ? h("span", { class: "muted", text: " (partly known: needs to be known)" }) : null)))) : null);
   };
   drawHero();
-  const items = QD.DEAL.map((x) => {
-    const li = h("li", { class: "wsq qdq" });
-    const draw = () => {
+  // the ten questions, compact: grouped as a deal is won (why buy, how they decide, how we win), one opened at a time
+  const QGROUP = { why_change: "why", why_now: "why", outcome: "why", decider: "decide", criteria: "decide", process: "decide", paper: "decide", proof: "win", champion: "win", alternatives: "win" };
+  const qdList = QL.questionList({
+    label: "The ten qualification questions",
+    groups: [{ key: "why", label: "Why they would buy" }, { key: "decide", label: "How they decide" }, { key: "win", label: "How we win it" }],
+    answers: [{ key: "known", label: "Known", tone: "good" }, { key: "partly", label: "Partly", tone: "mid" }, { key: "unknown", label: "Not yet", tone: "unknown" }],
+    filters: [{ key: "all", label: "All" }, { key: "open", label: "Not answered", test: (x) => !x.a }, { key: "gaps", label: "Partly or not yet", test: (x) => x.a === "partly" || x.a === "unknown" }],
+    items: () => QD.DEAL.map((x) => {
+      const ans = cur.deal && cur.deal[x.id];
+      return { id: x.id, group: QGROUP[x.id] || "win", label: x.tag, text: x.q, a: ans ? ans.a : "", aside: ans && ans.note ? `“${ans.note}”` : x.q };
+    }),
+    answer: async (id, a) => { const have = cur.deal && cur.deal[id]; cur = await setDeal(id, a, a && have ? have.note : ""); },
+    onAnswered: () => drawHero(),
+    detail: (item) => {
+      const x = QD.DEAL.find((d) => d.id === item.id);
       const ans = cur.deal && cur.deal[x.id];
       const note = h("input", { type: "text", class: "wsnote", maxlength: 300, value: ans ? ans.note : "", placeholder: "What we heard, in a few words", "aria-label": `Note for: ${x.q}` });
       note.addEventListener("change", async () => {
         const have = cur.deal && cur.deal[x.id];
         if (!have) return;
         try { cur = await setDeal(x.id, have.a, note.value); say.textContent = ""; } catch (e) { say.textContent = e.message; }
+        qdList.draw();
       });
-      put(li, h("div", { class: "wsqtext" }, h("span", { class: "wsstage qdtag", text: x.tag }), h("span", { text: x.q }), h("small", { class: "muted", text: x.why }),
-        h("details", { class: "wshow" }, h("summary", { text: "How to ask it" }), h("dl", { class: "objdl" }, h("dt", { text: "Listen for" }), h("dd", { text: x.listen }), h("dt", { text: "Then ask" }), h("dd", { text: x.probe })))),
-      h("div", { class: "wsans", role: "group", "aria-label": `Answer to: ${x.q}` }, Object.entries(QD.STATES).map(([k, v]) =>
-        h("button", { type: "button", class: "wsopt q-" + k, "aria-pressed": String(!!ans && ans.a === k), text: v.label,
-          onclick: async () => {
-            const again = ans && ans.a === k;
-            try { cur = await setDeal(x.id, again ? "" : k, again ? "" : note.value); say.textContent = ""; } catch (e) { say.textContent = e.message; return; }
-            draw(); drawHero();
-            const btn = li.querySelector(`.q-${k}`);
-            if (btn) btn.focus();
-          } }))),
-      ans ? note : null);
-    };
-    draw();
-    return li;
+      return h("div", { class: "bidmore" }, h("small", { class: "muted", text: x.why }),
+        h("details", { class: "wshow" }, h("summary", { text: "How to ask it" }), h("dl", { class: "objdl" }, h("dt", { text: "Listen for" }), h("dd", { text: x.listen }), h("dt", { text: "Then ask" }), h("dd", { text: x.probe }))),
+        ans ? note : h("small", { class: "muted", text: "Answer it to note what you heard." }));
+    },
   });
+  qdList.el.classList.add("qdlist");
   const copy = h("button", { class: "btn small", type: "button", text: "Copy for the seller", onclick: (ev) => {
     const t = QD.dealMarkdown(cur.deal);
     copyText(t || "Nothing answered yet.").then((ok) => { ev.target.textContent = ok ? "Copied" : "Not copied"; });
@@ -2621,10 +2623,10 @@ export function qualifyView({ workshop: w, catalog, setDeal, setAlt, go }) {
   const altCard = WS.alternativesFor(catalog, w).length ? card("What else they weigh", h("div", {}, altBox, altSay),
     { sub: "Renewing, a public cloud, another platform, building it, or waiting: the alternatives every deal is measured against, written to be fair. Knowing when the other choice wins is what makes the rest believable." }) : null;
   return h("div", {}, hero,
-    altCard,
-    card("The ten questions", h("div", {}, h("ol", { class: "wslist" }, items), say,
+    card("The ten questions", h("div", {}, qdList.el, say,
       h("div", { class: "btnrow" }, copy, h("button", { class: "btn small", type: "button", text: "Back to the questions", onclick: () => go("workshop") }))),
-    { sub: "Known, partly, or not yet, with what you heard. The same idea in the words most sales methods use, so the seller reads the same list." }));
+    { sub: "The same on every line, asked alongside the technical ones: known, partly or not yet, with what you heard. Named as most sales methods name them, so the seller reads the same list; never in the customer readout." }),
+    altCard);
 }
 
 /** A tender or a request for proposal, requirement by requirement: whether to bid, what to ask, the points, the matrix. */

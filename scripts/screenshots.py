@@ -130,7 +130,7 @@ def shoot(site: Path, out: Path) -> None:
             pg.click("#tabs [data-tab=wsqualify]")
             pg.wait_for_selector("#view .qdhero")
             for i, ans in ((0, "Known"), (1, "Known"), (2, "Partly"), (3, "Not yet"), (7, "Partly"), (8, "Known")):    # in the order of the ten questions
-                pg.locator("#view .qdq").nth(i).get_by_role("button", name=ans, exact=True).click()
+                pg.locator("#view .qdlist .qlrow").nth(i).get_by_role("button", name=ans, exact=True).click()
                 pg.wait_for_timeout(80)
             pg.evaluate("window.scrollTo({ top: 0, behavior: 'instant' })")
             pg.wait_for_timeout(300)
