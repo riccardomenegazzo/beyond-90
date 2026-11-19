@@ -1,0 +1,34 @@
+{
+  "version": "2026.4",
+  "description": "A multi-tenant cloud for service providers: tenants isolated on shared infrastructure, serving themselves within quotas, with their own networks and identity, metered for billing, and a way in for tenants leaving another platform.",
+  "terms": {
+    "estate": "provider cloud",
+    "unit": "region",
+    "units": "regions",
+    "menu": "Regions"
+  },
+  "types": {
+    "tenant": "Tenants with their own quotas and administrators",
+    "tenant_network": "Virtual private networks per tenant, with their own addressing",
+    "tenant_identity": "Tenant identity and access, separate from the provider's",
+    "metering": "Usage metered per tenant and exported to billing",
+    "onboarding_flow": "Automated onboarding for new tenants",
+    "service_offer": "Services offered to tenants beyond machines: recovery, Kubernetes, GPUs, storage"
+  },
+  "expected": {
+    "datacenter": [
+      "tenant",
+      "tenant_network",
+      "tenant_identity",
+      "metering",
+      "onboarding_flow",
+      "service_offer"
+    ],
+    "cloud": [
+      "tenant",
+      "tenant_network",
+      "metering",
+      "service_offer"
+    ]
+  }
+}

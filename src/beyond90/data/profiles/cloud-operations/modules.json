@@ -1,0 +1,136 @@
+{
+  "use_cases": {
+    "plan": "Plan capacity before it runs out",
+    "automate": "Automate routine work",
+    "serve": "Serve teams through a catalog",
+    "govern": "Govern cost and compliance"
+  },
+  "modules": [
+    {
+      "id": "one_plane",
+      "name": "Every site and cluster operated from one management plane",
+      "category": "cloud",
+      "since": "2026.4",
+      "providers": [
+        "datacenter",
+        "cloud",
+        "branch"
+      ],
+      "requires_any": [],
+      "on_connect": true,
+      "use_case": "plan",
+      "csf": [
+        "identify"
+      ]
+    },
+    {
+      "id": "capacity_forecast",
+      "name": "Capacity forecast per cluster, with a run-out date",
+      "category": "cloud",
+      "since": "2026.4",
+      "providers": [
+        "datacenter",
+        "cloud",
+        "branch"
+      ],
+      "requires_any": [
+        "capacity_plan"
+      ],
+      "on_connect": false,
+      "use_case": "plan",
+      "csf": [
+        "identify"
+      ]
+    },
+    {
+      "id": "anomaly_detection",
+      "name": "Unusual behaviour detected against learned baselines",
+      "category": "detect",
+      "since": "2026.4",
+      "providers": [
+        "datacenter"
+      ],
+      "requires_any": [
+        "anomaly_alert"
+      ],
+      "on_connect": false,
+      "use_case": "plan",
+      "csf": [
+        "detect"
+      ]
+    },
+    {
+      "id": "runbooks",
+      "name": "Routine and corrective tasks run as automated runbooks",
+      "category": "service",
+      "since": "2026.4",
+      "providers": [
+        "datacenter",
+        "branch"
+      ],
+      "requires_any": [
+        "runbook"
+      ],
+      "on_connect": false,
+      "use_case": "automate",
+      "csf": [
+        "respond"
+      ]
+    },
+    {
+      "id": "self_service",
+      "name": "Teams order approved services from a catalog, within quotas",
+      "category": "service",
+      "since": "2026.4",
+      "providers": [
+        "datacenter",
+        "cloud"
+      ],
+      "requires_any": [
+        "catalog_item"
+      ],
+      "on_connect": false,
+      "use_case": "serve",
+      "csf": [
+        "protect"
+      ]
+    },
+    {
+      "id": "cost_showback",
+      "name": "Cost per team or project shown back or charged back",
+      "category": "service",
+      "since": "2026.4",
+      "providers": [
+        "datacenter",
+        "cloud"
+      ],
+      "requires_any": [
+        "cost_model"
+      ],
+      "on_connect": false,
+      "use_case": "govern",
+      "csf": [
+        "identify"
+      ]
+    },
+    {
+      "id": "posture_checks",
+      "name": "Security posture checked against a baseline, with drift reported",
+      "category": "protect",
+      "since": "2026.4",
+      "providers": [
+        "datacenter",
+        "cloud",
+        "branch"
+      ],
+      "requires_any": [
+        "posture_baseline"
+      ],
+      "on_connect": false,
+      "use_case": "govern",
+      "csf": [
+        "protect"
+      ]
+    }
+  ]
+}

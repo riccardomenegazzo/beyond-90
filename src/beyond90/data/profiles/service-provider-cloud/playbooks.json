@@ -1,0 +1,14 @@
+{
+  "playbooks": {
+    "l1_connect_account": {
+      "title": "Bring every region under the provider's plane",
+      "why": "Regions run on their own cannot share tenants, quotas or metering, and each needs its own staff.",
+      "steps": [
+        "List the regions and clusters that host tenants.",
+        "Register each region with the provider's management plane.",
+        "Confirm each region reports its tenants, quotas and usage centrally."
+      ],
+      "success": "Every region in scope reports its tenants and usage to one plane."
+    }
+  }
+}

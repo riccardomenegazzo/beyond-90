@@ -1,0 +1,132 @@
+{
+  "use_cases": {
+    "isolate": "Keep tenants apart",
+    "serve": "Let tenants serve themselves",
+    "bill": "Bill what is used",
+    "grow": "Grow the services tenants buy"
+  },
+  "modules": [
+    {
+      "id": "provider_plane",
+      "name": "All regions and tenants operated from one plane",
+      "category": "cloud",
+      "since": "2026.4",
+      "providers": [
+        "datacenter",
+        "cloud"
+      ],
+      "requires_any": [],
+      "on_connect": true,
+      "use_case": "isolate",
+      "csf": [
+        "identify"
+      ]
+    },
+    {
+      "id": "tenant_isolation",
+      "name": "Tenants isolated from each other on shared infrastructure",
+      "category": "protect",
+      "since": "2026.4",
+      "providers": [
+        "datacenter",
+        "cloud"
+      ],
+      "requires_any": [
+        "tenant"
+      ],
+      "on_connect": false,
+      "use_case": "isolate",
+      "csf": [
+        "protect"
+      ]
+    },
+    {
+      "id": "tenant_networks",
+      "name": "Each tenant has its own virtual networks, overlapping addresses allowed",
+      "category": "protect",
+      "since": "2026.4",
+      "providers": [
+        "datacenter",
+        "cloud"
+      ],
+      "requires_any": [
+        "tenant_network"
+      ],
+      "on_connect": false,
+      "use_case": "isolate",
+      "csf": [
+        "protect"
+      ]
+    },
+    {
+      "id": "tenant_self_service",
+      "name": "Tenants provision within quotas, with their own identity, without tickets",
+      "category": "service",
+      "since": "2026.4",
+      "providers": [
+        "datacenter"
+      ],
+      "requires_any": [
+        "tenant_identity"
+      ],
+      "on_connect": false,
+      "use_case": "serve",
+      "csf": [
+        "protect"
+      ]
+    },
+    {
+      "id": "automated_onboarding",
+      "name": "New tenants onboarded by workflow or API",
+      "category": "service",
+      "since": "2026.4",
+      "providers": [
+        "datacenter"
+      ],
+      "requires_any": [
+        "onboarding_flow"
+      ],
+      "on_connect": false,
+      "use_case": "serve",
+      "csf": [
+        "identify"
+      ]
+    },
+    {
+      "id": "usage_metering",
+      "name": "Usage metered per tenant and exported to billing",
+      "category": "service",
+      "since": "2026.4",
+      "providers": [
+        "datacenter",
+        "cloud"
+      ],
+      "requires_any": [
+        "metering"
+      ],
+      "on_connect": false,
+      "use_case": "bill",
+      "csf": [
+        "identify"
+      ]
+    },
+    {
+      "id": "tenant_services",
+      "name": "Services beyond machines sold to tenants: recovery, Kubernetes, GPUs, storage",
+      "category": "service",
+      "since": "2026.4",
+      "providers": [
+        "datacenter",
+        "cloud"
+      ],
+      "requires_any": [
+        "service_offer"
+      ],
+      "on_connect": false,
+      "use_case": "grow",
+      "csf": [
+        "identify"
+      ]
+    }
+  ]
+}

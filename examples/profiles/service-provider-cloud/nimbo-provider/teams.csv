@@ -1,0 +1,6 @@
+id,name,has_assets,active_users,sso,role_scoped,last_access_review
+platform-ops,Platform Ops,true,0,false,false,2026-05-11
+tenant-success,Tenant Success,true,1,true,true,2026-08-27
+billing,Billing,true,6,true,true,2026-10-14
+security-ops,Security Ops,true,3,true,false,2026-06-07
+product-team,Product Team,true,0,false,true,2026-03-13

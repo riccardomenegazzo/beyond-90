@@ -1,0 +1,10 @@
+[customer]
+name = "Quarzo Utilities (mock)"
+tier = "enterprise"
+arr = 130000
+as_of = 2026-10-31
+profile = "cloud-operations"
+
+[settings]
+ceiling_version = "2026.4"
+baseline_ceiling = "2026.1"

@@ -28,7 +28,7 @@ from .words import n_of
 # The lines a portfolio is drawn from. A customer's estate is compared with the family most of its lines belong to.
 FAMILIES: dict[str, list[str]] = {
     # The order is also the map's: the first line sits in the middle, the others go round it so that linked lines are near.
-    "infrastructure": ["hci", "dbaas", "dr-backup", "hybrid-cloud", "object-storage", "file-storage", "euc", "kubernetes-platform", "private-ai", "microsegmentation", "platform-migration"],
+    "infrastructure": ["hci", "dbaas", "dr-backup", "hybrid-cloud", "object-storage", "file-storage", "euc", "kubernetes-platform", "private-ai", "microsegmentation", "platform-migration", "cloud-operations", "edge-sites", "service-provider-cloud"],
     "security": ["cnapp", "identity", "saas", "siem", "endpoint", "ai"],
 }
 
@@ -36,7 +36,7 @@ LABELS: dict[str, str] = {
     "hci": "Platform (hyperconverged)", "dbaas": "Databases as a service", "file-storage": "File storage",
     "object-storage": "Object storage", "kubernetes-platform": "Kubernetes platform", "dr-backup": "Disaster recovery and backup",
     "cnapp": "Cloud security", "identity": "Identity security", "saas": "SaaS security", "siem": "Security monitoring",
-    "endpoint": "Endpoint protection", "ai": "AI security", "platform-migration": "Platform migration", "private-ai": "AI on own infrastructure", "hybrid-cloud": "Hybrid and sovereign cloud", "euc": "Virtual desktops", "microsegmentation": "Network microsegmentation",
+    "endpoint": "Endpoint protection", "ai": "AI security", "platform-migration": "Platform migration", "private-ai": "AI on own infrastructure", "hybrid-cloud": "Hybrid and sovereign cloud", "euc": "Virtual desktops", "microsegmentation": "Network microsegmentation", "cloud-operations": "Cloud operations and self-service", "edge-sites": "Edge and branch sites", "service-provider-cloud": "Multi-tenant cloud for service providers",
 }
 
 # (from, to, why): once the first line runs, the second follows. Read as "because <from> is in place, <why>".
@@ -68,6 +68,18 @@ LINKS: list[tuple[str, str, str]] = [
     ("microsegmentation", "dr-backup", "a recovery site needs the same policies, or it becomes the way in"),
     ("dr-backup", "microsegmentation", "a compromised machine must be contained before it is recovered, or the recovery brings the attacker back"),
     ("euc", "microsegmentation", "desktops are where attacks start, and should reach only what their users need"),
+    ("hci", "cloud-operations", "a platform run by hand caps how many clusters one team can look after"),
+    ("cloud-operations", "kubernetes-platform", "the self-service catalog is where teams will ask for clusters next"),
+    ("cloud-operations", "dbaas", "databases are the request teams wait longest for, and the first catalog item worth automating"),
+    ("hybrid-cloud", "cloud-operations", "placement decisions need private and public costs compared on the same basis"),
+    ("hci", "edge-sites", "the same platform at the sites removes a second set of skills and tools"),
+    ("edge-sites", "dr-backup", "a site's copy at the core is what brings it back after a disaster"),
+    ("edge-sites", "private-ai", "data that cannot leave a site needs its inference to run there"),
+    ("hci", "service-provider-cloud", "a provider, or an IT team serving many companies in a group, can open the same clusters to tenants, kept apart and metered"),
+    ("platform-migration", "service-provider-cloud", "a provider leaving a platform has tenants to move, each one a migration"),
+    ("service-provider-cloud", "dr-backup", "recovery is the first service tenants pay for beyond machines"),
+    ("service-provider-cloud", "kubernetes-platform", "tenants ask for Kubernetes next, and pay for it"),
+    ("service-provider-cloud", "microsegmentation", "tenants sharing infrastructure need policies that keep their machines apart inside their own networks"),
     ("cnapp", "identity", "cloud findings keep leading back to identities nobody governs"),
     ("cnapp", "siem", "cloud detections need somewhere to be correlated and answered"),
     ("identity", "saas", "the same identities sign in to business applications nobody reviews"),

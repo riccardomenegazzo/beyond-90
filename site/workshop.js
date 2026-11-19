@@ -342,6 +342,9 @@ export const PRESETS = [
   { id: "ai", label: "AI on our own infrastructure", scope: ["private-ai", "kubernetes-platform", "object-storage", "hci"] },
   { id: "hybrid", label: "Hybrid and sovereign cloud", scope: ["hybrid-cloud", "dr-backup", "hci", "platform-migration"] },
   { id: "workplace", label: "The digital workplace", scope: ["euc", "file-storage", "hci", "dr-backup"] },
+  { id: "operate", label: "Running it like a cloud", scope: ["cloud-operations", "hci", "dbaas", "kubernetes-platform"] },
+  { id: "edge", label: "Shops, plants and branches", scope: ["edge-sites", "hci", "dr-backup", "private-ai"] },
+  { id: "provider", label: "A service provider's cloud", scope: ["service-provider-cloud", "platform-migration", "dr-backup", "kubernetes-platform"] },
   { id: "cloudsec", label: "Securing the cloud", scope: ["cnapp", "identity", "siem", "saas"] },
 ];
 

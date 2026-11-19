@@ -1564,7 +1564,7 @@ export function scorecardView({ result, dash, score, engine, today }) {
 }
 
 // ------------------------------------------------------------------ one customer, every product line
-const SHORT = { "platform-migration": "Migration", "private-ai": "AI", "hybrid-cloud": "Hybrid cloud", euc: "Desktops", microsegmentation: "Segmentation", hci: "Platform", dbaas: "Databases", "file-storage": "Files", "object-storage": "Objects", "kubernetes-platform": "Kubernetes", "dr-backup": "Recovery",
+const SHORT = { "cloud-operations": "Operations", "edge-sites": "Edge", "service-provider-cloud": "Provider cloud", "platform-migration": "Migration", "private-ai": "AI", "hybrid-cloud": "Hybrid cloud", euc: "Desktops", microsegmentation: "Segmentation", hci: "Platform", dbaas: "Databases", "file-storage": "Files", "object-storage": "Objects", "kubernetes-platform": "Kubernetes", "dr-backup": "Recovery",
   cnapp: "Cloud", identity: "Identity", saas: "SaaS", siem: "Monitoring", endpoint: "Endpoint", ai: "AI" };
 const shortName = (p, label) => SHORT[p] || label.split(" ")[0];
 

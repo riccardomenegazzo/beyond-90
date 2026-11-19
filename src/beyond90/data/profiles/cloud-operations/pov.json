@@ -1,0 +1,36 @@
+{
+  "criteria": [
+    {
+      "text": "A capacity forecast names the cluster that runs out first, and when, from the customer's own usage",
+      "how": "Collect a month of usage and compare the forecast with the team's own estimate"
+    },
+    {
+      "text": "A routine task the team does by hand runs as an automated runbook, with approval and a log",
+      "how": "Automate the most frequent manual task end to end and read its log"
+    },
+    {
+      "text": "A team orders a standard environment from a catalog and gets it within the agreed time, inside its quota",
+      "how": "Publish one catalog item with a quota and time a request from a real team"
+    },
+    {
+      "text": "Last month's cost is allocated to teams on a cost per machine agreed with finance",
+      "how": "Build the cost model with finance and allocate one month"
+    },
+    {
+      "text": "A baseline check finds a real drift, and security accepts the report",
+      "how": "Run the baseline across the estate and review the findings with security"
+    },
+    {
+      "text": "An unusual slowdown raises an alert before the application owner notices",
+      "how": "Load a test machine until it slows and see who is told first"
+    }
+  ],
+  "readiness": [
+    "The sites and clusters in scope, with read access for the management plane",
+    "A month of usage data, or the time to collect it",
+    "Three frequent requests chosen to become catalog items, with their owners",
+    "Finance agrees the cost elements: hardware, licences, power, space, people",
+    "The security baseline to check against, chosen by security",
+    "A test team willing to order through the catalog"
+  ]
+}

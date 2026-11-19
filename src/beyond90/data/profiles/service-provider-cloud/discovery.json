@@ -1,0 +1,139 @@
+{
+  "questions": [
+    {
+      "stage": "value",
+      "q": "Which of your hosted services depend on a platform licence that is changing or ending, and by when?",
+      "why": "A licence change upstream is a date that decides the provider's whole roadmap.",
+      "need": "Services that depend on a changing licence are listed with dates",
+      "how": "List hosted services with the platform under each and its contract end",
+      "role": "executive",
+      "core": true,
+      "listen": "A contract end within the year is a migration with a deadline, for the provider and for every tenant.",
+      "probe": "What will you tell tenants whose service sits on the platform that is changing?"
+    },
+    {
+      "stage": "value",
+      "q": "What does it cost to run one tenant today, and what margin does each service leave?",
+      "why": "Margin per service decides which services to keep, move or drop.",
+      "need": "Cost and margin per service are known",
+      "how": "Work out the cost of one standard tenant with finance",
+      "role": "finance",
+      "core": true,
+      "listen": "A provider that cannot price one tenant cannot compete on price: the cost model is the first deliverable.",
+      "probe": "Which service loses money today, and why is it still offered?"
+    },
+    {
+      "stage": "L1",
+      "q": "How many tenants, regions and clusters do you run, and how are tenants kept apart today?",
+      "why": "Scale, and the way tenants are separated, shape the design.",
+      "need": "Tenants, regions and isolation methods are listed",
+      "how": "List tenants per region with how each is isolated",
+      "role": "architect",
+      "core": true,
+      "listen": "Separation by convention rather than by construction is a risk with every new tenant.",
+      "probe": "Has one tenant ever seen or affected another, and how?"
+    },
+    {
+      "stage": "L2",
+      "q": "Can tenants bring their own address ranges, and how are their networks built today?",
+      "why": "Tenants moving in want to keep their addresses; overlapping ranges need virtual networks.",
+      "need": "Tenants get their own virtual networks with their own addressing",
+      "how": "Count tenants that would need overlapping address ranges",
+      "role": "architect",
+      "listen": "Re-addressing every tenant on arrival kills migrations; virtual networks per tenant avoid it.",
+      "probe": "How long does it take today to set up a new tenant's network?"
+    },
+    {
+      "stage": "L2",
+      "q": "How is usage measured per tenant, and how does it reach billing?",
+      "why": "Usage that is not metered is not billed.",
+      "need": "Usage per tenant is metered and exported to billing",
+      "how": "Trace one tenant's usage from the platform to the invoice",
+      "role": "finance",
+      "listen": "Billing from spreadsheets loses revenue and starts disputes; metering by the platform ends both.",
+      "probe": "How many billing disputes did you have last quarter, and over what?"
+    },
+    {
+      "stage": "L2",
+      "q": "How are tenants' workloads protected and recovered, and is recovery a service they pay for?",
+      "why": "Recovery is both a duty and a service to sell.",
+      "need": "Tenant recovery is defined, tested and offered as a service",
+      "how": "List tenants with recovery and how it is tested",
+      "role": "security",
+      "listen": "Recovery sold as a service with tested targets is a margin line, not a cost.",
+      "probe": "When was a tenant last restored, and how long did it take?"
+    },
+    {
+      "stage": "L3",
+      "q": "Can tenants create and manage their own machines, networks and users, within limits you set?",
+      "why": "Self-service within guardrails is what tenants compare with the public cloud.",
+      "need": "Tenants serve themselves within quotas and policies",
+      "how": "List what tenants can do alone today and what needs a ticket",
+      "role": "operations",
+      "core": true,
+      "listen": "Tickets for every change cost the provider staff and the tenant time; quotas keep control without them.",
+      "probe": "Which tenant request takes your team the most time each month?"
+    },
+    {
+      "stage": "L3",
+      "q": "How long does it take to onboard a new tenant, from contract to first machine?",
+      "why": "Onboarding time is both a sales argument and a cost.",
+      "need": "New tenants are onboarded by an automated workflow",
+      "how": "Time the last three onboardings",
+      "role": "operations",
+      "listen": "Days of manual work per tenant limit growth; onboarding by workflow or API is the step up.",
+      "probe": "How many tenants could you onboard next month if they all signed?"
+    },
+    {
+      "stage": "L3",
+      "q": "Which services beyond machines do tenants ask for: recovery, backup, Kubernetes, GPUs, object storage, desktops?",
+      "why": "Services of higher value raise the revenue per tenant.",
+      "need": "The services tenants ask for are listed with their demand",
+      "how": "Collect last year's requests that could not be served",
+      "role": "executive",
+      "listen": "Requests turned away are revenue lost to the large public clouds; each is a candidate service.",
+      "probe": "Which service did you lose a tenant over?"
+    },
+    {
+      "stage": "L3",
+      "q": "Must tenant data stay in the country, and can you prove where it is and who can reach it?",
+      "why": "Sovereignty is a reason tenants choose a local provider.",
+      "need": "Data location and access can be proven per tenant",
+      "how": "Ask which tenants need proof of location, and in what form",
+      "role": "security",
+      "core": true,
+      "listen": "Proof on demand, not a promise in a contract, is what regulated tenants and public bodies ask for.",
+      "probe": "Which tenants fall under public-sector cloud rules, and which qualifications do those rules require?"
+    },
+    {
+      "stage": "L4",
+      "q": "How do tenants move to you from another platform, and who does the work?",
+      "why": "Easy moves win tenants; hard ones keep them where they are.",
+      "need": "A repeatable path moves tenants in from other platforms",
+      "how": "Agree a standard migration offer with tools and a price",
+      "role": "operations",
+      "listen": "A packaged migration at a fixed price wins tenants from providers that cannot move them.",
+      "probe": "How many tenants would move this year if the move were simple and priced?"
+    },
+    {
+      "stage": "L4",
+      "q": "How are upgrades and maintenance done without disturbing tenants?",
+      "why": "Maintenance windows across many tenants are hard to agree.",
+      "need": "Platform upgrades run without tenant downtime",
+      "how": "Review the last upgrade and the tenants it affected",
+      "role": "operations",
+      "listen": "Rolling upgrades with no tenant downtime remove the hardest negotiation a provider has.",
+      "probe": "When did a maintenance window last cost you a tenant's goodwill?"
+    },
+    {
+      "stage": "L4",
+      "q": "Which certifications and audits must the platform pass for your tenants?",
+      "why": "Certifications are the price of entry for regulated tenants.",
+      "need": "Required certifications are listed with their evidence",
+      "how": "List the certifications held and those tenants ask for",
+      "role": "security",
+      "listen": "Each certification is evidence to produce every year; a platform that reports it continuously saves weeks.",
+      "probe": "Which certification would open a new market for you?"
+    }
+  ]
+}

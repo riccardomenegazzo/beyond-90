@@ -1,0 +1,6 @@
+id,name,has_assets,active_users,sso,role_scoped,last_access_review
+infra-ops,Infra Ops,true,0,true,true,2026-02-20
+app-teams,App Teams,true,0,false,false,2026-09-06
+finops,Finops,true,0,false,false,2026-08-23
+security-ops,Security Ops,true,3,false,true,2026-08-11
+network-team,Network Team,true,2,true,true,2026-02-11

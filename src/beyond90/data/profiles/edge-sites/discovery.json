@@ -1,0 +1,139 @@
+{
+  "questions": [
+    {
+      "stage": "value",
+      "q": "What happens to the business at a site when its systems stop: a till, a production line, a branch counter?",
+      "why": "The cost of a site stopping decides how much resilience each kind of site needs.",
+      "need": "The cost of a site stopping is known per kind of site",
+      "how": "Put a figure on an hour of downtime for each kind of site",
+      "role": "executive",
+      "core": true,
+      "listen": "Sites where a stop halts sales or production justify two servers and local recovery; others can live with one.",
+      "probe": "Which site stopped last, for how long, and what did it cost?"
+    },
+    {
+      "stage": "value",
+      "q": "How often does someone travel to a site to fix, replace or upgrade something, and what does a visit cost?",
+      "why": "Site visits are the hidden cost of distributed infrastructure.",
+      "need": "Site visits and their cost are counted",
+      "how": "Count last year's visits and their reasons",
+      "role": "operations",
+      "core": true,
+      "listen": "Visits for routine upgrades or disk swaps are what central management removes.",
+      "probe": "Which visit could have been done remotely if the tools allowed it?"
+    },
+    {
+      "stage": "L1",
+      "q": "How many sites are there, of how many kinds, and what runs at each?",
+      "why": "Kinds of site, not their number, decide the standard designs.",
+      "need": "Sites are grouped into a few standard kinds",
+      "how": "List sites with their applications and size",
+      "role": "architect",
+      "core": true,
+      "listen": "Three or four standard site designs make hundreds of sites manageable; one design per site does not.",
+      "probe": "Which site is the exception everyone remembers, and why?"
+    },
+    {
+      "stage": "L1",
+      "q": "What network connects each site: bandwidth, latency, and how often does it drop?",
+      "why": "The link decides what runs locally, how copies travel and how upgrades arrive.",
+      "need": "Bandwidth, latency and outages are known per kind of site",
+      "how": "Collect link speeds and last quarter's outages",
+      "role": "architect",
+      "listen": "Sites that lose their link must keep working alone, then catch up; plan for both.",
+      "probe": "What must keep working at a site when its link is down for a day?"
+    },
+    {
+      "stage": "L2",
+      "q": "How old is the hardware at the sites, and when does its support end?",
+      "why": "A refresh across many sites is a date and a budget.",
+      "need": "Site hardware is listed with its support dates",
+      "how": "Export the site hardware list with purchase dates",
+      "role": "finance",
+      "listen": "A wave of sites going out of support is the reason to standardise now.",
+      "probe": "How many sites go out of support next year?"
+    },
+    {
+      "stage": "L2",
+      "q": "Who can see, from one place, the health of every site right now?",
+      "why": "Without a central view, problems are found by the people at the site.",
+      "need": "Every site's health is visible centrally",
+      "how": "Bring one region's sites under one view",
+      "role": "operations",
+      "listen": "Problems reported by shop or plant staff mean the central view is missing.",
+      "probe": "How did you learn about the last site problem: an alert, or a phone call?"
+    },
+    {
+      "stage": "L2",
+      "q": "Who looks after the sites day to day: a central team, local staff, or a partner?",
+      "why": "Who operates the sites decides how much must be automatic.",
+      "need": "The operating model for the sites is agreed",
+      "how": "Map who does what at the sites today",
+      "role": "operations",
+      "listen": "Sites run by people who are not in IT need everything remote and simple; partners need clear boundaries.",
+      "probe": "What do local staff do today that they should not have to?"
+    },
+    {
+      "stage": "L3",
+      "q": "Which sites must keep running if one server fails, and which can wait for a replacement?",
+      "why": "One-server sites cost less; two or three servers keep running through a failure.",
+      "need": "Each kind of site has an agreed tolerance to a server failure",
+      "how": "Agree a tolerance per kind of site with the business",
+      "role": "architect",
+      "listen": "Two-server sites need a small witness elsewhere to decide which side keeps running: ask where it would live.",
+      "probe": "Where could a small witness service run that every site can reach?"
+    },
+    {
+      "stage": "L3",
+      "q": "How are sites backed up today, and how long would restoring a site take without its link?",
+      "why": "A copy that exists only at the core is slow to bring back over a thin link.",
+      "need": "Each site has a local copy and a copy at the core",
+      "how": "Time a restore of one site's main application",
+      "role": "operations",
+      "core": true,
+      "listen": "Restores over a thin link take days; a local copy brings a site back in minutes.",
+      "probe": "What is the largest site, and how long would its data take to copy back?"
+    },
+    {
+      "stage": "L3",
+      "q": "How are upgrades done across the sites today, and how far behind are the oldest?",
+      "why": "Sites left on old versions are where security holes stay open.",
+      "need": "Sites are upgraded remotely, in waves",
+      "how": "List the versions running across the sites",
+      "role": "security",
+      "core": true,
+      "listen": "Sites several versions behind are an audit finding waiting to happen; remote, staged upgrades are the answer.",
+      "probe": "How long did the last upgrade campaign take to reach every site?"
+    },
+    {
+      "stage": "L3",
+      "q": "Who can physically reach the servers at a site, and are their disks encrypted?",
+      "why": "Servers in shops and plants can be stolen or tampered with.",
+      "need": "Site servers are encrypted and locked down by default",
+      "how": "Check encryption and physical access at three sites",
+      "role": "security",
+      "listen": "Unencrypted disks in a back office become a data breach the day they are stolen.",
+      "probe": "What would be exposed if the server at your smallest site walked out of the door?"
+    },
+    {
+      "stage": "L4",
+      "q": "Which new applications should run at the sites: cameras, quality inspection, local AI, sensors?",
+      "why": "New applications at the edge decide the next design, and whether it needs GPUs.",
+      "need": "Planned edge applications are listed with their needs",
+      "how": "List applications planned for the sites in the next two years",
+      "role": "application",
+      "listen": "Video and AI at the edge need GPUs and storage at the site; data that cannot leave the site settles where it runs.",
+      "probe": "Which data from the sites can never leave them, and why?"
+    },
+    {
+      "stage": "L4",
+      "q": "How is a new site opened today, and how long until its systems run?",
+      "why": "Opening sites quickly is a business goal in retail and manufacturing.",
+      "need": "A new site runs from a standard design within days",
+      "how": "Time the last site opening from delivery to running",
+      "role": "executive",
+      "listen": "Weeks to open a site point to manual builds; standard designs deployed remotely cut it to days.",
+      "probe": "How many sites will open next year?"
+    }
+  ]
+}

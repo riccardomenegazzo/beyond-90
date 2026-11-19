@@ -1,0 +1,39 @@
+{
+  "audiences": {
+    "executive": "Run your own infrastructure like a cloud: teams served in minutes, costs visible per team, and compliance shown continuously instead of once a year.",
+    "technical": "One management plane for every site: capacity forecasts with dates, alerts on unusual behaviour, runbooks instead of scripts, a catalog with quotas and approvals, posture checked against a baseline.",
+    "financial": "Reclaim idle capacity before buying more, show each team what it costs, and compare private and public cloud on the same basis."
+  },
+  "people": [
+    "The head of infrastructure operations",
+    "Application teams that request environments",
+    "Finance, or whoever leads cloud cost management",
+    "Security and compliance"
+  ],
+  "objections": [
+    {
+      "says": "We already have monitoring tools.",
+      "clarify": "Do they forecast when capacity runs out, and act on what they find, or only draw graphs?",
+      "answer": "Keep what works; add forecasts with dates and runbooks that act, on one plane for every site.",
+      "prove": "Forecast the busiest cluster's run-out date and automate the fix for its most frequent alert."
+    },
+    {
+      "says": "Self-service will create sprawl.",
+      "clarify": "What sprawl did you see the last time teams had access: size, number, or machines nobody claimed?",
+      "answer": "Catalog items come with quotas, approvals and an expiry, so self-service is faster and tidier than tickets.",
+      "prove": "Publish one catalog item with a quota and an expiry, and show what happens when the quota is reached."
+    },
+    {
+      "says": "Chargeback will start a political fight.",
+      "clarify": "Would showing costs first, without charging them, be accepted?",
+      "answer": "Start with showback on an agreed unit cost; charge back only once teams trust the numbers.",
+      "prove": "Show one month of cost per team to two team leads and ask whether the numbers look right."
+    },
+    {
+      "says": "Automation will break production.",
+      "clarify": "Which change went wrong last time, and was it made by hand?",
+      "answer": "Runbooks run with approvals, logs and a dry run; they make the same change the same way every time.",
+      "prove": "Run one runbook as a dry run, approve it, run it, and read the log."
+    }
+  ]
+}

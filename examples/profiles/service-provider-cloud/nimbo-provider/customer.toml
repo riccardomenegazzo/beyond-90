@@ -1,0 +1,10 @@
+[customer]
+name = "Nimbo Cloud Services (mock)"
+tier = "enterprise"
+arr = 280000
+as_of = 2026-10-31
+profile = "service-provider-cloud"
+
+[settings]
+ceiling_version = "2026.4"
+baseline_ceiling = "2026.1"

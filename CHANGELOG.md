@@ -2,6 +2,19 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.115.0
+
+- **Three more infrastructure lines**, each with its discovery questions (who to ask, what to listen for, what to ask next), proof-of-value criteria with how to test them, readiness items, a story for each audience with four objections, and an invented example customer:
+  - `cloud-operations`, **cloud operations and self-service**: capacity forecasts with a run-out date, alerts on unusual behaviour, runbooks instead of scripts, a self-service catalog with quotas, cost per team, and posture checked against a baseline.
+  - `edge-sites`, **edge and branch sites**: sites deployed without IT staff, upgraded remotely in waves, restored locally with the link down, replicated to the core, and room for AI at the edge.
+  - `service-provider-cloud`, **a multi-tenant cloud for service providers**: tenants isolated by construction, their own networks with overlapping addresses, self-service within quotas, onboarding by workflow, metering to billing, and tenants moving in from another platform.
+- The estate map and "where to grow" know them. Links say why one line leads to the next: a platform run by hand caps how many clusters one team can look after; data that cannot leave a site needs its inference to run there; a provider leaving a platform has tenants to move.
+- The discovery workshop has three new starting points:
+  - running it like a cloud;
+  - shops, plants and branches;
+  - a service provider's cloud.
+- The start page has a demo for each of the new lines.
+
 ## 0.114.0
 
 - **Help knows presales.** A new "Presales" group of answers covers:

@@ -1,0 +1,14 @@
+{
+  "playbooks": {
+    "l1_connect_account": {
+      "title": "Bring every site under the central plane",
+      "why": "Sites that are not managed centrally are found broken by the people working there, and upgraded only when someone travels.",
+      "steps": [
+        "List the sites, with what runs at each and how it connects.",
+        "Register each site with the central plane.",
+        "Confirm each site reports health and version centrally."
+      ],
+      "success": "Every site in scope reports to the central plane."
+    }
+  }
+}

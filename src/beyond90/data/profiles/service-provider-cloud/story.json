@@ -1,0 +1,39 @@
+{
+  "audiences": {
+    "executive": "Keep your tenants and win new ones as the virtualisation market shifts: a multi-tenant cloud they serve themselves, billed by use, with a simple way to move in.",
+    "technical": "Tenants isolated by construction on shared infrastructure, with their own virtual networks and identity, self-service within quotas, automated onboarding, metering to billing, and a migration path for tenants.",
+    "financial": "A cost per tenant you can price against, revenue from services beyond machines, and fewer hours per tenant in tickets and onboarding."
+  },
+  "people": [
+    "The provider's head of cloud services",
+    "Platform operations",
+    "Billing and finance",
+    "Product and sales managers for the hosted services"
+  ],
+  "objections": [
+    {
+      "says": "Multi-tenancy is risky: one tenant could reach another.",
+      "clarify": "How are tenants separated today, and has it ever failed?",
+      "answer": "Tenants are separated by construction (network, identity, quotas), not by convention, and the separation is tested in the proof.",
+      "prove": "Create two tenants and try every way across from one to the other."
+    },
+    {
+      "says": "Our tenants will not accept a migration.",
+      "clarify": "What do they fear most: downtime, re-addressing, or new tools?",
+      "answer": "They keep their addresses, move in their own window, and get the same self-service they had.",
+      "prove": "Move a test tenant's machine with its addresses in a short window."
+    },
+    {
+      "says": "We cannot bill this the way we bill today.",
+      "clarify": "What does your billing system import today, and from where?",
+      "answer": "Usage is metered per tenant and exported in a form the billing system takes; the commercial model stays yours.",
+      "prove": "Load a month of a test tenant's usage into the billing system."
+    },
+    {
+      "says": "The large public clouds will undercut us.",
+      "clarify": "Why do tenants choose you today: price, location, support, or compliance?",
+      "answer": "Compete where they cannot: data kept in the country, local support, predictable prices and services shaped for each tenant.",
+      "prove": "Price one standard tenant with the cost model and compare it with a public cloud quote."
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "criteria": [
+    {
+      "text": "Two test tenants share a cluster and cannot see or reach each other's machines, networks or data",
+      "how": "Create two tenants and try every way across from each"
+    },
+    {
+      "text": "A tenant uses an address range that overlaps another tenant's, and both work",
+      "how": "Give two test tenants the same range and run traffic in both"
+    },
+    {
+      "text": "A tenant creates machines and networks alone and is stopped at its quota",
+      "how": "Let a test tenant provision until the quota is reached"
+    },
+    {
+      "text": "A new tenant is onboarded by workflow or API in under an hour",
+      "how": "Run the onboarding for a test tenant and time it"
+    },
+    {
+      "text": "A month of a tenant's usage reaches the billing system without manual steps",
+      "how": "Export a test tenant's usage and load it into billing"
+    },
+    {
+      "text": "A tenant's machine moves in from another platform within its window, keeping its addresses",
+      "how": "Migrate a test tenant's machine and time the cutover"
+    }
+  ],
+  "readiness": [
+    "A cluster or region set aside for the test",
+    "Two test tenants, with an administrator each",
+    "The billing system's import format, or a sample invoice",
+    "Address ranges for the test tenants, overlapping on purpose",
+    "A machine on the old platform that may be migrated",
+    "The tenants' identity source to connect: a directory or single sign-on"
+  ]
+}

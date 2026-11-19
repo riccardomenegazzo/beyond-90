@@ -28,7 +28,7 @@ ROOT = Path(__file__).resolve().parent.parent
 
 # Controls live in places (Start, Saved, Help); the test opens the place before using one, as a person would.
 PLACE_OF = {
-    **dict.fromkeys(("open-starter", "open-mapper", "map-file", "map-body", "map-check", "map-use", "map-cancel", "map-notes", "demo", "demo-book", "demo-estate", "open-workshop", "demo-endpoint", "demo-saas", "demo-ai", "demo-identity", "demo-siem", "demo-hci", "demo-objstore", "demo-dbaas", "demo-files", "demo-k8s", "demo-dr", "demo-migration", "demo-privateai", "demo-hybrid", "demo-euc", "demo-microseg", "latest-adv", "demo-adv", "clear-adv", "adv-status", "run", "cancel",
+    **dict.fromkeys(("open-starter", "open-mapper", "map-file", "map-body", "map-check", "map-use", "map-cancel", "map-notes", "demo", "demo-book", "demo-estate", "open-workshop", "demo-endpoint", "demo-saas", "demo-ai", "demo-identity", "demo-siem", "demo-hci", "demo-objstore", "demo-dbaas", "demo-files", "demo-k8s", "demo-dr", "demo-migration", "demo-privateai", "demo-hybrid", "demo-euc", "demo-microseg", "demo-cloudops", "demo-edge", "demo-provider", "latest-adv", "demo-adv", "clear-adv", "adv-status", "run", "cancel",
                      "weeks", "hours", "real", "quarter", "bookhours", "weighting", "loaded", "status"), "start"),
     **dict.fromkeys(("demo-prev", "export", "forget", "vault-on", "vault-unlock", "vault-lock", "vault-off", "vault-state",
                      "vault-warn", "ws-status", "history-body", "device-qr", "send-work", "history-empty", "hist-table", "trend", "autosave", "personal", "privacy-body", "restore-in", "restore-out", "restore-note", "erase-result"), "saved"),
@@ -638,7 +638,8 @@ def main(site: str) -> int:
         page.click("[data-tab=qbr]")
         qbr = page.inner_text("#doc")
         check(" site" in qbr and "cloud" not in qbr.lower(), "and reads in its own words (sites, not cloud accounts)")
-        for demo_id, who in (("demo-saas", "Acme SaaS"), ("demo-ai", "Orbit AI"), ("demo-hci", "Granite Manufacturing"), ("demo-dr", "Harborline Retail"), ("demo-objstore", "Meridian Health")):
+        for demo_id, who in (("demo-saas", "Acme SaaS"), ("demo-ai", "Orbit AI"), ("demo-hci", "Granite Manufacturing"), ("demo-dr", "Harborline Retail"),
+                             ("demo-cloudops", "Quarzo Utilities"), ("demo-edge", "Faro Stores"), ("demo-provider", "Nimbo Cloud Services"), ("demo-objstore", "Meridian Health")):
             page.click(f"#{demo_id}")
             page.wait_for_selector("#loaded li:has-text('customer.toml')")
             run_and_wait()
@@ -978,7 +979,7 @@ def main(site: str) -> int:
         check("Halden Group" in page.inner_text("#run"), "the estate demo is one customer, not a book")
         run_and_wait()
         page.wait_for_selector("#view .estatemap")
-        check(page.locator("#view .enode").count() == 11 and page.locator("#view .enode.absent").count() == 7, "the estate map draws the whole family, with the lines not in place dashed")
+        check(page.locator("#view .enode").count() == 14 and page.locator("#view .enode.absent").count() == 10, "the estate map draws the whole family, with the lines not in place dashed")
         check(page.locator("#view .elink.risk").count() >= 1 and page.locator("#view .elink.grow").count() >= 1, "and links coloured by risk and by what comes next")
         check(page.locator("#view .heatcell").count() == 16 and "of 14 clusters" in page.inner_text("#view") and "of 10 sites" in page.inner_text("#view"), "each line is counted in its own units")
         check("Platform 71.9%, recovery 42.8%" in page.inner_text("#view"), "a solid line leaning on a weak one is called out")
@@ -986,7 +987,7 @@ def main(site: str) -> int:
         page.locator("#view .enode.absent").first.focus()
         page.keyboard.press("Enter")
         page.wait_for_selector("#view .card.grow.focus")
-        check(page.locator("#view .card.grow").count() == 7 and "Open with" in page.inner_text("#view"), "a missing line opens where to grow, with the first question to ask")
+        check(page.locator("#view .card.grow").count() == 10 and "Open with" in page.inner_text("#view"), "a missing line opens where to grow, with the first question to ask")
         page.locator("#view .card.grow.focus").get_by_role("button", name="Start a discovery workshop on this line").click()
         page.wait_for_selector("#view .wsq")
         check("Halden Group" in page.inner_text("#reshead") and page.locator("#view details.wsline").count() == 1, "a line to grow starts a discovery workshop with the same customer, on that line")

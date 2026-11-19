@@ -1,0 +1,38 @@
+{
+  "version": "2026.4",
+  "description": "Cloud operations on private infrastructure: capacity planned before it runs out, routine work automated, a self-service catalog with guardrails, costs shown per team, and security posture checked against a baseline.",
+  "terms": {
+    "estate": "operations",
+    "unit": "site",
+    "units": "sites",
+    "menu": "Sites"
+  },
+  "types": {
+    "capacity_plan": "Capacity forecasts per cluster, with the date each runs out",
+    "anomaly_alert": "Alerts on behaviour that departs from what is normal",
+    "runbook": "Automated runbooks for routine and corrective tasks",
+    "catalog_item": "Self-service catalog items with approvals and quotas",
+    "cost_model": "Cost allocated to teams or projects, shown back or charged back",
+    "posture_baseline": "Security and compliance baselines checked continuously"
+  },
+  "expected": {
+    "datacenter": [
+      "capacity_plan",
+      "anomaly_alert",
+      "runbook",
+      "catalog_item",
+      "cost_model",
+      "posture_baseline"
+    ],
+    "cloud": [
+      "catalog_item",
+      "cost_model",
+      "posture_baseline"
+    ],
+    "branch": [
+      "capacity_plan",
+      "runbook",
+      "posture_baseline"
+    ]
+  }
+}

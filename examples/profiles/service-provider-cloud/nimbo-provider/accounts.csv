@@ -1,0 +1,9 @@
+id,provider,sources,connected,owner,last_spend,status,in_plan,created_at
+service-provider-cloud-01,cloud,billing;org;sso,true,platform-ops,4600,active,true,2026-09-17
+service-provider-cloud-02,cloud,billing;org,true,tenant-success,6500,active,true,2025-04-30
+service-provider-cloud-03,datacenter,billing;org,true,tenant-success,5100,active,true,2024-12-23
+service-provider-cloud-04,datacenter,billing;org;sso,true,platform-ops,5800,active,false,2025-12-22
+service-provider-cloud-05,cloud,billing;org,true,platform-ops,6000,active,false,2025-03-12
+service-provider-cloud-06,cloud,billing;org;sso,true,platform-ops,400,active,false,2026-07-03
+service-provider-cloud-07,cloud,billing;sso,true,platform-ops,400,active,true,2025-08-12
+service-provider-cloud-08,cloud,billing;org;sso,true,tenant-success,4200,active,true,2026-05-03

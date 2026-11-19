@@ -1,0 +1,41 @@
+id,account_id,severity,exposure,opened_at,closed_at,owner,decision,decision_reason,expiry,previous_severity,severity_changed_at,verified_at,reopened,closed_by
+x-001,cloud-operations-05,medium,internal,2026-10-24,,app-teams,fix,,,,,,,
+x-002,cloud-operations-01,low,internal,2026-09-09,,,,,,,,,,
+x-003,cloud-operations-09,high,internal,2026-10-20,,security-ops,fix,,,,,,,
+x-004,cloud-operations-02,high,internal,2026-08-10,,finops,fix,,,,,,,
+x-005,cloud-operations-06,critical,internet,2026-08-30,2026-09-07,network-team,fix,,,,,,,automated
+x-006,cloud-operations-02,medium,internal,2026-07-21,,security-ops,accepted_risk,business process depends on it,2027-02-13,,,,,
+x-007,cloud-operations-09,medium,internet,2026-07-12,,network-team,accepted_risk,business process depends on it,2027-01-24,,,,,
+x-008,cloud-operations-02,medium,internal,2026-10-12,,network-team,accepted_risk,business process depends on it,2027-01-10,,,,,
+x-009,cloud-operations-06,medium,internal,2026-09-06,2026-09-17,,,,,,,,,assisted
+x-010,cloud-operations-02,medium,internal,2026-08-01,,infra-ops,fix,,,,,,,
+x-011,cloud-operations-09,high,internal,2026-07-24,2026-08-12,security-ops,accepted_risk,business process depends on it,2027-02-15,,,,,manual
+x-012,cloud-operations-09,low,internal,2026-09-12,,infra-ops,fix,,,,,,,
+x-013,cloud-operations-07,high,internet,2026-08-18,2026-09-02,finops,,,,,,,,automated
+x-014,cloud-operations-05,low,internet,2026-08-02,2026-08-31,,,,,,,,,assisted
+x-015,cloud-operations-02,medium,internet,2026-07-20,,security-ops,fix,,,,,,,
+x-016,cloud-operations-08,low,internet,2026-08-01,2026-08-27,security-ops,fix,,,,,,,assisted
+x-017,cloud-operations-06,medium,internet,2026-09-13,,network-team,accepted_risk,business process depends on it,2026-11-22,,,,,
+x-018,cloud-operations-01,low,internet,2026-10-12,,infra-ops,fix,,,,,,,
+x-019,cloud-operations-04,medium,internet,2026-09-19,2026-09-25,security-ops,accepted_risk,business process depends on it,2026-12-20,,,,,manual
+x-020,cloud-operations-06,medium,internal,2026-09-14,2026-10-09,app-teams,accepted_risk,business process depends on it,2026-12-07,,,,,assisted
+x-021,cloud-operations-08,low,internet,2026-08-23,2026-09-10,,,,,,,,,automated
+x-022,cloud-operations-09,critical,internal,2026-10-03,,app-teams,fix,,,,,,,
+x-023,cloud-operations-09,medium,internet,2026-09-22,,,,,,,,,,
+x-024,cloud-operations-06,high,internet,2026-10-20,,app-teams,accepted_risk,business process depends on it,2027-01-10,,,,,
+x-025,cloud-operations-02,high,internal,2026-09-16,,,,,,,,,,
+x-026,cloud-operations-01,high,internet,2026-09-14,,app-teams,fix,,,,,,,
+x-027,cloud-operations-05,high,internet,2026-07-05,,,,,,,,,,
+x-028,cloud-operations-03,high,internet,2026-09-01,,security-ops,accepted_risk,business process depends on it,2027-02-04,,,,,
+x-029,cloud-operations-09,low,internet,2026-08-14,2026-08-18,app-teams,fix,,,,,,,manual
+x-030,cloud-operations-05,high,internal,2026-07-19,2026-08-06,network-team,accepted_risk,business process depends on it,2027-01-09,,,,,manual
+x-031,cloud-operations-05,low,internet,2026-08-22,2026-09-19,,,,,,,,,automated
+x-032,cloud-operations-05,high,internal,2026-08-09,,,,,,,,,,
+x-033,cloud-operations-06,medium,internal,2026-09-20,,network-team,fix,,,,,,,
+x-034,cloud-operations-05,low,internet,2026-09-29,,,,,,,,,,
+x-035,cloud-operations-01,critical,internet,2026-08-27,2026-09-26,app-teams,,,,,,,,assisted
+x-036,cloud-operations-08,low,internet,2026-09-04,,finops,fix,,,,,,,
+x-037,cloud-operations-06,critical,internal,2026-09-01,2026-09-22,network-team,,,,,,,,automated
+x-038,cloud-operations-09,medium,internet,2026-07-31,,,,,,,,,,
+x-039,cloud-operations-01,medium,internet,2026-10-02,,security-ops,accepted_risk,business process depends on it,2027-02-12,,,,,
+x-040,cloud-operations-02,medium,internet,2026-10-24,,network-team,fix,,,,,,,

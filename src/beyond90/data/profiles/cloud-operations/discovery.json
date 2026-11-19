@@ -1,0 +1,149 @@
+{
+  "questions": [
+    {
+      "stage": "value",
+      "q": "How many hours a month go into routine operations: provisioning, patching, capacity checks, reports?",
+      "why": "Hours of routine work are what automation gives back, in the team's own count.",
+      "need": "Routine hours are counted per task",
+      "how": "List the routine tasks of a month with their hours",
+      "role": "operations",
+      "core": true,
+      "listen": "A team that cannot count its routine hours spends more than it thinks: count three tasks with them.",
+      "probe": "Which task would you hand to a machine first, and why that one?"
+    },
+    {
+      "stage": "value",
+      "q": "How long does a team wait for a new machine, environment or database, from request to use?",
+      "why": "Waiting time is the delay the business feels, and why teams go around IT.",
+      "need": "The wait from request to use is measured",
+      "how": "Time the last five requests from ticket to use",
+      "role": "application",
+      "core": true,
+      "listen": "Days or weeks of waiting push teams to the public cloud or to machines nobody manages.",
+      "probe": "What did the last team that could not wait do instead?"
+    },
+    {
+      "stage": "L1",
+      "q": "How many sites and clusters are managed today, and from how many separate consoles?",
+      "why": "Every extra console is another place to check and another skill to keep.",
+      "need": "All sites and clusters are listed with the tool that manages each",
+      "how": "List sites and clusters with their management tool",
+      "role": "architect",
+      "listen": "Several consoles for one estate means nobody sees the whole: one plane is the first win.",
+      "probe": "Which site was last checked by hand, and when?"
+    },
+    {
+      "stage": "L2",
+      "q": "When will the busiest cluster run out of processor, memory or storage, and who would notice first?",
+      "why": "Capacity that runs out unannounced becomes an emergency purchase.",
+      "need": "Each cluster has a forecast with a run-out date",
+      "how": "Forecast growth from three months of usage",
+      "role": "operations",
+      "core": true,
+      "listen": "If the answer is 'when users complain', capacity is managed by incident; a forecast with a date changes the budget conversation.",
+      "probe": "When did you last buy hardware in a hurry, and what did it cost?"
+    },
+    {
+      "stage": "L2",
+      "q": "How do you find out that an application is slower than usual before its users do?",
+      "why": "Problems found by users cost more than problems found by monitoring.",
+      "need": "Unusual behaviour raises an alert before users notice",
+      "how": "Compare the last incident's first alert with its first complaint",
+      "role": "operations",
+      "listen": "Fixed thresholds miss slow drifts; baselines learned from the system's own behaviour catch them earlier.",
+      "probe": "What was the last problem users reported before any alert fired?"
+    },
+    {
+      "stage": "L2",
+      "q": "How many machines are oversized, idle or forgotten, and what do they hold?",
+      "why": "Reclaiming waste is the cheapest capacity there is.",
+      "need": "Idle and oversized machines are listed with an owner's decision",
+      "how": "List machines idle for a month or using under a fifth of what they have",
+      "role": "finance",
+      "listen": "Most estates hold a fifth or more of waste; reclaiming it postpones the next purchase.",
+      "probe": "Who can decide to shrink or switch off a machine that belongs to another team?"
+    },
+    {
+      "stage": "L2",
+      "q": "Do the public cloud bills and the data-centre costs end up in the same view, on the same basis?",
+      "why": "Choosing where to run something needs costs compared like for like.",
+      "need": "Private and public cloud costs are seen side by side",
+      "how": "Put last quarter's cloud bill next to the data-centre cost per machine",
+      "role": "finance",
+      "listen": "Two views on two bases lead to wrong placement decisions, in both directions.",
+      "probe": "Which workload would you move if you saw both costs side by side?"
+    },
+    {
+      "stage": "L3",
+      "q": "Which routine tasks are scripted today, who maintains the scripts, and what happens when that person is away?",
+      "why": "Scripts in one person's folder are a risk, not automation.",
+      "need": "Routine tasks run as shared, maintained runbooks",
+      "how": "List the scripts in use with their owner and last change",
+      "role": "operations",
+      "listen": "Scripts kept by one person are a single point of failure; shared runbooks with approvals and logs are the step up.",
+      "probe": "Which script would stop working if its author left tomorrow?"
+    },
+    {
+      "stage": "L3",
+      "q": "Can teams order standard services themselves, with approvals and quotas, or does every request go through a ticket?",
+      "why": "Self-service within limits is how a private estate competes with the public cloud.",
+      "need": "Teams order approved services from a catalog within quotas",
+      "how": "Turn three frequent requests into catalog items",
+      "role": "application",
+      "core": true,
+      "listen": "Tickets for standard requests mean the catalog is the gap; quotas and approvals answer the fear of sprawl.",
+      "probe": "Which request is asked for most often, and how standard is it really?"
+    },
+    {
+      "stage": "L3",
+      "q": "Is each team shown what its infrastructure costs, and are those costs charged back?",
+      "why": "Without a cost per team, demand grows without limit and the platform looks expensive.",
+      "need": "Cost per team or project is shown back or charged back",
+      "how": "Agree a cost per machine and allocate last month's estate to teams",
+      "role": "finance",
+      "listen": "A unit cost per machine, built from hardware, licences, power, space and people, settles 'the cloud is cheaper' with facts.",
+      "probe": "What does one virtual machine cost you a month, all in?"
+    },
+    {
+      "stage": "L3",
+      "q": "How is the estate checked against security baselines and regulations, and how often?",
+      "why": "Configuration drifts between audits; continuous checks catch it.",
+      "need": "Security posture is checked continuously against a baseline",
+      "how": "Pick a baseline and run a first check across the estate",
+      "role": "security",
+      "core": true,
+      "listen": "A yearly audit by spreadsheet means months of drift; continuous checks with a report the auditor accepts are the change.",
+      "probe": "What did the last audit find that had changed since the one before?"
+    },
+    {
+      "stage": "L3",
+      "q": "Must the management plane and its data stay on your own premises, or may it run as a hosted service?",
+      "why": "Sovereignty rules can forbid management and monitoring data leaving the country.",
+      "need": "Management and its data run where the rules require",
+      "how": "Ask security where management and monitoring data may live",
+      "role": "security",
+      "listen": "Regulated customers often need the management plane itself on premises: ask before proposing a hosted service.",
+      "probe": "Who approved the current monitoring tools from a data-protection point of view?"
+    },
+    {
+      "stage": "L4",
+      "q": "Who reviews capacity, cost and compliance each month, and what decisions come out of it?",
+      "why": "Reports nobody acts on are noise.",
+      "need": "A monthly review decides on capacity, cost and compliance",
+      "how": "Set up a monthly review with an owner and a short agenda",
+      "role": "executive",
+      "listen": "A review that ends in decisions turns data into budget and priorities.",
+      "probe": "What was the last decision taken because of a capacity or cost report?"
+    },
+    {
+      "stage": "L4",
+      "q": "Which approvals are needed before a change or a new service, and how long do they take?",
+      "why": "Approvals built into the request are faster than approvals by email.",
+      "need": "Approvals run inside the request, with a time limit",
+      "how": "Map the approval steps for one common request",
+      "role": "executive",
+      "listen": "Approvals by email add days; the same rules inside the workflow keep control without the wait.",
+      "probe": "Which approval is given every time, and could become automatic?"
+    }
+  ]
+}

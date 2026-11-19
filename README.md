@@ -44,7 +44,7 @@ Leading a presales team? [docs/leaders.md](docs/leaders.md) shows what the team 
   Every step is written out, and none of it is a quote or a sizing.
 - **Hands over to delivery:** what was proven, asked and agreed, and the promises to keep after go-live, kept as the customer's commitments so what presales promised is followed after the sale.
 - **Sees one customer across a whole portfolio:** every product line on its own profile, where one line puts another at risk, and which line comes next with the question that opens it ([docs/estate.md](docs/estate.md)).
-- **Fits the product you support:** profiles for cloud security, endpoint, SaaS, AI, identity, SIEM, hyperconverged infrastructure, object storage, databases, file storage, Kubernetes platforms, disaster recovery, platform migration, private AI, hybrid cloud, virtual desktops and network microsegmentation, or your own in JSON.
+- **Fits the product you support:** profiles for cloud security, endpoint, SaaS, AI, identity, SIEM, hyperconverged infrastructure, object storage, databases, file storage, Kubernetes platforms, disaster recovery, platform migration, private AI, hybrid cloud, virtual desktops, network microsegmentation, cloud operations and self-service, edge and branch sites, and multi-tenant clouds for service providers, or your own in JSON.
 - **Installs as an app** on a phone or a computer, works offline, and accepts files shared from mail.
 
 | | |

@@ -1,0 +1,41 @@
+id,account_id,severity,exposure,opened_at,closed_at,owner,decision,decision_reason,expiry,previous_severity,severity_changed_at,verified_at,reopened,closed_by
+x-001,service-provider-cloud-01,low,internet,2026-08-10,2026-08-18,product-team,accepted_risk,business process depends on it,2026-12-10,,,,,manual
+x-002,service-provider-cloud-06,low,internet,2026-10-23,,product-team,,,,,,,,
+x-003,service-provider-cloud-06,high,internet,2026-10-25,,,,,,,,,,
+x-004,service-provider-cloud-08,low,internal,2026-09-17,2026-10-08,product-team,accepted_risk,business process depends on it,2026-12-27,,,,,assisted
+x-005,service-provider-cloud-06,low,internet,2026-07-22,,tenant-success,fix,,,,,,,
+x-006,service-provider-cloud-08,medium,internet,2026-08-25,,product-team,fix,,,,,,,
+x-007,service-provider-cloud-08,medium,internet,2026-09-29,2026-10-15,platform-ops,fix,,,,,,,manual
+x-008,service-provider-cloud-04,high,internal,2026-09-30,2026-10-08,tenant-success,fix,,,,,,,assisted
+x-009,service-provider-cloud-01,high,internal,2026-08-28,,,,,,,,,,
+x-010,service-provider-cloud-07,medium,internal,2026-08-07,2026-08-12,tenant-success,accepted_risk,business process depends on it,2026-11-26,,,,,manual
+x-011,service-provider-cloud-08,low,internal,2026-10-03,,product-team,accepted_risk,business process depends on it,2027-02-04,,,,,
+x-012,service-provider-cloud-01,high,internal,2026-07-13,2026-08-04,platform-ops,fix,,,,,,,automated
+x-013,service-provider-cloud-03,low,internal,2026-08-02,,product-team,fix,,,,,,,
+x-014,service-provider-cloud-01,medium,internal,2026-09-10,,platform-ops,fix,,,,,,,
+x-015,service-provider-cloud-07,medium,internal,2026-10-15,,platform-ops,accepted_risk,business process depends on it,2027-01-11,,,,,
+x-016,service-provider-cloud-04,low,internal,2026-09-06,2026-09-19,billing,fix,,,,,,,assisted
+x-017,service-provider-cloud-07,low,internet,2026-10-17,,product-team,fix,,,,,,,
+x-018,service-provider-cloud-05,high,internet,2026-08-26,2026-08-30,,,,,,,,,manual
+x-019,service-provider-cloud-03,medium,internal,2026-09-13,,platform-ops,accepted_risk,business process depends on it,2027-01-20,,,,,
+x-020,service-provider-cloud-05,high,internal,2026-08-06,,product-team,fix,,,,,,,
+x-021,service-provider-cloud-04,low,internal,2026-10-08,,product-team,fix,,,,,,,
+x-022,service-provider-cloud-05,medium,internet,2026-10-19,,product-team,fix,,,,,,,
+x-023,service-provider-cloud-06,low,internet,2026-08-07,2026-08-15,product-team,fix,,,,,,,assisted
+x-024,service-provider-cloud-06,low,internal,2026-07-29,,billing,accepted_risk,business process depends on it,2027-01-08,,,,,
+x-025,service-provider-cloud-05,critical,internal,2026-10-27,,platform-ops,fix,,,,,,,
+x-026,service-provider-cloud-07,medium,internal,2026-08-15,,platform-ops,fix,,,,,,,
+x-027,service-provider-cloud-05,medium,internet,2026-09-13,2026-10-13,security-ops,fix,,,,,,,assisted
+x-028,service-provider-cloud-06,low,internal,2026-07-12,2026-07-15,tenant-success,,,,,,,,assisted
+x-029,service-provider-cloud-03,low,internal,2026-10-16,,security-ops,fix,,,,,,,
+x-030,service-provider-cloud-03,medium,internet,2026-10-06,,tenant-success,fix,,,,,,,
+x-031,service-provider-cloud-05,medium,internet,2026-10-17,,,,,,,,,,
+x-032,service-provider-cloud-07,medium,internal,2026-10-29,,tenant-success,fix,,,,,,,
+x-033,service-provider-cloud-04,medium,internet,2026-08-08,2026-08-14,billing,fix,,,,,,,manual
+x-034,service-provider-cloud-05,medium,internal,2026-07-25,,tenant-success,accepted_risk,business process depends on it,2026-12-10,,,,,
+x-035,service-provider-cloud-04,low,internet,2026-09-07,,tenant-success,fix,,,,,,,
+x-036,service-provider-cloud-04,low,internet,2026-09-04,2026-09-21,tenant-success,fix,,,,,,,assisted
+x-037,service-provider-cloud-07,low,internet,2026-09-09,2026-10-04,billing,fix,,,,,,,manual
+x-038,service-provider-cloud-05,high,internal,2026-09-16,2026-09-26,,,,,,,,,assisted
+x-039,service-provider-cloud-03,high,internal,2026-08-10,,platform-ops,fix,,,,,,,
+x-040,service-provider-cloud-03,high,internet,2026-08-17,2026-09-09,platform-ops,accepted_risk,business process depends on it,2027-01-08,,,,,automated

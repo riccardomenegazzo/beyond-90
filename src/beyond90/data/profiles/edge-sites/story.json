@@ -1,0 +1,39 @@
+{
+  "audiences": {
+    "executive": "Open and run sites without sending IT: standard designs deployed remotely, every site upgraded from one place, and a site that keeps working when a server fails.",
+    "technical": "Small clusters from one server to a few, deployed without hands on site, upgraded remotely in waves, with local copies plus replication to the core, encrypted by default, and room for AI at the edge.",
+    "financial": "Fewer site visits and emergency replacements; one standard design bought in volume instead of a different one per site."
+  },
+  "people": [
+    "The head of stores, plants or branches",
+    "Infrastructure operations for the sites",
+    "Security, for equipment outside the data centre",
+    "Whoever installs equipment at the sites, staff or partner"
+  ],
+  "objections": [
+    {
+      "says": "Our sites are too small for this.",
+      "clarify": "What runs at your smallest site, and what happens when it stops?",
+      "answer": "One server where a stop can wait, two where it cannot; both managed from the same place as the rest.",
+      "prove": "Run the smallest site's applications on a one-server test site managed centrally."
+    },
+    {
+      "says": "The links to our sites are too poor.",
+      "clarify": "Which sites lose their link, and for how long?",
+      "answer": "Sites keep working alone and catch up when the link returns; upgrades and copies are scheduled around the link.",
+      "prove": "Cut a test site's link for a working day and show it runs and catches up."
+    },
+    {
+      "says": "We cannot send people to install servers everywhere.",
+      "clarify": "Who is at the sites today who could plug in a box?",
+      "answer": "Servers ship configured and join the central plane on their own; nobody with IT skills needs to travel.",
+      "prove": "Ship a server to a test site and have someone outside IT plug it in."
+    },
+    {
+      "says": "AI at the edge is not for us yet.",
+      "clarify": "Is there data at the sites, like images or sensor readings, that nobody looks at?",
+      "answer": "Size the sites so a GPU can be added later; start with the applications that run there today.",
+      "prove": "Show the site design with room for a GPU, and its cost now and later."
+    }
+  ]
+}

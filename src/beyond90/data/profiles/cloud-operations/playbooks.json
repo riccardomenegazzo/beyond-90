@@ -1,0 +1,14 @@
+{
+  "playbooks": {
+    "l1_connect_account": {
+      "title": "Bring every site under one management plane",
+      "why": "Sites still managed from their own consoles are checked by hand, if at all, and nobody sees the estate whole.",
+      "steps": [
+        "List the sites and clusters, with the tool that manages each today.",
+        "Register each site with the central management plane, read-only first.",
+        "Confirm each site reports health, capacity and alerts centrally."
+      ],
+      "success": "Every site in scope reports to one management plane."
+    }
+  }
+}

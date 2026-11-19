@@ -1,0 +1,10 @@
+id,provider,sources,connected,owner,last_spend,status,in_plan,created_at
+cloud-operations-01,datacenter,billing,true,finops,1500,active,true,2026-10-08
+cloud-operations-02,datacenter,billing;org;sso,true,security-ops,3400,active,true,2026-01-25
+cloud-operations-03,datacenter,billing;org;sso,true,finops,5400,active,true,2026-04-21
+cloud-operations-04,datacenter,billing;org;sso,true,security-ops,3000,active,true,2026-08-04
+cloud-operations-05,datacenter,billing;org;sso,true,finops,7700,active,true,2026-07-16
+cloud-operations-06,cloud,billing;org;sso,true,security-ops,1100,active,false,2025-03-26
+cloud-operations-07,datacenter,billing;org,true,infra-ops,4900,active,true,2025-02-19
+cloud-operations-08,branch,billing;org;sso,true,finops,2700,active,false,2026-08-08
+cloud-operations-09,datacenter,billing;org;sso,true,finops,300,active,true,2025-06-10

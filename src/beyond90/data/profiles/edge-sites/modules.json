@@ -1,0 +1,114 @@
+{
+  "use_cases": {
+    "run": "Run sites without local IT",
+    "manage": "Manage every site from one place",
+    "protect": "Protect what each site holds",
+    "grow": "Run new applications at the edge"
+  },
+  "modules": [
+    {
+      "id": "central_management",
+      "name": "Every site seen and managed from one central plane",
+      "category": "cloud",
+      "since": "2026.4",
+      "providers": [
+        "datacenter",
+        "cloud",
+        "branch"
+      ],
+      "requires_any": [],
+      "on_connect": true,
+      "use_case": "manage",
+      "csf": [
+        "identify"
+      ]
+    },
+    {
+      "id": "zero_touch",
+      "name": "New sites deployed without IT staff on site",
+      "category": "service",
+      "since": "2026.4",
+      "providers": [
+        "branch"
+      ],
+      "requires_any": [
+        "edge_cluster"
+      ],
+      "on_connect": false,
+      "use_case": "run",
+      "csf": [
+        "protect"
+      ]
+    },
+    {
+      "id": "remote_upgrades",
+      "name": "Sites upgraded remotely, in waves, without a visit",
+      "category": "protect",
+      "since": "2026.4",
+      "providers": [
+        "branch"
+      ],
+      "requires_any": [
+        "remote_upgrade"
+      ],
+      "on_connect": false,
+      "use_case": "manage",
+      "csf": [
+        "protect"
+      ]
+    },
+    {
+      "id": "local_protection",
+      "name": "Local copies at each site, restorable with the link down",
+      "category": "protect",
+      "since": "2026.4",
+      "providers": [
+        "branch"
+      ],
+      "requires_any": [
+        "local_copy"
+      ],
+      "on_connect": false,
+      "use_case": "protect",
+      "csf": [
+        "recover"
+      ]
+    },
+    {
+      "id": "core_replication",
+      "name": "Each site's workloads copied to a core site or cloud",
+      "category": "protect",
+      "since": "2026.4",
+      "providers": [
+        "datacenter",
+        "cloud",
+        "branch"
+      ],
+      "requires_any": [
+        "core_replica"
+      ],
+      "on_connect": false,
+      "use_case": "protect",
+      "csf": [
+        "recover"
+      ]
+    },
+    {
+      "id": "edge_applications",
+      "name": "Local and AI applications running at the site, on data that stays there",
+      "category": "service",
+      "since": "2026.4",
+      "providers": [
+        "branch"
+      ],
+      "requires_any": [
+        "edge_app"
+      ],
+      "on_connect": false,
+      "use_case": "grow",
+      "csf": [
+        "identify"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "version": "2026.4",
+  "description": "Edge and branch sites: small clusters in shops, plants, branches and remote locations, deployed without local IT, managed and upgraded centrally, protected locally and at the core, and running local applications, AI included.",
+  "terms": {
+    "estate": "edge",
+    "unit": "site",
+    "units": "sites",
+    "menu": "Sites"
+  },
+  "types": {
+    "edge_cluster": "Small clusters at the site, from one server to a few",
+    "central_view": "Sites seen and managed from one central plane",
+    "remote_upgrade": "Software upgraded remotely, in waves",
+    "local_copy": "Local copies of the site's workloads, restorable without the network",
+    "core_replica": "Copies of the site's workloads at a core site or in a cloud",
+    "edge_app": "Applications that must run at the site, AI inference included"
+  },
+  "expected": {
+    "branch": [
+      "edge_cluster",
+      "central_view",
+      "remote_upgrade",
+      "local_copy",
+      "core_replica",
+      "edge_app"
+    ],
+    "datacenter": [
+      "central_view",
+      "core_replica"
+    ],
+    "cloud": [
+      "core_replica"
+    ]
+  }
+}

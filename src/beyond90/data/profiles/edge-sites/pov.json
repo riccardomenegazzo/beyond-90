@@ -1,0 +1,36 @@
+{
+  "criteria": [
+    {
+      "text": "A new site is deployed from a standard design with no IT staff on site",
+      "how": "Ship a test site and have it join the central plane from the network alone"
+    },
+    {
+      "text": "Every test site is seen and upgraded from one place, in waves, without a visit",
+      "how": "Upgrade the test sites in two waves and record any visit needed"
+    },
+    {
+      "text": "A site keeps running when one server fails, and the people working there do not notice",
+      "how": "Power off a server at a two-server test site during a simulated working day"
+    },
+    {
+      "text": "A site's main application is restored from a local copy with the link down",
+      "how": "Cut the link, delete a test machine and restore it locally"
+    },
+    {
+      "text": "Each site's workloads reach the core within the agreed recovery point, over the real link",
+      "how": "Measure replication lag over a week on the real link"
+    },
+    {
+      "text": "An inference application runs at the site on local data that never leaves it",
+      "how": "Run a sample model on local images and confirm nothing is sent out"
+    }
+  ],
+  "readiness": [
+    "Two or three test sites chosen, one of each kind",
+    "Network details for each test site: addresses, link speed, firewall rules to the core",
+    "Somewhere to run a witness, reachable from the two-server sites",
+    "A core site or cloud to replicate to",
+    "Someone at each test site who can plug in a server, and nothing more",
+    "The business agrees a window for the failure test"
+  ]
+}

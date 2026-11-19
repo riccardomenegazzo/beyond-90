@@ -1,0 +1,17 @@
+id,provider,sources,connected,owner,last_spend,status,in_plan,created_at
+edge-sites-01,datacenter,billing;org;sso,true,security-ops,800,active,false,2025-03-10
+edge-sites-02,branch,billing;org,true,infra-ops,200,active,true,2026-09-21
+edge-sites-03,branch,billing;org;sso,false,infra-ops,3600,active,true,2026-06-01
+edge-sites-04,branch,billing;org;sso,true,infra-ops,5500,active,false,2026-09-26
+edge-sites-05,datacenter,billing;org;sso,true,regional-ops,300,active,true,2025-11-24
+edge-sites-06,branch,billing;org;sso,true,security-ops,3600,active,true,2025-12-31
+edge-sites-07,datacenter,billing;org;sso,true,infra-ops,1500,active,true,2025-01-19
+edge-sites-08,branch,billing;org;sso,true,security-ops,1400,active,true,2025-02-26
+edge-sites-09,branch,billing;org,true,loss-prevention,4500,active,true,2025-09-16
+edge-sites-10,datacenter,billing;org;sso,true,security-ops,4400,active,false,2026-08-14
+edge-sites-11,branch,billing;org,true,infra-ops,3900,active,true,2025-10-11
+edge-sites-12,branch,billing;org,true,security-ops,2900,active,false,2025-10-09
+edge-sites-13,datacenter,billing;org,true,store-it,7600,active,false,2026-08-07
+edge-sites-14,datacenter,billing;org;sso,true,infra-ops,1300,active,false,2025-02-12
+edge-sites-15,branch,billing;org;sso,true,loss-prevention,2200,active,true,2026-06-07
+edge-sites-16,datacenter,billing;org,true,store-it,6600,active,false,2026-07-23
