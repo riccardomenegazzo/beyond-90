@@ -151,14 +151,18 @@ def shoot(site: Path, out: Path) -> None:
             pg.get_by_label("Bid due").fill(shift(16))
             pg.get_by_label("Bid due").press("Tab")
             pg.get_by_role("button", name="Try it with an invented tender").click()
-            pg.wait_for_selector("#view .rfpq")
-            for rid, ans in (("r1", "Met"), ("r2", "Met"), ("r3", "Met"), ("r4", "Met"), ("r5", "Met"), ("r6", "Met"), ("r7", "Met"), ("r8", "Partly"), ("r9", "Partly"), ("r10", "Met"), ("r11", "Met"), ("r12", "Met"), ("r14", "To check")):
-                pg.locator(f"#view .rfpq[data-id={rid}]").get_by_role("button", name=ans, exact=True).click()
-                pg.wait_for_timeout(60)
+            pg.wait_for_selector("#view .rfprow")
+            # answered in a meeting's rhythm: open the first, then the keys 1 to 4, each opening the next one still open
+            pg.locator("#view .rfprow[data-id=r1] .rfphead").click()
+            for key in "1111112213":
+                pg.keyboard.press(key)
+                pg.wait_for_timeout(80)
+            pg.keyboard.press("Escape")
             pg.evaluate("window.scrollTo({ top: 0, behavior: 'instant' })")
             pg.wait_for_timeout(300)
             pg.screenshot(path=str(out / "app-rfp.png"))
-            pg.evaluate("(() => { const c = document.querySelector('#view .rfpq[data-id=\"r14\"]'); window.scrollTo({ top: c.getBoundingClientRect().top + window.scrollY - 76, behavior: 'instant' }); })()")
+            pg.locator("#view .rfprow[data-id=r14] .rfphead").click()
+            pg.evaluate("(() => { const c = document.querySelector('#view .rfprow[data-id=\"r10\"]'); window.scrollTo({ top: c.getBoundingClientRect().top + window.scrollY - 76, behavior: 'instant' }); })()")
             pg.wait_for_timeout(300)
             pg.screenshot(path=str(out / "app-rfp-kit.png"))
             # the way forward: the phase now, what moves it on, and the demo planned from what was said

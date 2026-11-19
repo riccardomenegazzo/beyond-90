@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { parseRequirements, suggestLine, lineOrder, rfpState, clarificationQuestions, rfpCsv, rfpMarkdown, bidCommitments, validRfp, withRequirement, EXAMPLE_TENDER, KEYWORDS, MAX_REQS,
-  sheetsToText, csvToText, matchedWords, questionFor, tenderAsks, suggestAnswer, pastAnswer, evidenceFor } from "../rfp.js";
+  sheetsToText, csvToText, matchedWords, questionFor, tenderAsks, suggestAnswer, pastAnswer, evidenceFor, nextSteps, filterCounts, keepReq, matchesSearch, FILTERS } from "../rfp.js";
 import { nextMeeting, agendaText } from "../nextmeeting.js";
 import { makeWorkshop, addRequirements, setRequirement, removeRequirement, setRfpMeta, clearRfp, validWorkshop, summaryMarkdown, assess, fillSuggestedNotes } from "../workshop.js";
 import { pipeline, agenda } from "../desk.js";
@@ -257,5 +257,46 @@ test("the evidence to gather, for the requirements answered met or partly", () =
     "How the immutable copy is enforced, and by what", "A delete refused during the proof of value"]);
   assert.deepEqual(ev[0].refs, ["1.1"]);
   assert.match(rfpMarkdown(CAT, w, D), /## Evidence to gather\n\n- The proposed design, with the failures it tolerates \(for 1\.1\)/);
+});
+
+test("what to do next: what could exclude the bid first, then questions due, open mandatory requirements, unexplained answers", () => {
+  let w = ws(["hci", "dr-backup"]);
+  assert.deepEqual(nextSteps(CAT, w, D).map((x) => x.act), ["load"]);
+  w = addRequirements(w, parseRequirements(EXAMPLE_TENDER), CAT, D);
+  assert.deepEqual(nextSteps(CAT, w, D).map((x) => x.id), ["open"]);
+  w = setRfpMeta(w, { questions_due: "2026-11-24", due: "2026-12-05" }, D);
+  w = setRequirement(setRequirement(w, "r9", { a: "no" }, D), "r1", { a: "yes" }, D);
+  const steps = nextSteps(CAT, w, D);
+  assert.deepEqual(steps.map((x) => x.id), ["no", "questions", "open"], "at most three, most urgent first");
+  assert.match(steps[0].text, /1 mandatory requirement not met: ask whether an equivalent is accepted by 2026-11-24/);
+  assert.equal(steps[1].act, "copy-questions");
+  assert.equal(steps[2].act, "next-open");
+  // everything mandatory met and explained: what is left is the scored ones, then the matrix
+  w.rfp.reqs.filter((r) => r.must).forEach((r) => { w = setRequirement(w, r.id, { a: "yes", note: "Met as designed" }, D); });
+  assert.deepEqual(nextSteps(CAT, w, D).map((x) => x.id), ["scored"]);
+  w.rfp.reqs.filter((r) => !r.must).forEach((r) => { w = setRequirement(w, r.id, { a: "yes", note: "Met as designed" }, D); });
+  assert.deepEqual(nextSteps(CAT, w, D).map((x) => [x.id, x.act]), [["ready", "export"]]);
+});
+
+test("unexplained answers are a next step, with how many the kit can explain", () => {
+  let w = addRequirements(ws(["hci", "dr-backup"]), parseRequirements(EXAMPLE_TENDER), CAT, D);
+  w.rfp.reqs.filter((r) => r.must).forEach((r) => { w = setRequirement(w, r.id, { a: "yes" }, D); });
+  const step = nextSteps(CAT, w, D).find((x) => x.id === "nonote");
+  assert.match(step.text, /^11 requirements answered without saying how: the kit has an answer for \d+\.$/);
+  assert.equal(step.act, "filter:nonote");
+});
+
+test("the list narrows by chip, each with its count, and by search", () => {
+  let w = addRequirements(ws(), parseRequirements(EXAMPLE_TENDER), CAT, D);
+  w = setRequirement(setRequirement(setRequirement(w, "r9", { a: "no" }, D), "r1", { a: "yes" }, D), "r7", { a: "partly", note: "A test network" }, D);
+  assert.deepEqual(Object.keys(FILTERS), ["all", "must", "open", "no", "clarify", "nonote"]);
+  assert.deepEqual(filterCounts(w), { all: 16, must: 11, open: 13, no: 1, clarify: 2, nonote: 1 });
+  assert.equal(keepReq(w.rfp.reqs[0], "nonote"), true, "met, with no note");
+  assert.equal(keepReq(w.rfp.reqs[6], "nonote"), false, "partly, with a note");
+  const r9 = w.rfp.reqs.find((r) => r.id === "r9");
+  assert.equal(matchesSearch(r9, "object LOCK"), true);
+  assert.equal(matchesSearch(r9, "3.1"), true, "by its reference");
+  assert.equal(matchesSearch(r9, "object kubernetes"), false, "every word must be found");
+  assert.equal(matchesSearch(r9, "  "), true);
 });
 

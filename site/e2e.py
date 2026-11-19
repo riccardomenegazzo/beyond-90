@@ -815,41 +815,63 @@ def main(site: str) -> int:
         # a tender, requirement by requirement: pasted, read, matched, answered; whether to bid and what to ask
         page.click("[data-tab=wsrfp]")
         page.wait_for_selector("#view .rfphero")
-        check("Paste the requirements" in page.inner_text("#view .rfphero"), "a tender starts empty, asking for its requirements")
+        check("Load the tender's requirements" in page.inner_text("#view .rfpnext"), "a tender starts empty, and the next step is to load its requirements")
         page.get_by_role("button", name="Try it with an invented tender").click()
-        page.wait_for_selector("#view .rfpq")
-        check(page.locator("#view .rfpq").count() == 16 and "Added 16 requirements: 11 mandatory, 5 scored or optional" in page.inner_text("#view"),
-              "pasted requirements are read one by one, mandatory or scored")
-        first = page.locator("#view .rfpq").first
-        check(first.get_by_label("Product line for 1.1").input_value() == "hci" and page.get_by_label("Product line for 3.1").input_value() == "object-storage",
-              "and each is matched to the product line it asks about")
-        page.locator("#view .rfpq[data-id=r9]").get_by_role("button", name="Not met", exact=True).click()
+        page.wait_for_selector("#view .rfprow")
+        check(page.locator("#view .rfprow").count() == 16 and "Added 16 requirements: 11 mandatory, 5 scored or optional" in page.inner_text("#view"),
+              "pasted requirements are read one by one, mandatory or scored, into a compact list")
+        check(page.locator("#view .rfpbar").count() == 2 and "Answer them" in page.inner_text("#view .rfpnext"), "the picture of the bid has a bar for mandatory and scored requirements, and says what to do next")
+        # one requirement open at a time: its line, the keys 1 to 4, and the next one still open opens by itself
+        page.locator("#view .rfprow[data-id=r1] .rfphead").click()
+        check(page.get_by_label("Product line for 1.1").input_value() == "hci" and page.locator("#view .rfprow.open").count() == 1, "opening a requirement shows the product line it was matched to")
+        page.keyboard.press("1")
+        page.wait_for_selector("#view .rfprow[data-id=r2].open")
+        check("Met" in page.inner_text("#view .rfprow[data-id=r1] .rfpstatus") and page.locator("#view .rfprow.open").count() == 1,
+              "the key 1 answers it as met, and the next requirement still open opens")
+        page.keyboard.press("Escape")
+        check(page.locator("#view .rfprow.open").count() == 0, "Escape closes it")
+        page.locator("#view .rfprow[data-id=r9] .rfphead").click()
+        check(page.get_by_label("Product line for 3.1").input_value() == "object-storage", "and each is matched to the product line it asks about")
+        page.locator("#view .rfprow[data-id=r9]").get_by_role("button", name="Not met", exact=True).click()
         page.wait_for_selector("#view .rfpverdict.risk")
         check("1 mandatory requirement not met" in page.inner_text("#view .rfpverdict") and "not in scope" in page.inner_text("#view"),
               "a mandatory requirement not met puts the bid at risk; lines the tender asks about outside the conversation are marked")
-        page.get_by_role("group", name="Which requirements to show").get_by_role("button", name="Not met").click()
-        check(page.locator("#view .rfpq").count() == 1, "the list narrows to what is not met")
+        check("not met: ask whether an equivalent is accepted" in page.inner_text("#view .rfpnext"), "and becomes the first thing to do")
+        page.locator("#view .rfpnext").get_by_role("button", name="See them").first.click()
+        check(page.locator("#view .rfprow").count() == 1 and page.locator("#view [data-only=no][aria-pressed=true]").count() == 1, "which narrows the list to what is not met")
+        page.get_by_role("group", name="Which requirements to show").get_by_role("button", name="All").click()
+        page.get_by_label("Find a requirement by its words or its reference").fill("immutable")
+        check(page.locator("#view .rfprow").count() == 1, "a search finds a requirement by its words")
+        page.get_by_label("Find a requirement by its words or its reference").fill("")
+        page.get_by_role("button", name="Group by line").click()
+        check(page.locator("#view .rfpgroup").count() >= 5, "the list can be grouped by product line")
+        page.get_by_role("button", name="Group by line").click()
+        check("Requirement 3.1" in page.inner_text("#view .rfpdeliver") and "Evidence to gather" in page.inner_text("#view .rfpdeliver"),
+              "delivering the bid shows the questions for the contracting authority and the evidence to gather")
         with page.expect_download() as dl:
             page.get_by_role("button", name="Compliance matrix (.csv)").click()
         matrix = Path(dl.value.path()).read_text(encoding="utf-8")
         check(matrix.startswith("ref,requirement,mandatory,points,product_line,answer,how_it_is_met,who_answers") and "Not met" in matrix, "the compliance matrix downloads for the bid team")
         # the tender's own workbook: the sheet holding the requirements is found and read
-        page.get_by_role("group", name="Which requirements to show").get_by_role("button", name="All").click()
+        page.locator("#view .rfploader > summary").click()
         page.locator("#view .filebtn input[type=file]").set_input_files(files=[{"name": "tender.xlsx", "mimeType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             "buffer": tiny_xlsx({"Cover": [["Tender", "Lot 1"]], "Requisiti": [["N.", "Requisito", "Tipologia"], ["7.1", "La soluzione deve includere la formazione di sei amministratori", "Obbligatorio"],
                                                                          ["7.2", "Sono preferibili report mensili di capacità e costi", "Migliorativo"]]})}])
-        page.wait_for_selector("#view .rfpq[data-id=r18]", timeout=60_000)
+        page.wait_for_selector("#view .rfprow[data-id=r18]", timeout=60_000)
         check('tender.xlsx, sheet "Requisiti": added 2 requirements: 1 mandatory, 1 scored or optional' in page.inner_text("#view"), "a tender's workbook is read: the sheet with the requirements, in Italian")
-        check(page.locator("#view .rfpdq").count() > 0 and "Matched on:" in page.inner_text("#view .rfplist"), "requirements show the words they were matched on, and the discovery question they touch")
         # the answer kit: a neutral answer to adapt, the evidence to attach, used in one click or for every empty note
-        kit = page.locator("#view .rfpq[data-id=r6] .rfpsuggest")
+        page.locator("#view .rfprow[data-id=r6] .rfphead").click()
+        check("Matched on:" in page.inner_text("#view .rfprow[data-id=r6]") and page.locator("#view .rfprow[data-id=r6] .rfpdq").count() == 1,
+              "an open requirement shows the words it was matched on, and the discovery question it touches")
+        kit = page.locator("#view .rfprow[data-id=r6] .rfpsuggest")
         check("From the answer kit: Copies nobody can delete" in kit.inner_text() and "Attach:" in kit.inner_text(), "a requirement offers the kit's answer, with the evidence to attach")
         kit.get_by_role("button", name="Use it").click()
         page.wait_for_timeout(400)
-        check(page.locator("#view .rfpq[data-id=r6] input.wsnote").input_value().startswith("At least one copy is immutable"), "and puts it in the note to adapt")
+        check(page.locator("#view .rfprow[data-id=r6] input.wsnote").input_value().startswith("At least one copy is immutable"), "and puts it in the note to adapt")
         page.get_by_role("button", name="Use the kit's answers where there is no note yet").click()
         page.wait_for_selector("#view p.note:has-text('filled from the answer kit')")
-        check(page.locator("#view .rfpq[data-id=r1] input.wsnote").input_value().startswith("The platform keeps running when a node fails"), "every empty note can be filled from the kit at once")
+        page.locator("#view .rfprow[data-id=r1] .rfphead").click()
+        check(page.locator("#view .rfprow[data-id=r1] input.wsnote").input_value().startswith("The platform keeps running when a node fails"), "every empty note can be filled from the kit at once")
         page.click("[data-tab=workshop]")
         page.wait_for_selector("#view .wsq")
         page.get_by_role("button", name="Asked by the tender").click()

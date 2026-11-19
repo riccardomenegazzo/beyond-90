@@ -2571,24 +2571,47 @@ export function qualifyView({ workshop: w, catalog, setDeal, setAlt, go }) {
 /** A tender or a request for proposal, requirement by requirement: whether to bid, what to ask, the points, the matrix. */
 export function rfpView({ workshop: w, catalog, today, addReqs, setReq, removeReq, setRfpMeta, clearRfp, setScope, readRows, fillNotes, others, go }) {
   let cur = w;
-  const filter = { only: "all", line: "" };
+  // what the list shows: a narrowing, a line, words searched, grouped by line or not, and the requirement open for editing
+  const ui = { only: "all", line: "", q: "", group: false, open: "" };
   const say = h("p", { class: "note", role: "status" });
+  const reqs = () => (cur.rfp ? cur.rfp.reqs : []);
+  const lineName = (p) => (p ? SHORT[p] || (catalog.lines[p] ? catalog.lines[p].label : p) : "No line");
+  const STATUS = { yes: "Met", partly: "Partly", no: "Not met", check: "To check", "": "Open" };
+  const shortText = (t, n) => (t.length > n ? t.slice(0, n - 1).trimEnd() + "…" : t);
+  const slug = (cur.customer || "customer").replace(/[^A-Za-z0-9]+/g, "-").replace(/^-|-$/g, "").toLowerCase() || "customer";
+  const copyQuestions = (btn) => {
+    const qs = RFP.clarificationQuestions(cur);
+    return copyText(qs.length ? qs.map((q, i) => `${i + 1}. ${q.text}`).join("\n") : "No question to ask: no mandatory requirement is partly met, not met or to check.")
+      .then((ok) => { if (btn) btn.textContent = ok ? "Copied" : "Not copied"; });
+  };
+  const exportCsv = () => saveBlob(RFP.rfpCsv(catalog, cur), `${slug}-compliance-matrix.csv`, "text/csv");
+
+  // ---------------------------------------------------------------- where the bid stands, at a glance
   const hero = h("section", { class: "card rfphero" });
-  const lineOptions = () => [["", "No line"], ...RFP.lineOrder(catalog, cur.scope).map((p) => [p, catalog.lines[p].label + (cur.scope.includes(p) ? "" : " (not in scope)")])];
+  // a small bar: one segment per answer that has any, its width the share of the whole
+  const miniBar = (c, total, label) => h("span", { class: "rfpbartrack mini", role: "img", "aria-label": label },
+    ["yes", "partly", "no", "check"].filter((k) => c[k]).map((k) => h("i", { class: `seg s-${k}`, style: `width:${((c[k] / (total || 1)) * 100).toFixed(2)}%` })));
+  // one bar per population: each answer a segment, its width the share; the legend carries the numbers
+  const bar = (list, label) => {
+    const n = list.length || 1;
+    const parts = ["yes", "partly", "no", "check", ""].map((k) => [k, list.filter((r) => r.a === k).length]).filter(([, c]) => c);
+    return h("div", { class: "rfpbar" }, h("span", { class: "rfpbarlabel", text: `${label} (${list.length})` }),
+      h("span", { class: "rfpbartrack", role: "img", "aria-label": `${label}: ${parts.map(([k, c]) => `${c} ${STATUS[k].toLowerCase()}`).join(", ")}` },
+        parts.map(([k, c]) => h("i", { class: `seg s-${k || "open"}`, style: `width:${((c / n) * 100).toFixed(2)}%` }))));
+  };
   const drawHero = () => {
     const st = RFP.rfpState(catalog, cur, today);
     const dl = st.deadlines;
-    const when = (d, n, what) => (d ? h("span", { class: "chip" + (n != null && n >= 0 && n <= 7 ? " warn" : "") }, `${what} ${d}${n == null ? "" : n < 0 ? `, ${-n} days ago` : n === 0 ? ", today" : `, in ${n} days`}`) : null);
+    const when = (d, days, what) => (d ? h("span", { class: "chip" + (days != null && days >= 0 && days <= 7 ? " warn" : "") }, `${what} ${d}${days == null ? "" : days < 0 ? `, ${-days} days ago` : days === 0 ? ", today" : `, in ${days} days`}`) : null);
+    const steps = RFP.nextSteps(catalog, cur, today);
     put(hero, h("h2", { text: st.title ? `Where the bid stands: ${st.title}` : "Where the bid stands" }),
       h("p", { class: `rfpverdict ${st.verdict.level}`, text: st.verdict.text }),
-      st.total ? h("div", { class: "lsstats" },
-        h("div", {}, h("b", { text: String(st.total) }), h("small", { text: `requirements, ${st.must} mandatory` })),
-        h("div", {}, h("b", { class: "ok", text: String(st.yes) }), h("small", { text: "met" })),
-        h("div", {}, h("b", { class: st.must_no.length ? "neg" : "", text: String(st.no) }), h("small", { text: `not met${st.must_no.length ? `, ${st.must_no.length} mandatory` : ""}` })),
-        h("div", {}, h("b", { text: String(st.partly + st.check) }), h("small", { text: "partly or to check" })),
-        h("div", {}, h("b", { text: String(st.open) }), h("small", { text: "not answered yet" })),
-        st.points ? h("div", {}, h("b", { text: String(Math.round(st.points.likely)) }), h("small", { text: `of ${Math.round(st.points.total)} points likely (${Math.round(st.points.sure)} sure, at best ${Math.round(st.points.best)})` })) : null) : null,
-      dl.questions_due || dl.due ? h("p", { class: "rfpdates" }, when(dl.questions_due, dl.questions_in, "Questions due"), " ", when(dl.due, dl.due_in, "Bid due")) : null,
+      st.total ? h("div", { class: "rfpbars" }, bar(reqs().filter((r) => r.must), "Mandatory"), bar(reqs().filter((r) => !r.must), "Scored or optional"),
+        h("p", { class: "rfplegend" }, ["yes", "partly", "no", "check", ""].map((k) => h("span", {}, h("i", { class: `dot s-${k || "open"}` }), `${STATUS[k]} ${reqs().filter((r) => r.a === k).length}`)))) : null,
+      st.total && (st.points || dl.questions_due || dl.due) ? h("p", { class: "rfpdates" }, st.points ? h("span", { class: "chip" }, `${Math.round(st.points.likely)} of ${Math.round(st.points.total)} points likely`) : null,
+        when(dl.questions_due, dl.questions_in, "Questions due"), when(dl.due, dl.due_in, "Bid due")) : null,
+      h("div", { class: "rfpnext" }, h("h3", { text: "Do next" }), h("ul", {}, steps.map((x) => h("li", { class: `rfpstep k-${x.id}` }, h("span", { text: x.text }),
+        h("button", { type: "button", class: "btn small", text: x.label, onclick: (ev) => act(x.act, ev.currentTarget) }))))),
       st.owed.length || (st.total && st.unassigned) ? h("p", { class: "note rfpowed", text: `Still to answer: ${[...st.owed.map((x) => `${x.label.toLowerCase()} ${x.count}`), ...(st.unassigned ? [`nobody asked yet ${st.unassigned}`] : [])].join(", ")}.` }) : null,
       st.outside.length ? h("div", { class: "growproof" }, h("small", { text: "The tender also asks about" }),
         h("p", { text: st.outside.map((l) => `${l.label} (${l.count})`).join(", ") + ": lines not in this conversation yet." }),
@@ -2596,7 +2619,21 @@ export function rfpView({ workshop: w, catalog, today, addReqs, setReq, removeRe
           try { await setScope([...cur.scope, ...st.outside.map((l) => l.profile)].slice(0, 20)); } catch (e) { say.textContent = e.message; }
         } })) : null) : null);
   };
-  // the tender's name and dates
+  // the actions a next step names
+  const act = (what, btn) => {
+    if (what === "load") { loader.open = true; paste.focus(); return; }
+    if (what === "copy-questions") { copyQuestions(btn); return; }
+    if (what === "export") { exportCsv(); return; }
+    if (what === "next-open") {
+      const first = reqs().find((r) => r.must && !r.a);
+      setOnly("all"); ui.line = ""; byLine.value = ""; ui.q = ""; search.value = "";
+      if (first) openRow(first.id, true);
+      return;
+    }
+    if (what.startsWith("filter:")) { setOnly(what.slice(7)); listCard.scrollIntoView({ block: "start" }); }
+  };
+
+  // ---------------------------------------------------------------- load the tender: its name, who issued it, its dates, its requirements
   const t = cur.rfp || RFP.emptyRfp();
   const title = h("input", { type: "text", maxlength: RFP.TITLE_MAX, value: t.title, placeholder: "e.g. Data centre modernisation, lot 2", "aria-label": "Tender name" });
   const qdue = h("input", { type: "date", value: t.questions_due, "aria-label": "Questions to the contracting authority due" });
@@ -2604,8 +2641,8 @@ export function rfpView({ workshop: w, catalog, today, addReqs, setReq, removeRe
   const issuer = h("select", { "aria-label": "Who issued it" }, [["", "Not said yet"], ...Object.entries(RFP.ISSUERS)].map(([v, l]) => h("option", { value: v, text: l, selected: v === (t.issuer || "") })));
   const channel = h("p", { class: "note" });
   const drawChannel = () => {
-    channel.textContent = issuer.value === "company" ? "A company can be asked in a meeting: the requirements to check go on the next meeting's agenda, and the questions below can go by email."
-      : issuer.value === "public" ? "A public body takes questions only through the tender's formal channel, by its deadline: the questions below are drafts for it, and nothing of the tender goes on a meeting agenda."
+    channel.textContent = issuer.value === "company" ? "A company can be asked in a meeting: the requirements to check go on the next meeting's agenda, and the questions can go by email."
+      : issuer.value === "public" ? "A public body takes questions only through the tender's formal channel, by its deadline: the questions are drafts for it, and nothing of the tender goes on a meeting agenda."
         : "Say who issued it: a public body takes questions only through the formal channel; a company can be asked in a meeting.";
   };
   drawChannel();
@@ -2614,9 +2651,13 @@ export function rfpView({ workshop: w, catalog, today, addReqs, setReq, removeRe
     drawHero(); drawChannel();
   };
   for (const el of [title, qdue, due, issuer]) el.addEventListener("change", saveMeta);
-  // the requirements, pasted
   const paste = h("textarea", { rows: 6, class: "rfppaste", placeholder: "Paste the requirements: one per line (3.2.1 The solution must...), or rows copied from a spreadsheet.", "aria-label": "Requirements to add" });
   const addSay = h("p", { class: "note", role: "status" });
+  const loadedLine = h("span");
+  const drawLoaded = () => {
+    const st = RFP.rfpState(catalog, cur, today);
+    loadedLine.textContent = st.total ? `${st.total} requirements loaded, ${st.must} mandatory${st.points ? `, ${Math.round(st.points.total)} points` : ""}. Add more` : "Add the requirements";
+  };
   const add = async (text, from = "") => {
     const parsed = RFP.parseRequirements(text);
     try {
@@ -2625,9 +2666,9 @@ export function rfpView({ workshop: w, catalog, today, addReqs, setReq, removeRe
       addSay.textContent = `${from ? `${from}: added` : "Added"} ${parsed.length} requirement${parsed.length === 1 ? "" : "s"}: ${must} mandatory, ${parsed.length - must} scored or optional. Check what each was matched to.`;
       paste.value = "";
     } catch (e) { addSay.textContent = e.message; return; }
-    drawHero(); drawList(); drawLines();
+    loader.open = false;                                // loaded: the next thing is answering them
+    redraw();
   };
-  // or from the tender's own file: a workbook (the sheet with the requirements is found), a CSV, or plain text
   const file = h("input", { type: "file", accept: ".xlsx,.csv,.txt", "aria-label": "Read the requirements from a file: a workbook, a CSV or plain text" });
   file.addEventListener("change", async () => {
     const f = file.files && file.files[0];
@@ -2648,121 +2689,209 @@ export function rfpView({ workshop: w, catalog, today, addReqs, setReq, removeRe
       }
     } catch (e) { addSay.textContent = `${f.name}: ${e.message}`; }
   });
-  // the list, narrowed
-  const list = h("ol", { class: "wslist rfplist" });
+  const loader = h("details", { class: "rfploader", open: reqs().length ? null : "" }, h("summary", {}, loadedLine),
+    h("div", { class: "rfploadbody" }, paste, h("div", { class: "btnrow" },
+      h("button", { class: "btn", type: "button", text: "Add the requirements", onclick: () => add(paste.value) }),
+      h("label", { class: "btn small filebtn" }, "Read from a file (.xlsx, .csv, .txt)", file),
+      h("button", { class: "btn small quiet", type: "button", text: "Try it with an invented tender", onclick: () => add(RFP.EXAMPLE_TENDER) }))));
+
+  // ---------------------------------------------------------------- answer the requirements: a compact list, one open at a time
+  const counts = {};
+  const chips = h("div", { class: "wsfam rfpchips", role: "group", "aria-label": "Which requirements to show" });
+  const drawChips = () => {
+    const c = RFP.filterCounts(cur);
+    put(chips, Object.entries(RFP.FILTERS).map(([k, l]) => {
+      counts[k] = c[k];
+      return h("button", { type: "button", class: "kindchip", "aria-pressed": String(ui.only === k), "data-only": k, "aria-label": `${l}: ${c[k]}`,
+        onclick: () => setOnly(k) }, l, h("span", { class: "chipn", text: String(c[k]) }));
+    }));
+  };
+  const setOnly = (k) => { ui.only = k; drawChips(); drawList(); };
+  const search = h("input", { type: "search", class: "rfpsearch", placeholder: "Find: words or a reference", "aria-label": "Find a requirement by its words or its reference" });
+  search.addEventListener("input", () => { ui.q = search.value; drawList(); });
+  const byLine = h("select", { "aria-label": "Show the requirements of one line" });
+  const drawLineOptions = () => {
+    const used = [...new Set(reqs().map((r) => r.line))];
+    put(byLine, [["", "Every line"], ...used.filter(Boolean).map((p) => [p, lineName(p)]), ...(used.includes("") ? [["-", "No line"]] : [])].map(([v, l]) => h("option", { value: v, text: l, selected: v === ui.line })));
+  };
+  byLine.addEventListener("change", () => { ui.line = byLine.value; drawList(); });
+  const grouped = h("button", { type: "button", class: "kindchip", "aria-pressed": "false", text: "Group by line", onclick: () => { ui.group = !ui.group; grouped.setAttribute("aria-pressed", String(ui.group)); drawList(); } });
   const shown = h("span", { class: "muted", role: "status" });
-  const keep = (r) => (filter.only === "all" || (filter.only === "must" && r.must) || (filter.only === "open" && !r.a) || (filter.only === "no" && r.a === "no") ||
-    (filter.only === "clarify" && r.must && (r.a === "partly" || r.a === "check"))) && (!filter.line || r.line === filter.line || (filter.line === "-" && !r.line));
-  const item = (r) => {
-    const li = h("li", { class: "wsq rfpq", "data-id": r.id });
-    const draw = () => {
-      const x = (cur.rfp.reqs.find((q) => q.id === r.id)) || r;
-      const line = h("select", { "aria-label": `Product line for ${x.ref || "requirement"}` }, lineOptions().map(([v, l]) => h("option", { value: v, text: l, selected: v === x.line })));
-      line.addEventListener("change", () => save({ line: line.value }));
-      const note = h("input", { type: "text", class: "wsnote", maxlength: RFP.NOTE_MAX, value: x.note, placeholder: "How it is met, or what is offered instead", "aria-label": `How it is met: ${x.ref || x.text.slice(0, 40)}` });
-      note.addEventListener("change", () => save({ note: note.value }));
-      const who = h("select", { "aria-label": `Who answers: ${x.ref || x.text.slice(0, 40)}` }, [["", "Who answers"], ...Object.entries(RFP.WHO)].map(([v, l]) => h("option", { value: v, text: l, selected: v === x.who })));
-      who.addEventListener("change", () => save({ who: who.value }));
-      const must = h("button", { type: "button", class: "kindchip", "aria-pressed": String(x.must), text: x.must ? "Mandatory" : "Scored or optional", "aria-label": `Mandatory: ${x.ref || x.text.slice(0, 40)}`,
-        onclick: () => save({ must: !x.must }) });
-      const pts = h("input", { type: "number", min: "0", step: "any", value: x.points == null ? "" : String(x.points), placeholder: "points", class: "rfppts", "aria-label": `Points: ${x.ref || x.text.slice(0, 40)}` });
-      pts.addEventListener("change", () => save({ points: pts.value }));
-      const words = x.line ? RFP.matchedWords(x.text, x.line) : [];
-      const dq = RFP.questionFor(catalog, x);
-      // what to write: the kit's answer to adapt, or what was written for a similar requirement in another tender
-      const kit = RFP.suggestAnswer(catalog, x);
-      const before = x.note ? null : RFP.pastAnswer(others, x);
-      const offer = (title, body, extra, use) => h("div", { class: "rfpsuggest" }, h("small", { class: "muted", text: title }), h("p", { text: body }), extra,
-        h("button", { type: "button", class: "btn small", text: "Use it", "aria-label": `${title}: use it for ${x.ref || "this requirement"}`, onclick: () => save({ note: use }, "input.wsnote") }));
-      const help = x.note ? (kit && (x.a === "yes" || x.a === "partly") ? h("small", { class: "muted rfpev", text: `Attach: ${kit.evidence.join("; ")}.` }) : null)
-        : [before ? offer(`Answered before for ${before.customer}${before.on ? `, ${before.on}` : ""}`, before.note, null, before.note) : null,
-          kit ? offer(`From the answer kit: ${kit.topic}`, kit.answer, h("small", { class: "muted", text: `Attach: ${kit.evidence.join("; ")}. ${kit.check}` }), kit.answer) : null];
-      put(li, h("div", { class: "wsqtext" },
-        h("div", { class: "rfptags" }, x.ref ? h("span", { class: "wsstage", text: x.ref }) : null, must, pts, line),
-        h("span", { text: x.text }),
-        words.length ? h("small", { class: "muted", text: `Matched on: ${words.join(", ")}` }) : null,
-        dq && cur.scope.includes(dq.profile) ? h("button", { type: "button", class: "link rfpdq", text: `Discovery question: ${dq.q}`, onclick: () => go("workshop", { open: dq.profile }) }) : null),
-      h("div", { class: "wsans", role: "group", "aria-label": `Answer to ${x.ref || "this requirement"}` }, Object.entries(RFP.ANSWERS).map(([k, v]) =>
-        h("button", { type: "button", class: `wsopt rfp-${k}`, "aria-pressed": String(x.a === k), text: v, onclick: () => save({ a: x.a === k ? "" : k }, `.rfp-${k}`) }))),
-      h("div", { class: "rfphelp" }, help),
+  const list = h("div", { class: "rfplist" });
+  const visible = () => reqs().filter((r) => RFP.keepReq(r, ui.only) && (!ui.line || r.line === ui.line || (ui.line === "-" && !r.line)) && RFP.matchesSearch(r, ui.q));
+  const rows = new Map();
+
+  // the editor of one requirement: everything about it, the answer kit, and keys 1 to 4 to answer
+  const editor = (x, li) => {
+    const save = async (patch, then) => {
+      try { cur = await setReq(x.id, patch); say.textContent = ""; } catch (e) { say.textContent = e.message; return; }
+      afterChange(x.id, then);
+    };
+    const line = h("select", { "aria-label": `Product line for ${x.ref || "requirement"}` }, [["", "No line"], ...RFP.lineOrder(catalog, cur.scope).map((p) => [p, catalog.lines[p].label + (cur.scope.includes(p) ? "" : " (not in scope)")])].map(([v, l]) => h("option", { value: v, text: l, selected: v === x.line })));
+    line.addEventListener("change", () => save({ line: line.value }, "keep"));
+    const note = h("input", { type: "text", class: "wsnote", maxlength: RFP.NOTE_MAX, value: x.note, placeholder: "How it is met, or what is offered instead", "aria-label": `How it is met: ${x.ref || x.text.slice(0, 40)}` });
+    note.addEventListener("change", () => save({ note: note.value }, "keep"));
+    const who = h("select", { "aria-label": `Who answers: ${x.ref || x.text.slice(0, 40)}` }, [["", "Who answers"], ...Object.entries(RFP.WHO)].map(([v, l]) => h("option", { value: v, text: l, selected: v === x.who })));
+    who.addEventListener("change", () => save({ who: who.value }, "keep"));
+    const pts = h("input", { type: "number", min: "0", step: "any", value: x.points == null ? "" : String(x.points), placeholder: "points", class: "rfppts", "aria-label": `Points: ${x.ref || x.text.slice(0, 40)}` });
+    pts.addEventListener("change", () => save({ points: pts.value }, "keep"));
+    const words = x.line ? RFP.matchedWords(x.text, x.line) : [];
+    const dq = RFP.questionFor(catalog, x);
+    const kit = RFP.suggestAnswer(catalog, x);
+    const before = x.note ? null : RFP.pastAnswer(others, x);
+    const offer = (head, body, extra, use) => h("div", { class: "rfpsuggest" }, h("small", { class: "muted", text: head }), h("p", { text: body }), extra,
+      h("button", { type: "button", class: "btn small", text: "Use it", "aria-label": `${head}: use it for ${x.ref || "this requirement"}`, onclick: () => save({ note: use }, "note") }));
+    const ed = h("div", { class: "rfpedit" },
+      words.length || dq ? h("p", { class: "rfpwhy" }, words.length ? h("small", { class: "muted", text: `Matched on: ${words.join(", ")}` }) : null,
+        dq && cur.scope.includes(dq.profile) ? h("button", { type: "button", class: "link rfpdq", text: `Discovery question: ${dq.q}`, onclick: () => go("workshop", { open: dq.profile }) }) : null) : null,
+      h("div", { class: "rfptags" },
+        h("button", { type: "button", class: "kindchip", "aria-pressed": String(x.must), text: x.must ? "Mandatory" : "Scored or optional", "aria-label": `Mandatory: ${x.ref || x.text.slice(0, 40)}`, onclick: () => save({ must: !x.must }, "keep") }),
+        pts, line),
+      h("div", { class: "wsans", role: "group", "aria-label": `Answer to ${x.ref || "this requirement"}` }, Object.entries(RFP.ANSWERS).map(([k, v], i) =>
+        h("button", { type: "button", class: `wsopt rfp-${k}`, "aria-pressed": String(x.a === k), "aria-label": v, onclick: () => save({ a: x.a === k ? "" : k }, x.a === k ? "keep" : "next") }, h("kbd", { "aria-hidden": "true", text: String(i + 1) }), v))),
+      x.note ? (kit && (x.a === "yes" || x.a === "partly") ? h("small", { class: "muted rfpev", text: `Attach: ${kit.evidence.join("; ")}.` }) : null)
+        : h("div", { class: "rfphelp" }, before ? offer(`Answered before for ${before.customer}${before.on ? `, ${before.on}` : ""}`, before.note, null, before.note) : null,
+          kit ? offer(`From the answer kit: ${kit.topic}`, kit.answer, h("small", { class: "muted", text: `Attach: ${kit.evidence.join("; ")}. ${kit.check}` }), kit.answer) : null),
       h("div", { class: "rfpmore" }, note, who,
         h("button", { type: "button", class: "btn small quiet", text: "Remove", "aria-label": `Remove ${x.ref || "this requirement"}`, onclick: async () => {
-          try { cur = await removeReq(r.id); } catch (e) { say.textContent = e.message; return; }
-          li.remove(); drawHero(); drawLines(); count();
+          try { cur = await removeReq(x.id); } catch (e) { say.textContent = e.message; return; }
+          ui.open = ""; redraw();
         } })));
+    // keys 1 to 4 answer it, Escape closes it; typing in a field is left alone
+    li.onkeydown = (e) => {
+      if (e.key === "Escape") { e.preventDefault(); const id = x.id; ui.open = ""; drawRow(id); const head = rows.get(id) && rows.get(id).querySelector(".rfphead"); if (head) head.focus(); return; }
+      if (e.ctrlKey || e.metaKey || e.altKey || /^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName) || !/^[1-4]$/.test(e.key)) return;
+      e.preventDefault(); e.stopPropagation();
+      ed.querySelectorAll(".wsopt")[Number(e.key) - 1].click();
     };
-    const save = async (patch, focus) => {
-      try { cur = await setReq(r.id, patch); say.textContent = ""; } catch (e) { say.textContent = e.message; return; }
-      draw(); drawHero(); drawLines();
-      if (focus) { const b = li.querySelector(focus); if (b) b.focus(); }
-    };
-    draw();
+    return ed;
+  };
+  // one row: what it is at a glance; opened, its editor
+  const drawRow = (id) => {
+    const li = rows.get(id);
+    const x = reqs().find((r) => r.id === id);
+    if (!li || !x) return;
+    const open = ui.open === id;
+    const unexplained = RFP.keepReq(x, "nonote");
+    put(li, h("button", { type: "button", class: "rfphead", "aria-expanded": String(open), "aria-controls": `rfp-ed-${id}`, onclick: () => openRow(open ? "" : id, !open) },
+      h("span", { class: "rfpref", text: x.ref || "–" }),
+      open ? h("span", { class: "rfptext" }, h("b", { text: x.text })) : h("span", { class: "rfptext", text: shortText(x.text, 220) }),
+      h("span", { class: "rfpmeta" },
+        x.must ? h("span", { class: "rfpbadge must", text: "Mandatory" }) : h("span", { class: "rfpbadge", text: x.points != null ? `${x.points} pts` : "Optional" }),
+        h("span", { class: "rfpline", text: lineName(x.line) }),
+        unexplained ? h("span", { class: "rfpnonote", text: "no note" }) : null,
+        h("span", { class: `rfpstatus s-${x.a || "open"}`, text: STATUS[x.a] }))),
+    open ? h("div", { id: `rfp-ed-${id}` }, editor(x, li)) : null);
+    li.classList.toggle("open", open);
+  };
+  const openRow = (id, focusAnswer) => {
+    const before = ui.open;
+    ui.open = id;
+    if (before && rows.has(before)) drawRow(before);
+    if (id && !rows.has(id)) drawList();
+    else if (id) drawRow(id);
+    if (id && rows.get(id)) {
+      const li = rows.get(id);
+      li.scrollIntoView({ block: "nearest" });
+      const b = focusAnswer ? li.querySelector(".wsopt[aria-pressed=true]") || li.querySelector(".wsopt") : li.querySelector(".rfphead");
+      if (b) b.focus();
+    }
+  };
+  // after a change: the row, the counts and the picture; an answer moves on to the next requirement still open, as in a meeting
+  const afterChange = (id, then) => {
+    drawHero(); drawChips(); drawDeliver(); drawLoaded();
+    if (then === "next") {
+      const vis = visible();
+      const i = vis.findIndex((r) => r.id === id);
+      const next = vis.slice(i + 1).find((r) => !r.a) || vis.find((r) => !r.a && r.id !== id);
+      if (rows.has(id) && !visible().some((r) => r.id === id)) { ui.open = ""; drawList(); }
+      else drawRow(id);
+      if (next) openRow(next.id, true);
+      else { ui.open = ""; drawRow(id); say.textContent = "Every requirement in this list is answered."; }
+      return;
+    }
+    drawRow(id);
+    if (then === "note") { const n = rows.get(id) && rows.get(id).querySelector("input.wsnote"); if (n) n.focus(); }
+  };
+  const row = (x) => {
+    const li = h("li", { class: "rfprow", "data-id": x.id });
+    rows.set(x.id, li);
+    drawRow(x.id);
     return li;
   };
-  const count = () => {
-    const all = cur.rfp ? cur.rfp.reqs.length : 0;
-    const n = cur.rfp ? cur.rfp.reqs.filter(keep).length : 0;
-    shown.textContent = all ? (n === all ? `All ${all} requirements shown.` : `${n} of ${all} requirements shown.`) : "";
-  };
   const drawList = () => {
-    const reqs = cur.rfp ? cur.rfp.reqs.filter(keep) : [];
-    put(list, reqs.map(item));
-    count();
+    rows.clear();
+    const vis = visible();
+    const all = reqs().length;
+    shown.textContent = all ? (vis.length === all ? `All ${all} shown.` : `${vis.length} of ${all} shown.`) : "";
+    if (!all) { put(list, h("p", { class: "note first", text: "No requirement yet: load them above." })); return; }
+    if (!vis.length) { put(list, h("p", { class: "note first", text: "Nothing in this list." })); return; }
+    if (!ui.group) { put(list, h("ol", { class: "rfprows" }, vis.map(row))); return; }
+    const byL = new Map();
+    for (const r of vis) byL.set(r.line, [...(byL.get(r.line) || []), r]);
+    // lines in the conversation first, then the most asked about; requirements with no line last
+    put(list, [...byL.entries()].sort(([a, ra], [b, rb]) => (a === "") - (b === "") || (!cur.scope.includes(a)) - (!cur.scope.includes(b)) || rb.length - ra.length).map(([p, rs]) => {
+      const done = rs.filter((r) => r.a).length;
+      const c = Object.fromEntries(["yes", "partly", "no", "check"].map((k) => [k, rs.filter((r) => r.a === k).length]));
+      return h("section", { class: "rfpgroup" }, h("h3", {}, h("span", { text: p ? catalog.lines[p] ? catalog.lines[p].label : p : "No line" }), h("small", { class: "muted", text: `${done} of ${rs.length} answered` }),
+        miniBar(c, rs.length, `${done} of ${rs.length} answered`)),
+      h("ol", { class: "rfprows" }, rs.map(row)));
+    }));
   };
-  const chips = h("div", { class: "wsfam", role: "group", "aria-label": "Which requirements to show" }, h("span", { class: "wsfamname", text: "Show" }),
-    [["all", "All"], ["must", "Mandatory"], ["open", "Not answered"], ["no", "Not met"], ["clarify", "To clarify"]].map(([k, l]) => h("button", { type: "button", class: "kindchip", "aria-pressed": String(filter.only === k), text: l, "data-only": k,
-      onclick: (ev) => { filter.only = k; for (const b of chips.querySelectorAll("[data-only]")) b.setAttribute("aria-pressed", String(b === ev.currentTarget)); drawList(); } })));
-  const byLine = h("select", { "aria-label": "Show the requirements of one line" }, [["", "Every line"], ["-", "No line"], ...RFP.lineOrder(catalog, cur.scope).map((p) => [p, catalog.lines[p].label])].map(([v, l]) => h("option", { value: v, text: l })));
-  byLine.addEventListener("change", () => { filter.line = byLine.value; drawList(); });
-  // coverage by line
-  const lines = h("div", { class: "tablewrap" });
-  const drawLines = () => {
+  const fill = fillNotes ? h("button", { class: "btn small", type: "button", text: "Use the kit's answers where there is no note yet", onclick: async (ev) => {
+    const empty = reqs().filter((r) => !r.note && RFP.suggestAnswer(catalog, r)).length;
+    if (!empty) { ev.target.textContent = "Every requirement the kit knows has a note"; return; }
+    try { cur = await fillNotes(); } catch (e) { say.textContent = e.message; return; }
+    say.textContent = `${empty} note${empty === 1 ? "" : "s"} filled from the answer kit: adapt each, and fill in what is in square brackets.`;
+    redraw();
+  } }) : null;
+
+  // ---------------------------------------------------------------- deliver the bid: coverage, the questions, the evidence, the files
+  const deliver = h("div", { class: "rfpdeliver" });
+  const drawDeliver = () => {
     const st = RFP.rfpState(catalog, cur, today);
-    put(lines, st.lines.length ? h("table", { class: "wvtable" },
-      h("thead", {}, h("tr", {}, ["Line", "Requirements", "Mandatory", "Met", "Partly", "Not met", "To check", "Open"].map((x) => h("th", { scope: "col", text: x })))),
-      h("tbody", {}, st.lines.map((l) => h("tr", {}, h("th", { scope: "row", text: l.label + (l.in_scope ? "" : " (not in scope)") }),
-        ...[l.count, l.must, l.yes, l.partly, l.no, l.check, l.open].map((v, i) => h("td", { class: "n" + (i === 4 && v ? " neg" : ""), text: String(v) })))))) : h("p", { class: "note", text: "Nothing to count yet." }));
+    const qs = RFP.clarificationQuestions(cur);
+    const ev = RFP.evidenceFor(catalog, cur);
+    put(deliver, !st.total ? h("p", { class: "note first", text: "Once requirements are answered, the coverage by line, the questions to send and the evidence to gather appear here." }) : [
+      h("div", { class: "rfpcol" }, h("h3", { text: "Coverage by product line" }),
+        h("ul", { class: "rfpcover" }, st.lines.map((l) => h("li", {}, h("span", { class: "rfpcovername", text: l.label + (l.in_scope ? "" : " (not in scope)") }),
+          miniBar(l, l.count, `${l.yes} met, ${l.partly} partly, ${l.no} not met, ${l.check} to check, ${l.open} open`),
+          h("small", { class: "muted", text: `${l.count - l.open} of ${l.count}${l.no ? `, ${l.no} not met` : ""}` }))))),
+      h("div", { class: "rfpcol" }, h("h3", { text: `Questions for the contracting authority (${qs.length})` }),
+        qs.length ? h("ol", { class: "rfpqs" }, qs.map((q) => h("li", { text: q.text }))) : h("p", { class: "note", text: "None: no mandatory requirement is partly met, not met or to check." })),
+      h("div", { class: "rfpcol" }, h("h3", { text: `Evidence to gather (${ev.length})` }),
+        ev.length ? (() => {
+          const li = (e) => h("li", { text: `${e.item} (for ${e.refs.slice(0, 4).join(", ")}${e.refs.length > 4 ? `, and ${e.refs.length - 4} more` : ""})` });
+          return [h("ul", { class: "rfpqs" }, ev.slice(0, 8).map(li)),
+            ev.length > 8 ? h("details", { class: "rfpmoreev" }, h("summary", { text: `${ev.length - 8} more` }), h("ul", { class: "rfpqs" }, ev.slice(8).map(li))) : null];
+        })() : h("p", { class: "note", text: "Answer requirements as met or partly to see what to attach." }))]);
   };
-  drawHero(); drawList(); drawLines();
-  // what leaves for the bid: outside everything redrawn
-  const slug = (cur.customer || "customer").replace(/[^A-Za-z0-9]+/g, "-").replace(/^-|-$/g, "").toLowerCase() || "customer";
   let armed = null;
   const restart = h("button", { class: "btn small quiet", type: "button", text: "Start again", onclick: async () => {
     if (!armed) { restart.textContent = "Remove every requirement?"; armed = setTimeout(() => { armed = null; restart.textContent = "Start again"; }, 5000); return; }
     clearTimeout(armed); armed = null; restart.textContent = "Start again";
     try { cur = await clearRfp(); } catch (e) { say.textContent = e.message; return; }
-    title.value = ""; due.value = ""; qdue.value = "";
-    drawHero(); drawList(); drawLines();
+    title.value = ""; due.value = ""; qdue.value = ""; issuer.value = ""; ui.open = "";
+    drawChannel(); redraw();
   } });
+
+  const redraw = () => { drawHero(); drawChips(); drawLineOptions(); drawList(); drawDeliver(); drawLoaded(); loader.open = !reqs().length || loader.open; };
+  drawHero(); drawChips(); drawLineOptions(); drawList(); drawDeliver(); drawLoaded();
+  const listCard = card("Answer the requirements", h("div", {},
+    h("div", { class: "rfptools" }, search, byLine, grouped, fill), chips, shown, list, say),
+  { sub: "Open a requirement to answer it: the keys 1 to 4 answer (met, partly, not met, to check) and the next one still open opens. Escape closes it. A mandatory requirement not met can exclude the bid." });
   return h("div", {}, hero,
-    card("The tender", h("div", {}, h("div", { class: "szgrid" }, h("label", { class: "szf" }, h("span", { text: "Name" }), title),
+    card("Load the tender", h("div", {}, h("div", { class: "szgrid" }, h("label", { class: "szf" }, h("span", { text: "Name" }), title),
       h("label", { class: "szf" }, h("span", { text: "Who issued it" }), issuer),
-      h("label", { class: "szf" }, h("span", { text: "Questions to the contracting authority due" }), qdue), h("label", { class: "szf" }, h("span", { text: "Bid due" }), due)), channel),
-    { sub: "The deadline for questions is the last chance to ask whether an equivalent is accepted for a requirement you meet differently." }),
-    card("Add requirements", h("div", {}, paste, h("div", { class: "btnrow" },
-      h("button", { class: "btn", type: "button", text: "Add the requirements", onclick: () => add(paste.value) }),
-      h("label", { class: "btn small filebtn" }, "Read from a file (.xlsx, .csv, .txt)", file),
-      h("button", { class: "btn small quiet", type: "button", text: "Try it with an invented tender", onclick: () => add(RFP.EXAMPLE_TENDER) })), addSay),
-    { sub: "Numbered lines, bullets, or rows copied from a spreadsheet. Each is read as mandatory or scored (with its points when the text gives them) and matched to the product line it asks about; correct either in one click. English and Italian wording are recognised. Nothing leaves this browser." }),
-    card("The requirements", h("div", {}, h("div", { class: "card wsnarrow" }, chips, h("div", { class: "wsfam" }, h("span", { class: "wsfamname", text: "Line" }), byLine), shown,
-      fillNotes ? h("div", { class: "btnrow" }, h("button", { class: "btn small", type: "button", text: "Use the kit's answers where there is no note yet", onclick: async (ev) => {
-        const empty = cur.rfp ? cur.rfp.reqs.filter((r) => !r.note && RFP.suggestAnswer(catalog, r)).length : 0;
-        if (!empty) { ev.target.textContent = "Every requirement the kit knows has a note"; return; }
-        try { cur = await fillNotes(); } catch (e) { say.textContent = e.message; return; }
-        say.textContent = `${empty} note${empty === 1 ? "" : "s"} filled from the answer kit: adapt each, and fill in what is in square brackets.`;
-        drawList();
-      } })) : null), list, say),
-    { sub: "Met, partly, not met or to check, with how it is met and who answers. A mandatory requirement not met can exclude the bid: it goes to the questions for the contracting authority." }),
-    card("Coverage by product line", lines, { sub: "Which lines the tender asks about, and how far each is answered. Lines the conversation has not covered yet are marked." }),
-    card("For the bid", h("div", { class: "btnrow" },
-      h("button", { class: "btn small", type: "button", text: "Compliance matrix (.csv)", onclick: () => saveBlob(RFP.rfpCsv(catalog, cur), `${slug}-compliance-matrix.csv`, "text/csv") }),
+      h("label", { class: "szf" }, h("span", { text: "Questions to the contracting authority due" }), qdue), h("label", { class: "szf" }, h("span", { text: "Bid due" }), due)), channel, loader, addSay),
+    { sub: "Paste the requirements or read the tender's file: each is read as mandatory or scored, with its points, and matched to the product line it asks about. English and Italian wording are recognised; nothing leaves this browser." }),
+    listCard,
+    card("Deliver the bid", h("div", {}, deliver, h("div", { class: "btnrow" },
+      h("button", { class: "btn small", type: "button", text: "Compliance matrix (.csv)", onclick: exportCsv }),
       h("button", { class: "btn small", type: "button", text: "Bid summary (.md)", onclick: () => saveBlob(RFP.rfpMarkdown(catalog, cur, today), `${slug}-bid-summary.md`, "text/markdown") }),
-      h("button", { class: "btn small", type: "button", text: "Copy the questions for the contracting authority", onclick: (ev) => {
-        const qs = RFP.clarificationQuestions(cur);
-        copyText(qs.length ? qs.map((q, i) => `${i + 1}. ${q.text}`).join("\n") : "No question to ask: no mandatory requirement is partly met, not met or to check.").then((ok) => { ev.target.textContent = ok ? "Copied" : "Not copied"; });
-      } }),
-      restart, h("button", { class: "btn small quiet", type: "button", text: "Back to the questions", onclick: () => go("workshop") })),
-    { sub: "The matrix for the bid team, the summary for the seller, and the questions drafted to put in the tender's language. The requirements stay in this browser." }));
+      h("button", { class: "btn small", type: "button", text: "Copy the questions for the contracting authority", onclick: (ev) => copyQuestions(ev.target) }),
+      restart, h("button", { class: "btn small quiet", type: "button", text: "Back to the questions", onclick: () => go("workshop") }))),
+    { sub: "The matrix for the bid team, with the evidence to attach; the summary for the seller; the questions, drafted to put in the tender's language. The requirements stay in this browser." }));
 }
 
 export function wsPrepView({ workshop: w, catalog, raise, go }) {

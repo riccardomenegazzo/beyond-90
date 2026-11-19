@@ -2,6 +2,24 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.122.0
+
+- **Tender requirements, redesigned** to answer a long tender quickly, and to see at a glance where the bid stands.
+  - **Where the bid stands:**
+    - two bars, mandatory and scored, coloured by answer, with a legend of the counts;
+    - the points likely won and the deadlines;
+    - **Do next:** at most three things, most urgent first, each with the button that does it. For example: a mandatory requirement not met, questions due within a week, mandatory requirements still open, answers that do not say how.
+  - **A compact list,** one row per requirement: reference, text, mandatory or points, line, "no note" when it is unexplained, and the answer as a coloured pill. Opening a row shows everything about it.
+  - **The keys 1 to 4** answer, and the next requirement still open opens by itself, as in a meeting. Escape closes it.
+  - **Finding your way:**
+    - chips with counts, including "not explained";
+    - a search by words or reference;
+    - a line to pick;
+    - **Group by line**, with a small bar per line and the lines in the conversation first.
+  - **The page follows the work:** load the tender (the loader folds away once requirements are in), answer, deliver.
+  - **Deliver the bid** shows, side by side, the coverage by line, the questions for the contracting authority as drafted, and the evidence to gather.
+- New pure functions in `rfp.js`, all tested in Node: `nextSteps`, `filterCounts`, `keepReq`, `matchesSearch`.
+
 ## 0.121.0
 
 - **The answer kit for tenders.** Neutral answers to the typical requirements of each line, and of any line. Each comes with the evidence to attach and what to check before using it; square brackets mark what to fill in for the customer. 33 answers cover:

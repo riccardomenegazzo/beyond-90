@@ -126,7 +126,9 @@ Each requirement is read and matched:
 - **its points,** when the text gives them ("(8 points)", "punteggio max 6").
 - **the product line it asks about,** from the words it uses, in English and in the wording of Italian tenders. Lines in the conversation come first. The platform line counts half, since nearly everything touches it.
 
-Beside each requirement are the words it was matched on, so the match can be trusted or fixed in one click. **Try it with an invented tender** loads sixteen requirements.
+An open requirement shows the words it was matched on, so the match can be trusted or fixed in one click. **Try it with an invented tender** loads sixteen requirements. Once requirements are loaded, the loader folds away into one line ("16 requirements loaded, 11 mandatory, 41 points. Add more").
+
+The page reads top to bottom as the work goes: **Where the bid stands**, then **Load the tender**, then **Answer the requirements**, then **Deliver the bid**.
 
 **Or read the tender's own file.** **Read from a file** takes:
 - a workbook (.xlsx): the sheet holding the requirements is the one with the most rows carrying a long cell, and header rows, Italian ones included ("N.", "Requisito", "Tipologia"), are skipped;
@@ -145,12 +147,24 @@ The file is read in the page and never leaves it.
 - In the questions, "The tender asks" shows under each question a requirement touches.
 - **Asked by the tender** narrows the meeting to those questions: what to understand before answering the bid.
 
-**Answer each one:**
-- **Met**, **Partly**, **Not met** or **To check**;
-- how it is met, or what is offered instead;
-- who answers it: presales, a specialist, the partner, the product team, or commercial and legal.
+**Answer the requirements.** The list is compact: one row per requirement. Each row shows:
+- its reference and its text;
+- mandatory or its points;
+- its line;
+- "no note" when it is answered without saying how;
+- its answer as a coloured pill.
 
-The list narrows to the mandatory requirements, those not answered, not met or to clarify, or one line.
+Open a row to answer it:
+- **Met**, **Partly**, **Not met** or **To check**. The keys **1** to **4** answer, and the next requirement still open opens by itself, as in a meeting. **Escape** closes it.
+- how it is met, or what is offered instead;
+- who answers it: presales, a specialist, the partner, the product team, or commercial and legal;
+- whether it is mandatory, its points and its line, to correct.
+
+Finding your way:
+- chips narrow the list: all, mandatory, not answered, not met, to clarify, and **not explained** (met or partly with no note). Each chip carries its count.
+- a search finds a requirement by its words or its reference;
+- a line can be picked;
+- **Group by line** sorts the rows under each line, with a small bar of how far each is answered. Lines in the conversation come first.
 
 **What to write.** Under each requirement without a note, two offers appear:
 - **from the answer kit:** a neutral answer for its line or for any line, with the evidence to attach and what to check before using it. Square brackets mark what to fill in for the customer.
@@ -166,16 +180,27 @@ The kit covers:
 
 It is in `src/beyond90/data/answers.json`. `beyond90 answers --profile <line>` prints it, and an assistant gets it from the `tender_answer_kit` tool.
 
-![The answer kit: a neutral answer to adapt under each requirement, with the evidence to attach and what to check](img/app-rfp-kit.png)
+![The compact list, one requirement open: its line, the keys 1 to 4, and the answer kit's text to adapt with the evidence to attach](img/app-rfp-kit.png)
 
-**Where the bid stands** says:
+**Where the bid stands** says, at the top of the page:
 - whether to bid: a mandatory requirement not met can exclude the bid; partly met or unclear ones are to clarify;
-- the counts;
-- **the points:** sure, likely (partly counts half) and at best;
-- the deadline for questions to the contracting authority, and the bid's due date;
+- **two bars,** one for the mandatory requirements and one for the scored ones, coloured by answer, with the counts beside them;
+- **the points likely won** out of the total; the deadline for questions to the contracting authority and the bid's due date, flagged when within a week;
+- **Do next:** at most three things, most urgent first, each with the button that does it. For example:
+  - a mandatory requirement not met ("See them");
+  - questions due within a week ("Copy the questions");
+  - mandatory requirements still open ("Answer them" opens the first);
+  - requirements answered without saying how;
+  - and, when all is done, the matrix to download.
+- who still owes answers;
 - the lines the tender asks about that the conversation has not covered yet, which can be added in one click.
 
-**For the bid** gives:
+**Deliver the bid** shows, side by side:
+- the coverage by product line, with a small bar for each;
+- the questions for the contracting authority, as drafted;
+- the evidence to gather.
+
+Its buttons give:
 - **the compliance matrix** (.csv), for the bid team, with the evidence to attach for each requirement met or partly. Cells a spreadsheet would run as formulas are defused.
 - **the bid summary** (.md), for the seller, with the evidence to gather and the requirements each backs.
 - **the questions for the contracting authority:**
@@ -194,7 +219,7 @@ The tender also reaches other places:
 
 The requirements are kept with the workshop in this browser, sealed with it and erased with the customer. They never appear in the customer readout.
 
-![Tender requirements: whether to bid, the counts, the points likely won and the deadlines](img/app-rfp.png)
+![Tender requirements: whether to bid, a bar for mandatory and scored requirements, the points likely won, the deadlines and what to do next](img/app-rfp.png)
 
 ## Partners
 

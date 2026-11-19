@@ -405,6 +405,63 @@ export function rfpState(catalog, w, today) {
   };
 }
 
+// ------------------------------------------------------------------ finding your way through the list
+
+/** The ways to narrow the list, each a question the bid team asks of it. */
+export const FILTERS = { all: "All", must: "Mandatory", open: "Not answered", no: "Not met", clarify: "To clarify", nonote: "Not explained" };
+
+/** Whether a requirement belongs to a narrowed list. "Not explained": answered met or partly, without saying how. */
+export function keepReq(r, only) {
+  switch (only) {
+    case "must": return r.must;
+    case "open": return !r.a;
+    case "no": return r.a === "no";
+    case "clarify": return r.must && (r.a === "partly" || r.a === "check" || r.a === "no");
+    case "nonote": return (r.a === "yes" || r.a === "partly") && !r.note;
+    default: return true;
+  }
+}
+
+/** How many requirements each narrowed list holds, for the counts on its chip. */
+export function filterCounts(w) {
+  const reqs = (w.rfp && w.rfp.reqs) || [];
+  return Object.fromEntries(Object.keys(FILTERS).map((k) => [k, reqs.filter((r) => keepReq(r, k)).length]));
+}
+
+/** A search: every word typed is found in the reference, the text or the note. */
+export function matchesSearch(r, query) {
+  const words = String(query || "").toLowerCase().split(/\s+/).filter(Boolean);
+  const hay = `${r.ref} ${r.text} ${r.note}`.toLowerCase();
+  return words.every((x) => hay.includes(x));
+}
+
+/**
+ * What to do next, at most three things, most urgent first: what could exclude the bid, questions due soon, mandatory
+ * requirements still open, answers that do not say how. Each names the action that does it.
+ */
+export function nextSteps(catalog, w, today) {
+  const st = rfpState(catalog, w, today);
+  if (!st.total) return [{ id: "load", text: "Load the tender's requirements: paste them, or read the tender's file.", act: "load", label: "Load them" }];
+  const out = [];
+  const dl = st.deadlines;
+  if (st.must_no.length) out.push({ id: "no", text: `${plural(st.must_no.length, "mandatory requirement")} not met: ask whether an equivalent is accepted${dl.questions_due ? ` by ${dl.questions_due}` : ""}, or decide not to bid.`, act: "filter:no", label: "See them" });
+  const qs = clarificationQuestions(w);
+  if (qs.length && dl.questions_in != null && dl.questions_in >= 0 && dl.questions_in <= 7) {
+    out.push({ id: "questions", text: `Questions to the contracting authority are due ${dl.questions_in === 0 ? "today" : `in ${plural(dl.questions_in, "day")}`}: ${plural(qs.length, "question")} drafted.`, act: "copy-questions", label: "Copy the questions" });
+  }
+  if (st.open_must.length) out.push({ id: "open", text: `${plural(st.open_must.length, "mandatory requirement")} still to answer.`, act: "next-open", label: "Answer them" });
+  const unexplained = ((w.rfp && w.rfp.reqs) || []).filter((r) => keepReq(r, "nonote"));
+  if (unexplained.length) {
+    const kit = unexplained.filter((r) => suggestAnswer(catalog, r)).length;
+    out.push({ id: "nonote", text: `${plural(unexplained.length, "requirement")} answered without saying how${kit ? `: the kit has an answer for ${kit === unexplained.length ? "each" : kit}` : ""}.`, act: "filter:nonote", label: "See them" });
+  }
+  if (!out.length) {
+    out.push(st.open ? { id: "scored", text: `Every mandatory requirement is met and explained. ${plural(st.open, "scored requirement")} still open could add points.`, act: "filter:open", label: "See them" }
+      : { id: "ready", text: "Every requirement is answered and explained: the compliance matrix is ready.", act: "export", label: "Download the matrix" });
+  }
+  return out.slice(0, 3);
+}
+
 /**
  * The questions for the contracting authority: whether an equivalent is accepted where a mandatory requirement is
  * not met or only partly, and what is expected where its meaning is unclear. Drafts, to put in the tender's language.
