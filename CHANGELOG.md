@@ -2,6 +2,29 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.118.0
+
+- **Tender requirements**, a new view in the discovery workshop: a tender or a request for proposal answered requirement by requirement.
+  - **Paste** the requirements as they are in the document: numbered lines (continuations joined), bullets, or rows copied from a spreadsheet. Each is read as mandatory or scored, with its points when the text gives them, from wording in English, Italian, French, German and Spanish. When nothing says, it counts as mandatory.
+  - **Matched** to the product line it asks about, from its words in English and in the wording of Italian tenders; the platform line yields to a more specific one. Correct either in one click.
+  - **Answered:** met, partly, not met or to check, with how it is met and who answers.
+  - **Where the bid stands:**
+    - whether to bid: a mandatory requirement not met can exclude it;
+    - the points sure, likely and at best;
+    - the deadline for questions and the bid's due date;
+    - the lines the tender asks about that the conversation has not covered, added in one click.
+  - **For the bid:**
+    - the compliance matrix (.csv, formulas defused);
+    - the bid summary (.md);
+    - the questions for the contracting authority, drafted: whether an equivalent is accepted, or what is expected.
+- **On the presales desk:**
+  - a mandatory requirement not met is a risk that can lose the deal;
+  - so are questions due within a week with requirements to raise, and a bid due within ten days with requirements open;
+  - both deadlines go in the agenda.
+- **On the way forward,** the decision waits until every mandatory requirement is answered and none fails.
+- **In the handover to delivery:** "What the bid committed to", the mandatory requirements answered met or partly, with how.
+- **Help** answers how to answer a tender and what to do when the customer also weighs other options. The glossary adds compliance matrix and contracting authority.
+
 ## 0.117.0
 
 - **What else they weigh.** The alternatives a deal is measured against, for the family of the lines in scope. For infrastructure:

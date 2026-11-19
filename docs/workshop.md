@@ -105,6 +105,57 @@ The same list is available outside the page:
 
 ![What else they weigh: renewing and a public cloud on the table, each with what to ask and when the other choice wins](img/app-alternatives.png)
 
+## Tender requirements
+
+When the customer issues a tender or a request for proposal, **Tender requirements** answers it requirement by requirement.
+
+**Paste the requirements** as they are in the document:
+- numbered lines (`3.2.1 The solution must...`), where lines without a number are joined to the one before;
+- bullets;
+- rows copied from the tender's spreadsheet, where the longest cell is the requirement, a short cell with digits its reference, a number its points, and a yes or no whether it is mandatory.
+
+Each requirement is read and matched:
+- **mandatory or scored:** "must", "shall", "mandatory" and the same words in Italian, French, German and Spanish make it mandatory. Words such as "should", "desirable" or "optional", or points in the text, make it scored. When nothing says, it counts as mandatory: better to treat one too strictly than to miss it.
+- **its points,** when the text gives them ("(8 points)", "punteggio max 6").
+- **the product line it asks about,** from the words it uses, in English and in the wording of Italian tenders. Lines in the conversation come first. The platform line counts half, since nearly everything touches it.
+
+Correct any of these in one click. **Try it with an invented tender** loads sixteen requirements.
+
+**Answer each one:**
+- **Met**, **Partly**, **Not met** or **To check**;
+- how it is met, or what is offered instead;
+- who answers it: presales, a specialist, the partner, the product team, or commercial and legal.
+
+The list narrows to the mandatory requirements, those not answered, not met or to clarify, or one line.
+
+**Where the bid stands** says:
+- whether to bid: a mandatory requirement not met can exclude the bid; partly met or unclear ones are to clarify;
+- the counts;
+- **the points:** sure, likely (partly counts half) and at best;
+- the deadline for questions to the contracting authority, and the bid's due date;
+- the lines the tender asks about that the conversation has not covered yet, which can be added in one click.
+
+**For the bid** gives:
+- **the compliance matrix** (.csv), for the bid team. Cells a spreadsheet would run as formulas are defused.
+- **the bid summary** (.md), for the seller.
+- **the questions for the contracting authority:**
+  - whether an equivalent is accepted, where a mandatory requirement is not met or only partly, with what is offered;
+  - what is expected, where its meaning is unclear.
+
+  They are drafts, to put in the tender's language.
+
+The tender also reaches other places:
+- **On the presales desk:**
+  - a mandatory requirement not met is a risk that can lose the deal;
+  - so are questions due within a week with requirements to raise, and a bid due within ten days with requirements still open;
+  - both deadlines go in the agenda.
+- **On [the way forward](#the-way-forward),** the decision waits until every mandatory requirement is answered and none fails.
+- **In the [handover to delivery](#handover-to-delivery):** the mandatory requirements answered met or partly, with how. These are what the bid committed to, and delivery has to keep them.
+
+The requirements are kept with the workshop in this browser, sealed with it and erased with the customer. They never appear in the customer readout.
+
+![Tender requirements: whether to bid, the counts, the points likely won and the deadlines](img/app-rfp.png)
+
 ## Partners
 
 **Partners** records who is on the deal: the reseller, integrator, service provider or distributor working it, which one leads, the deal registration and when it runs out, the route to purchase, and who does what from discovery to support. It says what to settle, and gives a brief for the partner and a discovery kit any partner can use. See [partners.md](partners.md).
@@ -283,6 +334,7 @@ When the deal moves to delivery, **Handover to delivery** writes the note the de
 - what the customer asked us to prove, and whether it was;
 - what still has to be made true, with who and by when;
 - the numbers it rests on: inventory, sizing sketch, plan in waves, case for change, and the recovery, backup, GPU and edge designs and the cost per machine when their lines are in scope;
+- what the bid committed to, when there was a tender: its mandatory requirements answered met or partly, with how;
 - who to keep involved;
 - what is still open.
 

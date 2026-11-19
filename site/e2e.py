@@ -787,6 +787,27 @@ def main(site: str) -> int:
               "what else they weigh opens with what to ask, when the proposal fits and when the other choice is the better one")
         page.click("[data-tab=wsummary]")
         check("What else they weigh" in page.inner_text("#doc") and "Do nothing for now" in page.inner_text("#doc"), "and goes into the meeting summary")
+        # a tender, requirement by requirement: pasted, read, matched, answered; whether to bid and what to ask
+        page.click("[data-tab=wsrfp]")
+        page.wait_for_selector("#view .rfphero")
+        check("Paste the requirements" in page.inner_text("#view .rfphero"), "a tender starts empty, asking for its requirements")
+        page.get_by_role("button", name="Try it with an invented tender").click()
+        page.wait_for_selector("#view .rfpq")
+        check(page.locator("#view .rfpq").count() == 16 and "Added 16 requirements: 11 mandatory, 5 scored or optional" in page.inner_text("#view"),
+              "pasted requirements are read one by one, mandatory or scored")
+        first = page.locator("#view .rfpq").first
+        check(first.get_by_label("Product line for 1.1").input_value() == "hci" and page.get_by_label("Product line for 3.1").input_value() == "object-storage",
+              "and each is matched to the product line it asks about")
+        page.locator("#view .rfpq[data-id=r9]").get_by_role("button", name="Not met", exact=True).click()
+        page.wait_for_selector("#view .rfpverdict.risk")
+        check("1 mandatory requirement not met" in page.inner_text("#view .rfpverdict") and "not in scope" in page.inner_text("#view"),
+              "a mandatory requirement not met puts the bid at risk; lines the tender asks about outside the conversation are marked")
+        page.get_by_role("group", name="Which requirements to show").get_by_role("button", name="Not met").click()
+        check(page.locator("#view .rfpq").count() == 1, "the list narrows to what is not met")
+        with page.expect_download() as dl:
+            page.get_by_role("button", name="Compliance matrix (.csv)").click()
+        matrix = Path(dl.value.path()).read_text(encoding="utf-8")
+        check(matrix.startswith("ref,requirement,mandatory,points,product_line,answer,how_it_is_met,who_answers") and "Not met" in matrix, "the compliance matrix downloads for the bid team")
         # partners on the deal: who brings it, the registration, who does what, and what to hand them
         page.click("[data-tab=wspartners]")
         page.wait_for_selector("#view .ptlist")

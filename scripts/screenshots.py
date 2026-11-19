@@ -9,6 +9,7 @@ The social card (social-card.png, 1280x640) is for the repository's "Social prev
 
 from __future__ import annotations
 
+import datetime
 import functools
 import http.server
 import sys
@@ -138,6 +139,25 @@ def shoot(site: Path, out: Path) -> None:
             pg.evaluate("(() => { const c = document.querySelector('#view .altlist').closest('.card'); window.scrollTo({ top: c.getBoundingClientRect().top + window.scrollY - 76, behavior: 'instant' }); })()")
             pg.wait_for_timeout(300)
             pg.screenshot(path=str(out / "app-alternatives.png"))
+            def shift(n: int) -> str:
+                return (datetime.date.today() + datetime.timedelta(days=n)).isoformat()
+
+            pg.click("#tabs [data-tab=wsrfp]")
+            pg.wait_for_selector("#view .rfphero")
+            pg.get_by_label("Tender name").fill("Data centre renewal, lot 1 (mock)")
+            pg.get_by_label("Tender name").press("Tab")
+            pg.get_by_label("Questions to the contracting authority due").fill(shift(5))
+            pg.get_by_label("Questions to the contracting authority due").press("Tab")
+            pg.get_by_label("Bid due").fill(shift(16))
+            pg.get_by_label("Bid due").press("Tab")
+            pg.get_by_role("button", name="Try it with an invented tender").click()
+            pg.wait_for_selector("#view .rfpq")
+            for rid, ans in (("r1", "Met"), ("r2", "Met"), ("r3", "Met"), ("r4", "Met"), ("r5", "Met"), ("r6", "Met"), ("r7", "Met"), ("r8", "Partly"), ("r9", "Partly"), ("r10", "Met"), ("r11", "Met"), ("r12", "Met"), ("r14", "To check")):
+                pg.locator(f"#view .rfpq[data-id={rid}]").get_by_role("button", name=ans, exact=True).click()
+                pg.wait_for_timeout(60)
+            pg.evaluate("window.scrollTo({ top: 0, behavior: 'instant' })")
+            pg.wait_for_timeout(300)
+            pg.screenshot(path=str(out / "app-rfp.png"))
             # the way forward: the phase now, what moves it on, and the demo planned from what was said
             pg.click("#tabs [data-tab=wsforward]")
             pg.wait_for_selector("#view .fwhero")

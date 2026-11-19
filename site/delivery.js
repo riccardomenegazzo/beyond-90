@@ -10,6 +10,7 @@ import { planWaves, wavesLine } from "./waves.js";
 import { buildCase, caseLine } from "./valuecase.js";
 import { gpuSketch } from "./gpu.js";
 import { drSketch } from "./drsketch.js";
+import { bidCommitments } from "./rfp.js";
 import { edgeSketch } from "./edgesketch.js";
 import { unitSketch, money as unitMoney } from "./unitcost.js";
 import { objSketch } from "./objsketch.js";
@@ -115,6 +116,12 @@ export function handoverMarkdown(catalog, w, pov, today) {
     L.push("## Who delivers", "", `- Deployment and migration: ${own("delivery").whoText}.`, `- Support after go-live: ${own("support").whoText}.`,
       ...st.partners.map((p) => `- ${p.name}: ${KINDS[p.kind].toLowerCase()}${p.lead ? ", led the deal" : ""}${(p.skills || []).length ? `; skills on ${p.skills.map((x) => (catalog.lines[x] ? catalog.lines[x].label.toLowerCase() : x)).join(", ")}` : ""}.`),
       ...st.gaps.filter((g) => g.activities.some((a) => a !== "proof of value")).map((g) => `- To line up before go-live: ${g.partner} has no skills yet on ${g.lines.join(", ").toLowerCase()}.`), "");
+  }
+  // what the bid committed to: the mandatory requirements answered met or partly, and how; delivery has to keep them
+  const bid = bidCommitments(w);
+  if (bid.length) {
+    L.push(`## What the bid committed to${w.rfp.title ? `: ${clean(w.rfp.title)}` : ""}`, "", ...bid.slice(0, 60).map((b) => `- ${b.ref ? `${clean(b.ref)}: ` : ""}${clean(b.text)}${b.how ? ` How: ${clean(b.how)}` : ""}${b.partly ? " (partly met: check what was offered)" : ""}`),
+      ...(bid.length > 60 ? [`- And ${bid.length - 60} more in the compliance matrix.`] : []), "");
   }
   // who
   const told = res.land ? stories(catalog, w, res).find((x) => x.land) : null;

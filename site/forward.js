@@ -11,6 +11,7 @@ import { dealState } from "./qualify.js";
 import { qualify as povReady, progress as povProgress } from "./pov.js";
 import { hasCase } from "./valuecase.js";
 import { registrationOf, channelState } from "./partners.js";
+import { rfpState } from "./rfp.js";
 
 export const PHASES = [
   { id: "discover", label: "Discovery", goal: "Know where it hurts, what it is worth to them, and who decides.",
@@ -122,6 +123,7 @@ export function forward(catalog, w, pov, today = "") {
   const outside = (res.raised || []).filter((o) => !inProof.has(clean(o.prove).toLowerCase()));
   const outcome = pov && pov.outcome ? pov.outcome.result : "";
   const onTable = alternativesFor(catalog, w).filter((a) => a.on);
+  const tender = w.rfp && w.rfp.reqs.length ? rfpState(catalog, w, today || w.updated_on) : null;
   // with partners on the deal: their registration, who runs the proof with them, and who delivers with the skills
   const reg = registrationOf(w.channel, today || w.updated_on);
   const cs = w.channel ? channelState(catalog, w, today || w.updated_on) : null;
@@ -153,6 +155,8 @@ export function forward(catalog, w, pov, today = "") {
       { text: "Finance has the case for change", ok: !!(w.case && hasCase(w.case)), fix: "Ask for the cost of staying and of moving, and build the case with them.", go: "wscase" },
       ...(onTable.length ? [{ text: `How we compare with what else they weigh is known (${onTable.map((a) => a.name.toLowerCase()).join("; ")})`, ok: known(w.deal, "alternatives"),
         fix: `Ask what each would have to show, and prove it: ${onTable.map((a) => a.prove).join(" ")}`, go: "wsqualify" }] : []),
+      ...(tender ? [{ text: `Every mandatory requirement of the tender is answered, and none fails (${tender.must - tender.open_must.length} of ${tender.must} answered)`, ok: !tender.must_no.length && !tender.open_must.length,
+        fix: tender.must_no.length ? `${tender.must_no.length} not met: ask whether an equivalent is accepted, or decide not to bid.` : `Answer the ${tender.open_must.length} mandatory requirements still open.`, go: "wsrfp" }] : []),
       { text: "The outcome is recorded", ok: !!outcome, fix: "Record won, lost or no decision, and why, on the proof of value.", go: "wspov" },
     ],
     handover: [

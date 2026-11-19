@@ -17,6 +17,7 @@ import { validDr, drSketch, drMarkdown } from "./drsketch.js";
 import { validObj, objSketch, objMarkdown } from "./objsketch.js";
 import { validEdge, edgeSketch, edgeMarkdown } from "./edgesketch.js";
 import { validUnit, unitSketch, unitMarkdown } from "./unitcost.js";
+import { validRfp, withRequirements, withRequirement, lineOrder, emptyRfp, rfpState, TITLE_MAX } from "./rfp.js";
 import { validDeal, withDealAnswer, dealMarkdown } from "./qualify.js";
 import { ROLE_WORDS, displayOrder, inMeeting } from "./questions.js";
 import { validChannel, cleanChannel, KINDS, ROUTES, ACTIVITIES, whoLabel } from "./partners.js";
@@ -86,6 +87,7 @@ export function validWorkshop(w) {
   if (w.obj != null && !validObj(w.obj)) return false;
   if (w.edge != null && !validEdge(w.edge)) return false;
   if (w.unit != null && !validUnit(w.unit)) return false;
+  if (w.rfp != null && !validRfp(w.rfp)) return false;
   if (w.deal != null && !validDeal(w.deal)) return false;
   if (w.channel != null && !validChannel(w.channel)) return false;
   if (w.demo != null && !(w.demo && typeof w.demo === "object" && !Array.isArray(w.demo) && Object.keys(w.demo).length === 1 && isDate(w.demo.on) && w.demo.on >= w.created_on)) return false;
@@ -229,6 +231,46 @@ export function setEdge(w, settings, today) {
     if (!validEdge(settings)) throw new Error("One of the edge settings is out of range.");
     next.edge = settings;
   }
+  return changed(next, {}, today);
+}
+
+// ------------------------------------------------------------------ a tender or a request for proposal
+
+/** Requirements read from a paste, added after those already there, each matched to a product line. */
+export function addRequirements(w, parsed, catalog, today) {
+  if (!Array.isArray(parsed) || !parsed.length) throw new Error("No requirement was found in what was pasted: one per line, or rows copied from a spreadsheet.");
+  return changed({ ...w, rfp: withRequirements(w.rfp, parsed, lineOrder(catalog, w.scope)) }, {}, today);
+}
+
+/** One requirement answered or corrected. */
+export function setRequirement(w, id, patch, today) {
+  if (!w.rfp) throw new Error("There is no tender on this workshop yet.");
+  return changed({ ...w, rfp: withRequirement(w.rfp, id, patch) }, {}, today);
+}
+
+/** One requirement taken out; the last one out takes the tender with it unless it has a name or dates. */
+export function removeRequirement(w, id, today) {
+  if (!w.rfp) return w;
+  const rfp = { ...w.rfp, reqs: w.rfp.reqs.filter((r) => r.id !== id) };
+  const next = { ...w, rfp };
+  if (!rfp.reqs.length && !rfp.title && !rfp.due && !rfp.questions_due) delete next.rfp;
+  return changed(next, {}, today);
+}
+
+/** The tender's name, the deadline for questions to the contracting authority, and the bid's due date. */
+export function setRfpMeta(w, { title = "", due = "", questions_due: q = "" } = {}, today) {
+  const t = text(title, TITLE_MAX);
+  if (due && q && q > due) throw new Error("Questions are due before the bid, not after.");
+  const rfp = { ...(w.rfp || emptyRfp()), title: t, due: due || "", questions_due: q || "" };
+  const next = { ...w, rfp };
+  if (!rfp.reqs.length && !t && !rfp.due && !rfp.questions_due) delete next.rfp;
+  return changed(next, {}, today);
+}
+
+/** Start again: the tender and its answers go. */
+export function clearRfp(w, today) {
+  const next = { ...w };
+  delete next.rfp;
   return changed(next, {}, today);
 }
 
@@ -693,6 +735,10 @@ export function summaryMarkdown(catalog, w, res) {
     const c = w.channel;
     out.push("## Partners", "", ...c.partners.map((p) => `- ${p.name}: ${KINDS[p.kind].toLowerCase()}${p.lead ? ", leads the deal" : ""}${p.reg ? `, registered ${p.reg.on} to ${p.reg.until}` : ""}`), "");
     out.push(`Route to purchase: ${c.route ? ROUTES[c.route].toLowerCase() : "not set"}.`, "", ...ACTIVITIES.map((a) => `- ${a.label}: ${whoLabel(c, (c.split || {})[a.id] || "")}`), "");
+  }
+  if (w.rfp && w.rfp.reqs.length) {
+    const st = rfpState(catalog, w, w.updated_on);
+    out.push(`## The tender${st.title ? `: ${st.title}` : ""}`, "", `${st.verdict.text} ${st.total} requirements, ${st.must} mandatory: ${st.yes} met, ${st.partly} partly, ${st.no} not met, ${st.check} to check, ${st.open} not answered yet.${st.deadlines.questions_due ? ` Questions due ${st.deadlines.questions_due}.` : ""}${st.deadlines.due ? ` Bid due ${st.deadlines.due}.` : ""}`, "");
   }
   const alts = alternativesMarkdown(catalog, w);
   if (alts) out.push(alts);

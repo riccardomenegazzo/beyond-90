@@ -7,6 +7,7 @@
 
 import { assess, journey, datedPlan, exampleWorkshop, makeWorkshop, setAnswer, setPlan, setWorth, setRaised, setDeal, setChannel, setAlt } from "./workshop.js";
 import { hasCase } from "./valuecase.js";
+import { rfpState } from "./rfp.js";
 import { registrationOf, channelState, KINDS, ROUTES, ACTIVITIES } from "./partners.js";
 import { dealState } from "./qualify.js";
 import { forward, PHASES } from "./forward.js";
@@ -91,6 +92,14 @@ export function risksOf({ w, p, res, pr, stage, overdue, today }) {
     const deal = w.deal || {};
     const known = (id) => deal[id] && deal[id].a === "known";
     if (later && !known("decider")) add("high", "We have not heard from who decides: the proof can be won and the deal still lost.");
+    // a tender: a mandatory requirement not met can exclude the bid; the deadline for questions is the last chance to fix it
+    if (w.rfp && w.rfp.reqs.length) {
+      const t = rfpState(null, w, today);
+      const dl = t.deadlines;
+      if (t.must_no.length) add("high", `${t.must_no.length} mandatory requirement${t.must_no.length === 1 ? " of the tender is" : "s of the tender are"} not met: ask whether an equivalent is accepted, or decide not to bid.`);
+      if (dl.questions_in != null && dl.questions_in >= 0 && dl.questions_in <= 7 && t.must_no.length + t.clarify.length) add("high", `Questions to the contracting authority are due ${dl.questions_in === 0 ? "today" : `in ${dl.questions_in} day${dl.questions_in === 1 ? "" : "s"}`}, with ${t.must_no.length + t.clarify.length} requirement${t.must_no.length + t.clarify.length === 1 ? "" : "s"} to raise.`);
+      if (dl.due_in != null && dl.due_in >= 0 && dl.due_in <= 10 && t.open + t.check) add("high", `The bid is due ${dl.due_in === 0 ? "today" : `in ${dl.due_in} day${dl.due_in === 1 ? "" : "s"}`} with ${t.open + t.check} requirement${t.open + t.check === 1 ? "" : "s"} still open or to check.`);
+    }
     // what else they weigh: doing nothing without a date is the usual way a deal is lost to no one
     const alts = w.alts || [];
     if (alts.includes("wait") && !known("why_now")) add("high", "They are weighing doing nothing, and no date makes this urgent: find the date that cannot move, or agree when to talk again.");
@@ -189,6 +198,13 @@ export function agenda(workshops, povs, catalog, today, span = 14) {
     const reg = registrationOf(w.channel, today);
     if (!reg || reg.status === "none" || closed.has(w.customer) || reg.until > horizon) continue;
     items.push({ on: reg.until, customer: w.customer, what: `${reg.lead.name}'s deal registration ${reg.until < today ? "ran out" : "runs out"}`, kind: "registration", who: "", late: reg.until < today, workshop: w.id });
+  }
+  // a tender's deadlines: questions to the contracting authority, and the bid itself
+  for (const w of newest.values()) {
+    if (!w.rfp || closed.has(w.customer)) continue;
+    const name = w.rfp.title ? `"${w.rfp.title}"` : "the tender";
+    if (w.rfp.questions_due && w.rfp.questions_due >= today && w.rfp.questions_due <= horizon) items.push({ on: w.rfp.questions_due, customer: w.customer, what: `Questions on ${name} due to the contracting authority`, kind: "tender", who: "", late: false, workshop: w.id });
+    if (w.rfp.due && w.rfp.due <= horizon && w.rfp.due >= shiftDay(today, -3)) items.push({ on: w.rfp.due, customer: w.customer, what: w.rfp.due < today ? `Bid for ${name} was due` : `Bid for ${name} due`, kind: "tender", who: "", late: w.rfp.due < today, workshop: w.id });
   }
   for (const p of povs || []) {
     if (p.stage === "done" || p.stage === "stopped") continue;

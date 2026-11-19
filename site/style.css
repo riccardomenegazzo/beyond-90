@@ -1188,3 +1188,20 @@ ol.deskfunnel{list-style:none;margin:0;padding:0;display:grid;grid-template-colu
 .altcard > p{margin:0 0 10px}
 .altcard .objdl ul{margin:0;padding-left:18px}
 @media (max-width:640px){.altcard .objdl{grid-template-columns:1fr}}
+/* a tender, requirement by requirement */
+.rfpverdict{font-weight:700;font-size:17px;margin:4px 0 12px;padding-left:12px;border-left:5px solid var(--line)}
+.rfpverdict.go{border-left-color:var(--pos)}.rfpverdict.clarify{border-left-color:var(--warn)}.rfpverdict.risk{border-left-color:var(--bad)}
+.rfpdates{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 0}
+.rfpdates .chip.warn{color:var(--warn);border-color:var(--warn)}
+.rfppaste{width:100%;font:inherit;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel,transparent);color:inherit;resize:vertical}
+.rfptags{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:4px}
+.rfptags select{max-width:16rem}
+.rfppts{width:6.5rem}
+.rfpmore{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px;align-items:center}
+.wsq .rfpmore input.wsnote{grid-column:auto}
+.rfpmore select{max-width:14rem}
+.rfpq .wsopt[aria-pressed=true].rfp-yes{background:var(--pos);border-color:var(--pos);color:var(--on)}
+.rfpq .wsopt[aria-pressed=true].rfp-partly{background:var(--warn);border-color:var(--warn);color:var(--on)}
+.rfpq .wsopt[aria-pressed=true].rfp-no{background:var(--bad);border-color:var(--bad);color:var(--on)}
+.rfpq .wsopt[aria-pressed=true].rfp-check{background:var(--ink2);border-color:var(--ink2);color:var(--on)}
+@media (max-width:700px){.rfpmore{grid-template-columns:1fr}.rfpmore select{max-width:none}}
