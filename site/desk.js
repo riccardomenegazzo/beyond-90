@@ -5,7 +5,7 @@
 // answers the questions of a Monday morning: where is each one, what is due this week, what is late, and what do I tell
 // the account team. Pure functions over plain records; the page and the tests share them.
 
-import { assess, journey, datedPlan, exampleWorkshop, makeWorkshop, setAnswer, setPlan, setWorth, setRaised } from "./workshop.js";
+import { assess, journey, datedPlan, exampleWorkshop, makeWorkshop, setAnswer, setPlan, setWorth, setRaised, setDeal } from "./workshop.js";
 import { hasCase } from "./valuecase.js";
 import { progress, makePov, setCriterion, setOutcome, edit as editPov } from "./pov.js";
 
@@ -80,6 +80,11 @@ export function risksOf({ w, p, res, pr, stage, overdue, today }) {
     if (later && !(w.case && hasCase(w.case))) add("watch", "Finance has no case for change yet: ask for the cost of staying and of moving.");
     if (later && w.inventory && !w.sizing) add("watch", "The sizing sketch still uses the defaults: agree the assumptions with the customer.");
     if (res.unknowns.length >= 3) add("watch", `${res.unknowns.length} questions nobody could answer: book the people who can.`);
+    // the deal itself: a proof can be won and the deal still lost without the decider, and without a date it slips
+    const deal = w.deal || {};
+    const known = (id) => deal[id] && deal[id].a === "known";
+    if (later && !known("decider")) add("high", "We have not heard from who decides: the proof can be won and the deal still lost.");
+    if ((stage === "journey" || later) && !known("why_now")) add("watch", "No date makes this urgent: ask what happens if nothing is decided this year.");
   }
   const touched = [w && w.updated_on, p && p.updated_on].filter(Boolean).sort().pop();
   if (touched && days(touched, today) > 21) add("watch", `Not touched for ${days(touched, today)} days.`);
@@ -242,10 +247,13 @@ export function exampleDesk(today) {
   valle = setPlan(valle, "hybrid-cloud", 2, "customer", ago(4), ago(14));
   valle = setPlan(valle, "hybrid-cloud", 4, "together", shiftDay(today, 9), ago(14));
   valle = setRaised(valle, "hybrid-cloud", 1, true, ago(14));
+  for (const [id, a, note] of [["why_change", "known", "The auditors found patient data copied outside Italy"], ["why_now", "known", "The audit follow-up is due in March"],
+    ["outcome", "partly", "Prove where every copy lives, on demand"], ["proof", "partly", "A recovery test the auditors can watch"]]) valle = setDeal(valle, id, a, note, ago(14));
   // still listening: a first meeting about AI on their own infrastructure
   let orsa = makeWorkshop({ customer: "Orsa Manufacturing (mock)", scope: ["private-ai", "kubernetes-platform", "object-storage"], createdOn: ago(1), nonce: "example3" });
   ["gap", "unknown"].forEach((a, i) => { orsa = setAnswer(orsa, "private-ai", i, a, i === 0 ? "Quality inspection on the line, with images that cannot leave the plant" : "", ago(1)); });
   orsa = setRaised(orsa, "private-ai", 0, true, ago(1));
+  orsa = setDeal(orsa, "why_change", "partly", "Defects found late cost a shift of rework", ago(1));
   // decision: a proof of value finished, the result with the customer
   let pietra = makePov({ customer: "Pietra Bank (mock)", createdOn: ago(40), nonce: "example4", start: ago(30), end: ago(9),
     criteria: [{ text: "A representative application group is migrated within its window", target: "Time it end to end" },

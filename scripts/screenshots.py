@@ -123,6 +123,15 @@ def shoot(site: Path, out: Path) -> None:
             pg.evaluate("(() => { const c = document.querySelectorAll('#view .card')[1]; window.scrollTo({ top: c.getBoundingClientRect().top + window.scrollY - 76, behavior: 'instant' }); })()")
             pg.wait_for_timeout(300)
             pg.screenshot(path=str(out / "app-prepare.png"))
+            # qualify the deal: a few answers, the gate they open and what the next one needs
+            pg.click("#tabs [data-tab=wsqualify]")
+            pg.wait_for_selector("#view .qdhero")
+            for i, ans in ((0, "Known"), (1, "Known"), (2, "Partly"), (3, "Not yet"), (7, "Partly"), (8, "Known")):    # in the order of the ten questions
+                pg.locator("#view .qdq").nth(i).get_by_role("button", name=ans, exact=True).click()
+                pg.wait_for_timeout(80)
+            pg.evaluate("window.scrollTo({ top: 0, behavior: 'instant' })")
+            pg.wait_for_timeout(300)
+            pg.screenshot(path=str(out / "app-qualify.png"))
             pg.click("#tabs [data-tab=workshop]")
             pg.wait_for_selector("#view .wsq")
             pg.get_by_role("button", name="AI on our own infrastructure").click()

@@ -44,6 +44,33 @@ The questions are built from how presales teams run discovery: the situation fir
 
 ![A first meeting: the essential questions, each with who to ask and how](img/app-questions.png)
 
+## Qualify the deal
+
+The questions above ask whether the customer needs this. **Qualify the deal** asks whether they will buy it, with ten questions that are the same on every line:
+
+- **Pain:** what happens if nothing changes, and who feels it.
+- **Event:** which date makes it a decision for this year.
+- **Metrics:** the result the sponsor would show, and how it is measured.
+- **Economic buyer:** who decides and signs, and whether we have heard from them.
+- **Decision criteria:** how the options will be compared, and which criteria weigh most.
+- **Decision process:** the steps to a choice, who takes part, and when.
+- **Paper process:** budget, procurement and legal, and how long each takes.
+- **Technical validation:** what would convince them, and who must see it.
+- **Champion:** who inside gains if it succeeds, and makes the case where we are not.
+- **Competition:** the alternatives, staying as they are among them.
+
+Each one is **Known**, **Partly** or **Not yet**, with what was heard, and has the same **How to ask it** as the technical questions. The tags are the words most sales methods use (MEDDPICC among them), so the seller and the engineer read one list.
+
+The answers open three gates, each including the one before:
+
+1. **Ready for a demo built for them:** the pain, the result and what would convince them are at least partly known.
+2. **Ready to propose a proof of value:** the pain, the date, the result, the criteria and the proof are known, and the decider and a champion at least partly.
+3. **Ready to put a date in the forecast:** everything is known, and the alternatives at least partly.
+
+The page says what to do at the gate reached and what the next gate still needs, each with the follow-up question to ask. The deal goes into the meeting summary for the seller, never into the customer readout. On the presales desk, a deal in a proof or a decision without the decider known is flagged as a risk that can lose it, and one without a date as a watch.
+
+![Qualify the deal: where it stands and what the next gate needs](img/app-qualify.png)
+
 ## Prepare: the message, the people, the objections
 
 **Prepare** gives each line in scope, the line to start with first:

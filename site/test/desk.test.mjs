@@ -117,7 +117,10 @@ test("what could stop a deal is read from what is recorded, the risks that can l
   assert.match(text, /Nothing is at stake/);
   assert.match(text, /Finance has no case for change/);
   assert.match(text, /3 questions nobody could answer/);
-  const calm = risksOf({ w: { answers: { "x#1": { a: "gap", note: "", amount: 5, per: "day" } }, updated_on: today, case: { stay_run: 1, move_run: 1 } },
+  assert.match(text, /We have not heard from who decides/);
+  assert.match(text, /No date makes this urgent/);
+  const deal = { decider: { a: "known", note: "", on: today }, why_now: { a: "known", note: "", on: today } };
+  const calm = risksOf({ w: { answers: { "x#1": { a: "gap", note: "", amount: 5, per: "day" } }, updated_on: today, case: { stay_run: 1, move_run: 1 }, deal },
     p: { ...pov, sponsor: "Dana", end: "2026-12-30", criteria: [{ text: "Something not in the proof", status: "open" }], readiness: [] }, res: { raised: [{ prove: "Something not in the proof" }], unknowns: [] },
     pr: { ...pr, ready_total: 0 }, stage: "proof", overdue: 0, today });
   assert.deepEqual(calm, []);

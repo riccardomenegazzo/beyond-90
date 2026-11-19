@@ -767,6 +767,16 @@ def main(site: str) -> int:
         raised.click()
         page.wait_for_selector("#view .obj.on")
         check(raised.get_attribute("aria-pressed") == "true" and "1 raised so far" in page.inner_text("#view"), "an objection the customer raises is marked, with the question to ask first")
+        # qualify the deal: the same ten questions on every line, and the gate they open
+        page.click("[data-tab=wsqualify]")
+        page.wait_for_selector("#view .qdhero")
+        check("Not qualified yet" in page.inner_text("#view .qdhero") and page.locator("#view .qdq").count() == 10, "the deal starts unqualified, with ten questions")
+        for tag, ans in (("Pain", "Known"), ("Metrics", "Partly"), ("Technical validation", "Partly")):
+            page.locator("#view .qdq").filter(has_text=tag).get_by_role("button", name=ans, exact=True).click()
+            page.wait_for_selector(f"#view .qdq:has-text('{tag}') .wsopt[aria-pressed=true]")
+        hero = page.inner_text("#view .qdhero")
+        check("Ready for a demo built for them" in hero and "To be ready to propose a proof of value, find out" in hero and "Economic buyer:" in hero,
+              "three answers make it ready for a demo built for them, and say what a proof of value still needs")
         page.click("[data-tab=hurt]")
         page.wait_for_selector("#view .painmap")
         page.get_by_role("button", name="Start the proof of value").click()
@@ -1447,6 +1457,12 @@ def main(site: str) -> int:
                 apage.locator("#view .objraise").first.click()
                 apage.wait_for_selector("#view .obj.on")
                 bad += [f"prepare: {v}" for v in audit()]
+                apage.click("[data-tab=wsqualify]")
+                apage.wait_for_selector("#view .qdhero")
+                apage.locator("#view .qdq").first.get_by_role("button", name="Known", exact=True).click()
+                apage.wait_for_selector("#view .qdq .wsopt[aria-pressed=true]")
+                apage.locator("#view .qdq").first.locator(".wshow summary").click()
+                bad += [f"qualify: {v}" for v in audit()]
                 apage.click("[data-tab=wscase]")
                 apage.wait_for_selector("#view .vcgroups")
                 for label, value in (("What the current platform costs per year (licences, subscriptions, support)", "100000"), ("What the new platform would cost per year", "80000")):

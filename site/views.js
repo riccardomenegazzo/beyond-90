@@ -22,6 +22,7 @@ import * as NM from "./nextmeeting.js";
 import * as OBJ from "./objsketch.js";
 import * as LS from "./lessons.js";
 import * as TEAM from "./team.js";
+import * as QD from "./qualify.js";
 import { connections } from "./graph.js";
 import { headline, firstMinute, rankActions, chainText, doneSummary, funnelSegments, preview } from "./today.js";
 import { stageBars } from "./nav.js";
@@ -2234,6 +2235,60 @@ export function hurtView({ workshop: w, catalog, go, startPov, today }) {
 
 /** Before and during the meeting: the line in one sentence for each audience, who to bring, and the objections to expect,
  *  each with the question to ask before answering, the answer, and how to prove it. Raised objections go to the proof. */
+// ------------------------------------------------------------------ qualify the deal: the same ten questions on every line
+export function qualifyView({ workshop: w, setDeal, go }) {
+  let cur = w;
+  const say = h("p", { class: "note", role: "status" });
+  const hero = h("section", { class: "card qdhero" });
+  const drawHero = () => {
+    const st = QD.dealState(cur.deal);
+    const at = st.passed ? QD.GATES.findIndex((g) => g.id === st.passed) : -1;
+    put(hero, h("h2", { text: "Where the deal stands" }),
+      h("p", { class: "note first", text: "Ten questions that are the same whatever the product: is there a reason to change, a date, a measured result, someone who decides, a way to decide, and a proof that would convince? Ask them alongside the technical ones. For you and the seller: they never appear in the customer readout." }),
+      h("div", { class: "qdverdict" }, h("b", { text: st.verdict }), h("span", { class: "muted", text: `${st.answered} of ${QD.DEAL.length} answered, ${st.score} out of 100` })),
+      h("ol", { class: "qdgates", "aria-label": "How far the deal is qualified" }, QD.GATES.map((g, i) => h("li", { class: i <= at ? "on" : i === at + 1 ? "next" : "" },
+        h("span", { class: "sr-only", text: i <= at ? "Passed: " : i === at + 1 ? "Next: " : "Later: " }), g.label))),
+      h("p", { class: "qdnow" }, h("b", { text: "Now: " }), st.then),
+      st.missing.length ? h("div", { class: "growproof" }, h("small", { text: `To be ${st.next.label.charAt(0).toLowerCase() + st.next.label.slice(1)}, find out` }),
+        h("ul", {}, st.missing.map((m) => h("li", {}, h("b", { text: m.tag + ": " }), m.probe, m.min === "known" && m.a === "partly" ? h("span", { class: "muted", text: " (partly known: needs to be known)" }) : null)))) : null);
+  };
+  drawHero();
+  const items = QD.DEAL.map((x) => {
+    const li = h("li", { class: "wsq qdq" });
+    const draw = () => {
+      const ans = cur.deal && cur.deal[x.id];
+      const note = h("input", { type: "text", class: "wsnote", maxlength: 300, value: ans ? ans.note : "", placeholder: "What we heard, in a few words", "aria-label": `Note for: ${x.q}` });
+      note.addEventListener("change", async () => {
+        const have = cur.deal && cur.deal[x.id];
+        if (!have) return;
+        try { cur = await setDeal(x.id, have.a, note.value); say.textContent = ""; } catch (e) { say.textContent = e.message; }
+      });
+      put(li, h("div", { class: "wsqtext" }, h("span", { class: "wsstage qdtag", text: x.tag }), h("span", { text: x.q }), h("small", { class: "muted", text: x.why }),
+        h("details", { class: "wshow" }, h("summary", { text: "How to ask it" }), h("dl", { class: "objdl" }, h("dt", { text: "Listen for" }), h("dd", { text: x.listen }), h("dt", { text: "Then ask" }), h("dd", { text: x.probe })))),
+      h("div", { class: "wsans", role: "group", "aria-label": `Answer to: ${x.q}` }, Object.entries(QD.STATES).map(([k, v]) =>
+        h("button", { type: "button", class: "wsopt q-" + k, "aria-pressed": String(!!ans && ans.a === k), text: v.label,
+          onclick: async () => {
+            const again = ans && ans.a === k;
+            try { cur = await setDeal(x.id, again ? "" : k, again ? "" : note.value); say.textContent = ""; } catch (e) { say.textContent = e.message; return; }
+            draw(); drawHero();
+            const btn = li.querySelector(`.q-${k}`);
+            if (btn) btn.focus();
+          } }))),
+      ans ? note : null);
+    };
+    draw();
+    return li;
+  });
+  const copy = h("button", { class: "btn small", type: "button", text: "Copy for the seller", onclick: (ev) => {
+    const t = QD.dealMarkdown(cur.deal);
+    copyText(t || "Nothing answered yet.").then((ok) => { ev.target.textContent = ok ? "Copied" : "Not copied"; });
+  } });
+  return h("div", {}, hero,
+    card("The ten questions", h("div", {}, h("ol", { class: "wslist" }, items), say,
+      h("div", { class: "btnrow" }, copy, h("button", { class: "btn small", type: "button", text: "Back to the questions", onclick: () => go("workshop") }))),
+    { sub: "Known, partly, or not yet, with what you heard. The same idea in the words most sales methods use, so the seller reads the same list." }));
+}
+
 export function wsPrepView({ workshop: w, catalog, raise, go }) {
   const res = WS.assess(catalog, w);
   const told = WS.stories(catalog, w, res);

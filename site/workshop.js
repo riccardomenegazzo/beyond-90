@@ -15,6 +15,7 @@ import { validCase, buildCase, caseLine, caseMarkdown, money } from "./valuecase
 import { validGpu, gpuSketch, gpuMarkdown } from "./gpu.js";
 import { validDr, drSketch, drMarkdown } from "./drsketch.js";
 import { validObj, objSketch, objMarkdown } from "./objsketch.js";
+import { validDeal, withDealAnswer, dealMarkdown } from "./qualify.js";
 
 export const ANSWERS = {
   solved: { label: "Solved", weight: 0 },
@@ -76,6 +77,7 @@ export function validWorkshop(w) {
   if (w.gpu != null && !validGpu(w.gpu)) return false;
   if (w.dr != null && !validDr(w.dr)) return false;
   if (w.obj != null && !validObj(w.obj)) return false;
+  if (w.deal != null && !validDeal(w.deal)) return false;
   if (w.raised != null && !(Array.isArray(w.raised) && w.raised.length && w.raised.length <= MAX_RAISED && w.raised.every((k) => typeof k === "string" && RAISED.test(k)) && new Set(w.raised).size === w.raised.length)) return false;
   const m = /^ws\|(\d{4}-\d{2}-\d{2})\|([a-z0-9]+)$/.exec(w.id || "");
   return !!m && m[1] === w.created_on && NONCE.test(m[2]);
@@ -253,6 +255,15 @@ export function setRaised(w, profile, index, on, today) {
   return changed(next, {}, today);
 }
 
+/** One qualification question answered (known, partly, not yet) with a note, or cleared: the same ten on every line. */
+export function setDeal(w, id, a, note, today) {
+  const deal = withDealAnswer(w.deal, id, a, note, today);
+  const next = { ...w };
+  delete next.deal;
+  if (deal) next.deal = deal;
+  return changed(next, {}, today);
+}
+
 /** How each line in scope is told and challenged: the line to start with first. Only lines whose profile ships a story. */
 export function stories(catalog, w, res) {
   const land = res && res.land ? res.land.profile : "";
@@ -333,6 +344,17 @@ const EXAMPLE = {
   plan: { "dr-backup#2": ["together", 21], "dr-backup#4": ["us", 10], "platform-migration#3": ["customer", 14] },
   raised: [["dr-backup", 3], ["platform-migration", 1], ["hci", 2]],
   sizing: { growth_pct: 15 },
+  // the deal, as far as the first meetings got: ready for a demo built for them, not yet for a proof
+  deal: {
+    why_change: ["known", "The hosting renewal triples the cost; operations already works weekends on upgrades"],
+    why_now: ["known", "Renewal in ten months; the board wants a decision before the budget in March"],
+    outcome: ["partly", "Recovery of the order system in under four hours, tested; the cost target is not set yet"],
+    decider: ["partly", "The CIO signs; we have not met her yet"],
+    criteria: ["unknown", ""],
+    proof: ["partly", "They want to see a recovery test on their own order system"],
+    champion: ["known", "The infrastructure lead: she asked for this meeting and shares the board's timeline"],
+    alternatives: ["partly", "Renewing as they are, and a public cloud option the finance team likes"],
+  },
   case: { years: 3, in_readout: true, stay_run: 700000, stay_uplift_pct: 200, renewal_in_months: 10, stay_refresh: 900000, refresh_in_months: 18,
     move_run: 1100000, move_once: 650000, move_hardware: 0, ops_hours_now: 160, ops_hours_after: 60, hour_cost: 80,
     downtime_cost_hour: 83333, downtime_hours_now: 12, downtime_hours_after: 4 },
@@ -354,6 +376,7 @@ export function exampleWorkshop(createdOn) {
   }
   for (const [profile, i] of EXAMPLE.raised) w = setRaised(w, profile, i, true, createdOn);
   w = setCase(setSizing(w, EXAMPLE.sizing, createdOn), EXAMPLE.case, createdOn);
+  for (const [id, [a, note]] of Object.entries(EXAMPLE.deal)) w = setDeal(w, id, a, note, createdOn);
   return w;
 }
 export const isExample = (w) => /\|example\d$/.test(w.id);
@@ -567,6 +590,8 @@ export function summaryMarkdown(catalog, w, res) {
     for (const u of res.unknowns) out.push(`- ${u.label}: ${u.q}`);
     out.push("");
   }
+  const deal = dealMarkdown(w.deal);
+  if (deal) out.push(deal);
   out.push("_Prepared with Beyond 90. The questions come from its product profiles; nothing in this note left the browser it was written in._", "");
   return out.join("\n");
 }

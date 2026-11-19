@@ -2,6 +2,17 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.108.0
+
+- **Qualify the deal.** Ten questions that are the same on every line, asked alongside the technical ones:
+  - pain, a date that makes it urgent, and the measured result;
+  - who decides and signs, and how the options will be compared;
+  - the steps to a choice, and budget, procurement and legal;
+  - what would convince them, a champion, and the alternatives (staying as they are among them).
+
+  Each is known, partly known or not yet, with what was heard, a "How to ask it", and the tag most sales methods use (MEDDPICC among them). The answers open three gates: **ready for a demo built for them**, **ready to propose a proof of value**, **ready to put a date in the forecast**. The page says what to do now and what the next gate still needs, with the follow-up question for each.
+- The deal goes into the meeting summary, never into the customer readout. On the presales desk, a proof or a decision without the decider known is a risk that can lose the deal, and a deal without a date is one to watch. The example prospects carry deal answers of their own.
+
 ## 0.107.0
 
 - **Discovery questions that dig.** The infrastructure lines carry 167 questions, up from 119. New ones are:

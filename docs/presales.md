@@ -55,11 +55,12 @@ A pre-sales engineer carries many prospects at once, each at a different point: 
 ## The path through one prospect
 
 1. **Prepare:** for each line in scope, the message for the executive, the technical team and finance, who to bring, and the objections to expect, each with the question to ask first, the answer and how to prove it.
-2. **[Discovery workshop](workshop.md):** the questions for each product line in scope, the customer's answers in one click, their words and figures, their VM inventory read in the page, a first sizing sketch with the assumptions agreed in the room, and a plan in waves with dates, a test wave first.
-3. **The case for change:** staying and moving side by side over a few years, in the customer's own figures, with the payback month and the arithmetic shown.
-4. **The journey:** "yes, this is possible", what would need to be true, the first step for each condition and who does it by when; a readout for the customer and a calendar file for the plan.
-5. **Proof of value:** opened with the first line's own criteria, what the customer asked us to prove, and the checklist for its first day (addresses, DNS and NTP, switch ports, supported hardware, the failures to test); sessions, results and the mutual plan.
-6. **Handover to delivery:** what was proven, asked and agreed, the numbers it rests on, and the promises to keep after go-live, kept as the customer's commitments in one click.
-7. **After the sale:** the [estate](estate.md) shows, line by line, what really works and where to grow, and starts a new workshop on the next line.
+2. **[Discovery workshop](workshop.md):** the questions for each product line in scope, each saying who to ask, what to listen for and what to ask next, narrowed to the essential ones or to the people in the room, the customer's answers in one click, their words and figures, their VM inventory read in the page, a first sizing sketch with the assumptions agreed in the room, and a plan in waves with dates, a test wave first.
+3. **Qualify the deal:** the same ten questions on every line (pain, a date, the measured result, who decides and how, budget and purchasing, the proof that would convince, a champion, the alternatives). They say whether the deal is ready for a demo built for the customer, for a proof of value, or for a date in the forecast, and what the next gate needs.
+4. **The case for change:** staying and moving side by side over a few years, in the customer's own figures, with the payback month and the arithmetic shown.
+5. **The journey:** "yes, this is possible", what would need to be true, the first step for each condition and who does it by when; a readout for the customer and a calendar file for the plan.
+6. **Proof of value:** opened with the first line's own criteria, what the customer asked us to prove, and the checklist for its first day (addresses, DNS and NTP, switch ports, supported hardware, the failures to test); sessions, results and the mutual plan.
+7. **Handover to delivery:** what was proven, asked and agreed, the numbers it rests on, and the promises to keep after go-live, kept as the customer's commitments in one click.
+8. **After the sale:** the [estate](estate.md) shows, line by line, what really works and where to grow, and starts a new workshop on the next line.
 
 Everything stays in this browser, sealed when a passphrase is set, and erased with the customer.
