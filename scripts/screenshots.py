@@ -96,6 +96,7 @@ def shoot(site: Path, out: Path) -> None:
                 for i, a in enumerate(ans.replace(" ", "")):
                     d.locator(".wsq").nth(i).get_by_role("button", name=label[a], exact=True).click()
                     pg.wait_for_timeout(40)
+            pg.locator("#ws-dr-backup .wsq").first.locator(".wsqhead").click()
             note = pg.locator("#ws-dr-backup .wsq").first.locator("input.wsnote")
             note.fill("A day down is about 2M in lost orders")
             note.press("Tab")
@@ -106,6 +107,7 @@ def shoot(site: Path, out: Path) -> None:
             pg.get_by_role("button", name="Essential questions only").click()
             pg.wait_for_timeout(200)
             q = pg.locator("#ws-dr-backup .wsq:not([hidden])").nth(2)
+            q.locator(".wsqhead").click()
             q.locator(".wshow summary").click()
             pg.evaluate("document.querySelector('.wsnarrow').scrollIntoView({block: 'start', behavior: 'instant'})")
             pg.wait_for_timeout(300)

@@ -6,8 +6,14 @@ The rest of Beyond 90 reads what a customer runs. The first meetings with a pros
 
 ## How it works
 
-1. **Start a discovery workshop** on the start page (or, from an estate, on a line the customer does not run yet), or **See a filled-in example** (an invented logistics company leaving its virtualisation platform, with its inventory, owners and dates, the concerns it raised and its case for change) to show the method in thirty seconds. Give the prospect a name (and yours, to sign the readout) and choose the product lines in scope, or start from a conversation (resilience and ransomware, leaving a virtualisation platform, modernising applications, securing the cloud) that sets the usual lines for you: platform, databases, disaster recovery, object storage, file storage, Kubernetes platform, or the security lines (cloud, identity, SaaS, monitoring, endpoint, AI).
-2. **Ask the questions.** Each line has its discovery questions from its profile (the infrastructure lines carry between 11 and 20), in the order of a conversation: business value first, then the stages (connected, seen, switched on, decided), each with why it matters. Record what the customer says in one click (**Solved**, **Partly**, **A real gap**, **Nobody knows**) and, if you like, their words in a short note. After each answer the next question is selected, so the keys 1 to 4 keep up with the conversation. On a business-value question you can also put a figure on what is at stake, counted per hour, day, week, month, year or incident; it heads the journey and the readout.
+1. **Start a discovery workshop** on the start page (or, from an estate, on a line the customer does not run yet), or **See a filled-in example** (an invented logistics company leaving its virtualisation platform, with its inventory, owners and dates, the concerns it raised and its case for change) to show the method in thirty seconds. Give the prospect a name (and yours, to sign the readout) and choose the product lines in scope, or start from a conversation (resilience and ransomware, leaving a virtualisation platform, modernising applications, securing the cloud) that sets the usual lines for you: platform, databases, disaster recovery, object storage, file storage, Kubernetes platform, or the security lines (cloud, identity, SaaS, monitoring, endpoint, AI). Once chosen, the lines in scope read as one line; **Change them** opens the whole choice.
+2. **Ask the questions.** Each line has its discovery questions from its profile (the infrastructure lines carry between 11 and 20), in the order of a conversation: business value first, then the stages (connected, seen, switched on, decided), each with why it matters. Record what the customer says in one click (**Solved**, **Partly**, **A real gap**, **Nobody knows**). Each question is one line, its answer in line:
+- a strip above the lines shows every line in scope, with a dot per question coloured by its answer; a tile opens its line;
+- after each answer the next question is selected, so the keys 1 to 4 keep up with the conversation;
+- a question opens on its own, one at a time, for why it matters, who to ask, how to ask it, and the customer's words in a short note; Escape closes it;
+- closed, an answered question shows what they said in one line, and a question their inventory already answers shows what it says.
+
+On a business-value question you can also put a figure on what is at stake, counted per hour, day, week, month, year or incident; it heads the journey and the readout. The sketches from their numbers (inventory, sizing, waves, disaster recovery and the others) come after the questions.
 3. **Where to start** updates as you go:
    - **Start here:** the line that hurts most, once at least three questions were answered on it, with the questions and the customer's own words that point there.
    - **The map:** each line in scope filled by how much is still missing there; lines not discussed yet are dashed; dashed links show where the first line leads.
@@ -33,9 +39,10 @@ The infrastructure questions are written to be asked, not read out. Each one say
 - **what to listen for:** what a strong answer and a worrying one sound like, and what each means for the design or the deal ("under about five milliseconds allows zero-loss copies; beyond that, plan near-continuous or scheduled copies");
 - **then ask:** the follow-up that goes one level deeper, where the real figure or the real owner usually is.
 
-Open **How to ask it** under a question to see the last two. Above the lines, **This meeting** narrows the list:
+Open a question, then **How to ask it**, to see the last two. Above the lines, **This meeting** narrows the list:
 
 - **Essential questions only** turns a 60-question workshop into a 30-minute first call;
+- **Not answered yet** shows only what is left to ask;
 - **Who is in the room** shows only the questions for the people there: a session with the database team gets the database questions, and the security review gets the security ones.
 
 **Copy the question guide** or **Question guide (.md)** gives the narrowed list with who to ask, why, what to listen for and what to ask next, for the meeting or for a colleague who will run it. The questions already answered say so. **The next meeting** lists the essential questions not asked yet, and the roles that can answer what is still open.

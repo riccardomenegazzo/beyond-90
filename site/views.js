@@ -1670,7 +1670,7 @@ export function growView({ estate, focus, startWorkshop }) {
 const STAGE_TAG = { value: "Value", L1: "L1 connected", L2: "L2 seen", L3: "L3 switched on", L4: "L4 decided" };
 const painPct = (v) => `${Math.round(v * 100)}%`;
 // how the questions are narrowed for this meeting: kept while the page is open, never stored
-const wsFilter = { core: false, roles: [], tender: false };
+const wsFilter = { core: false, roles: [], tender: false, open: false };
 
 export function workshopView({ workshop: w, catalog, list, answer, worth, rename, preparedBy, setScope, inventory, sizing, waves, gpu, dr, obj, edge, unit, today, newWorkshop, openWorkshop, removeWorkshop, presets = [], go, focus }) {
   const say = h("p", { class: "note", role: "status" });
@@ -1685,6 +1685,12 @@ export function workshopView({ workshop: w, catalog, list, answer, worth, rename
     h("span", { class: "wsfamname", text: cap(f) }),
     ps.map((p) => h("button", { type: "button", class: "kindchip", "aria-pressed": String(w.scope.includes(p)), text: catalog.lines[p].label,
       onclick: act(async () => { const next = cur.scope.includes(p) ? cur.scope.filter((x) => x !== p) : [...cur.scope, p]; await setScope(next); }) })))));
+  // the lines in scope, in one line; the whole choice opens on demand (it is long, and set once)
+  const inScope = w.scope.filter((p) => catalog.lines[p]).map((p) => catalog.lines[p].label);
+  const scopeBox = h("details", { class: "wsscopebox", open: inScope.length ? null : "" },
+    h("summary", {}, h("span", { class: "wsfamname", text: "Lines in scope" }), h("span", { class: "wsscopenow", text: inScope.length ? inScope.join(", ") : "none yet" }),
+      h("span", { class: "linkbtn wsscopechange", text: "Change them" })),
+    scopeRow);
   const meeting = card("The meeting", h("div", { class: "wsmeet" },
     h("div", { class: "btnrow" }, name, h("button", { class: "btn small", type: "button", text: "Save the name", onclick: act(() => rename(name.value)) })),
     preparedBy ? (() => {
@@ -1702,7 +1708,7 @@ export function workshopView({ workshop: w, catalog, list, answer, worth, rename
       h("span", { class: "wsfamname", text: "Start from" }),
       presets.map((p) => h("button", { type: "button", class: "kindchip", "aria-pressed": String(p.scope.length === w.scope.length && p.scope.every((x) => w.scope.includes(x))),
         "data-tip": `Lines in scope: ${p.scope.map((x) => catalog.lines[x].label).join(", ")}. Answers already given are kept.`, text: p.label, onclick: act(() => setScope(p.scope)) }))) : null,
-    scopeRow, h("p", { class: "note", text: "In the meeting: select an answer and the next question is selected for you; the keys 1 to 4 answer it (Solved, Partly, A real gap, Nobody knows)." }), say),
+    scopeBox, h("p", { class: "note", text: "In the meeting: the keys 1 to 4 answer the selected question (Solved, Partly, A real gap, Nobody knows) and select the next one. Open a question for why it matters, how to ask it, and what they said." }), say),
   { sub: "Choose the product lines in scope, then record what the customer says to each question. Nothing leaves this browser; it is sealed when you set a passphrase." });
 
   // progress, kept current as answers come in
@@ -1716,6 +1722,18 @@ export function workshopView({ workshop: w, catalog, list, answer, worth, rename
 
   // the tender's requirements that touch each question: the demand to bring to it, and the answers the bid rests on
   const asks = RFP.tenderAsks(catalog, cur);
+  // one question open at a time, for what goes with it: why it matters, how to ask it, what they said
+  const TONE = { solved: "good", partly: "mid", gap: "bad", unknown: "unknown" };
+  const uiq = { open: "" };
+  const drawers = new Map();
+  const toggle = (key) => {
+    const prev = uiq.open;
+    uiq.open = prev === key ? "" : key;
+    if (prev && drawers.has(prev)) drawers.get(prev)();
+    if (uiq.open) drawers.get(uiq.open)();
+    const b = document.querySelector(`.wsq[data-key="${CSS.escape(key)}"] .wsqhead`);
+    if (b) b.focus();
+  };
   const lines = cur.scope.filter((p) => catalog.lines[p]).map((p, li) => {
     const line = catalog.lines[p];
     const head = h("span", { class: "wshead" });
@@ -1726,34 +1744,50 @@ export function workshopView({ workshop: w, catalog, list, answer, worth, rename
     };
     drawHead();
     const items = WS.displayOrder(line).map(({ q, index: i }) => {
-      const asked = asks.get(`${p}#${i}`) || [];
-      const li = h("li", { class: "wsq", "data-role": q.role || "", "data-core": q.core ? "1" : "", "data-tender": asked.length ? "1" : "" });
-      li.hidden = !WS.inMeeting(q, wsFilter) || (wsFilter.tender && !asked.length);
-      const tenderNote = asked.length ? h("small", { class: "wsfact rfpasks", text: `The tender asks${asked.length > 1 ? ` (${asked.length} requirements)` : ""}: ${asked[0].ref ? `${asked[0].ref}: ` : ""}${asked[0].text.length > 160 ? asked[0].text.slice(0, 159) + "…" : asked[0].text}` }) : null;
+      const key = `${p}#${i}`;
+      const asked = asks.get(key) || [];
+      const li = h("li", { class: "wsq", "data-key": key, "data-role": q.role || "", "data-core": q.core ? "1" : "", "data-tender": asked.length ? "1" : "" });
+      li.hidden = !WS.inMeeting(q, wsFilter) || (wsFilter.tender && !asked.length) || (wsFilter.open && !!cur.answers[key]);
+      const tenderNote = asked.length ? h("small", { class: "wsfact", text: `The tender asks${asked.length > 1 ? ` (${asked.length} requirements)` : ""}: ${asked[0].ref ? `${asked[0].ref}: ` : ""}${asked[0].text.length > 160 ? asked[0].text.slice(0, 159) + "…" : asked[0].text}` }) : null;
       // how to ask it: what a strong or a worrying answer sounds like, and the question that goes one level deeper
-      const howTo = q.listen || q.probe ? h("details", { class: "wshow" }, h("summary", { text: "How to ask it" }),
-        h("dl", { class: "objdl" }, q.listen ? [h("dt", { text: "Listen for" }), h("dd", { text: q.listen })] : null, q.probe ? [h("dt", { text: "Then ask" }), h("dd", { text: q.probe })] : null)) : null;
+      const howTo = () => (q.listen || q.probe ? h("details", { class: "wshow" }, h("summary", { text: "How to ask it" }),
+        h("dl", { class: "objdl" }, q.listen ? [h("dt", { text: "Listen for" }), h("dd", { text: q.listen })] : null, q.probe ? [h("dt", { text: "Then ask" }), h("dd", { text: q.probe })] : null)) : null);
       const draw = () => {
-        const ans = cur.answers[`${p}#${i}`];
+        const ans = cur.answers[key];
+        const open = uiq.open === key;
+        li.classList.toggle("open", open);
+        li.dataset.answered = ans ? "1" : "";
         const note = h("input", { type: "text", class: "wsnote", maxlength: 300, value: ans ? ans.note : "", placeholder: "What they said, in a few words", "aria-label": `Note for: ${q.q}` });
-        note.addEventListener("change", act(async () => { if (!cur.answers[`${p}#${i}`]) return; cur = await answer(p, i, cur.answers[`${p}#${i}`].a, note.value); }));
-        put(li, 
-          h("div", { class: "wsqtext" }, h("span", { class: "wsstage s-" + q.stage, text: STAGE_TAG[q.stage] || q.stage }), h("span", { text: q.q }),
-            q.role || q.core ? h("span", { class: "wstags" }, q.core ? h("span", { class: "wscore", text: "Essential" }) : null, q.role ? h("span", { class: "wsrole", text: "Ask: " + WS.ROLE_WORDS[q.role].toLowerCase() }) : null) : null,
+        note.addEventListener("change", act(async () => { if (!cur.answers[key]) return; cur = await answer(p, i, cur.answers[key].a, note.value); }));
+        const fact = WS.factFor(cur, p, i);
+        put(li,
+          h("div", { class: "wsqline" },
+            h("button", { type: "button", class: "wsqhead", "aria-expanded": String(open), onclick: () => toggle(key) },
+              h("i", { class: `qldot t-${ans ? TONE[ans.a] : "open"}`, "aria-hidden": "true" }),
+              h("span", { class: "wsqq", text: q.q }),
+              q.core ? h("span", { class: "wscore", text: "Essential" }) : null,
+              asked.length ? h("span", { class: "wsasks rfpasks", text: "in the tender" }) : null),
+            h("div", { class: "wsans", role: "group", "aria-label": `Answer to: ${q.q}` }, Object.entries(WS.ANSWERS).map(([k, v]) =>
+              h("button", { type: "button", class: "wsopt o-" + k, "aria-pressed": String(!!ans && ans.a === k), text: v.label,
+                onclick: act(async () => {
+                  const again = ans && ans.a === k; cur = await answer(p, i, again ? "" : k, again ? "" : note.value); draw(); drawHead(); drawProg(); drawStrip();
+                  // opened, the answer leaves room for what they said; closed, the next question is the next thing to ask
+                  if (uiq.open === key && !again) { const n = li.querySelector("input.wsnote"); if (n) { n.focus(); return; } }
+                  let next = again ? null : li.nextElementSibling;
+                  while (next && next.hidden) next = next.nextElementSibling;
+                  (next ? next.querySelector(".wsopt") : li.querySelector(`.o-${k}`)).focus();
+                }) })))),
+          // closed: what they said, or what their inventory already tells
+          !open && ans && (ans.note || ans.amount != null) ? h("p", { class: "wsqsaid", text: [ans.note ? `“${ans.note}”` : "", ans.amount != null ? `${num(ans.amount)} per ${ans.per || "day"}` : ""].filter(Boolean).join(", ") })
+            : !open && fact ? h("p", { class: "wsqsaid wsfact", text: "From their inventory: " + fact }) : null,
+          open ? h("div", { class: "wsqmore" },
+            h("div", { class: "wstags" }, h("span", { class: "wsstage s-" + q.stage, text: STAGE_TAG[q.stage] || q.stage }), q.role ? h("span", { class: "wsrole", text: "Ask: " + WS.ROLE_WORDS[q.role].toLowerCase() }) : null),
             q.why ? h("small", { class: "muted", text: q.why }) : null,
-            WS.factFor(cur, p, i) ? h("small", { class: "wsfact", text: "From their inventory: " + WS.factFor(cur, p, i) }) : null, tenderNote, howTo),
-          h("div", { class: "wsans", role: "group", "aria-label": `Answer to: ${q.q}` }, Object.entries(WS.ANSWERS).map(([k, v]) =>
-            h("button", { type: "button", class: "wsopt o-" + k, "aria-pressed": String(!!ans && ans.a === k), text: v.label,
-              onclick: act(async () => {
-                const again = ans && ans.a === k; cur = await answer(p, i, again ? "" : k, again ? "" : note.value); draw(); drawHead(); drawProg();
-                // in a meeting the next question is the next thing to ask: select it, so the keys 1 to 4 answer it
-                let next = again ? null : li.nextElementSibling;
-                while (next && next.hidden) next = next.nextElementSibling;
-                (next ? next.querySelector(".wsopt") : li.querySelector(`.o-${k}`)).focus();
-              }) }))),
-          ans ? note : null,
-          ans && q.stage === "value" ? worthRow(ans) : null);
+            fact ? h("small", { class: "wsfact", text: "From their inventory: " + fact }) : null, tenderNote, howTo(),
+            ans ? note : h("small", { class: "muted", text: "Answer it to note what they said." }),
+            ans && q.stage === "value" ? worthRow(ans) : null) : null);
       };
+      drawers.set(key, draw);
       // a value question can carry a figure: what a day down costs, what a terabyte costs, what an incident cost
       const worthRow = (ans) => {
         const amt = h("input", { type: "text", inputmode: "numeric", maxlength: 18, value: ans.amount != null ? String(ans.amount) : "", placeholder: "e.g. 250000", "aria-label": `Figure for: ${q.q}` });
@@ -1764,8 +1798,9 @@ export function workshopView({ workshop: w, catalog, list, answer, worth, rename
         return h("div", { class: "wsworth" }, h("span", { class: "muted", text: "What is at stake, as a figure (optional)" }), amt, per);
       };
       draw();
-      // keys 1 to 4 answer the question that has the focus (and do not switch views, as digits do elsewhere)
+      // keys 1 to 4 answer the question that has the focus (and do not switch views, as digits do elsewhere); Escape closes it
       li.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && uiq.open === key) { e.preventDefault(); toggle(key); return; }
         if (e.ctrlKey || e.metaKey || e.altKey || e.target.tagName === "INPUT" || !/^[1-4]$/.test(e.key)) return;
         e.preventDefault(); e.stopPropagation();
         li.querySelectorAll(".wsopt")[Number(e.key) - 1].click();
@@ -1775,13 +1810,29 @@ export function workshopView({ workshop: w, catalog, list, answer, worth, rename
     const st = WS.lineState(catalog, p, cur.answers);
     return h("details", { class: "card wsline", id: "ws-" + p, open: focus === p || (!focus && (li === 0 || (st.answered > 0 && st.answered < st.total))) ? "" : null }, h("summary", {}, head), h("ol", { class: "wslist" }, items));
   });
+  // every line at a glance: a dot per question, coloured by its answer; a tile opens its line
+  const strip = h("div", { class: "qlstrip wsstrip", role: "group", "aria-label": "Lines in scope" });
+  const drawStrip = () => {
+    put(strip, cur.scope.filter((p) => catalog.lines[p]).map((p) => {
+      const line = catalog.lines[p];
+      const order = WS.displayOrder(line);
+      const done = order.filter(({ index: i }) => cur.answers[`${p}#${i}`]).length;
+      return h("button", { type: "button", class: "qlgroup", "aria-label": `${line.label}: ${done} of ${order.length} answered. Open it`,
+        onclick: () => { const d = document.getElementById("ws-" + p); if (d) { d.open = true; d.scrollIntoView({ block: "start" }); } } },
+      h("span", { class: "qlglabel", text: line.label }),
+      h("span", { class: "qldots", "aria-hidden": "true" }, order.map(({ index: i }) => { const a = cur.answers[`${p}#${i}`]; return h("i", { class: `qldot t-${a ? TONE[a.a] : "open"}` }); })),
+      h("small", { class: "muted", text: `${done} of ${order.length}` }));
+    }));
+  };
+  drawStrip();
   if (focus) requestAnimationFrame(() => { const el = document.getElementById("ws-" + focus); if (el) el.scrollIntoView({ block: "start" }); });
   // narrow the questions to this meeting: the essential ones for a first call, or those for the people in the room
   const shown = h("span", { class: "muted", role: "status" });
   const apply = () => {
     let n = 0, all = 0;
     for (const li of document.querySelectorAll(".wslist .wsq")) {
-      const on = (!wsFilter.core || li.dataset.core === "1") && (!wsFilter.roles.length || wsFilter.roles.includes(li.dataset.role)) && (!wsFilter.tender || li.dataset.tender === "1");
+      const on = (!wsFilter.core || li.dataset.core === "1") && (!wsFilter.roles.length || wsFilter.roles.includes(li.dataset.role)) && (!wsFilter.tender || li.dataset.tender === "1")
+        && (!wsFilter.open || li.dataset.answered !== "1");
       li.hidden = !on; all++; if (on) n++;
     }
     shown.textContent = n === all ? `All ${all} questions shown.` : `${n} of ${all} questions shown.`;
@@ -1789,6 +1840,9 @@ export function workshopView({ workshop: w, catalog, list, answer, worth, rename
   const essential = h("button", { type: "button", class: "kindchip", "aria-pressed": String(wsFilter.core), text: "Essential questions only",
     "data-tip": "The few questions not to leave a first meeting without, on each line.",
     onclick: () => { wsFilter.core = !wsFilter.core; essential.setAttribute("aria-pressed", String(wsFilter.core)); apply(); } });
+  const notYet = h("button", { type: "button", class: "kindchip", "aria-pressed": String(wsFilter.open), text: "Not answered yet",
+    "data-tip": "Only the questions with no answer yet: what is left to ask.",
+    onclick: () => { wsFilter.open = !wsFilter.open; notYet.setAttribute("aria-pressed", String(wsFilter.open)); apply(); } });
   const fromTender = h("button", { type: "button", class: "kindchip", "aria-pressed": String(wsFilter.tender), text: "Asked by the tender",
     "data-tip": "Only the questions a requirement of the tender touches: what to understand before answering it.",
     onclick: () => { wsFilter.tender = !wsFilter.tender; fromTender.setAttribute("aria-pressed", String(wsFilter.tender)); apply(); } });
@@ -1800,17 +1854,19 @@ export function workshopView({ workshop: w, catalog, list, answer, worth, rename
   });
   const slug = (cur.customer || "customer").replace(/[^A-Za-z0-9]+/g, "-").replace(/^-|-$/g, "").toLowerCase() || "customer";
   const narrow = used.length ? h("div", { class: "card wsnarrow" }, h("h2", { class: "sr-only", text: "Narrow the questions" }),
-    h("div", { class: "wsfam", role: "group", "aria-label": "Which questions to show" }, h("span", { class: "wsfamname", text: "This meeting" }), essential, asks.size ? fromTender : null),
+    h("div", { class: "wsfam", role: "group", "aria-label": "Which questions to show" }, h("span", { class: "wsfamname", text: "This meeting" }), essential, notYet, asks.size ? fromTender : null),
     h("div", { class: "wsfam", role: "group", "aria-label": "Who is in the room" }, h("span", { class: "wsfamname", text: "Who is in the room" }), roleChips),
     h("div", { class: "btnrow" }, shown,
       h("button", { class: "btn small", type: "button", text: "Copy the question guide", onclick: (ev) => copyText(WS.questionGuide(catalog, cur, wsFilter)).then((ok) => { ev.target.textContent = ok ? "Copied" : "Not copied"; }) }),
       h("button", { class: "btn small", type: "button", text: "Question guide (.md)", onclick: () => saveBlob(WS.questionGuide(catalog, cur, wsFilter), `${slug}-questions.md`, "text/markdown") }))) : null;
   requestAnimationFrame(apply);
-  return h("div", {}, meeting, inventory ? inventoryCard(w, inventory) : null, w.inventory && sizing ? sizingCard(w, sizing) : null,
+  // the conversation first: where it stands on every line, what to show, the questions; then the sketches from their numbers
+  const sketches = [inventory ? inventoryCard(w, inventory) : null, w.inventory && sizing ? sizingCard(w, sizing) : null,
     w.inventory && waves ? wavesCard(w, waves, today) : null, w.scope.includes("private-ai") && gpu ? gpuCard(w, gpu) : null,
     w.scope.includes("dr-backup") && dr ? drCard(w, dr) : null, w.scope.includes("object-storage") && obj ? objCard(w, obj) : null,
-    w.scope.includes("edge-sites") && edge ? edgeCard(w, edge) : null, w.scope.some((p) => WS.UNIT_LINES.includes(p)) && unit ? unitCard(w, unit) : null,
-    h("div", { class: "card wsprogcard" }, prog), narrow, lines);
+    w.scope.includes("edge-sites") && edge ? edgeCard(w, edge) : null, w.scope.some((p) => WS.UNIT_LINES.includes(p)) && unit ? unitCard(w, unit) : null].filter(Boolean);
+  return h("div", {}, meeting, h("div", { class: "card wsprogcard" }, prog, strip), narrow, lines,
+    sketches.length ? h("h2", { class: "wssketchhead", text: "Sketches from their numbers" }) : null, sketches);
 }
 
 /** The customer's VM inventory: read in the page, kept as totals, shown as the numbers a sizing starts from. */

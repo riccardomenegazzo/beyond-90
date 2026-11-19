@@ -2,6 +2,18 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.128.0
+
+- **The discovery questions, shorter.** The second view redone on the compact pattern of bid or no bid:
+  - each question is one line, its four answers in line, with **Essential** and **in the tender** marked;
+  - a question opens on its own, one at a time, for its stage, who to ask, why it matters, how to ask it, what the tender asks, and the note of what they said; Escape closes it;
+  - closed, an answered question shows what they said and the figure in one line; a question their inventory already answers shows what it says;
+  - a strip shows every line in scope, with a dot per question coloured by its answer; a tile opens its line;
+  - **Not answered yet** joins the filters of this meeting.
+- The keys keep working as before: 1 to 4 answer the selected question and select the next one. Opened, an answer leaves the cursor in the note.
+- **The lines in scope** read as one line in the meeting card; the whole choice of about twenty lines opens on demand, and is open while none is chosen.
+- The page puts the conversation first: the meeting, where each line stands, the filters, the questions. The sketches from their numbers (inventory, sizing, waves, GPU, disaster recovery, object storage, edge, cost per machine) follow, under their own heading.
+
 ## 0.127.0
 
 - **Bid or no bid, shorter.** The first view redone as a compact list of questions, the pattern the questions of discovery and qualification will follow:

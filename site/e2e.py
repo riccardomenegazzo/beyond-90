@@ -732,6 +732,8 @@ def main(site: str) -> int:
         n_sec = sum(1 for qs in disc.values() for q in qs if q.get("core") and q.get("role") == "security")
         page.wait_for_function(f"document.querySelectorAll('#view .wsq:not([hidden])').length === {n_sec}")
         first = page.locator("#view .wsq:not([hidden])").first
+        first.locator(".wsqhead").click()
+        check(first.locator(".wsqmore").count() == 1 and page.locator("#view .wsq.open").count() == 1, "a question opens on its own, one at a time")
         first.locator(".wshow summary").click()
         check("Listen for" in first.inner_text() and "Then ask" in first.inner_text() and "Ask: security" in first.inner_text(),
               "and to the people in the room, each question saying who to ask, what to listen for and what to ask next")
@@ -743,6 +745,7 @@ def main(site: str) -> int:
         page.get_by_role("group", name="Who is in the room").get_by_role("button", name="Security", exact=True).click()
         page.get_by_role("button", name="Essential questions only").click()
         page.wait_for_function("document.querySelectorAll('#view .wsq[hidden]').length === 0")
+        page.locator("#ws-dr-backup .wsq").first.locator(".wsqhead").click()
         note = page.locator("#ws-dr-backup .wsq").first.locator("input.wsnote")
         note.fill("A day down is about 2M in lost orders")
         note.press("Tab")
@@ -752,6 +755,14 @@ def main(site: str) -> int:
         page.wait_for_timeout(300)
         in_scope = sum(len(json.loads((ROOT / "src/beyond90/data/profiles" / p / "discovery.json").read_text())["questions"]) for p in ("hci", "dbaas", "dr-backup", "hybrid-cloud"))
         check(f"16 of {in_scope} questions answered" in page.inner_text("#view .wsprog"), "progress follows the answers")
+        page.keyboard.press("Escape")
+        page.wait_for_selector("#ws-dr-backup .wsq:first-child:not(.open) .wsqsaid")
+        check("“A day down is about 2M in lost orders”, 2,000,000 per day" in page.inner_text("#ws-dr-backup .wsq:first-child .wsqsaid"),
+              "closed, a question shows what they said and the figure, in one line")
+        check(page.locator("#view .wsstrip .qlgroup").count() == 4 and "8 of" in page.inner_text("#view .wsstrip"), "a strip shows every line in scope, a dot per question")
+        page.get_by_role("button", name="Not answered yet").click()
+        check(page.locator("#ws-dr-backup .wsq:not([hidden])").count() == page.locator("#ws-dr-backup .wsq").count() - 8, "the questions narrow to those not answered yet")
+        page.get_by_role("button", name="Not answered yet").click()
         page.get_by_role("button", name="See the journey").click()
         page.wait_for_selector("#view ol.journey")
         check("Yes, this is possible." in page.inner_text("#view .jhero") and "2M in lost orders" in page.inner_text("#view .jhero"), "the journey opens on what is possible, with what is at stake in the customer's words")
@@ -1044,6 +1055,9 @@ def main(site: str) -> int:
         check(gpus == 8 and int(page.inner_text("#view .szhead > b")) < gpus and "copies of the model" in page.inner_text("#view .szhead"),
               "with the AI line in scope, a first GPU sketch follows the assumptions: fewer bits, fewer GPUs")
         # shops, plants and branches: a first edge design, kind of site by kind of site
+        check(page.locator("#view details.wsscopebox").get_attribute("open") is None and "Lines in scope" in page.inner_text("#view .wsscopebox"),
+              "the lines in scope read as one line; the whole choice opens on demand")
+        page.locator("#view details.wsscopebox > summary").click()
         page.get_by_role("button", name="Shops, plants and branches").click()
         page.wait_for_selector("#ws-edge-sites")
         edgecard = page.locator("#view .card").filter(has_text="A first edge design")
