@@ -77,7 +77,7 @@ test("two invented engineers, for a demonstration", async () => {
   assert.ok(t.deals >= 9);
 });
 
-test("a snapshot carries how each deal is sold and how far it is qualified, as kinds and tags only", async () => {
+test("a snapshot carries how each deal is sold and how far it is qualified, without notes", async () => {
   const { exampleDesk, pipeline } = await import("../desk.js");
   const { dealFacts } = await import("../lessons.js");
   const { snapshotFrom, validSnapshot, teamView, teamMarkdown } = await import("../team.js");
@@ -90,8 +90,9 @@ test("a snapshot carries how each deal is sold and how far it is qualified, as k
   assert.equal(k.partner_kind, "integrator");
   assert.equal(k.qualified, "demo");
   assert.ok(k.not_known.includes("Decision criteria"));
-  // the structured fields carry the kind and the route, not the partner's name (a risk's text may name it)
-  assert.ok(snap.deals.every((d) => !("partner" in d)));
+  // the lead partner's company name and the end of its registration travel; the other partners on the deal do not
+  assert.equal(k.partner, "Verdi Sistemi (mock)");
+  assert.ok(/^\d{4}-\d{2}-\d{2}$/.test(k.reg_until));
   assert.doesNotMatch(JSON.stringify(snap), /Nord Distribuzione/);
   // anything off in the new fields refuses the file
   for (const bad of [{ route: "smuggled" }, { partner_kind: "friend" }, { qualified: "nearly", not_known: [] }, { qualified: "demo" }, { qualified: "", not_known: ["Gossip"] }]) {
@@ -103,4 +104,21 @@ test("a snapshot carries how each deal is sold and how far it is qualified, as k
   assert.ok(tv.engineers[0].qualified >= 0);
   assert.ok(tv.lessons.routes.length >= 1);
   assert.match(teamMarkdown(tv, day), /Qualified for a proof/);
+});
+
+test("the team view shows the partners across the team, with registrations to act on as of each snapshot", async () => {
+  const { exampleTeam, teamView, teamMarkdown, validSnapshot } = await import("../team.js");
+  const team = exampleTeam(CAT, "2026-11-19");
+  assert.ok(team.every(validSnapshot));
+  const tv = teamView(team, { includeExamples: true });
+  const verdi = tv.partners.find((x) => x.name === "Verdi Sistemi (mock)");
+  assert.ok(verdi && verdi.engineers.length === 2, "the same integrator works with both engineers");
+  assert.ok(verdi.expiring.some((e) => e.customer.startsWith("Valle Health")));
+  assert.match(teamMarkdown(tv, "2026-11-19"), /## Partners across the team\n\n\| Partner \| Engineers \|/);
+  const t = structuredClone(team[0]);
+  t.deals[0].reg_until = "2026-12-01";
+  delete t.deals[0].partner;
+  assert.equal(validSnapshot(t), false, "a registration without its partner is refused");
+  t.deals[0].partner = "Bad\u0007Name";
+  assert.equal(validSnapshot(t), false);
 });

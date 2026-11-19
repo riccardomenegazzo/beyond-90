@@ -1064,6 +1064,9 @@ def main(site: str) -> int:
         page.wait_for_selector("#desk-body .teamtable tbody tr:nth-child(2)")
         check("Engineer B (mock)" in page.inner_text("#desk-body .teamtable") and "What the team's deals teach" in page.inner_text("#desk-body .teambody"),
               "and sees each engineer's pipeline, the deals at risk and what the team's deals teach")
+        team_text = page.inner_text("#desk-body .teambody")
+        check("Partners across the team" in team_text and "Verdi Sistemi (mock)" in team_text and "Qualified for a proof" in page.inner_text("#desk-body .teamtable"),
+              "and the partners across the team, and how many deals each engineer has qualified for a proof")
         page.get_by_role("button", name="Clear the team").click()
         check(page.locator("#desk-body .teamtable").count() == 0, "and clears it: nothing was kept")
         page.get_by_role("button", name="Remove the invented examples").click()

@@ -138,6 +138,18 @@ export const FAQ = [
     { q: "A connector is stuck and the error makes no sense.",
       a: "Open Onboarding and paste the error in “Explain an error”. You get the likely cause in plain words, who has to fix it, and read-only commands to confirm it." },
   ] },
+  { group: "Presales", items: [
+    { q: "I have thirty minutes for a first meeting. Which questions?",
+      a: "Open the workshop's Questions and press “Essential questions only”: five to seven per line, value first. “Who is in the room” narrows them to the people there. Under each, “How to ask it” says what to listen for and what to ask next. “Question guide (.md)” takes the list into the meeting." },
+    { q: "How do I know whether a deal is real, not only technically possible?",
+      a: "Qualify the deal: ten questions that are the same on every line (pain, a date, the measured result, who decides and how, budget and purchasing, the proof that would convince, a champion, the alternatives). Known, partly or not yet; they say whether it is ready for a demo built for them, a proof of value, or a date in the forecast." },
+    { q: "What do I do next with this prospect?",
+      a: "The way forward places it on the path from discovery to handover, says what must be true to move on, how to run the next phase and what to avoid. It also plans the demo from what the customer said: their situation, the result first, only their gaps, the proof to agree." },
+    { q: "The deal comes through a partner. Where does that go?",
+      a: "Partners, in the workshop: who leads, the deal registration and when it runs out, the route to purchase, who does what from discovery to support, and the lines each partner has skills on. It gives a brief for the partner, and a discovery kit any partner can use without a customer's data. The desk shows every partner across your deals." },
+    { q: "How do I show my manager the whole pipeline?",
+      a: "On the presales desk, “Snapshot for my manager (.json)”: stages, risks, outcomes, how each deal is sold and how far it is qualified, without notes, figures or people's names. The manager reads the team's snapshots together under “Your team”." },
+  ] },
   { group: "Your data and privacy", items: [
     { q: "Where do my files go?",
       a: "Nowhere. They are read inside this tab and analysed by the engine in this tab. The page is not allowed to send data to any other site, and “Check that nothing leaves” on this page proves it.",
@@ -152,6 +164,10 @@ export const FAQ = [
 
 /** The terms that appear on screen, defined once. The ids are used by the small question marks next to them. */
 export const GLOSSARY = [
+  { id: "essential", term: "Essential question", text: "One of the five to seven questions on a product line not to leave a first meeting without. Business value comes first." },
+  { id: "gate", term: "Qualification gate", text: "How far a deal is qualified: ready for a demo built for them, ready to propose a proof of value, ready to put a date in the forecast. Each gate includes the one before." },
+  { id: "registration", term: "Deal registration", text: "A partner's claim on a deal with the vendor, valid between two dates. It protects the partner that brought the deal; when it runs out, the deal is open to anyone." },
+  { id: "route", term: "Route to purchase", text: "How the customer buys: direct, through a reseller, through a distributor and a reseller, through a public framework or marketplace, or as a service from a service provider." },
   { id: "yield", term: "Yield", text: "The share of the customer's estate that is truly covered: connected × visible × protected × handled. It is the main number." },
   { id: "legacy", term: "Legacy metric", text: "The number most consoles show (accounts connected over accounts listed). Shown next to Yield so the gap is visible." },
   { id: "reach", term: "Reach", text: "How much of the customer's organisation uses the platform: teams with access who actually log in." },

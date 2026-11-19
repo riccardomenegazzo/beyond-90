@@ -31,6 +31,7 @@ export function snapshotFrom(opps, facts, by, today) {
         outcome: f.outcome || null, raised: (f.raised || []).slice(0, 40), gaps: (f.gaps || []).slice(0, 200),
         ...(o.evidence ? { evidence: o.evidence.score } : {}),
         ...(f.route ? { route: f.route } : {}), ...(f.partner_kind ? { partner_kind: f.partner_kind } : {}),
+        ...(o.partner ? { partner: clean(o.partner, 80) } : {}), ...(o.registration ? { reg_until: o.registration.until } : {}),
         ...(f.not_known ? { qualified: f.qualified || "", not_known: f.not_known } : {}),
       };
     }),
@@ -43,11 +44,13 @@ const only = (o, keys) => !!o && typeof o === "object" && !Array.isArray(o) && O
 const intIn = (v, lo, hi) => Number.isInteger(v) && v >= lo && v <= hi;
 
 function validDeal(d) {
-  if (!only(d, ["customer", "stage", "closed", "example", "started_on", "updated_on", "lines", "land", "next", "risks", "pov", "outcome", "raised", "gaps", "evidence", "route", "partner_kind", "qualified", "not_known"])) return false;
+  if (!only(d, ["customer", "stage", "closed", "example", "started_on", "updated_on", "lines", "land", "next", "risks", "pov", "outcome", "raised", "gaps", "evidence", "route", "partner_kind", "qualified", "not_known", "partner", "reg_until"])) return false;
   if (d.evidence !== undefined && !intIn(d.evidence, 0, 100)) return false;     // optional: snapshots from before it stay readable
   // optional too: how it is sold, and how far it is qualified (tags only)
   if (d.route !== undefined && !Object.hasOwn(ROUTES, d.route)) return false;
   if (d.partner_kind !== undefined && !Object.hasOwn(KINDS, d.partner_kind)) return false;
+  if (d.partner !== undefined && !(isStr(d.partner, 80, 1) && !/[\u0000-\u001f\u007f]/.test(d.partner))) return false;
+  if (d.reg_until !== undefined && !(isDay(d.reg_until) && d.reg_until !== "" && d.partner !== undefined)) return false;
   if ((d.qualified === undefined) !== (d.not_known === undefined)) return false;
   if (d.qualified !== undefined && !["", "demo", "proof", "commit"].includes(d.qualified)) return false;
   if (d.not_known !== undefined && !(Array.isArray(d.not_known) && d.not_known.length <= DEAL.length && new Set(d.not_known).size === d.not_known.length && d.not_known.every((t) => DEAL.some((x) => x.tag === t)))) return false;
@@ -114,7 +117,23 @@ export function teamView(snapshots, { includeExamples = false } = {}) {
   const facts = all.map((d) => ({ customer: d.customer, example: d.example, started_on: d.started_on, lines: d.lines, land: d.land, raised: d.raised, gaps: d.gaps,
     pov: d.pov, outcome: d.outcome, route: d.route || "", partner_kind: d.partner_kind || "", qualified: d.qualified || "", not_known: d.not_known || null }));
   const stages = STAGES.map((s) => ({ ...s, count: all.filter((d) => !d.closed && d.stage === s.id).length }));
-  return { engineers, stages, risky, lessons: lessons(facts, { includeExamples: true }), deals: all.length, oldest: snapshots.map((s) => s.as_of).sort()[0] || "" };
+  // the partners across the team: who carries which engineer's deals, and the registrations to act on (as of each snapshot)
+  const asOf = new Map(snapshots.map((s, i) => [who(s, i), s.as_of]));
+  const pmap = new Map();
+  for (const d of all.filter((x) => x.partner)) {
+    const key = d.partner.toLowerCase();
+    const x = pmap.get(key) || { name: d.partner, engineers: new Set(), live: 0, won: 0, lost: 0, expiring: [] };
+    x.engineers.add(d.engineer);
+    if (!d.closed) x.live++;
+    if (d.closed === "won") x.won++;
+    if (d.closed === "lost" || d.closed === "none") x.lost++;
+    const on = asOf.get(d.engineer);
+    if (!d.closed && d.reg_until && on && Date.parse(d.reg_until) - Date.parse(on) <= 14 * 86400000) x.expiring.push({ customer: d.customer, engineer: d.engineer, until: d.reg_until, ran_out: d.reg_until < on });
+    pmap.set(key, x);
+  }
+  const partners = [...pmap.values()].map((x) => ({ ...x, engineers: [...x.engineers].sort() }))
+    .sort((a, b) => b.live - a.live || b.expiring.length - a.expiring.length || a.name.localeCompare(b.name));
+  return { engineers, stages, risky, partners, lessons: lessons(facts, { includeExamples: true }), deals: all.length, oldest: snapshots.map((s) => s.as_of).sort()[0] || "" };
 }
 
 /** The team review in Markdown: for the weekly pipeline review with the presales leadership. */
@@ -123,6 +142,11 @@ export function teamMarkdown(t, today) {
     "| Engineer | Open | Discovery | Journey | Proof | Decision | Won | Lost or no decision | At risk | Evidence (median) | Qualified for a proof |", "|---|---|---|---|---|---|---|---|---|---|---|"];
   for (const e of t.engineers) out.push(`| ${e.name.replace(/\|/g, "/")} | ${e.live} | ${e.stages.discovery} | ${e.stages.journey} | ${e.stages.proof} | ${e.stages.decision} | ${e.won} | ${e.lost} | ${e.at_risk} | ${e.evidence == null ? "—" : `${e.evidence}/100`} | ${e.qualified} |`);
   out.push("");
+  if ((t.partners || []).length) {
+    out.push("## Partners across the team", "", "| Partner | Engineers | Live deals | Won | Lost or no decision | Registrations to act on |", "|---|---|---|---|---|---|");
+    for (const x of t.partners) out.push(`| ${x.name.replace(/\|/g, "/")} | ${x.engineers.join(", ").replace(/\|/g, "/")} | ${x.live} | ${x.won} | ${x.lost} | ${x.expiring.map((e) => `${e.customer.replace(/\|/g, "/")} (${e.engineer.replace(/\|/g, "/")}): ${e.ran_out ? "ran out" : "runs out"} ${e.until}`).join("; ") || "none"} |`);
+    out.push("");
+  }
   if (t.risky.length) out.push("## What could lose a deal", "", ...t.risky.map((r) => `- **${r.customer}**, ${r.engineer}: ${r.risk}${r.more ? ` (and ${r.more} more)` : ""}`), "");
   const l = t.lessons;
   if (l.decided) out.push("## How deals ended", "", `Won ${l.won}, lost ${l.lost}, no decision ${l.none}: ${l.win_rate}% won.${l.reasons.length ? ` When not won: ${l.reasons.map((r) => `${r.label.toLowerCase()} (${r.count})`).join(", ")}.` : ""}`, "");

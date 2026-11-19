@@ -85,7 +85,7 @@ A registration that runs out within two weeks, or has run out, is also on the de
 - **The pipeline CSV** has columns for the partner, its kind, the route to purchase, the end of the registration, the qualification and the phase.
 - **The handover to delivery** opens with who deploys and who supports. It lists each partner and its skills, and the lines to line up before go-live.
 - **What the deals teach** counts how deals ended by route to purchase and by the kind of partner leading them.
-- **The team view** reads the route and the kind of partner from each engineer's snapshot. The partner's name is not a field there, though the text of a risk may name it.
+- **The team view** reads, from each engineer's snapshot, the lead partner's company name, the end of its registration, the kind of partner and the route to purchase. It shows the partners across the team: which engineers each works with, their live deals, wins and losses, and the registrations to act on. The other partners on a deal stay on the engineer's desk.
 
 ## In the way forward
 

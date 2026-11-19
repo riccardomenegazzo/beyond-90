@@ -2,6 +2,25 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.114.0
+
+- **Help knows presales.** A new "Presales" group of answers covers:
+  - the questions for a thirty-minute first meeting;
+  - whether a deal is real;
+  - what to do next with a prospect;
+  - where a partner goes;
+  - how to show a manager the pipeline.
+
+  The glossary adds essential question, qualification gate, deal registration and route to purchase. The answers can be found from the command palette.
+- **Partners across the team.** A desk snapshot carries the lead partner's company name and the end of its registration. In the team view, the manager sees:
+  - each partner across the team;
+  - the engineers it works with;
+  - its live deals, wins and losses;
+  - the registrations to act on, as of each snapshot.
+
+  The team review carries it as a table. The other partners on a deal stay on the engineer's desk.
+- The README says what the discovery workshop now does: how to ask, qualification, the way forward.
+
 ## 0.113.0
 
 - **How to ask, wherever the questions are.**
