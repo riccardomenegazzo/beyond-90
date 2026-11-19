@@ -195,12 +195,31 @@ It is in `src/beyond90/data/answers.json`. `beyond90 answers --profile <line>` p
 - who still owes answers;
 - the lines the tender asks about that the conversation has not covered yet, which can be added in one click.
 
-**Deliver the bid** shows, side by side:
+**Deliver the bid** starts with **Before it leaves**, a check of the response, each item passed or with the button that fixes it:
+- every requirement answered;
+- every answer met or partly says how;
+- nothing left in square brackets: the kit's answers carry them for what must be filled in for this customer, and **To fill in** narrows the list to them;
+- no other customer named: an answer reused from another tender in this browser that still names that customer is caught here, and in Do next, before the bid leaves;
+- about how many pages the technical response takes, against the **page limit** when the tender sets one.
+
+Then, side by side:
 - the coverage by product line, with a small bar for each;
 - the questions for the contracting authority, as drafted;
 - the evidence to gather.
 
-Its buttons give:
+**The technical response** follows the tender's own structure:
+- **sections** come from the references (2.3.1 belongs to section 2, RT-05 to RT);
+- each section is named after the line most of its requirements ask about, until the bid team types the title the tender uses (**Sections of the technical response**);
+- under each section, every requirement with its text quoted, mandatory or its points, the answer as a coloured label, how it is met, and what is attached;
+- the attachments are listed at the end.
+
+It downloads:
+- **as a page to print or save as PDF** (.html): a cover, the contents, the sections and the attachments, with anything still in square brackets highlighted so nothing unfinished leaves unseen. Every piece of text is escaped; the page has no scripts, loads nothing, and carries its own security policy.
+- **as Markdown** (.md), to paste into the bid's own template.
+
+![Deliver the bid: the checks before it leaves, the coverage by line, the questions and the evidence](img/app-rfp-deliver.png)
+
+The other buttons give:
 - **the compliance matrix** (.csv), for the bid team, with the evidence to attach for each requirement met or partly. Cells a spreadsheet would run as formulas are defused.
 - **the bid summary** (.md), for the seller, with the evidence to gather and the requirements each backs.
 - **the questions for the contracting authority:**

@@ -2569,7 +2569,7 @@ export function qualifyView({ workshop: w, catalog, setDeal, setAlt, go }) {
 }
 
 /** A tender or a request for proposal, requirement by requirement: whether to bid, what to ask, the points, the matrix. */
-export function rfpView({ workshop: w, catalog, today, addReqs, setReq, removeReq, setRfpMeta, clearRfp, setScope, readRows, fillNotes, others, go }) {
+export function rfpView({ workshop: w, catalog, today, addReqs, setReq, removeReq, setRfpMeta, clearRfp, setScope, readRows, fillNotes, setSection, others, go }) {
   let cur = w;
   // what the list shows: a narrowing, a line, words searched, grouped by line or not, and the requirement open for editing
   const ui = { only: "all", line: "", q: "", group: false, open: "" };
@@ -2589,7 +2589,7 @@ export function rfpView({ workshop: w, catalog, today, addReqs, setReq, removeRe
   // ---------------------------------------------------------------- where the bid stands, at a glance
   const hero = h("section", { class: "card rfphero" });
   // a small bar: one segment per answer that has any, its width the share of the whole
-  const miniBar = (c, total, label) => h("span", { class: "rfpbartrack mini", role: "img", "aria-label": label },
+  const miniBar = (c, total, label) => h("span", { class: "rfpbartrack rfpmini", role: "img", "aria-label": label },
     ["yes", "partly", "no", "check"].filter((k) => c[k]).map((k) => h("i", { class: `seg s-${k}`, style: `width:${((c[k] / (total || 1)) * 100).toFixed(2)}%` })));
   // one bar per population: each answer a segment, its width the share; the legend carries the numbers
   const bar = (list, label) => {
@@ -2603,7 +2603,7 @@ export function rfpView({ workshop: w, catalog, today, addReqs, setReq, removeRe
     const st = RFP.rfpState(catalog, cur, today);
     const dl = st.deadlines;
     const when = (d, days, what) => (d ? h("span", { class: "chip" + (days != null && days >= 0 && days <= 7 ? " warn" : "") }, `${what} ${d}${days == null ? "" : days < 0 ? `, ${-days} days ago` : days === 0 ? ", today" : `, in ${days} days`}`) : null);
-    const steps = RFP.nextSteps(catalog, cur, today);
+    const steps = RFP.nextSteps(catalog, cur, today, others);
     put(hero, h("h2", { text: st.title ? `Where the bid stands: ${st.title}` : "Where the bid stands" }),
       h("p", { class: `rfpverdict ${st.verdict.level}`, text: st.verdict.text }),
       st.total ? h("div", { class: "rfpbars" }, bar(reqs().filter((r) => r.must), "Mandatory"), bar(reqs().filter((r) => !r.must), "Scored or optional"),
@@ -2630,7 +2630,8 @@ export function rfpView({ workshop: w, catalog, today, addReqs, setReq, removeRe
       if (first) openRow(first.id, true);
       return;
     }
-    if (what.startsWith("filter:")) { setOnly(what.slice(7)); listCard.scrollIntoView({ block: "start" }); }
+    if (what.startsWith("filter:")) { setOnly(what.slice(7)); listCard.scrollIntoView({ block: "start" }); return; }
+    if (what.startsWith("open:")) { setOnly("all"); ui.line = ""; byLine.value = ""; ui.q = ""; search.value = ""; openRow(what.slice(5), false); }
   };
 
   // ---------------------------------------------------------------- load the tender: its name, who issued it, its dates, its requirements
@@ -2646,11 +2647,12 @@ export function rfpView({ workshop: w, catalog, today, addReqs, setReq, removeRe
         : "Say who issued it: a public body takes questions only through the formal channel; a company can be asked in a meeting.";
   };
   drawChannel();
+  const pages = h("input", { type: "number", min: "1", max: String(RFP.MAX_PAGES), step: "1", value: t.pages ? String(t.pages) : "", placeholder: "no limit", class: "rfppts", "aria-label": "Page limit of the technical response" });
   const saveMeta = async () => {
-    try { cur = await setRfpMeta({ title: title.value, due: due.value, questions_due: qdue.value, issuer: issuer.value }); say.textContent = ""; } catch (e) { say.textContent = e.message; }
-    drawHero(); drawChannel();
+    try { cur = await setRfpMeta({ title: title.value, due: due.value, questions_due: qdue.value, issuer: issuer.value, pages: pages.value }); say.textContent = ""; } catch (e) { say.textContent = e.message; }
+    drawHero(); drawChannel(); drawDeliver();
   };
-  for (const el of [title, qdue, due, issuer]) el.addEventListener("change", saveMeta);
+  for (const el of [title, qdue, due, issuer, pages]) el.addEventListener("change", saveMeta);
   const paste = h("textarea", { rows: 6, class: "rfppaste", placeholder: "Paste the requirements: one per line (3.2.1 The solution must...), or rows copied from a spreadsheet.", "aria-label": "Requirements to add" });
   const addSay = h("p", { class: "note", role: "status" });
   const loadedLine = h("span");
@@ -2720,11 +2722,14 @@ export function rfpView({ workshop: w, catalog, today, addReqs, setReq, removeRe
   const list = h("div", { class: "rfplist" });
   const visible = () => reqs().filter((r) => RFP.keepReq(r, ui.only) && (!ui.line || r.line === ui.line || (ui.line === "-" && !r.line)) && RFP.matchesSearch(r, ui.q));
   const rows = new Map();
+  let busy = false;                                     // an answer is being kept: keys wait for it
 
   // the editor of one requirement: everything about it, the answer kit, and keys 1 to 4 to answer
   const editor = (x, li) => {
     const save = async (patch, then) => {
-      try { cur = await setReq(x.id, patch); say.textContent = ""; } catch (e) { say.textContent = e.message; return; }
+      busy = true;
+      try { cur = await setReq(x.id, patch); say.textContent = ""; } catch (e) { say.textContent = e.message; busy = false; return; }
+      busy = false;
       afterChange(x.id, then);
     };
     const line = h("select", { "aria-label": `Product line for ${x.ref || "requirement"}` }, [["", "No line"], ...RFP.lineOrder(catalog, cur.scope).map((p) => [p, catalog.lines[p].label + (cur.scope.includes(p) ? "" : " (not in scope)")])].map(([v, l]) => h("option", { value: v, text: l, selected: v === x.line })));
@@ -2757,12 +2762,14 @@ export function rfpView({ workshop: w, catalog, today, addReqs, setReq, removeRe
           try { cur = await removeReq(x.id); } catch (e) { say.textContent = e.message; return; }
           ui.open = ""; redraw();
         } })));
-    // keys 1 to 4 answer it, Escape closes it; typing in a field is left alone
+    // keys 1 to 4 answer it, Escape closes it; typing in a field is left alone. A key never takes an answer back (a
+    // click does), and a key pressed while the last answer is being kept waits for nothing: fast typing cannot undo
     li.onkeydown = (e) => {
       if (e.key === "Escape") { e.preventDefault(); const id = x.id; ui.open = ""; drawRow(id); const head = rows.get(id) && rows.get(id).querySelector(".rfphead"); if (head) head.focus(); return; }
       if (e.ctrlKey || e.metaKey || e.altKey || /^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName) || !/^[1-4]$/.test(e.key)) return;
       e.preventDefault(); e.stopPropagation();
-      ed.querySelectorAll(".wsopt")[Number(e.key) - 1].click();
+      if (busy) return;
+      save({ a: Object.keys(RFP.ANSWERS)[Number(e.key) - 1] }, "next");
     };
     return ed;
   };
@@ -2848,7 +2855,38 @@ export function rfpView({ workshop: w, catalog, today, addReqs, setReq, removeRe
 
   // ---------------------------------------------------------------- deliver the bid: coverage, the questions, the evidence, the files
   const deliver = h("div", { class: "rfpdeliver" });
+  // is the response ready to leave: each check, passed or not, with the way to fix it
+  const checks = h("div", { class: "rfpchecks" });
+  const drawChecks = () => {
+    const c = RFP.responseChecks(catalog, cur, others);
+    if (!reqs().length) { put(checks); return; }
+    const item = (ok, text, fix) => h("li", { class: ok ? "ok" : "todo" }, h("span", { class: "rfpcheckmark", "aria-hidden": "true", text: ok ? "✓" : "!" }),
+      h("span", { text }), !ok && fix ? h("button", { type: "button", class: "btn small", text: fix[0], onclick: () => act(fix[1]) }) : null);
+    const pg = c.pages;
+    put(checks, h("h3", { text: c.ready ? "Ready to leave" : "Before it leaves" }), h("ul", {},
+      item(!c.unanswered.length, c.unanswered.length ? `${c.unanswered.length} requirement${c.unanswered.length === 1 ? "" : "s"} not answered yet` : "Every requirement is answered", ["See them", "filter:open"]),
+      item(!c.unexplained.length, c.unexplained.length ? `${c.unexplained.length} met or partly without saying how` : "Every answer says how", ["See them", "filter:nonote"]),
+      item(!c.blanks.length, c.blanks.length ? `${c.blanks.length} answer${c.blanks.length === 1 ? "" : "s"} with square brackets to fill in` : "Nothing left in square brackets", ["See them", "filter:fill"]),
+      item(!c.named.length, c.named.length ? `Another customer is named in ${c.named.map((m) => m.ref || m.id).join(", ")} (${[...new Set(c.named.map((m) => m.name))].join(", ")})` : "No other customer is named", c.named.length ? ["Open it", `open:${c.named[0].id}`] : null),
+      item(!pg.over, pg.limit ? `About ${pg.estimate} page${pg.estimate === 1 ? "" : "s"} of the ${pg.limit} allowed${pg.over ? ": shorten the answers" : ""}` : `About ${pg.estimate} page${pg.estimate === 1 ? "" : "s"}; give the page limit if the tender sets one`, null)));
+  };
+  // the sections of the response, named as the tender names them: drawn when requirements come or go, not while typing
+  const sectionsBox = h("div", { class: "rfpsections" });
+  const drawSections = () => {
+    const all = RFP.sections(catalog, cur);
+    if (!all.length) { put(sectionsBox); return; }
+    put(sectionsBox, h("details", {}, h("summary", { text: `Sections of the technical response (${all.length})` }),
+      h("p", { class: "note", text: "Named after the line most of their requirements ask about. Type the title the tender uses; leave it blank to go back." }),
+      h("ol", { class: "rfpsectionlist" }, all.map((sec) => {
+        const input = h("input", { type: "text", maxlength: RFP.SECTION_MAX, value: sec.typed ? sec.title : "", placeholder: sec.guess, "aria-label": `Title of section ${sec.key || "without a reference"}` });
+        input.addEventListener("change", async () => {
+          try { cur = await setSection(sec.key, input.value); say.textContent = ""; } catch (e) { say.textContent = e.message; }
+        });
+        return h("li", {}, h("span", { class: "rfpref", text: sec.key || "–" }), input, h("small", { class: "muted", text: `${sec.reqs.length} requirement${sec.reqs.length === 1 ? "" : "s"}${sec.points ? `, ${sec.points} points` : ""}` }));
+      }))));
+  };
   const drawDeliver = () => {
+    drawChecks();
     const st = RFP.rfpState(catalog, cur, today);
     const qs = RFP.clarificationQuestions(cur);
     const ev = RFP.evidenceFor(catalog, cur);
@@ -2875,8 +2913,8 @@ export function rfpView({ workshop: w, catalog, today, addReqs, setReq, removeRe
     drawChannel(); redraw();
   } });
 
-  const redraw = () => { drawHero(); drawChips(); drawLineOptions(); drawList(); drawDeliver(); drawLoaded(); loader.open = !reqs().length || loader.open; };
-  drawHero(); drawChips(); drawLineOptions(); drawList(); drawDeliver(); drawLoaded();
+  const redraw = () => { drawHero(); drawChips(); drawLineOptions(); drawList(); drawDeliver(); drawSections(); drawLoaded(); loader.open = !reqs().length || loader.open; };
+  drawHero(); drawChips(); drawLineOptions(); drawList(); drawDeliver(); drawSections(); drawLoaded();
   const listCard = card("Answer the requirements", h("div", {},
     h("div", { class: "rfptools" }, search, byLine, grouped, fill), chips, shown, list, say),
   { sub: "Open a requirement to answer it: the keys 1 to 4 answer (met, partly, not met, to check) and the next one still open opens. Escape closes it. A mandatory requirement not met can exclude the bid." });
@@ -2886,12 +2924,16 @@ export function rfpView({ workshop: w, catalog, today, addReqs, setReq, removeRe
       h("label", { class: "szf" }, h("span", { text: "Questions to the contracting authority due" }), qdue), h("label", { class: "szf" }, h("span", { text: "Bid due" }), due)), channel, loader, addSay),
     { sub: "Paste the requirements or read the tender's file: each is read as mandatory or scored, with its points, and matched to the product line it asks about. English and Italian wording are recognised; nothing leaves this browser." }),
     listCard,
-    card("Deliver the bid", h("div", {}, deliver, h("div", { class: "btnrow" },
+    card("Deliver the bid", h("div", {}, checks, deliver, sectionsBox,
+      h("label", { class: "szf rfppages" }, h("span", { text: "Page limit of the technical response" }), pages),
+      h("div", { class: "btnrow" },
+      h("button", { class: "btn small", type: "button", text: "Technical response (.html, to print)", onclick: () => saveBlob(RFP.responseHtml(catalog, cur, new Date(today + "T00:00:00Z").toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" })), `${slug}-technical-response.html`, "text/html") }),
+      h("button", { class: "btn small", type: "button", text: "Technical response (.md)", onclick: () => saveBlob(RFP.responseMarkdown(catalog, cur, today), `${slug}-technical-response.md`, "text/markdown") }),
       h("button", { class: "btn small", type: "button", text: "Compliance matrix (.csv)", onclick: exportCsv }),
       h("button", { class: "btn small", type: "button", text: "Bid summary (.md)", onclick: () => saveBlob(RFP.rfpMarkdown(catalog, cur, today), `${slug}-bid-summary.md`, "text/markdown") }),
       h("button", { class: "btn small", type: "button", text: "Copy the questions for the contracting authority", onclick: (ev) => copyQuestions(ev.target) }),
       restart, h("button", { class: "btn small quiet", type: "button", text: "Back to the questions", onclick: () => go("workshop") }))),
-    { sub: "The matrix for the bid team, with the evidence to attach; the summary for the seller; the questions, drafted to put in the tender's language. The requirements stay in this browser." }));
+    { sub: "The technical response, section by section as the tender numbers it, with every answer and its attachments; the matrix for the bid team; the summary for the seller; the questions, drafted to put in the tender's language. Unfinished text is highlighted in the response. The requirements stay in this browser." }));
 }
 
 export function wsPrepView({ workshop: w, catalog, raise, go }) {

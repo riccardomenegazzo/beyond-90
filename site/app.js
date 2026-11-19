@@ -952,6 +952,7 @@ function workshopContext() {
     setRfpMeta: async (meta) => edit((x) => WSHOP.setRfpMeta(x, meta, today)),
     clearRfp: async () => edit((x) => WSHOP.clearRfp(x, today)),
     fillNotes: async () => edit((x) => WSHOP.fillSuggestedNotes(x, cat, today)),
+    setSection: async (key, title) => edit((x) => WSHOP.setSectionTitle(x, key, title, today)),
     // the other tenders in this browser, for the answers given before
     others: state.workshops.filter((x) => x.id !== (w ? w.id : "") && x.rfp),
     // a tender's workbook, read by the engine into rows; the file never leaves the page

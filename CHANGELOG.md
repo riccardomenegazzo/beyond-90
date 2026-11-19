@@ -2,6 +2,25 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.123.0
+
+- **The technical response.** Generated from the tender itself, section by section as the tender numbers it (2.3.1 in section 2, RT-05 in RT).
+  - Each section is named after the line most of its requirements ask about, until the bid team types the tender's own title.
+  - Each requirement appears quoted, with mandatory or points, the answer as a coloured label, how it is met, and what is attached.
+  - The attachments are listed at the end.
+  - It downloads as a page to print or save as PDF, or as Markdown. The page has a cover, contents, highlighted square brackets, every text escaped, no scripts, and its own security policy.
+- **Before it leaves.** The delivery card checks the response; each item is passed or carries the button that fixes it:
+  - every requirement answered;
+  - every met or partly answer says how;
+  - nothing left in square brackets (the new chip **To fill in**);
+  - no other customer named in an answer reused from another tender;
+  - the pages it takes against the tender's page limit.
+- **Do next** puts an answer that still names another customer right after what could exclude the bid ("Open the first"), and counts the answers with square brackets to fill in.
+- Stored with the tender, and checked on the way in: the page limit and the section titles.
+- **Fixed:**
+  - pressing the answer keys faster than an answer was kept could take the previous answer back. A key now never takes an answer back (a click does), and keys pressed while an answer is being kept are ignored.
+  - the small bars by line showed only their first colour: a class name clashed with an older one.
+
 ## 0.122.0
 
 - **Tender requirements, redesigned** to answer a long tender quickly, and to see at a glance where the bid stands.

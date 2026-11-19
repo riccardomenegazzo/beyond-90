@@ -2,9 +2,10 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { parseRequirements, suggestLine, lineOrder, rfpState, clarificationQuestions, rfpCsv, rfpMarkdown, bidCommitments, validRfp, withRequirement, EXAMPLE_TENDER, KEYWORDS, MAX_REQS,
-  sheetsToText, csvToText, matchedWords, questionFor, tenderAsks, suggestAnswer, pastAnswer, evidenceFor, nextSteps, filterCounts, keepReq, matchesSearch, FILTERS } from "../rfp.js";
+  sheetsToText, csvToText, matchedWords, questionFor, tenderAsks, suggestAnswer, pastAnswer, evidenceFor, nextSteps, filterCounts, keepReq, matchesSearch, FILTERS,
+  blanks, sectionOf, sections, mentionsOfOthers, responseChecks, responseMarkdown, responseHtml } from "../rfp.js";
 import { nextMeeting, agendaText } from "../nextmeeting.js";
-import { makeWorkshop, addRequirements, setRequirement, removeRequirement, setRfpMeta, clearRfp, validWorkshop, summaryMarkdown, assess, fillSuggestedNotes } from "../workshop.js";
+import { makeWorkshop, addRequirements, setRequirement, removeRequirement, setRfpMeta, clearRfp, validWorkshop, summaryMarkdown, assess, fillSuggestedNotes, setSectionTitle } from "../workshop.js";
 import { pipeline, agenda } from "../desk.js";
 import { forward } from "../forward.js";
 import { handoverMarkdown } from "../delivery.js";
@@ -289,8 +290,8 @@ test("unexplained answers are a next step, with how many the kit can explain", (
 test("the list narrows by chip, each with its count, and by search", () => {
   let w = addRequirements(ws(), parseRequirements(EXAMPLE_TENDER), CAT, D);
   w = setRequirement(setRequirement(setRequirement(w, "r9", { a: "no" }, D), "r1", { a: "yes" }, D), "r7", { a: "partly", note: "A test network" }, D);
-  assert.deepEqual(Object.keys(FILTERS), ["all", "must", "open", "no", "clarify", "nonote"]);
-  assert.deepEqual(filterCounts(w), { all: 16, must: 11, open: 13, no: 1, clarify: 2, nonote: 1 });
+  assert.deepEqual(Object.keys(FILTERS), ["all", "must", "open", "no", "clarify", "nonote", "fill"]);
+  assert.deepEqual(filterCounts(w), { all: 16, must: 11, open: 13, no: 1, clarify: 2, nonote: 1, fill: 0 });
   assert.equal(keepReq(w.rfp.reqs[0], "nonote"), true, "met, with no note");
   assert.equal(keepReq(w.rfp.reqs[6], "nonote"), false, "partly, with a note");
   const r9 = w.rfp.reqs.find((r) => r.id === "r9");
@@ -298,5 +299,72 @@ test("the list narrows by chip, each with its count, and by search", () => {
   assert.equal(matchesSearch(r9, "3.1"), true, "by its reference");
   assert.equal(matchesSearch(r9, "object kubernetes"), false, "every word must be found");
   assert.equal(matchesSearch(r9, "  "), true);
+});
+
+test("sections follow the tender's numbering, named after the line most of their requirements ask about, or as typed", () => {
+  assert.deepEqual(["2.3.1", "RT-05", "A.1", "", "12)"].map((ref) => sectionOf({ ref })), ["2", "RT", "A", "", "12"]);
+  let w = addRequirements(ws(["hci", "dr-backup"]), parseRequirements(EXAMPLE_TENDER), CAT, D);
+  const all = sections(CAT, w);
+  assert.deepEqual(all.map((x) => x.key), ["1", "2", "3", "4", "5", "6"]);
+  assert.equal(all[0].title, "Platform (hyperconverged)");
+  assert.equal(all[1].title, "Disaster recovery and backup");
+  assert.deepEqual([all[0].reqs.length, all[0].points], [4, 5]);
+  w = setSectionTitle(w, "2", "Business continuity", D);
+  assert.equal(validWorkshop(w), true);
+  assert.equal(sections(CAT, w)[1].title, "Business continuity");
+  assert.equal(sections(CAT, w)[1].typed, true);
+  w = setSectionTitle(w, "2", "", D);
+  assert.equal("sections" in w.rfp, false, "blank goes back to the title worked out");
+  assert.throws(() => setSectionTitle(w, "no such!", "x", D), /Not a section/);
+});
+
+test("before it leaves: unanswered, unexplained, square brackets, other customers named, and the page limit", () => {
+  let w = addRequirements(ws(["hci", "dr-backup"]), parseRequirements(EXAMPLE_TENDER), CAT, D);
+  w = fillSuggestedNotes(w, CAT, D);
+  assert.ok(blanks(w.rfp.reqs[0].note).length >= 1);
+  let c = responseChecks(CAT, w, []);
+  assert.equal(c.unanswered.length, 16);
+  assert.ok(c.blanks.length > 0 && c.blanks[0].blanks[0].startsWith("["));
+  assert.equal(c.ready, false);
+  // an answer reused from another customer's tender, still naming that customer
+  const other = { customer: "Regione Esempio (mock)" };
+  w = setRequirement(w, "r6", { a: "yes", note: "As done for Regione Esempio, copies are immutable for 30 days" }, D);
+  assert.deepEqual(mentionsOfOthers(w, [other]).map((m) => [m.id, m.name]), [["r6", "Regione Esempio"]]);
+  assert.equal(mentionsOfOthers(w, [{ customer: "Comune di Esempio (mock)" }]).length, 0, "this customer's own name is fine");
+  const steps = nextSteps(CAT, setRequirement(w, "r9", { a: "yes" }, D), D, [other]);
+  assert.equal(steps[0].id, "named", "a named customer comes before anything but what could exclude the bid");
+  assert.equal(steps[0].act, "open:r6");
+  // every requirement answered and explained, nothing in brackets, nobody named, within the pages: ready
+  w.rfp.reqs.forEach((r) => { w = setRequirement(w, r.id, { a: "yes", note: `Met: ${r.text.slice(0, 40)}` }, D); });
+  w = setRfpMeta(w, { pages: "20" }, D);
+  c = responseChecks(CAT, w, [other]);
+  assert.deepEqual([c.unanswered.length, c.unexplained.length, c.blanks.length, c.named.length], [0, 0, 0, 0]);
+  assert.deepEqual([c.pages.limit, c.pages.over], [20, false]);
+  assert.equal(c.ready, true);
+  assert.equal(responseChecks(CAT, setRfpMeta(w, { pages: "1" }, D), []).pages.over, true);
+  assert.throws(() => setRfpMeta(w, { pages: "2.5" }, D), /page limit/);
+  assert.equal(validWorkshop({ ...w, rfp: { ...w.rfp, pages: 0 } }), false);
+});
+
+test("the technical response: section by section, each requirement with its answer, and the attachments", () => {
+  let w = addRequirements(ws(["hci", "dr-backup"]), parseRequirements(EXAMPLE_TENDER), CAT, D);
+  w = setRfpMeta(w, { title: "Data centre renewal (mock)" }, D);
+  w = setRequirement(w, "r1", { a: "yes", note: "Three nodes a site, [two] copies" }, D);
+  w = setRequirement(w, "r9", { a: "no" }, D);
+  const md = responseMarkdown(CAT, w, D);
+  assert.match(md, /^# Technical response: Data centre renewal \(mock\)/);
+  assert.match(md, /## Contents\n\n- 1\. Platform \(hyperconverged\)\n- 2\. Disaster recovery and backup/);
+  assert.match(md, /### 1\.1 \(mandatory\)\n\n> The solution must provide/);
+  assert.match(md, /\*\*Met\.\*\* Three nodes a site, \[two\] copies/);
+  assert.match(md, /Attached: The proposed design, with the failures it tolerates/);
+  assert.match(md, /### 1\.4 \(5 points\)/);
+  assert.match(md, /\*\*Not answered yet\.\*\* _The response is still to be written\._/);
+  assert.match(md, /## Attachments\n\n1\. The proposed design/);
+  const html = responseHtml(CAT, { ...w, customer: "<script>alert(1)</script> (mock)" }, "19 November 2026");
+  assert.match(html, /<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'">/);
+  assert.doesNotMatch(html, /<script/);
+  assert.match(html, /&lt;script&gt;/);
+  assert.match(html, /<mark>\[two\]<\/mark>/, "unfinished text is highlighted");
+  assert.match(html, /<span class="status s-no">Not met<\/span>/);
 });
 

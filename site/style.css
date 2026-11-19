@@ -1218,7 +1218,7 @@ ol.deskfunnel{list-style:none;margin:0;padding:0;display:grid;grid-template-colu
 .rfpbar{display:grid;grid-template-columns:minmax(9rem,13rem) minmax(0,1fr);gap:12px;align-items:center}
 .rfpbarlabel{font-size:13.5px;color:var(--ink2)}
 .rfpbartrack{display:flex;height:14px;border-radius:7px;overflow:hidden;background:var(--track,var(--sunk));box-shadow:inset 0 0 0 1px var(--line)}
-.rfpbartrack.mini{height:8px;border-radius:4px;min-width:80px}
+.rfpbartrack.rfpmini{height:8px;border-radius:4px;min-width:80px}
 .rfpbartrack .seg{display:block;height:100%}
 .seg.s-yes,.dot.s-yes{background:var(--pos)}.seg.s-partly,.dot.s-partly{background:var(--warn)}.seg.s-no,.dot.s-no{background:var(--bad)}.seg.s-check,.dot.s-check{background:var(--ink2)}.seg.s-open{background:transparent}
 .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:baseline}.dot.s-open{box-shadow:inset 0 0 0 1.5px var(--ink2)}
@@ -1260,10 +1260,11 @@ ol.deskfunnel{list-style:none;margin:0;padding:0;display:grid;grid-template-colu
 .rfpgroup{margin-top:14px}
 .rfpgroup h3{display:flex;gap:12px;align-items:center;margin:0 0 4px;font-size:15px}
 .rfpgroup h3 .rfpbartrack{flex:0 1 160px}
-.rfpdeliver{display:grid;grid-template-columns:repeat(auto-fit,minmax(16rem,1fr));gap:18px;margin-bottom:12px}
+.rfpdeliver{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr) minmax(0,1fr);gap:22px;margin-bottom:12px}
+@media (max-width:1100px){.rfpdeliver{grid-template-columns:1fr}}
 .rfpcol h3{margin:0 0 8px;font-size:15px}
 .rfpcover{list-style:none;margin:0;padding:0;display:grid;gap:8px}
-.rfpcover li{display:grid;grid-template-columns:minmax(0,1fr) 90px auto;gap:10px;align-items:center;font-size:14px}
+.rfpcover li{display:grid;grid-template-columns:minmax(0,1fr) 72px 6.5rem;gap:10px;align-items:center;font-size:13.5px}
 .rfpqs{margin:0;padding-left:20px;display:grid;gap:6px;font-size:14px}
 @media (max-width:760px){
   .rfphead{grid-template-columns:3.5rem minmax(0,1fr)}
@@ -1275,4 +1276,16 @@ ol.deskfunnel{list-style:none;margin:0;padding:0;display:grid;grid-template-colu
 .rfprow.open .rfptext{-webkit-line-clamp:unset;display:block}
 .rfpmoreev{margin-top:6px}.rfpmoreev > summary{cursor:pointer;font-size:14px}
 .rfpdeliver{margin-top:8px}
+.rfpchecks h3{margin:12px 0 8px;font-size:15px}
+.rfpchecks ul{list-style:none;margin:0 0 16px;padding:0;display:grid;gap:6px}
+.rfpchecks li{display:grid;grid-template-columns:1.6rem minmax(0,1fr) auto;gap:8px;align-items:center;font-size:14px}
+.rfpcheckmark{display:inline-grid;place-items:center;width:1.4rem;height:1.4rem;border-radius:50%;font-weight:700;font-size:12px}
+.rfpchecks li.ok .rfpcheckmark{background:var(--pos);color:var(--on)}
+.rfpchecks li.todo .rfpcheckmark{background:var(--warn);color:var(--on)}
+.rfpsections{margin:4px 0 12px}
+.rfpsections > details > summary{cursor:pointer;font-weight:600}
+.rfpsectionlist{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:6px}
+.rfpsectionlist li{display:grid;grid-template-columns:3rem minmax(0,1fr) auto;gap:10px;align-items:center}
+.rfppages{max-width:22rem;margin-bottom:10px}
 
+.rfpcover .rfpbartrack{min-width:0}

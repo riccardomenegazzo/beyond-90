@@ -165,6 +165,9 @@ def shoot(site: Path, out: Path) -> None:
             pg.evaluate("(() => { const c = document.querySelector('#view .rfprow[data-id=\"r10\"]'); window.scrollTo({ top: c.getBoundingClientRect().top + window.scrollY - 76, behavior: 'instant' }); })()")
             pg.wait_for_timeout(300)
             pg.screenshot(path=str(out / "app-rfp-kit.png"))
+            pg.evaluate("(() => { const c = [...document.querySelectorAll('#view .card')].find((x) => x.textContent.includes('Deliver the bid')); window.scrollTo({ top: c.getBoundingClientRect().top + window.scrollY - 76, behavior: 'instant' }); })()")
+            pg.wait_for_timeout(300)
+            pg.screenshot(path=str(out / "app-rfp-deliver.png"))
             # the way forward: the phase now, what moves it on, and the demo planned from what was said
             pg.click("#tabs [data-tab=wsforward]")
             pg.wait_for_selector("#view .fwhero")

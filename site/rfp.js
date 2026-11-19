@@ -19,6 +19,11 @@ export const REF_MAX = 24;
 export const NOTE_MAX = 300;
 export const TITLE_MAX = 120;
 export const POINTS_MAX = 1000;
+export const MAX_PAGES = 500;
+export const SECTION_MAX = 80;
+const SECTION_KEY = /^[A-Za-z0-9]{1,12}$/;
+const validSections = (o) => !!o && typeof o === "object" && !Array.isArray(o) && Object.keys(o).length <= 60 &&
+  Object.entries(o).every(([k, v]) => SECTION_KEY.test(k) && typeof v === "string" && v.length >= 1 && v.length <= SECTION_MAX && !/[\u0000-\u001f\u007f]/.test(v));
 
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 const PROFILE = /^[a-z0-9-]{1,40}$/;
@@ -239,6 +244,135 @@ export function tenderAsks(catalog, w) {
   return out;
 }
 
+// ------------------------------------------------------------------ the technical response, section by section
+
+/** A requirement's section: the first part of its reference ("2" for 2.3.1, "RT" for RT-05), or "" when it has none. */
+export function sectionOf(r) {
+  const m = /^([A-Za-z]{1,6}|\d{1,4})/.exec(String(r.ref || "").trim());
+  return m ? m[1].toUpperCase() : "";
+}
+
+/**
+ * The tender's sections, in its order: the requirements of each, and its title. A title typed by the bid team wins;
+ * otherwise it is named after the line most of its requirements ask about.
+ */
+export function sections(catalog, w) {
+  const reqs = (w.rfp && w.rfp.reqs) || [];
+  const typed = (w.rfp && w.rfp.sections) || {};
+  const order = [];
+  const by = new Map();
+  for (const r of reqs) {
+    const k = sectionOf(r);
+    if (!by.has(k)) { by.set(k, []); order.push(k); }
+    by.get(k).push(r);
+  }
+  return order.map((k) => {
+    const rs = by.get(k);
+    const lines = new Map();
+    for (const r of rs) if (r.line) lines.set(r.line, (lines.get(r.line) || 0) + 1);
+    const top = [...lines.entries()].sort((a, b) => b[1] - a[1])[0];
+    const guess = top ? label(catalog, top[0]) : "General requirements";
+    return { key: k, title: typed[k] || guess, typed: !!typed[k], guess, reqs: rs, points: rs.reduce((n, r) => n + (r.points || 0), 0) };
+  });
+}
+
+/** Names of the customers of other tenders in this browser that an answer here still carries: a reused answer not rewritten. */
+export function mentionsOfOthers(w, others) {
+  const names = [...new Set((others || []).map((o) => String(o.customer || "").replace(/\s*\(mock\)\s*$/i, "").trim()).filter((n) => n.length >= 4 && n.toLowerCase() !== String(w.customer || "").replace(/\s*\(mock\)\s*$/i, "").trim().toLowerCase()))];
+  const out = [];
+  for (const r of (w.rfp && w.rfp.reqs) || []) {
+    const note = r.note.toLowerCase();
+    for (const n of names) if (note.includes(n.toLowerCase())) out.push({ id: r.id, ref: r.ref, name: n });
+  }
+  return out;
+}
+
+const WORDS_PER_PAGE = 450;
+const words = (t) => (String(t || "").match(/\S+/g) || []).length;
+
+/**
+ * Whether the response is ready to leave: answers still to write, square brackets still to fill in, other customers
+ * named, and the pages it would take against the tender's limit.
+ */
+export function responseChecks(catalog, w, others = []) {
+  const reqs = (w.rfp && w.rfp.reqs) || [];
+  const all = sections(catalog, w);
+  const body = all.reduce((n, sec) => n + words(sec.title) + sec.reqs.reduce((m, r) => m + words(r.text) + words(r.note) + 12, 0), 0);
+  const estimate = Math.max(1, Math.ceil(body / WORDS_PER_PAGE));
+  const limit = (w.rfp && w.rfp.pages) || 0;
+  return {
+    unanswered: reqs.filter((r) => !r.a).map((r) => r.id),
+    unexplained: reqs.filter((r) => keepReq(r, "nonote")).map((r) => r.id),
+    blanks: reqs.filter((r) => keepReq(r, "fill")).map((r) => ({ id: r.id, ref: r.ref, blanks: blanks(r.note) })),
+    named: mentionsOfOthers(w, others),
+    pages: { estimate, limit, over: !!limit && estimate > limit },
+    ready: !!reqs.length && reqs.every((r) => r.a) && !reqs.some((r) => keepReq(r, "nonote") || keepReq(r, "fill")) && !mentionsOfOthers(w, others).length && !(limit && estimate > limit),
+  };
+}
+
+const RESP_WORDS = { yes: "Met", partly: "Partly met", no: "Not met", check: "To be confirmed", "": "Not answered yet" };
+
+/** The technical response as Markdown: section by section, each requirement with the response and the evidence. */
+export function responseMarkdown(catalog, w, today) {
+  const t = w.rfp || emptyRfp();
+  const out = [`# Technical response${t.title ? `: ${flat(t.title)}` : ""}`, "", `${flat(w.customer)}${today ? `, ${today}` : ""}.`, ""];
+  const all = sections(catalog, w);
+  // a section is numbered as the tender numbers it; one without a reference keeps its title alone
+  const head = (sec) => (sec.key ? `${sec.key}. ${sec.title}` : sec.title);
+  out.push("## Contents", "", ...all.map((sec) => `- ${head(sec)}`), "");
+  all.forEach((sec) => {
+    out.push(`## ${head(sec)}`, "");
+    for (const r of sec.reqs) {
+      const kit = r.a === "yes" || r.a === "partly" ? suggestAnswer(catalog, r) : null;
+      out.push(`### ${r.ref ? `${r.ref} ` : ""}${r.must ? "(mandatory)" : r.points != null ? `(${r.points} points)` : "(optional)"}`, "",
+        `> ${r.text}`, "", `**${RESP_WORDS[r.a]}.** ${r.note || (r.a ? "" : "_The response is still to be written._")}`.trim(), "");
+      if (kit) out.push(`Attached: ${kit.evidence.join("; ")}.`, "");
+    }
+  });
+  const ev = evidenceFor(catalog, w);
+  if (ev.length) out.push("## Attachments", "", ...ev.map((e, i) => `${i + 1}. ${e.item} (for ${e.refs.join(", ")})`), "");
+  return out.join("\n");
+}
+
+const escH = (v) => String(v == null ? "" : v).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+
+/**
+ * The technical response as a page to print or save as PDF: a cover, the contents, the sections, the attachments.
+ * Every piece of text is escaped; the page has no scripts, loads nothing, and says so in its own security policy.
+ * What is still in square brackets is highlighted, so nothing unfinished leaves unseen.
+ */
+export function responseHtml(catalog, w, today) {
+  const t = w.rfp || emptyRfp();
+  const all = sections(catalog, w);
+  const mark = (s) => escH(s).replace(/\[[^\]\n]{1,120}\]/g, (m) => `<mark>${m}</mark>`);
+  const css = `@page{size:A4;margin:18mm}*{box-sizing:border-box}body{margin:0;font:14px/1.55 Georgia,"Times New Roman",serif;color:#1b2329}
+main{max-width:780px;margin:0 auto;padding:36px 28px}.cover{min-height:60vh;display:flex;flex-direction:column;justify-content:center;border-bottom:2px solid #1b2329;margin-bottom:28px;break-after:page}
+.cover p{margin:4px 0;font:15px/1.4 system-ui,sans-serif;color:#45525b}.cover h1{font-size:34px;line-height:1.15;margin:8px 0 14px}
+h2{font-size:21px;margin:30px 0 10px;break-after:avoid}h3{font:600 13px/1.4 system-ui,sans-serif;margin:18px 0 4px;color:#45525b;text-transform:none}
+blockquote{margin:0 0 8px;padding:8px 12px;border-left:3px solid #9aa5ad;background:#f4f6f7;font-style:italic}
+.req{break-inside:avoid;margin-bottom:12px}.status{font:700 12px/1 system-ui,sans-serif;padding:3px 8px;border-radius:9px;margin-right:6px;display:inline-block}
+.s-yes{background:#d8efe2;color:#0d5a33}.s-partly{background:#f7e8cc;color:#6b4705}.s-no{background:#f8d9d7;color:#7d1c15}.s-check{background:#e3e6e8;color:#2c363d}.s-{background:#fff;border:1px solid #9aa5ad;color:#45525b}
+.att{font:12.5px/1.4 system-ui,sans-serif;color:#45525b}mark{background:#ffe58a;padding:0 2px}ul.toc{padding-left:20px}`;
+  const out = [`<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">`,
+    `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'">`,
+    `<title>${escH(t.title || w.customer)}: technical response</title><style>${css}</style></head><body><main>`,
+    `<section class="cover"><p>Technical response</p><h1>${escH(t.title || "Technical response")}</h1><p>${escH(w.customer)}</p>${today ? `<p>${escH(today)}</p>` : ""}</section>`,
+    `<h2>Contents</h2><ul class="toc">${all.map((sec) => `<li>${sec.key ? `${escH(sec.key)}. ` : ""}${escH(sec.title)}</li>`).join("")}</ul>`];
+  all.forEach((sec) => {
+    out.push(`<h2>${sec.key ? `${escH(sec.key)}. ` : ""}${escH(sec.title)}</h2>`);
+    for (const r of sec.reqs) {
+      const kit = r.a === "yes" || r.a === "partly" ? suggestAnswer(catalog, r) : null;
+      out.push(`<div class="req"><h3>${escH(r.ref)} ${r.must ? "Mandatory" : r.points != null ? `${escH(r.points)} points` : "Optional"}</h3><blockquote>${escH(r.text)}</blockquote>`,
+        `<p><span class="status s-${escH(r.a)}">${escH(RESP_WORDS[r.a])}</span>${r.note ? mark(r.note) : r.a ? "" : "<mark>The response is still to be written.</mark>"}</p>`,
+        kit ? `<p class="att">Attached: ${escH(kit.evidence.join("; "))}.</p>` : "", `</div>`);
+    }
+  });
+  const ev = evidenceFor(catalog, w);
+  if (ev.length) out.push(`<h2>Attachments</h2><ol>${ev.map((e) => `<li>${escH(e.item)} <span class="att">(for ${escH(e.refs.join(", "))})</span></li>`).join("")}</ol>`);
+  out.push("</main></body></html>");
+  return out.join("\n");
+}
+
 // ------------------------------------------------------------------ the answer kit, and answers given before
 
 /**
@@ -317,7 +451,9 @@ export function validRequirement(r) {
 /** Stored with a workshop: the tender's name and dates, and its requirements, each checked. */
 export function validRfp(t) {
   if (!t || typeof t !== "object" || Array.isArray(t)) return false;
-  if (!Object.keys(t).every((k) => ["title", "due", "questions_due", "reqs", "issuer"].includes(k))) return false;
+  if (!Object.keys(t).every((k) => ["title", "due", "questions_due", "reqs", "issuer", "sections", "pages"].includes(k))) return false;
+  if (t.pages !== undefined && !(Number.isInteger(t.pages) && t.pages >= 1 && t.pages <= MAX_PAGES)) return false;
+  if (t.sections !== undefined && !validSections(t.sections)) return false;
   if (t.issuer !== undefined && !Object.hasOwn(ISSUERS, t.issuer)) return false;
   if (typeof t.title !== "string" || t.title.length > TITLE_MAX || CONTROL.test(t.title)) return false;
   for (const k of ["due", "questions_due"]) if (!(t[k] === "" || isDate(t[k]))) return false;
@@ -408,7 +544,10 @@ export function rfpState(catalog, w, today) {
 // ------------------------------------------------------------------ finding your way through the list
 
 /** The ways to narrow the list, each a question the bid team asks of it. */
-export const FILTERS = { all: "All", must: "Mandatory", open: "Not answered", no: "Not met", clarify: "To clarify", nonote: "Not explained" };
+export const FILTERS = { all: "All", must: "Mandatory", open: "Not answered", no: "Not met", clarify: "To clarify", nonote: "Not explained", fill: "To fill in" };
+
+/** What is still in square brackets in a note: what the kit left for the bid team to fill in. */
+export const blanks = (note) => String(note || "").match(/\[[^\]\n]{1,120}\]/g) || [];
 
 /** Whether a requirement belongs to a narrowed list. "Not explained": answered met or partly, without saying how. */
 export function keepReq(r, only) {
@@ -418,6 +557,7 @@ export function keepReq(r, only) {
     case "no": return r.a === "no";
     case "clarify": return r.must && (r.a === "partly" || r.a === "check" || r.a === "no");
     case "nonote": return (r.a === "yes" || r.a === "partly") && !r.note;
+    case "fill": return blanks(r.note).length > 0;
     default: return true;
   }
 }
@@ -439,12 +579,15 @@ export function matchesSearch(r, query) {
  * What to do next, at most three things, most urgent first: what could exclude the bid, questions due soon, mandatory
  * requirements still open, answers that do not say how. Each names the action that does it.
  */
-export function nextSteps(catalog, w, today) {
+export function nextSteps(catalog, w, today, others = []) {
   const st = rfpState(catalog, w, today);
   if (!st.total) return [{ id: "load", text: "Load the tender's requirements: paste them, or read the tender's file.", act: "load", label: "Load them" }];
   const out = [];
   const dl = st.deadlines;
   if (st.must_no.length) out.push({ id: "no", text: `${plural(st.must_no.length, "mandatory requirement")} not met: ask whether an equivalent is accepted${dl.questions_due ? ` by ${dl.questions_due}` : ""}, or decide not to bid.`, act: "filter:no", label: "See them" });
+  // an answer reused from another tender that still names that customer must never reach a bid
+  const named = mentionsOfOthers(w, others);
+  if (named.length) out.push({ id: "named", text: `${plural(named.length, "answer")} still name${named.length === 1 ? "s" : ""} another customer (${[...new Set(named.map((m) => m.name))].join(", ")}): rewrite before the bid leaves.`, act: `open:${named[0].id}`, label: "Open the first" });
   const qs = clarificationQuestions(w);
   if (qs.length && dl.questions_in != null && dl.questions_in >= 0 && dl.questions_in <= 7) {
     out.push({ id: "questions", text: `Questions to the contracting authority are due ${dl.questions_in === 0 ? "today" : `in ${plural(dl.questions_in, "day")}`}: ${plural(qs.length, "question")} drafted.`, act: "copy-questions", label: "Copy the questions" });
@@ -455,6 +598,8 @@ export function nextSteps(catalog, w, today) {
     const kit = unexplained.filter((r) => suggestAnswer(catalog, r)).length;
     out.push({ id: "nonote", text: `${plural(unexplained.length, "requirement")} answered without saying how${kit ? `: the kit has an answer for ${kit === unexplained.length ? "each" : kit}` : ""}.`, act: "filter:nonote", label: "See them" });
   }
+  const toFill = ((w.rfp && w.rfp.reqs) || []).filter((r) => keepReq(r, "fill"));
+  if (toFill.length) out.push({ id: "fill", text: `${plural(toFill.length, "answer")} still ${toFill.length === 1 ? "has" : "have"} square brackets to fill in for this customer.`, act: "filter:fill", label: "See them" });
   if (!out.length) {
     out.push(st.open ? { id: "scored", text: `Every mandatory requirement is met and explained. ${plural(st.open, "scored requirement")} still open could add points.`, act: "filter:open", label: "See them" }
       : { id: "ready", text: "Every requirement is answered and explained: the compliance matrix is ready.", act: "export", label: "Download the matrix" });

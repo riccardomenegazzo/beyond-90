@@ -852,6 +852,17 @@ def main(site: str) -> int:
             page.get_by_role("button", name="Compliance matrix (.csv)").click()
         matrix = Path(dl.value.path()).read_text(encoding="utf-8")
         check(matrix.startswith("ref,requirement,mandatory,points,product_line,answer,how_it_is_met,who_answers") and "Not met" in matrix, "the compliance matrix downloads for the bid team")
+        # the technical response: checked before it leaves, section by section as the tender numbers it
+        check("Before it leaves" in page.inner_text("#view .rfpchecks") and "not answered yet" in page.inner_text("#view .rfpchecks"), "delivering the bid checks the response before it leaves")
+        page.locator("#view .rfpsections summary").click()
+        page.get_by_label("Title of section 2").fill("Business continuity")
+        page.get_by_label("Title of section 2").press("Tab")
+        page.wait_for_timeout(300)
+        with page.expect_download() as dl:
+            page.get_by_role("button", name="Technical response (.html, to print)").click()
+        response = Path(dl.value.path()).read_text(encoding="utf-8")
+        check("default-src 'none'" in response and "<h2>2. Business continuity</h2>" in response and "<script" not in response,
+              "the technical response downloads as a page to print, with the section titles the tender uses and no scripts")
         # the tender's own workbook: the sheet holding the requirements is found and read
         page.locator("#view .rfploader > summary").click()
         page.locator("#view .filebtn input[type=file]").set_input_files(files=[{"name": "tender.xlsx", "mimeType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",

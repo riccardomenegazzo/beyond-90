@@ -17,7 +17,7 @@ import { validDr, drSketch, drMarkdown } from "./drsketch.js";
 import { validObj, objSketch, objMarkdown } from "./objsketch.js";
 import { validEdge, edgeSketch, edgeMarkdown } from "./edgesketch.js";
 import { validUnit, unitSketch, unitMarkdown } from "./unitcost.js";
-import { validRfp, withRequirements, withRequirement, lineOrder, emptyRfp, rfpState, suggestAnswer, TITLE_MAX } from "./rfp.js";
+import { validRfp, withRequirements, withRequirement, lineOrder, emptyRfp, rfpState, suggestAnswer, TITLE_MAX, MAX_PAGES, SECTION_MAX } from "./rfp.js";
 import { validDeal, withDealAnswer, dealMarkdown } from "./qualify.js";
 import { ROLE_WORDS, displayOrder, inMeeting } from "./questions.js";
 import { validChannel, cleanChannel, KINDS, ROUTES, ACTIVITIES, whoLabel } from "./partners.js";
@@ -258,12 +258,18 @@ export function removeRequirement(w, id, today) {
 }
 
 /** The tender's name, the deadline for questions to the contracting authority, and the bid's due date. */
-export function setRfpMeta(w, { title = "", due = "", questions_due: q = "", issuer = "" } = {}, today) {
+export function setRfpMeta(w, { title = "", due = "", questions_due: q = "", issuer = "", pages = "" } = {}, today) {
   const t = text(title, TITLE_MAX);
   if (due && q && q > due) throw new Error("Questions are due before the bid, not after.");
   const rfp = { ...(w.rfp || emptyRfp()), title: t, due: due || "", questions_due: q || "" };
   delete rfp.issuer;
   if (issuer) rfp.issuer = issuer;
+  delete rfp.pages;
+  if (pages !== "" && pages != null) {
+    const n = Number(pages);
+    if (!Number.isInteger(n) || n < 1 || n > MAX_PAGES) throw new Error(`The page limit is a whole number from 1 to ${MAX_PAGES}.`);
+    rfp.pages = n;
+  }
   const next = { ...w, rfp };
   if (!rfp.reqs.length && !t && !rfp.due && !rfp.questions_due && !issuer) delete next.rfp;
   return changed(next, {}, today);
@@ -279,6 +285,19 @@ export function fillSuggestedNotes(w, catalog, today) {
     if (a) rfp = withRequirement(rfp, r.id, { note: a.answer });
   }
   return rfp === w.rfp ? w : changed({ ...w, rfp }, {}, today);
+}
+
+/** A section's title in the technical response, as the tender names it; blank goes back to the title worked out. */
+export function setSectionTitle(w, key, title, today) {
+  if (!w.rfp) throw new Error("There is no tender on this workshop yet.");
+  if (typeof key !== "string" || !/^[A-Za-z0-9]{0,12}$/.test(key)) throw new Error("Not a section of this tender.");
+  const k = key || "0";
+  const sections = { ...(w.rfp.sections || {}) };
+  const t = text(title, SECTION_MAX);
+  if (t) sections[k] = t; else delete sections[k];
+  const rfp = { ...w.rfp };
+  if (Object.keys(sections).length) rfp.sections = sections; else delete rfp.sections;
+  return changed({ ...w, rfp }, {}, today);
 }
 
 /** Start again: the tender and its answers go. */
