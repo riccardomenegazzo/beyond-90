@@ -1,4 +1,5 @@
 """Discovery questions: value first, then the customer's weakest stage first."""
+import json
 from pathlib import Path
 
 from beyond90.catalogue import Catalogue
@@ -38,3 +39,17 @@ def test_the_command_prints_a_numbered_list_and_says_when_there_are_none(capsys,
     for name in ("resource_types.json", "modules.json", "playbooks.json"):
         shutil.copy(ROOT / "src" / "beyond90" / "data" / name, custom / name)
     assert main(["discovery", str(ROOT / "examples" / "portfolio" / "northwind"), "--catalogue-dir", str(custom)]) == 1
+
+
+def test_the_command_narrows_to_the_meeting_and_says_how_to_ask(capsys):
+    hci = str(ROOT / "examples" / "profiles" / "hci" / "granite-hci")
+    assert main(["discovery", hci, "--essential"]) == 0
+    out = capsys.readouterr().out
+    core = [q for q in Catalogue.load(profile="hci").discovery if q.get("core")]
+    assert out.count(" (essential)") == len(core) and "\n   Listen for: " in out and "\n   Then ask: " in out and "\n   Ask: " in out
+    assert main(["discovery", hci, "--role", "security", "--format", "json"]) == 0
+    qs = json.loads(capsys.readouterr().out)
+    assert qs and all(x["role"] == "security" for x in qs)
+    assert main(["discovery", hci, "--role", "ceo"]) == 2
+    assert "Unknown role: ceo" in capsys.readouterr().err
+    assert main(["discovery", hci, "--essential", "--role", "finance"]) == 1

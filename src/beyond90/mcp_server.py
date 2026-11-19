@@ -29,7 +29,8 @@ from pathlib import Path
 from typing import IO, Any, Optional
 
 from . import __version__, identifiers, whatif
-from .catalogue import Catalogue
+from .catalogue import ROLES, Catalogue
+from .discovery import ordered as discovery_ordered
 from .loader import DataError, load_customer
 from .models import CustomerData
 from .playbooks import generate_actions
@@ -112,6 +113,20 @@ TOOL_DEFS: list[dict[str, Any]] = [
         }, ["customer", "scenarios"]),
     },
     {
+        "name": "discovery_questions",
+        "title": "Discovery questions, with how to ask them",
+        "description": (
+            "The questions to ask this customer, business value first and then the weakest stage. Each says who to ask, whether it is "
+            "one of the few not to leave a first meeting without, what a strong or a worrying answer sounds like, and the follow-up "
+            "that goes one level deeper. Narrow it to the essential questions, or to one role in the room."
+        ),
+        "inputSchema": _schema({
+            "customer": _CUSTOMER,
+            "essential": {"type": "boolean", "default": False, "description": "Only the essential questions, for a first meeting."},
+            "role": {"type": "string", "enum": list(ROLES), "description": "Only the questions for this role."},
+        }, ["customer"]),
+    },
+    {
         "name": "path_to_target",
         "title": "What it takes to reach a target",
         "description": "A greedy sequence of changes that reaches a target Yield (for example 0.9), biggest gain first. Effort is not estimated.",
@@ -143,7 +158,7 @@ class Server:
         self.profile, self.catalogue_dir = profile, catalogue_dir
         self.tools: dict[str, Tool] = {
             "list_customers": self._list, "score": self._score, "actions": self._actions,
-            "what_if": self._what_if, "path_to_target": self._path,
+            "what_if": self._what_if, "path_to_target": self._path, "discovery_questions": self._discovery,
         }
 
     # -- data ---------------------------------------------------------------------------------------------
@@ -213,6 +228,20 @@ class Server:
                            "measurable": v.has_data, "leaks": [_brief(e) for e in v.leaks[:3]]} for k, v in s.stages.items()},
             "warnings": s.warnings[:5],
         }
+
+    def _discovery(self, args: Mapping[str, Any]) -> Any:
+        essential = args.get("essential", False)
+        if not isinstance(essential, bool):
+            raise ToolError("'essential' must be true or false")
+        role = args.get("role")
+        if role is not None and role not in ROLES:
+            raise ToolError(f"'role' must be one of {', '.join(ROLES)}")
+        data, cat = self._load(args.get("customer"))
+        s = compute_score(data, cat)
+        qs = [x for x in discovery_ordered(cat, s) if (not essential or x.get("core")) and (role is None or x.get("role") == role)]
+        keep = ("stage", "q", "why", "role", "listen", "probe", "focus")
+        return {"customer": s.customer, "profile": cat.profile, "total": len(qs),
+                "questions": [{**{k: x.get(k) for k in keep if x.get(k) not in (None, "")}, "essential": bool(x.get("core"))} for x in qs[:40]]}
 
     def _actions(self, args: Mapping[str, Any]) -> Any:
         limit = _int(args, "limit", 10, 1, 50)

@@ -21,6 +21,7 @@ beyond90 mcp ~/customers
 | `actions` | the open actions, ranked by estimated effect, with effort, owner and what done looks like |
 | `what_if` | scenarios compared: today, right after, once settled (see [what-if](whatif.md)) |
 | `path_to_target` | the steps that reach a target Yield, biggest gain first |
+| `discovery_questions` | the questions to ask, value first and then the weakest stage, each with who to ask, whether it is essential, what to listen for and the follow-up; narrowed to the essential ones or to one role |
 
 ## Prompts
 

@@ -2,6 +2,13 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.113.0
+
+- **How to ask, wherever the questions are.**
+  - `beyond90 discovery` gains `--essential` and `--role` (repeatable), and prints who to ask, what to listen for and what to ask next.
+  - The account view's "Questions to ask" shows the essential questions and who to ask, with "How to ask it", and its copy carries both.
+  - A new read-only MCP tool, `discovery_questions`, gives an assistant the same list, narrowed to the essential questions or to one role.
+
 ## 0.112.0
 
 - **One picture of each deal, everywhere it goes.**

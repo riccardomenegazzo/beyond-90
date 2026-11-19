@@ -246,6 +246,7 @@ def cmd_plan(args: argparse.Namespace) -> int:
 
 
 def cmd_discovery(args: argparse.Namespace) -> int:
+    from .catalogue import ROLES
     from .discovery import ordered
 
     cat, _data, _warnings, score, _actions, _history, _previous = _prepare(args)
@@ -253,14 +254,30 @@ def cmd_discovery(args: argparse.Namespace) -> int:
     if not qs:
         print(f"No discovery questions ship with the {cat.profile} profile. A profile adds them in discovery.json.", file=sys.stderr)
         return 1
+    roles = args.role or []
+    unknown = [r for r in roles if r not in ROLES]
+    if unknown:
+        print(f"Unknown role: {', '.join(unknown)}. Roles: {', '.join(ROLES)}.", file=sys.stderr)
+        return 2
+    # the meeting: only the essential questions, or only those for the people in the room
+    qs = [x for x in qs if (not args.essential or x.get("core")) and (not roles or x.get("role") in roles)]
+    if not qs:
+        print("No question matches: widen the filter.", file=sys.stderr)
+        return 1
     if args.format == "json":
         _emit(json.dumps(qs, indent=2, ensure_ascii=False) + "\n", args.out)
         return 0
     lines = [f"# Questions for {score.customer}", ""]
     for i, x in enumerate(qs, 1):
         tag = "value" if x["stage"] == "value" else f"{x['stage']}" + (", weakest stage" if x["focus"] else "")
-        lines.append(f"{i}. {x['q']}")
+        lines.append(f"{i}. {x['q']}" + (" (essential)" if x.get("core") else ""))
         lines.append(f"   ({tag}) {x['why']}")
+        if x.get("role"):
+            lines.append(f"   Ask: {x['role']}")
+        if x.get("listen"):
+            lines.append(f"   Listen for: {x['listen']}")
+        if x.get("probe"):
+            lines.append(f"   Then ask: {x['probe']}")
     _emit("\n".join(lines) + "\n", args.out)
     return 0
 
@@ -853,8 +870,10 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--out")
     sp.set_defaults(func=cmd_plan)
 
-    sp = sub.add_parser("discovery", help="questions to ask the customer, weakest stage first")
+    sp = sub.add_parser("discovery", help="questions to ask the customer, weakest stage first, with how to ask each one")
     common(sp, store=True, ceiling=False)
+    sp.add_argument("--essential", action="store_true", help="only the questions not to leave a first meeting without")
+    sp.add_argument("--role", action="append", metavar="ROLE", help="only the questions for this role (repeatable): executive, architect, operations, security, application, data, finance")
     sp.add_argument("--format", choices=["text", "json"], default="text")
     sp.add_argument("--out")
     sp.set_defaults(func=cmd_discovery)
@@ -1086,7 +1105,7 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("config")
     sp.add_argument("--at", default="05:17", help="time of day in UTC, HH:MM")
     sp.add_argument("--every", choices=["hour", "day", "week"], default="day")
-    sp.add_argument("--install-from", default="beyond90", help='pip requirement for the workflow, e.g. "beyond90 @ git+https://github.com/OWNER/beyond-90@v0.112.0"')
+    sp.add_argument("--install-from", default="beyond90", help='pip requirement for the workflow, e.g. "beyond90 @ git+https://github.com/OWNER/beyond-90@v0.113.0"')
     sp.add_argument("--out")
     sp.set_defaults(func=cmd_schedule)
 

@@ -42,7 +42,7 @@ def test_notifications_get_no_reply_and_unknown_methods_get_an_error(root):
 
 def test_every_tool_is_declared_read_only(root):
     tools = Server(root).handle({"jsonrpc": "2.0", "id": 1, "method": "tools/list"})["result"]["tools"]
-    assert {t["name"] for t in tools} == {"list_customers", "score", "actions", "what_if", "path_to_target"}
+    assert {t["name"] for t in tools} == {"list_customers", "score", "actions", "what_if", "path_to_target", "discovery_questions"}
     assert all(t["annotations"]["readOnlyHint"] and not t["annotations"]["openWorldHint"] for t in tools)
 
 
@@ -117,3 +117,19 @@ def test_the_server_module_has_no_way_to_reach_the_network():
     src = Path(mcp_server.__file__).read_text(encoding="utf-8")
     for word in ("socket", "urllib", "http", "requests", "subprocess", "os.system"):
         assert f"import {word}" not in src and f"from {word}" not in src
+
+
+def test_discovery_questions_say_how_to_ask_and_narrow_to_the_meeting(tmp_path):
+    root = tmp_path / "book"
+    root.mkdir()
+    shutil.copytree(PORTFOLIO.parent / "profiles" / "hci" / "granite-hci", root / "granite-hci")
+    s = Server(root)
+    bad, text = call(s, "discovery_questions", {"customer": "granite-hci"})
+    out = json.loads(text)
+    assert not bad and out["profile"] == "hci" and out["total"] >= 11
+    assert out["questions"][0]["stage"] == "value" and all("listen" in q and "probe" in q and "role" in q for q in out["questions"])
+    bad, text = call(s, "discovery_questions", {"customer": "granite-hci", "essential": True, "role": "operations"})
+    qs = json.loads(text)["questions"]
+    assert not bad and qs and all(q["essential"] and q["role"] == "operations" for q in qs)
+    assert call(s, "discovery_questions", {"customer": "granite-hci", "role": "ceo"})[0]
+    assert call(s, "discovery_questions", {"customer": "granite-hci", "essential": "yes"})[0]

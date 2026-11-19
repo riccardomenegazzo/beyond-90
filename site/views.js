@@ -808,10 +808,14 @@ export function prepView({ dash, score, result, logTouch }) {
 function discoveryCard(qs, customer) {
   if (!qs.length) return null;
   const NAME = { value: "value", L1: "L1 connected", L2: "L2 seen", L3: "L3 switched on", L4: "L4 decided" };
-  const text = () => `Questions for ${customer}\n\n` + qs.map((x, i) => `${i + 1}. ${x.q}`).join("\n");
+  const text = () => `Questions for ${customer}\n\n` + qs.map((x, i) => [`${i + 1}. ${x.q}${x.core ? " (essential)" : ""}`,
+    x.role && WS.ROLE_WORDS[x.role] ? `   Ask: ${WS.ROLE_WORDS[x.role].toLowerCase()}` : "", x.listen ? `   Listen for: ${x.listen}` : "", x.probe ? `   Then ask: ${x.probe}` : ""].filter(Boolean).join("\n")).join("\n");
   return card("Questions to ask", h("div", {},
     h("ol", { class: "disco" }, qs.map((x) => h("li", { class: x.focus ? "focus" : "" },
-      h("span", { class: "disco-q" }, h("b", { text: x.q }), h("small", { text: x.why })),
+      h("span", { class: "disco-q" }, h("b", { text: x.q }), h("small", { text: x.why }),
+        x.core || x.role ? h("span", { class: "wstags" }, x.core ? h("span", { class: "wscore", text: "Essential" }) : null, x.role && WS.ROLE_WORDS[x.role] ? h("span", { class: "wsrole", text: "Ask: " + WS.ROLE_WORDS[x.role].toLowerCase() }) : null) : null,
+        x.listen || x.probe ? h("details", { class: "wshow" }, h("summary", { text: "How to ask it" }), h("dl", { class: "objdl" },
+          x.listen ? [h("dt", { text: "Listen for" }), h("dd", { text: x.listen })] : null, x.probe ? [h("dt", { text: "Then ask" }), h("dd", { text: x.probe })] : null)) : null),
       chip(x.focus ? `${NAME[x.stage]}, weakest` : NAME[x.stage], x.focus ? "warn" : "")))),
     h("div", { class: "row left" }, h("button", { class: "btn small", type: "button", text: "Copy the questions", onclick: (e) => copyText(text()).then((ok) => { e.target.textContent = ok ? "Copied" : "Not copied"; }) }))),
   { sub: "Business value first, then the stage where this customer loses most. Ask, then listen: the answers are the plan." });
