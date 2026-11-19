@@ -141,6 +141,7 @@ def test_what_else_they_weigh_is_fair_and_follows_the_line(tmp_path):
     out = json.loads(text)
     assert not bad and out["family"] == "infrastructure"
     assert out["alternatives"][0]["id"] == "renew" and all(a["fits_them"] for a in out["alternatives"])
+    assert out["line"] == "edge-sites" and [a["id"] for a in out["line_alternatives"]] == ["server_per_site", "cloud_sites"]
     assert not call(s, "what_else_they_weigh", {})[0]
     assert call(s, "what_else_they_weigh", {"profile": "nope"})[0]
     assert call(s, "what_else_they_weigh", {"family": "nope"})[0]

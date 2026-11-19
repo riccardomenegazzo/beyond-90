@@ -2,6 +2,25 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.119.0
+
+- **What else they weigh, line by line.** Each line in scope adds the alternatives particular to it, grouped under its name in qualification:
+  - disaster recovery: keeping the backup product, or recovery as a service;
+  - object storage: a public cloud, or a backup appliance;
+  - file storage: keeping the file servers, or shares in a public cloud;
+  - databases: managed databases in a public cloud, or scripts and the DBA team;
+  - Kubernetes: a managed service in a public cloud, or building it from open-source parts;
+  - AI on own infrastructure: AI services from a public cloud, or waiting;
+  - desktops: desktops as a service, or laptops and nothing central;
+  - microsegmentation: firewalls and VLANs in the network;
+  - cloud operations: the tools already in place plus scripts;
+  - edge sites: a server per site, or running the sites from the cloud;
+  - a service provider's cloud: reselling a public cloud.
+
+  Each has the same parts: why, what to ask, when the proposal fits, when the other choice is the better one, how to prove it. Ids are unique across the file, so a workshop keeps them side by side. `beyond90 alternatives --profile` and the `what_else_they_weigh` tool return the line's own list after the family's.
+- **Tender requirements:** "Where the bid stands" says who still owes answers (presales, a specialist, the partner, the product team, commercial or legal) and how many nobody has been asked yet. The bid summary lists the same.
+- `docs/profiles.md` describes the alternatives file.
+
 ## 0.118.0
 
 - **Tender requirements**, a new view in the discovery workshop: a tender or a request for proposal answered requirement by requirement.

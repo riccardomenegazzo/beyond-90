@@ -81,6 +81,13 @@ Above the ten questions, **What else they weigh** lists the alternatives a deal 
 - building it with open-source virtualisation;
 - doing nothing for now.
 
+Each line in scope then adds what is particular to it. A few examples:
+- for disaster recovery: keeping the backup product, or recovery as a service;
+- for object storage: a public cloud, or a backup appliance;
+- for desktops: desktops from a cloud, or laptops and nothing central;
+- for edge sites: a server per site, or running the sites from the cloud;
+- for a service provider: reselling a public cloud.
+
 Mark the ones the customer mentions or is likely to weigh. Each one opens with:
 - why customers consider it;
 - the questions to ask;

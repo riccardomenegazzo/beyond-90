@@ -261,7 +261,11 @@ export function rfpState(catalog, w, today) {
   else if (mustNo.length) verdict = { level: "risk", text: `${plural(mustNo.length, "mandatory requirement")} not met: ask whether an equivalent is accepted${t.questions_due ? ` before ${t.questions_due}` : ""}, or decide not to bid.` };
   else if (clarify.length || openMust.length) verdict = { level: "clarify", text: `No mandatory requirement fails so far: ${plural(clarify.length, "to clarify", "to clarify")}${openMust.length ? `, ${openMust.length} still to answer` : ""}.` };
   else verdict = { level: "go", text: "Every mandatory requirement is met: the bid rests on the scored ones." };
+  // who still owes an answer: the requirements not answered or to check, by who was asked
+  const owed = Object.entries(WHO).map(([k, v]) => ({ who: k, label: v, count: reqs.filter((r) => r.who === k && (!r.a || r.a === "check")).length })).filter((x) => x.count);
+  const unassigned = reqs.filter((r) => !r.who && (!r.a || r.a === "check")).length;
   return {
+    owed, unassigned,
     title: t.title, total: reqs.length, must: must.length, scored: scored.length,
     yes: count(reqs, "yes"), partly: count(reqs, "partly"), no: count(reqs, "no"), check: count(reqs, "check"), open: reqs.filter((r) => !r.a).length,
     must_no: mustNo, clarify, open_must: openMust, points, lines, outside: lines.filter((l) => l.profile && !l.in_scope), deadlines, verdict,
@@ -306,8 +310,7 @@ export function rfpMarkdown(catalog, w, today) {
   out.push("## Coverage by product line", "", "| Line | Requirements | Mandatory | Met | Partly | Not met | To check | Open |", "|---|---|---|---|---|---|---|---|",
     ...st.lines.map((l) => `| ${l.label.replace(/\|/g, "/")}${l.in_scope ? "" : " (not in scope)"} | ${l.count} | ${l.must} | ${l.yes} | ${l.partly} | ${l.no} | ${l.check} | ${l.open} |`), "");
   if (st.outside.length) out.push(`The tender also asks about ${st.outside.map((l) => `${l.label.toLowerCase()} (${plural(l.count, "requirement")})`).join(", ")}: lines not in this conversation yet.`, "");
-  const owed = Object.entries(WHO).map(([k, v]) => [v, (w.rfp.reqs || []).filter((r) => r.who === k && (!r.a || r.a === "check")).length]).filter(([, c]) => c);
-  if (owed.length) out.push("## Still to answer, by who", "", ...owed.map(([v, c]) => `- ${v}: ${c}`), "");
+  if (st.owed.length || st.unassigned) out.push("## Still to answer, by who", "", ...st.owed.map((x) => `- ${x.label}: ${x.count}`), ...(st.unassigned ? [`- Nobody asked yet: ${st.unassigned}`] : []), "");
   out.push("_Prepared with Beyond 90. The requirements stay in the browser they were pasted into._", "");
   return out.join("\n");
 }

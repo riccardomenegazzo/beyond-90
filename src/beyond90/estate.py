@@ -262,12 +262,15 @@ def read_alternatives(path: Path = ALTERNATIVES_FILE) -> dict[str, list[dict[str
     if not isinstance(data, dict):
         raise DataError([f"{path.name}: expected an object keyed by family"])
     out: dict[str, list[dict[str, Any]]] = {}
+    members = {p for ps in FAMILIES.values() for p in ps}
+    seen: set[str] = set()                        # ids are unique across the file: a workshop keeps them side by side
     for family, items in data.items():
-        if family not in FAMILIES:
-            raise DataError([f"{path.name}: {family!r} is not a family of product lines"])
-        if not isinstance(items, list) or not 2 <= len(items) <= 8:
-            raise DataError([f"{path.name}: {family}: between 2 and 8 alternatives"])
-        seen: set[str] = set()
+        # a family's list is weighed whatever the line; a line's own list adds what is particular to it
+        if family not in FAMILIES and family not in members:
+            raise DataError([f"{path.name}: {family!r} is neither a family of product lines nor a line in one"])
+        most, least = (8, 2) if family in FAMILIES else (4, 1)
+        if not isinstance(items, list) or not least <= len(items) <= most:
+            raise DataError([f"{path.name}: {family}: between {least} and {most} alternatives"])
         for a in items:
             if not isinstance(a, dict) or set(a) != {"id", *ALT_LIMITS, "ask"}:
                 raise DataError([f"{path.name}: {family}: each alternative has id, name, why, ask, fits_us, fits_them and prove"])
@@ -298,6 +301,6 @@ def workshop_catalog() -> dict[str, Any]:
                                          **{k: q[k] for k in ("role", "core", "listen", "probe") if k in q}} for q in cat.discovery],
                           "proof": [{"text": c["text"], "how": c.get("how", "")} for c in cat.pov_criteria], "readiness": list(cat.pov_readiness), "story": cat.story}
     families = {name: [p for p in members if p in lines] for name, members in FAMILIES.items()}
-    alternatives = {k: v for k, v in read_alternatives().items() if families.get(k)}
+    alternatives = {k: v for k, v in read_alternatives().items() if families.get(k) or k in lines}
     return {"families": families, "links": [list(x) for x in LINKS if x[0] in lines and x[1] in lines], "lines": lines, "alternatives": alternatives}
 

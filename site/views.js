@@ -2530,16 +2530,20 @@ export function qualifyView({ workshop: w, catalog, setDeal, setAlt, go }) {
   const altSay = h("p", { class: "note", role: "status" });
   const drawAlts = () => {
     const alts = WS.alternativesFor(catalog, cur);
+    const chip = (a) => h("button", { type: "button", class: "kindchip", "aria-pressed": String(a.on), text: a.name, "data-alt": a.id,
+      "data-tip": a.why,
+      onclick: async () => {
+        try { cur = await setAlt(a.id, !a.on); altSay.textContent = ""; } catch (e) { altSay.textContent = e.message; return; }
+        drawAlts(); drawHero();
+        const b = altBox.querySelector(`[data-alt="${a.id}"]`);
+        if (b) b.focus();
+      } });
+    // the alternatives for every line first, then those particular to a line in scope, under its name
+    const groups = [["", alts.filter((a) => !a.line)], ...[...new Set(alts.filter((a) => a.line).map((a) => a.line))].map((p) => [p, alts.filter((a) => a.line === p)])];
     put(altBox,
-      h("div", { class: "wsfam", role: "group", "aria-label": "On the table" }, alts.map((a) => h("button", { type: "button", class: "kindchip", "aria-pressed": String(a.on), text: a.name,
-        "data-tip": a.why,
-        onclick: async () => {
-          try { cur = await setAlt(a.id, !a.on); altSay.textContent = ""; } catch (e) { altSay.textContent = e.message; return; }
-          drawAlts(); drawHero();
-          const b = [...altBox.querySelectorAll(".kindchip")].find((x) => x.textContent === a.name);
-          if (b) b.focus();
-        } }))),
-      alts.filter((a) => a.on).map((a) => h("div", { class: "card altcard" }, h("h3", { text: a.name }), h("p", { class: "muted", text: a.why }),
+      groups.filter(([, list]) => list.length).map(([p, list]) => h("div", { class: "wsfam", role: "group", "aria-label": p ? `On the table for ${list[0].line_label}` : "On the table" },
+        h("span", { class: "wsfamname", text: p ? list[0].line_label : "Whatever the line" }), list.map(chip))),
+      alts.filter((a) => a.on).map((a) => h("div", { class: "card altcard" }, h("h3", { text: a.name }), h("p", { class: "muted", text: a.line_label ? `${a.line_label}. ${a.why}` : a.why }),
         h("dl", { class: "objdl" },
           h("dt", { text: "Ask" }), h("dd", {}, h("ul", {}, a.ask.map((q) => h("li", { text: q })))),
           h("dt", { text: "We fit when" }), h("dd", { text: a.fits_us }),
@@ -2578,6 +2582,7 @@ export function rfpView({ workshop: w, catalog, today, addReqs, setReq, removeRe
         h("div", {}, h("b", { text: String(st.open) }), h("small", { text: "not answered yet" })),
         st.points ? h("div", {}, h("b", { text: String(Math.round(st.points.likely)) }), h("small", { text: `of ${Math.round(st.points.total)} points likely (${Math.round(st.points.sure)} sure, at best ${Math.round(st.points.best)})` })) : null) : null,
       dl.questions_due || dl.due ? h("p", { class: "rfpdates" }, when(dl.questions_due, dl.questions_in, "Questions due"), " ", when(dl.due, dl.due_in, "Bid due")) : null,
+      st.owed.length || (st.total && st.unassigned) ? h("p", { class: "note rfpowed", text: `Still to answer: ${[...st.owed.map((x) => `${x.label.toLowerCase()} ${x.count}`), ...(st.unassigned ? [`nobody asked yet ${st.unassigned}`] : [])].join(", ")}.` }) : null,
       st.outside.length ? h("div", { class: "growproof" }, h("small", { text: "The tender also asks about" }),
         h("p", { text: st.outside.map((l) => `${l.label} (${l.count})`).join(", ") + ": lines not in this conversation yet." }),
         setScope ? h("div", { class: "btnrow" }, h("button", { class: "btn small", type: "button", text: "Add them to the conversation", onclick: async () => {

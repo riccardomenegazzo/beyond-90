@@ -116,6 +116,11 @@ test("the compliance matrix and the bid summary", () => {
   assert.match(md, /Questions to the contracting authority by 2026-11-24 \(in 5 days\)/);
   assert.match(md, /## Coverage by product line/);
   assert.match(md, /lines not in this conversation yet/);
+  assert.match(md, /## Still to answer, by who\n\n- Nobody asked yet: 15/);
+  const owing = setRequirement(setRequirement(w, "r2", { who: "specialist" }, D), "r3", { who: "specialist", a: "check" }, D);
+  const st = rfpState(CAT, owing, D);
+  assert.deepEqual(st.owed, [{ who: "specialist", label: "A specialist", count: 2 }]);
+  assert.equal(st.unassigned, 13);
   assert.match(summaryMarkdown(CAT, w, assess(CAT, w)), /## The tender: Data centre renewal \(mock\)/);
 });
 

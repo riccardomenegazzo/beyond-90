@@ -269,7 +269,9 @@ class Server:
                 raise ToolError(f"{profile} is not in a family of product lines")
         if not isinstance(family, str) or family not in FAMILIES:
             raise ToolError(f"'family' must be one of {', '.join(FAMILIES)}")
-        return {"family": family, "alternatives": read_alternatives().get(family, [])}
+        alts = read_alternatives()
+        # the family's list, then what is particular to the line in the conversation
+        return {"family": family, "alternatives": alts.get(family, []), **({"line": profile, "line_alternatives": alts.get(profile, [])} if profile else {})}
 
     def _actions(self, args: Mapping[str, Any]) -> Any:
         limit = _int(args, "limit", 10, 1, 50)

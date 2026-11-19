@@ -1513,6 +1513,124 @@
     "fits_them": "No date and no pain the customer can name: agree what would make it urgent, and when to talk again.",
     "prove": "The cost of waiting, month by month, and a first step small enough to fit this year's budget."
    }
+  ],
+  "dr-backup": [
+   {
+    "id": "keep_backup",
+    "name": "Keep the backup product you have",
+    "why": "It runs, people know it, and the contract is paid.",
+    "ask": [
+     "When did you last restore a whole application from it, and how long did it take?",
+     "Could an administrator, or an attacker with their account, delete the copies?"
+    ],
+    "fits_us": "Restores take too long, copies can be deleted, or recovering a whole site has never been tested.",
+    "fits_them": "Restores are tested and fast and the copies are already immutable: add recovery plans, not a new backup product.",
+    "prove": "A whole application restored and timed, and a delete refused on an immutable copy."
+   },
+   {
+    "id": "draas",
+    "name": "Recovery as a service from a provider",
+    "why": "No second site to build, equip or staff.",
+    "ask": [
+     "What recovery time does the provider commit to, and how is it tested?",
+     "Where would the copies live, and who could reach them?"
+    ],
+    "fits_us": "Recovery in under an hour, data that must stay in the country, or a second site already owned.",
+    "fits_them": "No second site, modest recovery times and a provider with tested runbooks: it can be the simpler choice.",
+    "prove": "A test failover timed against the recovery time the provider would commit to."
+   }
+  ],
+  "object-storage": [
+   {
+    "id": "cloud_objects",
+    "name": "Object storage in a public cloud",
+    "why": "Capacity without limit, and nothing to run.",
+    "ask": [
+     "How much data is read back each month, and what do reads and traffic out cost?",
+     "Must the copies stay in the country, under whose keys?"
+    ],
+    "fits_us": "Large, steady capacity read back often, data that must stay on premises, or restores needed at local speed.",
+    "fits_them": "Small or cold archives rarely read back, with no residency rule: the public cloud is cheaper there.",
+    "prove": "The cost per TiB a year with reads and traffic counted, and a restore at local speed."
+   },
+   {
+    "id": "backup_appliance",
+    "name": "A dedicated backup appliance",
+    "why": "One box from the backup vendor, one support line.",
+    "ask": [
+     "Can it keep copies nobody can delete for the whole retention?",
+     "What happens when it is full: another box?"
+    ],
+    "fits_us": "Backups from several products, growth beyond one box, or object lock needed by several applications.",
+    "fits_them": "One backup product, a steady size, and a team that wants a single vendor.",
+    "prove": "Object lock tested with an administrator account, and capacity added without a new box."
+   }
+  ],
+  "dbaas": [
+   {
+    "id": "cloud_db",
+    "name": "Managed databases in a public cloud",
+    "why": "Patching, backups and copies done by the provider.",
+    "ask": [
+     "Which databases sit next to applications that stay on premises?",
+     "What would the same database cost there, with its storage and licences?"
+    ],
+    "fits_us": "Databases close to applications on premises, licences already owned, or data that must stay.",
+    "fits_them": "New applications built in the cloud, with their data there: a managed database there is natural.",
+    "prove": "A copy delivered in minutes on premises, and the cost per database side by side."
+   },
+   {
+    "id": "dba_scripts",
+    "name": "Keep doing it with scripts and the DBA team",
+    "why": "The DBAs know the databases, and the scripts work.",
+    "ask": [
+     "How long does a developer wait for a copy of production?",
+     "When was each database last patched, and last restored to a point in time?"
+    ],
+    "fits_us": "Developers waiting days for copies, patches months behind, restores never tested.",
+    "fits_them": "Few databases, a strong DBA team, and copies already delivered fast.",
+    "prove": "A masked copy delivered on request, and a point-in-time restore timed."
+   }
+  ],
+  "cloud-operations": [
+   {
+    "id": "tools_scripts",
+    "name": "The monitoring tools already in place, plus scripts",
+    "why": "Paid for, and the team knows them.",
+    "ask": [
+     "Which of them says when capacity will run out?",
+     "Who maintains the scripts, and what happens when that person is away?"
+    ],
+    "fits_us": "No forecasts, scripts kept by one person, and a ticket for every standard request.",
+    "fits_them": "A small estate with few requests: better scripts may be enough.",
+    "prove": "A run-out date forecast, and a runbook replacing a script."
+   }
+  ],
+  "edge-sites": [
+   {
+    "id": "server_per_site",
+    "name": "A server per site, as today",
+    "why": "Cheap and familiar.",
+    "ask": [
+     "What happens at a site when that server fails?",
+     "How many trips did upgrades and repairs take last year?"
+    ],
+    "fits_us": "Sites that cannot stop, many trips, upgrades behind.",
+    "fits_them": "Sites that can wait a day for a replacement, with few applications: keep one server, managed centrally.",
+    "prove": "A server failure at a two-server site, and an upgrade without a trip."
+   },
+   {
+    "id": "cloud_sites",
+    "name": "Run the sites from the cloud",
+    "why": "No servers at the sites at all.",
+    "ask": [
+     "What must keep working when a site's link is down?",
+     "How much data do cameras, tills or machines produce at the site?"
+    ],
+    "fits_us": "Links that drop, heavy local data, or tills and lines that cannot stop.",
+    "fits_them": "Sites with reliable links that only run office applications.",
+    "prove": "A site working through a day with its link cut."
+   }
   ]
  }
 }

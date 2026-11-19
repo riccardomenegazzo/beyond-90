@@ -20,6 +20,16 @@ def test_the_infrastructure_family_ships_the_usual_alternatives() -> None:
         assert all(q.endswith("?") for q in a["ask"])
 
 
+def test_lines_add_what_is_particular_to_them_and_ids_are_unique_across_the_file() -> None:
+    alts = estate.read_alternatives()
+    assert [a["id"] for a in alts["dr-backup"]] == ["keep_backup", "draas"]
+    assert all(k in estate.FAMILIES or any(k in m for m in estate.FAMILIES.values()) for k in alts)
+    ids = [a["id"] for items in alts.values() for a in items]
+    assert len(ids) == len(set(ids))
+    for items in alts.values():
+        assert all(a["fits_them"] and a["prove"] for a in items)
+
+
 def test_no_vendor_is_named() -> None:
     text = estate.ALTERNATIVES_FILE.read_text(encoding="utf-8")
     assert not NAMES.search(text), NAMES.search(text)
@@ -27,7 +37,7 @@ def test_no_vendor_is_named() -> None:
 
 def test_the_page_gets_them_for_the_families_it_has() -> None:
     c = estate.workshop_catalog()
-    assert list(c["alternatives"]) == ["infrastructure"]
+    assert "infrastructure" in c["alternatives"] and "edge-sites" in c["alternatives"] and "security" not in c["alternatives"]
     assert c["alternatives"]["infrastructure"][0]["name"] == "Renew the current platform"
 
 
@@ -41,7 +51,7 @@ GOOD = {"id": "wait", "name": "Do nothing", "why": "No budget.", "ask": ["What h
 
 
 @pytest.mark.parametrize("data,words", [
-    ({"nope": [GOOD, {**GOOD, "id": "renew"}]}, "not a family"),
+    ({"nope": [GOOD, {**GOOD, "id": "renew"}]}, "neither a family"),
     ({"infrastructure": [GOOD]}, "between 2 and 8"),
     ({"infrastructure": [GOOD, GOOD]}, "unique"),
     ({"infrastructure": [GOOD, {**GOOD, "id": "Renew"}]}, "unique"),
@@ -62,6 +72,7 @@ def test_the_command_prints_them_for_the_line_in_the_conversation(capsys: pytest
     out = capsys.readouterr().out
     assert out.startswith("# What else they weigh: infrastructure")
     assert "## Renew the current platform" in out and "It is the better choice when:" in out
+    assert "# What else they weigh: service-provider-cloud" in out and "## Resell a public cloud instead" in out
     assert main(["alternatives", "--format", "json", "--out", str(tmp_path / "alts.json")]) == 0
     assert json.loads((tmp_path / "alts.json").read_text(encoding="utf-8"))[0]["id"] == "renew"
     assert main(["alternatives", "--profile", "nope"]) == 2

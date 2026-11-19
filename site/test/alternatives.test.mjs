@@ -13,9 +13,18 @@ const D = "2026-11-19";
 test("the alternatives come from the families of the lines in scope, and say when the other choice wins", () => {
   const w = makeWorkshop({ customer: "Acme (mock)", scope: ["hci", "dr-backup"], createdOn: D, nonce: "abcdef" });
   const alts = alternativesFor(CAT, w);
-  assert.deepEqual(alts.map((a) => a.id), ["renew", "public_cloud", "other_platform", "three_tier", "build_own", "wait"]);
+  assert.deepEqual(alts.map((a) => a.id), ["renew", "public_cloud", "other_platform", "three_tier", "build_own", "wait", "keep_backup", "draas"], "then those particular to a line in scope");
   assert.ok(alts.every((a) => !a.on && a.fits_them && a.ask.length));
+  assert.equal(alts.find((a) => a.id === "draas").line_label, "Disaster recovery and backup");
+  assert.equal(alts.find((a) => a.id === "renew").line, "");
   assert.deepEqual(alternativesFor({ ...CAT, alternatives: {} }, w), [], "a family without alternatives has none");
+});
+
+test("a line's own alternative is marked like any other, and says which line it is for", () => {
+  let w = makeWorkshop({ customer: "Acme (mock)", scope: ["edge-sites", "hci"], createdOn: D, nonce: "abcdef" });
+  w = setAlt(w, "cloud_sites", true, D);
+  assert.equal(validWorkshop(w), true);
+  assert.match(alternativesMarkdown(CAT, w), /\*\*Run the sites from the cloud \(edge and branch sites\)\.\*\*/);
 });
 
 test("marking one puts it on the table; it is kept, checked on import, and reaches the summary", () => {

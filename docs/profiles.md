@@ -108,3 +108,20 @@ A profile may ship `pov.json`: `{"criteria": [{"text": "...", "how": "..."}]}`, 
 A profile may ship `discovery.json`: `{"questions": [{"stage": "value|L1|L2|L3|L4", "q": "...?", "why": "...", "need": "...", "how": "..."}]}`. `need` is the condition the question tests, written as something that would be true ("No administrator account can delete the backups"), and `how` the first step towards it; the [discovery workshop](workshop.md) turns them into the journey. Prep a call and `beyond90 discovery` list the questions business value first, then from the customer's weakest stage to the strongest. Not inherited from the base profile. Shipped for every profile.
 
 A question can also say how to ask it: `"role"` (who to ask: `executive`, `architect`, `operations`, `security`, `application`, `data` or `finance`), `"core": true` for the few not to leave a first meeting without, `"listen"` (up to 240 characters: what a strong or a worrying answer sounds like) and `"probe"` (up to 220, a question: the follow-up that goes one level deeper). The workshop narrows its questions by them and the question guide carries them. Every infrastructure question carries all four; anything else is refused when the profile loads. `beyond90 discovery DIR --essential` lists only the essential questions, `--role security` (repeatable) only those for a role, and each question prints who to ask, what to listen for and what to ask next. The account view's "Questions to ask" and the MCP tool `discovery_questions` carry the same. Questions are kept by their position, so new ones go at the end; the workshop shows them in the order of a conversation.
+
+## What else they weigh
+
+`src/beyond90/data/alternatives.json` holds the alternatives a deal is measured against:
+- keyed by a family of lines (2 to 8, weighed whatever the line);
+- or by a line (1 to 4, particular to it).
+
+Each alternative has:
+- an `id`, unique across the file;
+- a `name`;
+- `why` customers consider it;
+- one to three questions to `ask`;
+- when the proposal fits (`fits_us`);
+- when the other choice is the better one (`fits_them`);
+- how to `prove` it.
+
+The file is checked when it is read, and a test keeps vendor names out. They are written to be fair: every alternative says when it wins.

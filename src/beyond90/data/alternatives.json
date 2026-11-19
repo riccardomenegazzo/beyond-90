@@ -4,7 +4,10 @@
       "id": "renew",
       "name": "Renew the current platform",
       "why": "No migration, skills already in place, and a renewal is one signature away.",
-      "ask": ["What does the renewal cost against the last one, and for how long is that price fixed?", "Which products in the renewal do you pay for and not use?"],
+      "ask": [
+        "What does the renewal cost against the last one, and for how long is that price fixed?",
+        "Which products in the renewal do you pay for and not use?"
+      ],
       "fits_us": "The renewal costs much more than the last, bundles products nobody asked for, or locks the price for a short time only.",
       "fits_them": "The renewal is affordable and the team has no room for a move this year: plan for the renewal after, and keep the conversation open.",
       "prove": "The case for change month by month, and a test wave moved and rolled back."
@@ -13,7 +16,10 @@
       "id": "public_cloud",
       "name": "Move everything to a public cloud",
       "why": "No hardware to buy or run, capacity on demand, and often a mandate from the board.",
-      "ask": ["Which workloads run at the same load all year round?", "Does the cloud estimate include storage, backup, traffic out and support?"],
+      "ask": [
+        "Which workloads run at the same load all year round?",
+        "Does the cloud estimate include storage, backup, traffic out and support?"
+      ],
       "fits_us": "Steady workloads, data that must stay in the country or close to plants and shops, and costs that grow with every machine left running.",
       "fits_them": "Workloads with sharp peaks, applications rebuilt for the cloud, or no data centre left to run: there the public cloud is the better home.",
       "prove": "What one machine costs here, side by side with the cloud, and the same platform running in the cloud for what belongs there."
@@ -22,7 +28,10 @@
       "id": "other_platform",
       "name": "Another hyperconverged or private-cloud platform",
       "why": "The same promise of simplicity, sometimes bundled with hardware or software the customer already buys.",
-      "ask": ["Which hardware and hypervisors does it support, and does choosing it lock either?", "How is an upgrade of the whole stack done, and how long does it take?"],
+      "ask": [
+        "Which hardware and hypervisors does it support, and does choosing it lock either?",
+        "How is an upgrade of the whole stack done, and how long does it take?"
+      ],
       "fits_us": "The customer wants freedom of hardware, one-step upgrades of the whole stack, and the same platform at the core, the edge and in the cloud.",
       "fits_them": "The customer has standardised on that vendor's hardware and tools, and its limits do not matter for the workloads in scope.",
       "prove": "Upgrades and failures tested during the proof of value, on the customer's chosen hardware."
@@ -31,7 +40,10 @@
       "id": "three_tier",
       "name": "Separate servers and storage arrays",
       "why": "Familiar, an array bought recently, and a feeling that separate parts perform better.",
-      "ask": ["When do the array and the servers go out of support, and what does the refresh cost?", "How many teams and tools does it take to give an application a new machine with storage?"],
+      "ask": [
+        "When do the array and the servers go out of support, and what does the refresh cost?",
+        "How many teams and tools does it take to give an application a new machine with storage?"
+      ],
       "fits_us": "The array or the servers are near the end of their support, and several teams have to agree every change.",
       "fits_them": "A large array bought recently with years of support left: start where it ends, or with workloads it does not serve.",
       "prove": "A performance test on the customer's own workload, and the time to deliver a machine end to end."
@@ -40,7 +52,10 @@
       "id": "build_own",
       "name": "Build it with open-source virtualisation",
       "why": "No licence fees, full control, and engineers keen to build it.",
-      "ask": ["Who answers a failure at three in the morning, and within what time?", "How many people would build, upgrade and secure it, and for how many years?"],
+      "ask": [
+        "Who answers a failure at three in the morning, and within what time?",
+        "How many people would build, upgrade and secure it, and for how many years?"
+      ],
       "fits_us": "The team is small, uptime matters, and the people who would build it are needed elsewhere.",
       "fits_them": "A large engineering team that already runs open-source infrastructure at scale and wants to own every layer.",
       "prove": "The cost per machine with the people counted, and a support case opened and solved during the proof of value."
@@ -49,10 +64,263 @@
       "id": "wait",
       "name": "Do nothing for now",
       "why": "No budget this year, other priorities, and nothing seems broken.",
-      "ask": ["What happens on the contract end date if nothing changes?", "What did the last outage or the last emergency purchase cost?"],
+      "ask": [
+        "What happens on the contract end date if nothing changes?",
+        "What did the last outage or the last emergency purchase cost?"
+      ],
       "fits_us": "A date that cannot move: a contract end, hardware out of support, an audit, a regulation.",
       "fits_them": "No date and no pain the customer can name: agree what would make it urgent, and when to talk again.",
       "prove": "The cost of waiting, month by month, and a first step small enough to fit this year's budget."
+    }
+  ],
+  "dr-backup": [
+    {
+      "id": "keep_backup",
+      "name": "Keep the backup product you have",
+      "why": "It runs, people know it, and the contract is paid.",
+      "ask": [
+        "When did you last restore a whole application from it, and how long did it take?",
+        "Could an administrator, or an attacker with their account, delete the copies?"
+      ],
+      "fits_us": "Restores take too long, copies can be deleted, or recovering a whole site has never been tested.",
+      "fits_them": "Restores are tested and fast and the copies are already immutable: add recovery plans, not a new backup product.",
+      "prove": "A whole application restored and timed, and a delete refused on an immutable copy."
+    },
+    {
+      "id": "draas",
+      "name": "Recovery as a service from a provider",
+      "why": "No second site to build, equip or staff.",
+      "ask": [
+        "What recovery time does the provider commit to, and how is it tested?",
+        "Where would the copies live, and who could reach them?"
+      ],
+      "fits_us": "Recovery in under an hour, data that must stay in the country, or a second site already owned.",
+      "fits_them": "No second site, modest recovery times and a provider with tested runbooks: it can be the simpler choice.",
+      "prove": "A test failover timed against the recovery time the provider would commit to."
+    }
+  ],
+  "object-storage": [
+    {
+      "id": "cloud_objects",
+      "name": "Object storage in a public cloud",
+      "why": "Capacity without limit, and nothing to run.",
+      "ask": [
+        "How much data is read back each month, and what do reads and traffic out cost?",
+        "Must the copies stay in the country, under whose keys?"
+      ],
+      "fits_us": "Large, steady capacity read back often, data that must stay on premises, or restores needed at local speed.",
+      "fits_them": "Small or cold archives rarely read back, with no residency rule: the public cloud is cheaper there.",
+      "prove": "The cost per TiB a year with reads and traffic counted, and a restore at local speed."
+    },
+    {
+      "id": "backup_appliance",
+      "name": "A dedicated backup appliance",
+      "why": "One box from the backup vendor, one support line.",
+      "ask": [
+        "Can it keep copies nobody can delete for the whole retention?",
+        "What happens when it is full: another box?"
+      ],
+      "fits_us": "Backups from several products, growth beyond one box, or object lock needed by several applications.",
+      "fits_them": "One backup product, a steady size, and a team that wants a single vendor.",
+      "prove": "Object lock tested with an administrator account, and capacity added without a new box."
+    }
+  ],
+  "file-storage": [
+    {
+      "id": "keep_fileservers",
+      "name": "Keep the file servers you have",
+      "why": "They work, and the shares are mapped everywhere.",
+      "ask": [
+        "How long would restoring one encrypted share take today?",
+        "Can you tell who opened or deleted a file last week?"
+      ],
+      "fits_us": "Many file servers to patch, restores that take days, or no record of who opened what.",
+      "fits_them": "A few recent servers with fast restores: add auditing first.",
+      "prove": "A share restored by its own user from a snapshot, and a record of who opened a file."
+    },
+    {
+      "id": "cloud_files",
+      "name": "File shares in a public cloud",
+      "why": "No servers, and access from anywhere.",
+      "ask": [
+        "How large are the files, and how far are the users from the cloud region?",
+        "What do traffic and per-user licences add up to?"
+      ],
+      "fits_us": "Large files worked on at the site, applications that need low latency, or data that must stay on premises.",
+      "fits_them": "Small office documents for people who mostly work remotely: a cloud file service fits.",
+      "prove": "Open and save times at the site against the cloud, with the customer's own files."
+    }
+  ],
+  "dbaas": [
+    {
+      "id": "cloud_db",
+      "name": "Managed databases in a public cloud",
+      "why": "Patching, backups and copies done by the provider.",
+      "ask": [
+        "Which databases sit next to applications that stay on premises?",
+        "What would the same database cost there, with its storage and licences?"
+      ],
+      "fits_us": "Databases close to applications on premises, licences already owned, or data that must stay.",
+      "fits_them": "New applications built in the cloud, with their data there: a managed database there is natural.",
+      "prove": "A copy delivered in minutes on premises, and the cost per database side by side."
+    },
+    {
+      "id": "dba_scripts",
+      "name": "Keep doing it with scripts and the DBA team",
+      "why": "The DBAs know the databases, and the scripts work.",
+      "ask": [
+        "How long does a developer wait for a copy of production?",
+        "When was each database last patched, and last restored to a point in time?"
+      ],
+      "fits_us": "Developers waiting days for copies, patches months behind, restores never tested.",
+      "fits_them": "Few databases, a strong DBA team, and copies already delivered fast.",
+      "prove": "A masked copy delivered on request, and a point-in-time restore timed."
+    }
+  ],
+  "kubernetes-platform": [
+    {
+      "id": "cloud_kubernetes",
+      "name": "Managed Kubernetes in a public cloud",
+      "why": "The control plane runs itself.",
+      "ask": [
+        "Which applications must stay on premises, next to their data?",
+        "Who looks after the clusters already running on premises?"
+      ],
+      "fits_us": "Applications that stay on premises, several clusters to keep alike, or data that cannot leave.",
+      "fits_them": "Applications born in the cloud, with their data there.",
+      "prove": "The same cluster upgrade and workload backup on premises and in a cloud."
+    },
+    {
+      "id": "own_kubernetes",
+      "name": "Assemble Kubernetes from open-source parts",
+      "why": "No licence, and the engineers want to build it.",
+      "ask": [
+        "Who upgrades the clusters, and how far behind are they?",
+        "How are workloads backed up together with their data?"
+      ],
+      "fits_us": "A small team, several clusters, and upgrades falling behind.",
+      "fits_them": "A platform team that already runs open-source Kubernetes at scale.",
+      "prove": "Every cluster upgraded in one window, and a workload restored with its data."
+    }
+  ],
+  "private-ai": [
+    {
+      "id": "cloud_ai",
+      "name": "AI services from a public cloud",
+      "why": "Models ready to use, and no GPUs to buy.",
+      "ask": [
+        "Which data could never be sent to an outside service?",
+        "What would a year of the expected use cost, counted in tokens?"
+      ],
+      "fits_us": "Data that cannot leave, steady heavy use, or answers that must respect document permissions.",
+      "fits_them": "Light or experimental use on data that may leave: start in the cloud.",
+      "prove": "The cost per thousand requests side by side, and an answer that respects document permissions."
+    },
+    {
+      "id": "wait_ai",
+      "name": "Wait until the models settle",
+      "why": "Everything changes every month.",
+      "ask": [
+        "Which use case would pay for itself this year?",
+        "Are people already pasting company data into public tools?"
+      ],
+      "fits_us": "Public AI tools already in use with company data, or one use case with a measurable result.",
+      "fits_them": "No use case anyone can name yet: agree what would make one worth it.",
+      "prove": "One use case live on the customer's own data during the proof of value."
+    }
+  ],
+  "euc": [
+    {
+      "id": "daas",
+      "name": "Desktops as a service in a public cloud",
+      "why": "No servers to run, and a price per user.",
+      "ask": [
+        "Where do the applications the desktops use run, and how far is that from the cloud region?",
+        "What does one user cost a month at full use?"
+      ],
+      "fits_us": "Applications and data on premises, a steady number of users, or data that must stay.",
+      "fits_them": "Seasonal users, with applications already in the cloud.",
+      "prove": "Logon time and application response from the cloud, against on premises."
+    },
+    {
+      "id": "laptops",
+      "name": "Laptops for everyone, no central desktops",
+      "why": "Simple, and people like their laptops.",
+      "ask": [
+        "How is company data kept off a lost or stolen laptop?",
+        "How long does it take to give a new contractor a working desktop?"
+      ],
+      "fits_us": "Contractors, shared workstations, regulated data, or applications that must stay in the data centre.",
+      "fits_them": "A mobile workforce with modern applications that run anywhere.",
+      "prove": "A new user working in minutes, and nothing left on the device after logging off."
+    }
+  ],
+  "microsegmentation": [
+    {
+      "id": "net_firewalls",
+      "name": "Firewalls and VLANs in the network",
+      "why": "The network team already runs them.",
+      "ask": [
+        "Can they see and stop traffic between machines in the same network segment?",
+        "How long does a rule change take, and what happens to rules when a machine moves?"
+      ],
+      "fits_us": "Traffic between machines in the same segment, frequent changes, or rules that must follow machines when they move.",
+      "fits_them": "Few applications, already separated by segment, that rarely change.",
+      "prove": "Traffic inside a segment blocked, and a rule that follows a machine when it moves."
+    }
+  ],
+  "cloud-operations": [
+    {
+      "id": "tools_scripts",
+      "name": "The monitoring tools already in place, plus scripts",
+      "why": "Paid for, and the team knows them.",
+      "ask": [
+        "Which of them says when capacity will run out?",
+        "Who maintains the scripts, and what happens when that person is away?"
+      ],
+      "fits_us": "No forecasts, scripts kept by one person, and a ticket for every standard request.",
+      "fits_them": "A small estate with few requests: better scripts may be enough.",
+      "prove": "A run-out date forecast, and a runbook replacing a script."
+    }
+  ],
+  "edge-sites": [
+    {
+      "id": "server_per_site",
+      "name": "A server per site, as today",
+      "why": "Cheap and familiar.",
+      "ask": [
+        "What happens at a site when that server fails?",
+        "How many trips did upgrades and repairs take last year?"
+      ],
+      "fits_us": "Sites that cannot stop, many trips, upgrades behind.",
+      "fits_them": "Sites that can wait a day for a replacement, with few applications: keep one server, managed centrally.",
+      "prove": "A server failure at a two-server site, and an upgrade without a trip."
+    },
+    {
+      "id": "cloud_sites",
+      "name": "Run the sites from the cloud",
+      "why": "No servers at the sites at all.",
+      "ask": [
+        "What must keep working when a site's link is down?",
+        "How much data do cameras, tills or machines produce at the site?"
+      ],
+      "fits_us": "Links that drop, heavy local data, or tills and lines that cannot stop.",
+      "fits_them": "Sites with reliable links that only run office applications.",
+      "prove": "A site working through a day with its link cut."
+    }
+  ],
+  "service-provider-cloud": [
+    {
+      "id": "resell_cloud",
+      "name": "Resell a public cloud instead",
+      "why": "No infrastructure to run, and a brand tenants know.",
+      "ask": [
+        "What margin does reselling leave once the provider's discounts change?",
+        "Which tenants need their data in the country, with local support?"
+      ],
+      "fits_us": "Tenants that need their data in the country, local support and predictable prices, and resale margins under pressure.",
+      "fits_them": "Tenants that ask for one public cloud by name and want only billing and support from you.",
+      "prove": "The margin per standard tenant, against the margin on resale."
     }
   ]
 }

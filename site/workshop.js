@@ -329,11 +329,10 @@ export function alternativesFor(catalog, w) {
   const fams = Object.entries((catalog && catalog.families) || {}).filter(([, members]) => w.scope.some((p) => members.includes(p))).map(([f]) => f);
   const seen = new Set(), on = new Set(w.alts || []);
   const out = [];
-  for (const f of fams) for (const a of ((catalog.alternatives || {})[f] || [])) {
-    if (seen.has(a.id)) continue;
-    seen.add(a.id);
-    out.push({ ...a, family: f, on: on.has(a.id) });
-  }
+  const add = (a, extra) => { if (!seen.has(a.id)) { seen.add(a.id); out.push({ ...a, ...extra, on: on.has(a.id) }); } };
+  for (const f of fams) for (const a of ((catalog.alternatives || {})[f] || [])) add(a, { family: f, line: "", line_label: "" });
+  // then what is particular to each line in scope: keeping the backup product, desktops from a cloud, a server per site
+  for (const p of w.scope) for (const a of ((catalog && catalog.alternatives) || {})[p] || []) add(a, { family: "", line: p, line_label: catalog.lines[p] ? catalog.lines[p].label : p });
   return out;
 }
 
@@ -355,7 +354,7 @@ export function setAlt(w, id, on, today) {
 export function alternativesMarkdown(catalog, w) {
   const on = alternativesFor(catalog, w).filter((a) => a.on);
   if (!on.length) return "";
-  return ["## What else they weigh", "", ...on.flatMap((a) => [`- **${a.name}.** ${a.why} Ask: ${a.ask.join(" ")} We fit when: ${a.fits_us} It is the better choice when: ${a.fits_them} To prove it: ${a.prove}`]), ""].join("\n");
+  return ["## What else they weigh", "", ...on.flatMap((a) => [`- **${a.name}${a.line_label ? ` (${a.line_label.toLowerCase()})` : ""}.** ${a.why} Ask: ${a.ask.join(" ")} We fit when: ${a.fits_us} It is the better choice when: ${a.fits_them} To prove it: ${a.prove}`]), ""].join("\n");
 }
 
 export function setRaised(w, profile, index, on, today) {

@@ -303,14 +303,19 @@ def cmd_alternatives(args: argparse.Namespace) -> int:
     if family not in FAMILIES:
         print(f"Unknown family: {family}. Families: {', '.join(FAMILIES)}.", file=sys.stderr)
         return 2
-    items = read_alternatives().get(family, [])
-    if not items:
+    alts = read_alternatives()
+    items = alts.get(family, [])
+    own = alts.get(args.profile, []) if args.profile else []
+    if not items and not own:
         print(f"No alternatives ship for the {family} family yet. They are added in data/alternatives.json.", file=sys.stderr)
         return 1
     if args.format == "json":
-        _emit(json.dumps(items, indent=2, ensure_ascii=False) + "\n", args.out)
+        _emit(json.dumps(items + own, indent=2, ensure_ascii=False) + "\n", args.out)
     else:
-        _emit(alternatives_markdown(family, items), args.out)
+        text = alternatives_markdown(family, items) if items else ""
+        if own:
+            text += ("\n" if text else "") + alternatives_markdown(args.profile, own)
+        _emit(text, args.out)
     return 0
 
 
@@ -1144,7 +1149,7 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("config")
     sp.add_argument("--at", default="05:17", help="time of day in UTC, HH:MM")
     sp.add_argument("--every", choices=["hour", "day", "week"], default="day")
-    sp.add_argument("--install-from", default="beyond90", help='pip requirement for the workflow, e.g. "beyond90 @ git+https://github.com/OWNER/beyond-90@v0.118.0"')
+    sp.add_argument("--install-from", default="beyond90", help='pip requirement for the workflow, e.g. "beyond90 @ git+https://github.com/OWNER/beyond-90@v0.119.0"')
     sp.add_argument("--out")
     sp.set_defaults(func=cmd_schedule)
 
