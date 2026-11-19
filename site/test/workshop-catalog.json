@@ -1438,5 +1438,81 @@
     ]
    }
   }
+ },
+ "alternatives": {
+  "infrastructure": [
+   {
+    "id": "renew",
+    "name": "Renew the current platform",
+    "why": "No migration, skills already in place, and a renewal is one signature away.",
+    "ask": [
+     "What does the renewal cost against the last one, and for how long is that price fixed?",
+     "Which products in the renewal do you pay for and not use?"
+    ],
+    "fits_us": "The renewal costs much more than the last, bundles products nobody asked for, or locks the price for a short time only.",
+    "fits_them": "The renewal is affordable and the team has no room for a move this year: plan for the renewal after, and keep the conversation open.",
+    "prove": "The case for change month by month, and a test wave moved and rolled back."
+   },
+   {
+    "id": "public_cloud",
+    "name": "Move everything to a public cloud",
+    "why": "No hardware to buy or run, capacity on demand, and often a mandate from the board.",
+    "ask": [
+     "Which workloads run at the same load all year round?",
+     "Does the cloud estimate include storage, backup, traffic out and support?"
+    ],
+    "fits_us": "Steady workloads, data that must stay in the country or close to plants and shops, and costs that grow with every machine left running.",
+    "fits_them": "Workloads with sharp peaks, applications rebuilt for the cloud, or no data centre left to run: there the public cloud is the better home.",
+    "prove": "What one machine costs here, side by side with the cloud, and the same platform running in the cloud for what belongs there."
+   },
+   {
+    "id": "other_platform",
+    "name": "Another hyperconverged or private-cloud platform",
+    "why": "The same promise of simplicity, sometimes bundled with hardware or software the customer already buys.",
+    "ask": [
+     "Which hardware and hypervisors does it support, and does choosing it lock either?",
+     "How is an upgrade of the whole stack done, and how long does it take?"
+    ],
+    "fits_us": "The customer wants freedom of hardware, one-step upgrades of the whole stack, and the same platform at the core, the edge and in the cloud.",
+    "fits_them": "The customer has standardised on that vendor's hardware and tools, and its limits do not matter for the workloads in scope.",
+    "prove": "Upgrades and failures tested during the proof of value, on the customer's chosen hardware."
+   },
+   {
+    "id": "three_tier",
+    "name": "Separate servers and storage arrays",
+    "why": "Familiar, an array bought recently, and a feeling that separate parts perform better.",
+    "ask": [
+     "When do the array and the servers go out of support, and what does the refresh cost?",
+     "How many teams and tools does it take to give an application a new machine with storage?"
+    ],
+    "fits_us": "The array or the servers are near the end of their support, and several teams have to agree every change.",
+    "fits_them": "A large array bought recently with years of support left: start where it ends, or with workloads it does not serve.",
+    "prove": "A performance test on the customer's own workload, and the time to deliver a machine end to end."
+   },
+   {
+    "id": "build_own",
+    "name": "Build it with open-source virtualisation",
+    "why": "No licence fees, full control, and engineers keen to build it.",
+    "ask": [
+     "Who answers a failure at three in the morning, and within what time?",
+     "How many people would build, upgrade and secure it, and for how many years?"
+    ],
+    "fits_us": "The team is small, uptime matters, and the people who would build it are needed elsewhere.",
+    "fits_them": "A large engineering team that already runs open-source infrastructure at scale and wants to own every layer.",
+    "prove": "The cost per machine with the people counted, and a support case opened and solved during the proof of value."
+   },
+   {
+    "id": "wait",
+    "name": "Do nothing for now",
+    "why": "No budget this year, other priorities, and nothing seems broken.",
+    "ask": [
+     "What happens on the contract end date if nothing changes?",
+     "What did the last outage or the last emergency purchase cost?"
+    ],
+    "fits_us": "A date that cannot move: a contract end, hardware out of support, an audit, a regulation.",
+    "fits_them": "No date and no pain the customer can name: agree what would make it urgent, and when to talk again.",
+    "prove": "The cost of waiting, month by month, and a first step small enough to fit this year's budget."
+   }
+  ]
  }
 }

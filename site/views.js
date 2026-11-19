@@ -2477,7 +2477,7 @@ export function forwardView({ workshop: w, catalog, povs, today, go, setDemo }) 
 }
 
 // ------------------------------------------------------------------ qualify the deal: the same ten questions on every line
-export function qualifyView({ workshop: w, setDeal, go }) {
+export function qualifyView({ workshop: w, catalog, setDeal, setAlt, go }) {
   let cur = w;
   const say = h("p", { class: "note", role: "status" });
   const hero = h("section", { class: "card qdhero" });
@@ -2524,7 +2524,33 @@ export function qualifyView({ workshop: w, setDeal, go }) {
     const t = QD.dealMarkdown(cur.deal);
     copyText(t || "Nothing answered yet.").then((ok) => { ev.target.textContent = ok ? "Copied" : "Not copied"; });
   } });
+  // what else they weigh: marked from the conversation, each with what to ask and when the other choice wins
+  const altBox = h("div", { class: "altlist" });
+  const altSay = h("p", { class: "note", role: "status" });
+  const drawAlts = () => {
+    const alts = WS.alternativesFor(catalog, cur);
+    put(altBox,
+      h("div", { class: "wsfam", role: "group", "aria-label": "On the table" }, alts.map((a) => h("button", { type: "button", class: "kindchip", "aria-pressed": String(a.on), text: a.name,
+        "data-tip": a.why,
+        onclick: async () => {
+          try { cur = await setAlt(a.id, !a.on); altSay.textContent = ""; } catch (e) { altSay.textContent = e.message; return; }
+          drawAlts(); drawHero();
+          const b = [...altBox.querySelectorAll(".kindchip")].find((x) => x.textContent === a.name);
+          if (b) b.focus();
+        } }))),
+      alts.filter((a) => a.on).map((a) => h("div", { class: "card altcard" }, h("h3", { text: a.name }), h("p", { class: "muted", text: a.why }),
+        h("dl", { class: "objdl" },
+          h("dt", { text: "Ask" }), h("dd", {}, h("ul", {}, a.ask.map((q) => h("li", { text: q })))),
+          h("dt", { text: "We fit when" }), h("dd", { text: a.fits_us }),
+          h("dt", { text: "It is the better choice when" }), h("dd", { text: a.fits_them }),
+          h("dt", { text: "To prove it" }), h("dd", { text: a.prove })))),
+      alts.some((a) => a.on) ? null : h("p", { class: "note", text: "Mark what the customer has mentioned or is likely to weigh. Each one opens with what to ask, when the proposal fits, when the other choice is the better one, and how to prove it." }));
+  };
+  drawAlts();
+  const altCard = WS.alternativesFor(catalog, w).length ? card("What else they weigh", h("div", {}, altBox, altSay),
+    { sub: "Renewing, a public cloud, another platform, building it, or waiting: the alternatives every deal is measured against, written to be fair. Knowing when the other choice wins is what makes the rest believable." }) : null;
   return h("div", {}, hero,
+    altCard,
     card("The ten questions", h("div", {}, h("ol", { class: "wslist" }, items), say,
       h("div", { class: "btnrow" }, copy, h("button", { class: "btn small", type: "button", text: "Back to the questions", onclick: () => go("workshop") }))),
     { sub: "Known, partly, or not yet, with what you heard. The same idea in the words most sales methods use, so the seller reads the same list." }));
@@ -2666,6 +2692,7 @@ function lessonsView(ls, examples, title = "What the deals teach") {
       list("When not won", ls.reasons.map((r) => h("li", { text: `${r.label}: ${r.count}` }))),
       list("What the deals not won had not established", ((ls.not_established || {}).tags || []).map((t) => h("li", { text: `${t.tag}: ${t.count} of ${ls.not_established.of}` }))),
       list("By route to purchase", (ls.routes || []).map((r) => h("li", { text: `${r.label}: ${r.won} won of ${r.count}` }))),
+      list("What else they weighed", (ls.alternatives || []).map((a) => h("li", { text: `${a.label}: ${a.count} prospect${a.count === 1 ? "" : "s"}${a.decided ? `, ${a.won} won of ${a.decided} decided` : ""}` }))),
       list("Tests not met", ls.not_met.map((t) => h("li", { text: `${t.text} (${t.count})` }))),
       list("Where deals start", ls.lands.map((x) => h("li", { text: `${x.label}: ${x.count}` })))),
     h("div", { class: "btnrow" }, h("button", { class: "btn small", type: "button", text: "Copy for enablement and leadership", onclick: (ev) => copyText(md).then((ok) => { ev.target.textContent = ok ? "Copied" : "Not copied"; }) }))),

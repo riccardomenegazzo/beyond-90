@@ -6,7 +6,7 @@
  *
  * Plain functions over the workshop, its deal and its proof of value. Nothing here names a product.
  */
-import { assess, displayOrder, stories, worthText, ROLE_WORDS } from "./workshop.js";
+import { assess, displayOrder, stories, worthText, ROLE_WORDS, alternativesFor } from "./workshop.js";
 import { dealState } from "./qualify.js";
 import { qualify as povReady, progress as povProgress } from "./pov.js";
 import { hasCase } from "./valuecase.js";
@@ -121,6 +121,7 @@ export function forward(catalog, w, pov, today = "") {
   const inProof = new Set(pov ? pov.criteria.filter((c) => c.status !== "dropped").map((c) => clean(c.text).toLowerCase()) : []);
   const outside = (res.raised || []).filter((o) => !inProof.has(clean(o.prove).toLowerCase()));
   const outcome = pov && pov.outcome ? pov.outcome.result : "";
+  const onTable = alternativesFor(catalog, w).filter((a) => a.on);
   // with partners on the deal: their registration, who runs the proof with them, and who delivers with the skills
   const reg = registrationOf(w.channel, today || w.updated_on);
   const cs = w.channel ? channelState(catalog, w, today || w.updated_on) : null;
@@ -150,6 +151,8 @@ export function forward(catalog, w, pov, today = "") {
       { text: "The readout to the sponsor is done", ok: !!pov && (pov.stage === "done" || !!outcome), fix: "Hold the readout and mark the proof done.", go: "wspov" },
       { text: "The decider is known and has heard from us", ok: known(w.deal, "decider"), fix: "Ask the champion for a meeting with the decider before the readout.", go: "wsqualify" },
       { text: "Finance has the case for change", ok: !!(w.case && hasCase(w.case)), fix: "Ask for the cost of staying and of moving, and build the case with them.", go: "wscase" },
+      ...(onTable.length ? [{ text: `How we compare with what else they weigh is known (${onTable.map((a) => a.name.toLowerCase()).join("; ")})`, ok: known(w.deal, "alternatives"),
+        fix: `Ask what each would have to show, and prove it: ${onTable.map((a) => a.prove).join(" ")}`, go: "wsqualify" }] : []),
       { text: "The outcome is recorded", ok: !!outcome, fix: "Record won, lost or no decision, and why, on the proof of value.", go: "wspov" },
     ],
     handover: [

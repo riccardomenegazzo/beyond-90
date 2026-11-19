@@ -127,6 +127,19 @@ TOOL_DEFS: list[dict[str, Any]] = [
         }, ["customer"]),
     },
     {
+        "name": "what_else_they_weigh",
+        "title": "What else the customer weighs",
+        "description": (
+            "The alternatives a deal is measured against for a family of product lines (renewing the current platform, a public "
+            "cloud, another platform, building it, waiting): why customers consider each, what to ask, when the proposal fits, "
+            "when the other choice is the better one, and how to prove it. Fair by design: each says when the other choice wins."
+        ),
+        "inputSchema": _schema({
+            "profile": {"type": "string", "description": "A product line, such as hci; its family decides the list."},
+            "family": {"type": "string", "default": "infrastructure", "description": "The family, when no profile is given."},
+        }, []),
+    },
+    {
         "name": "path_to_target",
         "title": "What it takes to reach a target",
         "description": "A greedy sequence of changes that reaches a target Yield (for example 0.9), biggest gain first. Effort is not estimated.",
@@ -158,7 +171,7 @@ class Server:
         self.profile, self.catalogue_dir = profile, catalogue_dir
         self.tools: dict[str, Tool] = {
             "list_customers": self._list, "score": self._score, "actions": self._actions,
-            "what_if": self._what_if, "path_to_target": self._path, "discovery_questions": self._discovery,
+            "what_if": self._what_if, "path_to_target": self._path, "discovery_questions": self._discovery, "what_else_they_weigh": self._alternatives,
         }
 
     # -- data ---------------------------------------------------------------------------------------------
@@ -242,6 +255,21 @@ class Server:
         keep = ("stage", "q", "why", "role", "listen", "probe", "focus")
         return {"customer": s.customer, "profile": cat.profile, "total": len(qs),
                 "questions": [{**{k: x.get(k) for k in keep if x.get(k) not in (None, "")}, "essential": bool(x.get("core"))} for x in qs[:40]]}
+
+    def _alternatives(self, args: Mapping[str, Any]) -> Any:
+        from .estate import FAMILIES, read_alternatives
+
+        profile = args.get("profile")
+        family = args.get("family", "infrastructure")
+        if profile is not None:
+            if not isinstance(profile, str):
+                raise ToolError("'profile' must be a string")
+            family = next((f for f, members in FAMILIES.items() if profile in members), None)
+            if family is None:
+                raise ToolError(f"{profile} is not in a family of product lines")
+        if not isinstance(family, str) or family not in FAMILIES:
+            raise ToolError(f"'family' must be one of {', '.join(FAMILIES)}")
+        return {"family": family, "alternatives": read_alternatives().get(family, [])}
 
     def _actions(self, args: Mapping[str, Any]) -> Any:
         limit = _int(args, "limit", 10, 1, 50)

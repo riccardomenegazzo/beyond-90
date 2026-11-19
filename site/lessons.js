@@ -3,7 +3,7 @@
  * up most, which tests were not met, and how long each stage took. Built from plain facts per deal, so the same
  * reading works on one engineer's desk and on a team's shared snapshots. No DOM, so Node can test it.
  */
-import { assess } from "./workshop.js";
+import { assess, alternativesFor } from "./workshop.js";
 import { progress, OUTCOMES, REASONS } from "./pov.js";
 import { DEAL, dealState } from "./qualify.js";
 import { ROUTES, KINDS } from "./partners.js";
@@ -52,6 +52,8 @@ export function dealFacts(workshops, povs, catalog) {
       partner_kind: w && w.channel ? (w.channel.partners.find((x) => x.lead) || w.channel.partners[0]).kind : "",
       qualified: w && w.deal ? dealState(w.deal).passed : "",
       not_known: w && w.deal ? DEAL.filter((d) => !(w.deal[d.id] && w.deal[d.id].a === "known")).map((d) => d.tag) : null,
+      // what else they weighed, by name: renewing, a public cloud, waiting
+      alts: w && catalog ? alternativesFor(catalog, w).filter((a) => a.on).map((a) => a.name) : [],
     });
   }
   return out.sort((a, b) => cmp(a.customer, b.customer));
@@ -114,6 +116,14 @@ export function lessons(facts, { includeExamples = false } = {}) {
   const notWon = decided.filter((f) => f.outcome.result !== "won" && Array.isArray(f.not_known));
   const missing = new Map();
   for (const f of notWon) for (const t of f.not_known) missing.set(t, { key: t, tag: t, count: (missing.get(t) || { count: 0 }).count + 1 });
+  // how deals ended when the customer weighed something else: which alternatives come up, and how often we still won
+  const weighed = new Map();
+  for (const f of deals) for (const a of (f.alts || [])) {
+    const have = weighed.get(a) || { key: a, label: a, count: 0, decided: 0, won: 0 };
+    have.count += 1;
+    if (f.outcome) { have.decided += 1; if (f.outcome.result === "won") have.won += 1; }
+    weighed.set(a, have);
+  }
   const proofs = deals.filter((f) => f.pov && f.pov.stage === "done");
   const technical = proofs.filter((f) => f.pov.verdict === "all criteria met" || f.pov.verdict === "mostly met").length;
   return {
@@ -121,7 +131,7 @@ export function lessons(facts, { includeExamples = false } = {}) {
     win_rate: decided.length ? Math.round((won / decided.length) * 100) : null,
     proofs: proofs.length, technical_wins: technical, technical_rate: proofs.length ? Math.round((technical / proofs.length) * 100) : null,
     reasons: top(reasons, 6), objections: top(objections, 6), gaps: top(gaps, 6), not_met: top(notMet, 5), lands: top(lands, 5),
-    routes: tally("route", ROUTES), partner_kinds: tally("partner_kind", KINDS), not_established: { of: notWon.length, tags: top(missing, 5) },
+    routes: tally("route", ROUTES), partner_kinds: tally("partner_kind", KINDS), alternatives: top(weighed, 6), not_established: { of: notWon.length, tags: top(missing, 5) },
     cycle: {
       to_proof: median(deals.filter((f) => f.pov && f.pov.start && f.started_on).map((f) => days(f.started_on, f.pov.start))),
       proof: median(deals.filter((f) => f.pov && f.pov.start && f.pov.end && f.pov.stage === "done").map((f) => days(f.pov.start, f.pov.end))),
@@ -146,6 +156,7 @@ export function lessonsMarkdown(l, title = "What our deals teach") {
     for (const k of l.partner_kinds || []) out.push(`- Led by a ${k.label.toLowerCase()}: ${k.won} won of ${k.count}`);
     out.push("");
   }
+  if ((l.alternatives || []).length) out.push("## What else they weighed", "", ...l.alternatives.map((a) => `- ${a.label}: ${plural(a.count, "prospect")}${a.decided ? `, ${a.won} won of ${a.decided} decided` : ""}.`), "");
   if (l.objections.length) out.push("## What customers push back on", "", ...l.objections.map((o) => `- "${o.says}" (${o.line.toLowerCase()}): ${plural(o.count, "prospect")}${o.won + o.lost ? `, ${o.won} won and ${o.lost} not` : ""}.`), "");
   if (l.gaps.length) out.push("## The gaps heard most", "", ...l.gaps.map((g) => `- ${g.q} (${g.line.toLowerCase()}): ${plural(g.count, "prospect")}${g.unknown ? `, ${g.unknown} where nobody knew` : ""}.`), "");
   if (l.not_met.length) out.push("## Tests not met", "", ...l.not_met.map((t) => `- ${t.text} (${t.count})`), "");

@@ -14,6 +14,8 @@ between lines are generic statements about infrastructure, true of any vendor; n
 
 from __future__ import annotations
 
+import json
+import re
 from collections import Counter
 from pathlib import Path
 from typing import Any, Optional
@@ -245,6 +247,43 @@ def render_plan_markdown(e: dict[str, Any]) -> str:
     return "\n".join(out)
 
 
+ALTERNATIVES_FILE = Path(__file__).resolve().parent / "data" / "alternatives.json"
+ALT_ID = re.compile(r"^[a-z][a-z_]{1,29}$")
+ALT_LIMITS = {"name": 60, "why": 200, "fits_us": 240, "fits_them": 240, "prove": 200}
+
+
+def read_alternatives(path: Path = ALTERNATIVES_FILE) -> dict[str, list[dict[str, Any]]]:
+    """What else a customer weighs, per family of product lines: why they consider it, what to ask, when each choice
+    fits, and how to prove it. Written for the conversation, not against anyone: each says when the other choice wins."""
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as e:
+        raise DataError([f"{path.name}: {e}"]) from e
+    if not isinstance(data, dict):
+        raise DataError([f"{path.name}: expected an object keyed by family"])
+    out: dict[str, list[dict[str, Any]]] = {}
+    for family, items in data.items():
+        if family not in FAMILIES:
+            raise DataError([f"{path.name}: {family!r} is not a family of product lines"])
+        if not isinstance(items, list) or not 2 <= len(items) <= 8:
+            raise DataError([f"{path.name}: {family}: between 2 and 8 alternatives"])
+        seen: set[str] = set()
+        for a in items:
+            if not isinstance(a, dict) or set(a) != {"id", *ALT_LIMITS, "ask"}:
+                raise DataError([f"{path.name}: {family}: each alternative has id, name, why, ask, fits_us, fits_them and prove"])
+            if not isinstance(a["id"], str) or not ALT_ID.match(a["id"]) or a["id"] in seen:
+                raise DataError([f"{path.name}: {family}: ids are short, lower case and unique ({a.get('id')!r})"])
+            seen.add(a["id"])
+            for k, most in ALT_LIMITS.items():
+                if not isinstance(a[k], str) or not 3 <= len(a[k]) <= most:
+                    raise DataError([f"{path.name}: {a['id']}.{k}: between 3 and {most} characters"])
+            ask = a["ask"]
+            if not isinstance(ask, list) or not 1 <= len(ask) <= 3 or not all(isinstance(q, str) and 10 <= len(q) <= 200 and q.endswith("?") for q in ask):
+                raise DataError([f"{path.name}: {a['id']}.ask: one to three questions, each ending with a question mark"])
+        out[family] = items
+    return out
+
+
 def workshop_catalog() -> dict[str, Any]:
     """What a discovery workshop needs, for every profile that ships discovery questions: built into the page once."""
     from .catalogue import available_profiles
@@ -259,5 +298,6 @@ def workshop_catalog() -> dict[str, Any]:
                                          **{k: q[k] for k in ("role", "core", "listen", "probe") if k in q}} for q in cat.discovery],
                           "proof": [{"text": c["text"], "how": c.get("how", "")} for c in cat.pov_criteria], "readiness": list(cat.pov_readiness), "story": cat.story}
     families = {name: [p for p in members if p in lines] for name, members in FAMILIES.items()}
-    return {"families": families, "links": [list(x) for x in LINKS if x[0] in lines and x[1] in lines], "lines": lines}
+    alternatives = {k: v for k, v in read_alternatives().items() if families.get(k)}
+    return {"families": families, "links": [list(x) for x in LINKS if x[0] in lines and x[1] in lines], "lines": lines, "alternatives": alternatives}
 

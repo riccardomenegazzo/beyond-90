@@ -2,6 +2,32 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.117.0
+
+- **What else they weigh.** The alternatives a deal is measured against, for the family of the lines in scope. For infrastructure:
+  - renewing the current platform;
+  - moving everything to a public cloud;
+  - another hyperconverged or private-cloud platform;
+  - separate servers and storage arrays;
+  - building it with open-source virtualisation;
+  - doing nothing for now.
+
+  Each one gives:
+  - why customers consider it;
+  - the questions to ask;
+  - when the proposal fits;
+  - when the other choice is the better one;
+  - how to prove it.
+
+  They are written to be fair, and name no vendor.
+- **In qualification,** the customer's alternatives are marked as on the table. What is marked:
+  - goes into the meeting summary;
+  - adds a check before the decision on the way forward;
+  - counts in what the deals teach, with how often those deals were still won, on one desk and across a team;
+  - on the presales desk, doing nothing with no date that makes the deal urgent is flagged as a risk that can lose it.
+- **Outside the page:** `beyond90 alternatives --profile <line>` (Markdown or JSON), and a read-only assistant tool, `what_else_they_weigh`.
+- The invented examples weigh renewing, a public cloud and keeping the arrays, so the lessons show it.
+
 ## 0.116.0
 
 - **A first edge design**, in the discovery workshop when edge and branch sites are in scope. It works kind of site by kind of site, up to four standard designs, and gives:

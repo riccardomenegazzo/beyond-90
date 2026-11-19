@@ -37,7 +37,8 @@ const MAX_ANSWERS = 400, MAX_SCOPE = 12;
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 const NONCE = /^[a-z0-9]{6,12}$/;
 const KEY = /^[a-z0-9-]{1,40}#\d{1,2}$/;
-const RAISED = /^[a-z0-9-]{1,40}#\d$/, MAX_RAISED = 40;     // an objection the customer raised: its line and its place in the line's story
+const RAISED = /^[a-z0-9-]{1,40}#\d$/, MAX_RAISED = 40;
+const ALT = /^[a-z][a-z_]{1,29}$/, MAX_ALTS = 8;          // an alternative the customer weighs, by its id in the family's list     // an objection the customer raised: its line and its place in the line's story
 const PROFILE = /^[a-z0-9-]{1,40}$/;
 const cmp = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
 const text = (v, max) => String(v == null ? "" : v).replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim().slice(0, max);
@@ -88,6 +89,7 @@ export function validWorkshop(w) {
   if (w.deal != null && !validDeal(w.deal)) return false;
   if (w.channel != null && !validChannel(w.channel)) return false;
   if (w.demo != null && !(w.demo && typeof w.demo === "object" && !Array.isArray(w.demo) && Object.keys(w.demo).length === 1 && isDate(w.demo.on) && w.demo.on >= w.created_on)) return false;
+  if (w.alts != null && !(Array.isArray(w.alts) && w.alts.length && w.alts.length <= MAX_ALTS && w.alts.every((k) => typeof k === "string" && ALT.test(k)) && new Set(w.alts).size === w.alts.length)) return false;
   if (w.raised != null && !(Array.isArray(w.raised) && w.raised.length && w.raised.length <= MAX_RAISED && w.raised.every((k) => typeof k === "string" && RAISED.test(k)) && new Set(w.raised).size === w.raised.length)) return false;
   const m = /^ws\|(\d{4}-\d{2}-\d{2})\|([a-z0-9]+)$/.exec(w.id || "");
   return !!m && m[1] === w.created_on && NONCE.test(m[2]);
@@ -276,6 +278,44 @@ export function figuresHeard(catalog, w) {
 }
 
 /** Mark an objection as raised by the customer, or not: it then has to be answered, and proven. */
+/**
+ * What else the customer weighs, for the families of the lines in scope: renewing, a public cloud, another platform,
+ * doing nothing. Each says why they consider it, what to ask, when the proposal fits, when the other choice is the
+ * better one, and how to prove it; `on` marks those the customer has put on the table.
+ */
+export function alternativesFor(catalog, w) {
+  const fams = Object.entries((catalog && catalog.families) || {}).filter(([, members]) => w.scope.some((p) => members.includes(p))).map(([f]) => f);
+  const seen = new Set(), on = new Set(w.alts || []);
+  const out = [];
+  for (const f of fams) for (const a of ((catalog.alternatives || {})[f] || [])) {
+    if (seen.has(a.id)) continue;
+    seen.add(a.id);
+    out.push({ ...a, family: f, on: on.has(a.id) });
+  }
+  return out;
+}
+
+/** Mark an alternative as on the table, or take it off. */
+export function setAlt(w, id, on, today) {
+  if (typeof id !== "string" || !ALT.test(id)) throw new Error("Not an alternative of this workshop.");
+  const now = (w.alts || []).filter((k) => k !== id);
+  if (on) {
+    if (now.length >= MAX_ALTS) throw new Error(`At most ${MAX_ALTS} alternatives can be on the table.`);
+    now.push(id);
+  }
+  const next = { ...w };
+  delete next.alts;
+  if (now.length) next.alts = now;
+  return changed(next, {}, today);
+}
+
+/** The alternatives on the table, as notes for the seller: why, what to ask, and how to prove it. */
+export function alternativesMarkdown(catalog, w) {
+  const on = alternativesFor(catalog, w).filter((a) => a.on);
+  if (!on.length) return "";
+  return ["## What else they weigh", "", ...on.flatMap((a) => [`- **${a.name}.** ${a.why} Ask: ${a.ask.join(" ")} We fit when: ${a.fits_us} It is the better choice when: ${a.fits_them} To prove it: ${a.prove}`]), ""].join("\n");
+}
+
 export function setRaised(w, profile, index, on, today) {
   const key = `${profile}#${index}`;
   if (!RAISED.test(key) || !Number.isInteger(index) || index < 0) throw new Error("Not an objection of this workshop.");
@@ -403,6 +443,7 @@ const EXAMPLE = {
   raised: [["dr-backup", 3], ["platform-migration", 1], ["hci", 2]],
   sizing: { growth_pct: 15 },
   // sold with partners: an integrator that leads and will deliver, through a distributor; the integrator knows two of the four lines
+  alts: ["renew", "public_cloud"],
   channel: {
     partners: [{ name: "Verdi Sistemi (mock)", kind: "integrator", lead: true, reg: [-9, 80], skills: ["hci", "dr-backup"] }, { name: "Nord Distribuzione (mock)", kind: "distributor" }],
     route: "distribution",
@@ -439,6 +480,7 @@ export function exampleWorkshop(createdOn) {
     w = setPlan(w, profile, Number(i), who, later(n), createdOn);
   }
   for (const [profile, i] of EXAMPLE.raised) w = setRaised(w, profile, i, true, createdOn);
+  for (const id of EXAMPLE.alts) w = setAlt(w, id, true, createdOn);
   w = setCase(setSizing(w, EXAMPLE.sizing, createdOn), EXAMPLE.case, createdOn);
   for (const [id, [a, note]] of Object.entries(EXAMPLE.deal)) w = setDeal(w, id, a, note, createdOn);
   const shift = (n) => new Date(Date.parse(createdOn + "T00:00:00Z") + n * 86400000).toISOString().slice(0, 10);
@@ -652,6 +694,8 @@ export function summaryMarkdown(catalog, w, res) {
     out.push("## Partners", "", ...c.partners.map((p) => `- ${p.name}: ${KINDS[p.kind].toLowerCase()}${p.lead ? ", leads the deal" : ""}${p.reg ? `, registered ${p.reg.on} to ${p.reg.until}` : ""}`), "");
     out.push(`Route to purchase: ${c.route ? ROUTES[c.route].toLowerCase() : "not set"}.`, "", ...ACTIVITIES.map((a) => `- ${a.label}: ${whoLabel(c, (c.split || {})[a.id] || "")}`), "");
   }
+  const alts = alternativesMarkdown(catalog, w);
+  if (alts) out.push(alts);
   const deal = dealMarkdown(w.deal);
   if (deal) out.push(deal);
   out.push("_Prepared with Beyond 90. The questions come from its product profiles; nothing in this note left the browser it was written in._", "");

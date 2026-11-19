@@ -42,7 +42,7 @@ def test_notifications_get_no_reply_and_unknown_methods_get_an_error(root):
 
 def test_every_tool_is_declared_read_only(root):
     tools = Server(root).handle({"jsonrpc": "2.0", "id": 1, "method": "tools/list"})["result"]["tools"]
-    assert {t["name"] for t in tools} == {"list_customers", "score", "actions", "what_if", "path_to_target", "discovery_questions"}
+    assert {t["name"] for t in tools} == {"list_customers", "score", "actions", "what_if", "path_to_target", "discovery_questions", "what_else_they_weigh"}
     assert all(t["annotations"]["readOnlyHint"] and not t["annotations"]["openWorldHint"] for t in tools)
 
 
@@ -133,3 +133,15 @@ def test_discovery_questions_say_how_to_ask_and_narrow_to_the_meeting(tmp_path):
     assert not bad and qs and all(q["essential"] and q["role"] == "operations" for q in qs)
     assert call(s, "discovery_questions", {"customer": "granite-hci", "role": "ceo"})[0]
     assert call(s, "discovery_questions", {"customer": "granite-hci", "essential": "yes"})[0]
+
+
+def test_what_else_they_weigh_is_fair_and_follows_the_line(tmp_path):
+    s = Server(tmp_path)
+    bad, text = call(s, "what_else_they_weigh", {"profile": "edge-sites"})
+    out = json.loads(text)
+    assert not bad and out["family"] == "infrastructure"
+    assert out["alternatives"][0]["id"] == "renew" and all(a["fits_them"] for a in out["alternatives"])
+    assert not call(s, "what_else_they_weigh", {})[0]
+    assert call(s, "what_else_they_weigh", {"profile": "nope"})[0]
+    assert call(s, "what_else_they_weigh", {"family": "nope"})[0]
+    assert call(s, "what_else_they_weigh", {"profile": 3})[0]

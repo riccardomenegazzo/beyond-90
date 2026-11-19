@@ -22,6 +22,7 @@ beyond90 mcp ~/customers
 | `what_if` | scenarios compared: today, right after, once settled (see [what-if](whatif.md)) |
 | `path_to_target` | the steps that reach a target Yield, biggest gain first |
 | `discovery_questions` | the questions to ask, value first and then the weakest stage, each with who to ask, whether it is essential, what to listen for and the follow-up; narrowed to the essential ones or to one role |
+| `what_else_they_weigh` | the alternatives a deal is measured against for a product line's family (renewing, a public cloud, another platform, building it, waiting): why customers consider each, what to ask, when the proposal fits, when the other choice is the better one, and how to prove it |
 
 ## Prompts
 

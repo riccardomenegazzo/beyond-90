@@ -71,6 +71,40 @@ The page says what to do at the gate reached and what the next gate still needs,
 
 ![Qualify the deal: where it stands and what the next gate needs](img/app-qualify.png)
 
+### What else they weigh
+
+Above the ten questions, **What else they weigh** lists the alternatives a deal is measured against for the family of the lines in scope. For infrastructure:
+- renewing the current platform;
+- moving everything to a public cloud;
+- another hyperconverged or private-cloud platform;
+- separate servers and storage arrays;
+- building it with open-source virtualisation;
+- doing nothing for now.
+
+Mark the ones the customer mentions or is likely to weigh. Each one opens with:
+- why customers consider it;
+- the questions to ask;
+- when the proposal fits;
+- **when the other choice is the better one**;
+- how to prove it.
+
+They are written to be fair. Saying when the other choice wins is what makes the rest believable, and it tells you when to stop.
+
+What is marked:
+- goes into the meeting summary, never into the customer readout;
+- adds a check before the decision on [the way forward](#the-way-forward): how we compare is known;
+- counts in what the deals teach, with how often those deals were still won.
+
+On the presales desk:
+- doing nothing, with no date that makes the deal urgent, is a risk that can lose the deal;
+- other options without knowing how we compare are a watch.
+
+The same list is available outside the page:
+- `beyond90 alternatives --profile <line>` prints it as Markdown or JSON;
+- an assistant gets it from the `what_else_they_weigh` tool ([mcp.md](mcp.md)).
+
+![What else they weigh: renewing and a public cloud on the table, each with what to ask and when the other choice wins](img/app-alternatives.png)
+
 ## Partners
 
 **Partners** records who is on the deal: the reseller, integrator, service provider or distributor working it, which one leads, the deal registration and when it runs out, the route to purchase, and who does what from discovery to support. It says what to settle, and gives a brief for the partner and a discovery kit any partner can use. See [partners.md](partners.md).

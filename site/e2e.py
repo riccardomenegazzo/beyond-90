@@ -778,6 +778,15 @@ def main(site: str) -> int:
         hero = page.inner_text("#view .qdhero")
         check("Ready for a demo built for them" in hero and "To be ready to propose a proof of value, find out" in hero and "Economic buyer:" in hero,
               "three answers make it ready for a demo built for them, and say what a proof of value still needs")
+        # what else they weigh: marked from the conversation, each with what to ask and when the other choice wins
+        alt = page.locator("#view .altlist").get_by_role("button", name="Do nothing for now")
+        alt.click()
+        page.wait_for_selector("#view .altcard:has-text('Do nothing for now')")
+        card_text = page.inner_text("#view .altcard")
+        check(alt.get_attribute("aria-pressed") == "true" and "It is the better choice when" in card_text and "What happens on the contract end date if nothing changes?" in card_text,
+              "what else they weigh opens with what to ask, when the proposal fits and when the other choice is the better one")
+        page.click("[data-tab=wsummary]")
+        check("What else they weigh" in page.inner_text("#doc") and "Do nothing for now" in page.inner_text("#doc"), "and goes into the meeting summary")
         # partners on the deal: who brings it, the registration, who does what, and what to hand them
         page.click("[data-tab=wspartners]")
         page.wait_for_selector("#view .ptlist")

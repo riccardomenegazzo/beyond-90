@@ -5,7 +5,7 @@
 // answers the questions of a Monday morning: where is each one, what is due this week, what is late, and what do I tell
 // the account team. Pure functions over plain records; the page and the tests share them.
 
-import { assess, journey, datedPlan, exampleWorkshop, makeWorkshop, setAnswer, setPlan, setWorth, setRaised, setDeal, setChannel } from "./workshop.js";
+import { assess, journey, datedPlan, exampleWorkshop, makeWorkshop, setAnswer, setPlan, setWorth, setRaised, setDeal, setChannel, setAlt } from "./workshop.js";
 import { hasCase } from "./valuecase.js";
 import { registrationOf, channelState, KINDS, ROUTES, ACTIVITIES } from "./partners.js";
 import { dealState } from "./qualify.js";
@@ -91,7 +91,11 @@ export function risksOf({ w, p, res, pr, stage, overdue, today }) {
     const deal = w.deal || {};
     const known = (id) => deal[id] && deal[id].a === "known";
     if (later && !known("decider")) add("high", "We have not heard from who decides: the proof can be won and the deal still lost.");
-    if ((stage === "journey" || later) && !known("why_now")) add("watch", "No date makes this urgent: ask what happens if nothing is decided this year.");
+    // what else they weigh: doing nothing without a date is the usual way a deal is lost to no one
+    const alts = w.alts || [];
+    if (alts.includes("wait") && !known("why_now")) add("high", "They are weighing doing nothing, and no date makes this urgent: find the date that cannot move, or agree when to talk again.");
+    else if ((stage === "journey" || later) && !known("why_now")) add("watch", "No date makes this urgent: ask what happens if nothing is decided this year.");
+    if (later && alts.some((a) => a !== "wait") && !known("alternatives")) add("watch", "They weigh other options and we do not know how we compare: ask what each would have to show.");
   }
   const touched = [w && w.updated_on, p && p.updated_on].filter(Boolean).sort().pop();
   if (touched && days(touched, today) > 21) add("watch", `Not touched for ${days(touched, today)} days.`);
@@ -304,6 +308,7 @@ export function exampleDesk(today) {
   ["gap", "partly", "gap"].forEach((a, i) => { brina = setAnswer(brina, "dr-backup", i, a, "", ago(95)); });
   brina = setRaised(setRaised(brina, "platform-migration", 0, true, ago(95)), "hci", 2, true, ago(95));
   for (const [id, a] of [["why_change", "known"], ["why_now", "known"], ["outcome", "known"], ["decider", "known"], ["criteria", "known"], ["process", "known"], ["paper", "partly"], ["proof", "known"], ["champion", "known"], ["alternatives", "known"]]) brina = setDeal(brina, id, a, "", ago(60));
+  brina = setAlt(setAlt(brina, "renew", true, ago(95)), "three_tier", true, ago(95));
   brina = setChannel(brina, { partners: [{ name: "Verdi Sistemi (mock)", kind: "integrator", lead: true, reg: { on: ago(100), until: ago(10) }, skills: ["platform-migration", "hci", "dr-backup"] }],
     route: "reseller", split: { discovery: "both", proof: "both", delivery: "p0" } }, ago(95));
   let bpov = makePov({ customer: brina.customer, createdOn: ago(70), nonce: "example6", start: ago(60), end: ago(40),
@@ -318,6 +323,7 @@ export function exampleDesk(today) {
   ardesia = setRaised(setRaised(ardesia, "dr-backup", 1, true, ago(120)), "hybrid-cloud", 1, true, ago(120));
   // lost on price: the budget holder was never met, and nobody knew how the options would be compared
   for (const [id, a] of [["why_change", "known"], ["why_now", "partly"], ["outcome", "known"], ["decider", "unknown"], ["criteria", "unknown"], ["paper", "unknown"], ["proof", "known"], ["champion", "partly"], ["alternatives", "partly"]]) ardesia = setDeal(ardesia, id, a, "", ago(100));
+  ardesia = setAlt(ardesia, "public_cloud", true, ago(120));
   ardesia = setChannel(ardesia, { partners: [{ name: "Lago Cloud (mock)", kind: "service_provider", lead: true, reg: { on: ago(125), until: ago(35) }, skills: ["hybrid-cloud"] }],
     route: "service", split: { discovery: "us", proof: "p0", delivery: "p0" } }, ago(120));
   let apov = makePov({ customer: ardesia.customer, createdOn: ago(100), nonce: "example7", start: ago(90), end: ago(75),

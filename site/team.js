@@ -33,6 +33,7 @@ export function snapshotFrom(opps, facts, by, today) {
         ...(f.route ? { route: f.route } : {}), ...(f.partner_kind ? { partner_kind: f.partner_kind } : {}),
         ...(o.partner ? { partner: clean(o.partner, 80) } : {}), ...(o.registration ? { reg_until: o.registration.until } : {}),
         ...(f.not_known ? { qualified: f.qualified || "", not_known: f.not_known } : {}),
+        ...(f.alts && f.alts.length ? { alts: f.alts.slice(0, 8).map((x) => clean(x, 60)) } : {}),
       };
     }),
   };
@@ -44,7 +45,8 @@ const only = (o, keys) => !!o && typeof o === "object" && !Array.isArray(o) && O
 const intIn = (v, lo, hi) => Number.isInteger(v) && v >= lo && v <= hi;
 
 function validDeal(d) {
-  if (!only(d, ["customer", "stage", "closed", "example", "started_on", "updated_on", "lines", "land", "next", "risks", "pov", "outcome", "raised", "gaps", "evidence", "route", "partner_kind", "qualified", "not_known", "partner", "reg_until"])) return false;
+  if (!only(d, ["customer", "stage", "closed", "example", "started_on", "updated_on", "lines", "land", "next", "risks", "pov", "outcome", "raised", "gaps", "evidence", "route", "partner_kind", "qualified", "not_known", "partner", "reg_until", "alts"])) return false;
+  if (d.alts !== undefined && !(Array.isArray(d.alts) && d.alts.length >= 1 && d.alts.length <= 8 && new Set(d.alts).size === d.alts.length && d.alts.every((x) => isStr(x, 60, 1) && !/[\u0000-\u001f\u007f]/.test(x)))) return false;
   if (d.evidence !== undefined && !intIn(d.evidence, 0, 100)) return false;     // optional: snapshots from before it stay readable
   // optional too: how it is sold, and how far it is qualified (tags only)
   if (d.route !== undefined && !Object.hasOwn(ROUTES, d.route)) return false;
@@ -115,7 +117,7 @@ export function teamView(snapshots, { includeExamples = false } = {}) {
   const risky = all.filter((d) => !d.closed && d.risks.some((r) => r.level === "high"))
     .map((d) => ({ engineer: d.engineer, customer: d.customer, stage: d.stage, risk: d.risks.find((r) => r.level === "high").text, more: d.risks.length - 1 }));
   const facts = all.map((d) => ({ customer: d.customer, example: d.example, started_on: d.started_on, lines: d.lines, land: d.land, raised: d.raised, gaps: d.gaps,
-    pov: d.pov, outcome: d.outcome, route: d.route || "", partner_kind: d.partner_kind || "", qualified: d.qualified || "", not_known: d.not_known || null }));
+    pov: d.pov, outcome: d.outcome, route: d.route || "", partner_kind: d.partner_kind || "", qualified: d.qualified || "", not_known: d.not_known || null, alts: d.alts || [] }));
   const stages = STAGES.map((s) => ({ ...s, count: all.filter((d) => !d.closed && d.stage === s.id).length }));
   // the partners across the team: who carries which engineer's deals, and the registrations to act on (as of each snapshot)
   const asOf = new Map(snapshots.map((s, i) => [who(s, i), s.as_of]));
@@ -152,6 +154,7 @@ export function teamMarkdown(t, today) {
   if (l.decided) out.push("## How deals ended", "", `Won ${l.won}, lost ${l.lost}, no decision ${l.none}: ${l.win_rate}% won.${l.reasons.length ? ` When not won: ${l.reasons.map((r) => `${r.label.toLowerCase()} (${r.count})`).join(", ")}.` : ""}`, "");
   if (l.not_established && l.not_established.tags.length) out.push("## What the deals not won had not established", "", ...l.not_established.tags.map((x) => `- ${x.tag}: ${x.count} of ${l.not_established.of}`), "");
   if ((l.routes || []).length) out.push("## How deals ended, by route to purchase", "", ...l.routes.map((r) => `- ${r.label}: ${r.won} won of ${r.count}`), "");
+  if ((l.alternatives || []).length) out.push("## What else customers weighed, across the team", "", ...l.alternatives.map((a) => `- ${a.label}: ${a.count}${a.decided ? `, ${a.won} won of ${a.decided} decided` : ""}`), "");
   if (l.objections.length) out.push("## What customers push back on, across the team", "", ...l.objections.map((o) => `- "${o.says}" (${o.line.toLowerCase()}): ${o.count}`), "");
   if (l.gaps.length) out.push("## The gaps heard most", "", ...l.gaps.map((g) => `- ${g.q} (${g.line.toLowerCase()}): ${g.count}`), "");
   return out.join("\n");

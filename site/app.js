@@ -945,6 +945,7 @@ function workshopContext() {
     raise: async (profile, i, on) => edit((x) => WSHOP.setRaised(x, profile, i, on, today)),
     setDeal: async (id, a, note) => edit((x) => WSHOP.setDeal(x, id, a, note, today)),
     setChannel: async (c) => edit((x) => WSHOP.setChannel(x, c, today)),
+    setAlt: async (id, on) => edit((x) => WSHOP.setAlt(x, id, on, today)),
     setDemo: async (on) => { await edit((x) => WSHOP.setDemo(x, on, today)); selectTab("wsforward"); },
     waves: async (settings) => edit((x) => WSHOP.setWaves(x, settings, today)),
     setCase: async (figures) => edit((x) => WSHOP.setCase(x, figures, today)),
