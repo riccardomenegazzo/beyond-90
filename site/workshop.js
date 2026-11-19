@@ -78,6 +78,7 @@ export function validWorkshop(w) {
   if (w.dr != null && !validDr(w.dr)) return false;
   if (w.obj != null && !validObj(w.obj)) return false;
   if (w.deal != null && !validDeal(w.deal)) return false;
+  if (w.demo != null && !(w.demo && typeof w.demo === "object" && !Array.isArray(w.demo) && Object.keys(w.demo).length === 1 && isDate(w.demo.on) && w.demo.on >= w.created_on)) return false;
   if (w.raised != null && !(Array.isArray(w.raised) && w.raised.length && w.raised.length <= MAX_RAISED && w.raised.every((k) => typeof k === "string" && RAISED.test(k)) && new Set(w.raised).size === w.raised.length)) return false;
   const m = /^ws\|(\d{4}-\d{2}-\d{2})\|([a-z0-9]+)$/.exec(w.id || "");
   return !!m && m[1] === w.created_on && NONCE.test(m[2]);
@@ -261,6 +262,17 @@ export function setDeal(w, id, a, note, today) {
   const next = { ...w };
   delete next.deal;
   if (deal) next.deal = deal;
+  return changed(next, {}, today);
+}
+
+/** The day the demo built for this customer was given, or "" to clear it: the way forward moves on from there. */
+export function setDemo(w, on, today) {
+  const next = { ...w };
+  delete next.demo;
+  if (on) {
+    if (!isDate(on) || on < w.created_on) throw new Error("The demo cannot come before the workshop.");
+    next.demo = { on };
+  }
   return changed(next, {}, today);
 }
 

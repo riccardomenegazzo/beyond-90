@@ -2,6 +2,23 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.109.0
+
+- **The way forward.** Each prospect is placed on the path from discovery to handover: discovery, a demo built for them, proof of value, decision, handover to delivery. Each phase says:
+  - what it is for;
+  - what must be true to move on, read from what is recorded, each with what to do and a link to where to do it;
+  - how to run it and what to avoid.
+
+  The phase now is the furthest one started. A phase passed with something still open says so.
+- **The demo, built from what they said.** The last thing first:
+  - their situation in their words and figures;
+  - the result they want, shown first;
+  - only the gaps on the line to start with, each with who it is for;
+  - the concerns they raised, with how to prove each;
+  - the proof to agree at the end.
+
+  What they already have is listed to leave out, with a fifteen-minute version for the executive. Copy or download the plan, and mark the demo as given.
+
 ## 0.108.0
 
 - **Qualify the deal.** Ten questions that are the same on every line, asked alongside the technical ones:

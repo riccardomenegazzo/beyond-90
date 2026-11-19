@@ -56,6 +56,7 @@ export const WORKSHOP_NAV = [
     { id: "wsqualify", label: "Qualify the deal", icon: "actions", tip: "Ten questions that are the same on every line: a reason to change, a date, a measured result, who decides and how, what would convince them, a champion and the alternatives. Says whether the deal is ready for a demo built for them, for a proof of value, or for a date in the forecast." },
     { id: "journey", label: "The journey", icon: "planview", tip: "Yes, this is possible: what would need to be true, the first step towards each condition and how each step is validated, from today to where the customer could be." },
     { id: "hurt", label: "Where to start", icon: "outlook", tip: "Which line to start with and why, how much is still missing on each line, the path after it, and what to find out before the next meeting." },
+    { id: "wsforward", label: "The way forward", icon: "onboarding", tip: "From discovery to handover: where this prospect is, what must be true to move on, how to run each phase and what to avoid, and the demo planned from what the customer said." },
     { id: "wscase", label: "Case for change", icon: "renewal", tip: "What staying costs and what moving costs, month by month over a few years, in the customer's own figures, with the arithmetic shown. For finance; not a quote." },
     { id: "wspov", label: "Proof of value", icon: "maturity", tip: "The proof of value for the first line: criteria agreed before it starts, sessions, results. Kept in this browser." },
   ] },

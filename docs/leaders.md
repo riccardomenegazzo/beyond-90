@@ -4,7 +4,7 @@ What a presales team gets from Beyond 90, and what its leader sees, without a ne
 
 ## What changes for the team
 
-**Every engineer runs discovery the same way.** Each product line comes with its own questions, each saying who to ask, what a strong or a worrying answer sounds like and the follow-up that goes deeper, with the essential ones for a first meeting marked. Ten questions qualify the deal the same way on every line and say whether it is ready for a demo built for the customer, a proof of value or a date in the forecast. Each line also brings the message for the executive, the technical team and finance, who to bring, and the objections to expect, each with the question to ask before answering and how to prove the answer. The customer's answers become a journey ("yes, this is possible; this is what would need to be true"), a readout the customer can keep, and a proof of value that starts with that line's own criteria and with what the customer asked to see proven.
+**Every engineer runs discovery the same way.** Each product line comes with its own questions, each saying who to ask, what a strong or a worrying answer sounds like and the follow-up that goes deeper, with the essential ones for a first meeting marked. Ten questions qualify the deal the same way on every line and say whether it is ready for a demo built for the customer, a proof of value or a date in the forecast. The way forward says, for every prospect, which phase it is in, what must be true to move on and how to run the next step, down to a demo planned from the customer's own words. Each line also brings the message for the executive, the technical team and finance, who to bring, and the objections to expect, each with the question to ask before answering and how to prove the answer. The customer's answers become a journey ("yes, this is possible; this is what would need to be true"), a readout the customer can keep, and a proof of value that starts with that line's own criteria and with what the customer asked to see proven.
 
 ![Prepare: the message for each audience, who to bring, and the objections with the question to ask first](img/app-prepare.png)
 
@@ -52,7 +52,7 @@ Each says what decided the result and what to check before relying on it. None i
 1. Open **[the presales desk at work](https://riccardomenegazzo.github.io/beyond-90/?start=presales)**. On a first visit it opens with invented prospects at every stage, two of them already decided. A browser that already holds real work only opens the desk, adding nothing to it.
 2. Read **What could stop a deal** and **What the deals teach**.
 3. Under **Your team**, press **Try it with two invented engineers**.
-4. Open Kestrel Logistics. Go through **Prepare** and **Qualify the deal**, then the inventory, sizing sketch, plan in waves and recovery design under **Questions**, then **Case for change**.
+4. Open Kestrel Logistics. Go through **Prepare**, **Qualify the deal** and **The way forward** (the demo planned from what the customer said), then the inventory, sizing sketch, plan in waves and recovery design under **Questions**, then **Case for change**.
 5. Finish with **Handover to delivery** and the **Customer readout**.
 
 ## What it is not

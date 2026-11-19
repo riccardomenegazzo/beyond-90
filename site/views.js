@@ -23,6 +23,7 @@ import * as OBJ from "./objsketch.js";
 import * as LS from "./lessons.js";
 import * as TEAM from "./team.js";
 import * as QD from "./qualify.js";
+import * as FW from "./forward.js";
 import { connections } from "./graph.js";
 import { headline, firstMinute, rankActions, chainText, doneSummary, funnelSegments, preview } from "./today.js";
 import { stageBars } from "./nav.js";
@@ -2235,6 +2236,57 @@ export function hurtView({ workshop: w, catalog, go, startPov, today }) {
 
 /** Before and during the meeting: the line in one sentence for each audience, who to bring, and the objections to expect,
  *  each with the question to ask before answering, the answer, and how to prove it. Raised objections go to the proof. */
+// ------------------------------------------------------------------ the way forward: from discovery to handover
+const FW_STATE = { done: "Done", open: "Passed, with something left open", now: "Now", later: "Later" };
+export function forwardView({ workshop: w, catalog, povs, today, go, setDemo }) {
+  const pov = DL.povFor(povs, w.customer);
+  const f = FW.forward(catalog, w, pov, today);
+  const say = h("p", { class: "note", role: "status" });
+  const checkList = (ph) => h("ul", { class: "fwchecks" }, ph.checks.map((c) => h("li", { class: c.ok ? "ok" : "" },
+    h("span", { class: "fwmark", "aria-hidden": "true", text: c.ok ? "✓" : "○" }), h("span", { class: "sr-only", text: c.ok ? "Done: " : "To do: " }),
+    h("span", {}, h("span", { text: c.text }), !c.ok && c.fix ? h("small", { class: "muted", text: c.fix }) : null),
+    !c.ok && c.go ? h("button", { class: "btn small quiet", type: "button", text: "Open", "aria-label": `Open: ${c.text}`, onclick: () => go(c.go) }) : null)));
+  const playbook = (ph) => h("div", { class: "col2 fwplay" },
+    h("div", {}, h("h3", { text: "How to run it" }), h("ul", { class: "growwhy" }, ph.do.map((t) => h("li", { text: t })))),
+    h("div", {}, h("h3", { text: "Avoid" }), h("ul", { class: "growwhy" }, ph.avoid.map((t) => h("li", { text: t })))));
+  const nowPh = f.phases.find((ph) => ph.id === f.now);
+  const hero = h("section", { class: "card fwhero" }, h("h2", { text: "Where this prospect is" }),
+    h("ol", { class: "fwtrack", "aria-label": "The phases of presales" }, f.phases.map((ph) => h("li", { class: "fw-" + ph.state, "aria-current": ph.id === f.now ? "step" : null },
+      h("b", { text: ph.label }), h("small", { text: FW_STATE[ph.state] })))),
+    f.closed ? h("p", { class: "note first", text: `Closed: ${f.outcome === "lost" ? "lost" : "no decision"}. What it teaches is on the presales desk, under What the deals teach.` }) : null,
+    h("p", { class: "fwgoal" }, h("b", { text: nowPh.label + ": " }), nowPh.goal),
+    h("h3", { text: nowPh.state === "done" ? "Everything here is done" : "Ready to move on when" }), checkList(nowPh), playbook(nowPh),
+    h("p", { class: "muted", text: `The deal: ${f.deal.toLowerCase()}.` }));
+  const others = f.phases.filter((ph) => ph.id !== f.now).map((ph) => h("details", { class: "card fwphase fw-" + ph.state },
+    h("summary", {}, h("b", { text: ph.label }), h("span", { class: "muted", text: ` ${FW_STATE[ph.state].toLowerCase()}: ${ph.goal.charAt(0).toLowerCase() + ph.goal.slice(1)}` })),
+    h("div", {}, h("h3", { text: "Ready to move on when" }), checkList(ph), playbook(ph))));
+  // the demo, planned from what they said
+  const dp = f.demo;
+  const slug = w.customer.replace(/[^A-Za-z0-9]+/g, "-").replace(/^-|-$/g, "").toLowerCase() || "customer";
+  const md = FW.demoMarkdown(dp, w);
+  const day = h("input", { type: "date", value: (w.demo && w.demo.on) || today, min: w.created_on, "aria-label": "Day the demo was given" });
+  const given = w.demo && w.demo.on
+    ? h("div", { class: "btnrow" }, h("span", { text: `Given on ${w.demo.on}.` }), h("button", { class: "btn small quiet", type: "button", text: "Not given yet", onclick: async () => { try { await setDemo(""); } catch (e) { say.textContent = e.message; } } }))
+    : h("div", { class: "btnrow" }, day, h("button", { class: "btn small", type: "button", text: "Mark the demo as given", onclick: async () => { try { await setDemo(day.value); } catch (e) { say.textContent = e.message; } } }));
+  const sec = (title, kids) => h("div", { class: "fwsec" }, h("h3", { text: title }), kids);
+  const demo = card("The demo, built from what they said", dp.ready ? h("div", {},
+    sec("1. Their situation, in their words", dp.situation.length ? h("ul", { class: "growwhy" }, dp.situation.map((t) => h("li", { text: t }))) : h("p", { class: "note", text: "Nothing in their words yet: note what they say to the value questions." })),
+    sec("2. The result first", h("p", { text: dp.result })),
+    dp.segments.length ? sec("3. Only what closes their gaps", h("ol", { class: "fwsegs" }, dp.segments.map((x) => h("li", {}, h("span", { text: x.show }),
+      x.role ? h("small", { class: "wsrole", text: "for " + WS.ROLE_WORDS[x.role].toLowerCase() }) : null, x.heard ? h("small", { class: "muted", text: `They said: "${x.heard}"` }) : null)))) : null,
+    dp.concerns.length ? sec("4. The concerns they raised", h("ul", { class: "growwhy" }, dp.concerns.map((c) => h("li", {}, h("q", { text: c.says }), " ", c.prove)))) : null,
+    dp.skip.length ? sec("Leave out: they have it already", h("ul", { class: "growwhy" }, dp.skip.map((t) => h("li", { text: t })))) : null,
+    sec("Close: agree what a proof would have to show", h("ul", { class: "growwhy" }, (dp.close.length ? dp.close : ["The criteria they would sign off, and who signs."]).map((t) => h("li", { text: t })))),
+    h("p", { class: "note", text: "For the executive, keep to the situation, the result, the first two gaps and the proof: fifteen minutes." }),
+    h("div", { class: "btnrow" },
+      h("button", { class: "btn small", type: "button", text: "Copy the demo plan", onclick: (ev) => copyText(md).then((ok) => { ev.target.textContent = ok ? "Copied" : "Not copied"; }) }),
+      h("button", { class: "btn small", type: "button", text: "Demo plan (.md)", onclick: () => saveBlob(md, `${slug}-demo-plan.md`, "text/markdown") })),
+    given, say)
+    : h("div", {}, h("p", { class: "note first", text: "The plan appears once there is a line to start with: answer at least three questions on a line." }), given, say),
+  { sub: "The last thing first: their situation, the result they want, then only what closes their gaps. Nothing they already have." });
+  return h("div", {}, hero, demo, ...others);
+}
+
 // ------------------------------------------------------------------ qualify the deal: the same ten questions on every line
 export function qualifyView({ workshop: w, setDeal, go }) {
   let cur = w;

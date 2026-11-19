@@ -777,6 +777,21 @@ def main(site: str) -> int:
         hero = page.inner_text("#view .qdhero")
         check("Ready for a demo built for them" in hero and "To be ready to propose a proof of value, find out" in hero and "Economic buyer:" in hero,
               "three answers make it ready for a demo built for them, and say what a proof of value still needs")
+        # the way forward: the phase now, what moves it on, how to run it, and the demo planned from what was said
+        page.click("[data-tab=wsforward]")
+        page.wait_for_selector("#view .fwhero")
+        now = page.inner_text("#view .fwtrack li[aria-current=step]")
+        check("Demo built for them" in now and "How to run it" in page.inner_text("#view .fwhero") and page.locator("#view details.fwphase").count() == 4,
+              "the way forward puts a prospect ready for a demo at the demo, with how to run it, and the other phases a click away")
+        demo = page.inner_text("#view")
+        check("Their situation, in their words" in demo and "2M in lost orders" in demo and "Only what closes their gaps" in demo and "Close: agree what a proof would have to show" in demo,
+              "the demo is planned from what they said: their words first, then only their gaps, then the proof to agree")
+        with page.expect_download() as dl:
+            page.get_by_role("button", name="Demo plan (.md)").click()
+        check(Path(dl.value.path()).read_text(encoding="utf-8").startswith("# Demo plan: Kestrel Logistics"), "and downloads as a plan to share with the seller")
+        page.get_by_role("button", name="Mark the demo as given").click()
+        page.wait_for_selector("#view .fwhero .fwchecks li.ok")
+        check("✓" in page.inner_text("#view .fwhero .fwchecks") and "Given on " in page.inner_text("#view"), "marking the demo as given ticks it off the way forward")
         page.click("[data-tab=hurt]")
         page.wait_for_selector("#view .painmap")
         page.get_by_role("button", name="Start the proof of value").click()
@@ -1463,6 +1478,10 @@ def main(site: str) -> int:
                 apage.wait_for_selector("#view .qdq .wsopt[aria-pressed=true]")
                 apage.locator("#view .qdq").first.locator(".wshow summary").click()
                 bad += [f"qualify: {v}" for v in audit()]
+                apage.click("[data-tab=wsforward]")
+                apage.wait_for_selector("#view .fwhero")
+                apage.locator("#view details.fwphase summary").first.click()
+                bad += [f"forward: {v}" for v in audit()]
                 apage.click("[data-tab=wscase]")
                 apage.wait_for_selector("#view .vcgroups")
                 for label, value in (("What the current platform costs per year (licences, subscriptions, support)", "100000"), ("What the new platform would cost per year", "80000")):
