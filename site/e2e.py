@@ -1681,6 +1681,28 @@ def main(site: str) -> int:
         mp.locator("#tabs [data-tab=accounts]").click()
         check(mp.evaluate("getComputedStyle(document.querySelector('#view .dt tbody td:not(.x)'), '::before').content").strip('"') == "Account",
               "on a phone each table row reads as a card with its labels")
+        # a workshop on a phone: its own views in the app bar, and nothing wider than the screen
+        mp.goto(base)
+        mp.wait_for_selector("#demo-workshop:not([disabled])", state="attached", timeout=180_000)
+        mp.locator("#demo-workshop").dispatch_event("click")
+        mp.wait_for_selector("#view ol.journey")
+        shown = [b.get_attribute("data-go") or "menu" for b in mp.locator("#mobilebar button:visible").all()]
+        check(shown == ["workshop", "wsqualify", "wsrfp", "menu"], f"in a workshop the phone bar carries Questions, Qualify and Tender: {shown}")
+        mp.click("#mobilebar [data-go=wsqualify]")
+        mp.wait_for_selector("#view .qdlist")
+        check(mp.get_attribute("#mobilebar [data-go=wsqualify]", "aria-current") is not None, "and opens each in one tap")
+        cells = mp.evaluate("(() => { const a = document.querySelector('#view .qlrow .qlans'); return a ? a.getBoundingClientRect().right <= innerWidth : false; })()")
+        check(cells, "the answers fit the screen")
+        more = mp.locator("#view-tip-more")
+        check(more.is_visible() and mp.evaluate("document.getElementById('view-tip').scrollHeight > document.getElementById('view-tip').clientHeight"), "a long introduction shows two lines and More")
+        more.click()
+        check(more.get_attribute("aria-expanded") == "true" and more.inner_text() == "Less", "More opens the rest")
+        wide = {}
+        for tab in ("workshop", "wsqualify", "wsrfp", "journey", "wsforward", "wsprep", "wspartners", "wscase", "wspov", "hurt"):
+            mp.locator(f"#tabs [data-tab={tab}]").dispatch_event("click")
+            mp.wait_for_timeout(400)
+            wide[tab] = mp.evaluate("document.documentElement.scrollWidth - innerWidth")
+        check(not any(wide.values()), f"no workshop view is wider than a phone: {wide}")
         mctx.close()
 
         # accessibility: axe-core, when its path is given (the Pages workflow installs it); both colour schemes

@@ -600,6 +600,14 @@ function renderNav(groups, title) {
   $("pulse-host").replaceChildren(...[pulseCard(bars)].filter(Boolean));
   paintPin();
 }
+// on a phone the view's introduction shows two lines; "More" opens the rest, only when there is more
+function paintTip() {
+  const p = $("view-tip"), more = $("view-tip-more");
+  p.classList.remove("open");
+  more.setAttribute("aria-expanded", "false");
+  more.textContent = "More";
+  requestAnimationFrame(() => { more.hidden = p.scrollHeight <= p.clientHeight + 2; });
+}
 function paintPin() {
   const b = $("pin-view");
   if (!b) return;
@@ -636,6 +644,7 @@ function selectTab(name, extra) {
   document.body.classList.remove("menu-open");
   $("res-title").textContent = t.label;
   $("view-tip").textContent = t.tip;
+  paintTip();
   $("view").hidden = t.kind !== "view";
   $("docactions").hidden = t.kind === "view";
   if (t.kind === "view") {
@@ -1351,6 +1360,11 @@ phone.addEventListener("change", placeTools);
 new MutationObserver(placeTools).observe(document.body, { attributes: true, attributeFilter: ["class"] });
 placeTools();
 $("pin-view").addEventListener("click", () => { writeList("beyond90.pins", togglePin(readList("beyond90.pins"), state.tab)); renderNav(navGroups, navTitle); markTab(); });
+$("view-tip-more").addEventListener("click", () => {
+  const open = $("view-tip").classList.toggle("open");
+  $("view-tip-more").setAttribute("aria-expanded", String(open));
+  $("view-tip-more").textContent = open ? "Less" : "More";
+});
 for (const b of document.querySelectorAll("#mobilebar [data-go]")) b.addEventListener("click", () => { if (tabDefs.some((t) => t.id === b.dataset.go)) selectTab(b.dataset.go); else { document.body.classList.add("menu-open"); $("m-menu").setAttribute("aria-expanded", "true"); } });
 $("m-menu").addEventListener("click", () => { const open = document.body.classList.toggle("menu-open"); $("m-menu").setAttribute("aria-expanded", String(open)); });
 document.addEventListener("keydown", (e) => { if (e.key === "Escape" && document.body.classList.contains("menu-open")) { document.body.classList.remove("menu-open"); $("m-menu").setAttribute("aria-expanded", "false"); $("m-menu").focus(); } });

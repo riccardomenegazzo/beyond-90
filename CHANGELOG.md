@@ -2,6 +2,25 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.131.0
+
+- **The phone, made for a thumb.**
+  - **The bar at the bottom carries the views of what is open:**
+    - Questions, Qualify and Tender in a workshop (before, it held only Menu);
+    - Today, Actions and Call for a customer, as before;
+    - Estate and Grow for an estate;
+    - This week for a book.
+
+    It is light like the board, with the current view marked in blue.
+  - **A view's introduction shows two lines**, with More for the rest; Pin to menu stays on larger screens.
+  - **The discovery questions:**
+    - the four answers share one row of equal buttons instead of breaking over two;
+    - the filters of the meeting are one row each, swiped sideways, instead of a column of buttons.
+  - **Wide tables slide sideways** instead of being cut at the edge, with readable columns and a shadow on the edge that has more: waves, recovery, edge, cost per machine and the others. The tables of records keep reading as cards.
+  - **The page uses the width:** smaller margins and card padding.
+  - A sketch whose table is wide no longer widens its card past the screen.
+- New browser checks on a phone: a workshop's bar, answers that fit the screen, More on a long introduction, no workshop view wider than the screen.
+
 ## 0.130.0
 
 - **A new look: the whiteboard session.** The whole app restyled, the same everywhere:

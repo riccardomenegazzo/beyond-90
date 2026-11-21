@@ -45,7 +45,13 @@ With an earlier snapshot to compare with, the map also says **what changed**: ac
 
 ## On a phone, offline, in your network
 
-It installs as an app on a phone, a tablet or a computer (Help, "Install it on any device"), and on a phone the places sit in a bar at the bottom and tables read as cards. Drop an Excel workbook instead of CSV files, or start from a short form when there are no exports yet. Saved, "On another device", shows a QR code to open the app on a phone and sends your work there as one encrypted file. To run it on your own machine or inside your network, see [self-hosting.md](self-hosting.md).
+It installs as an app on a phone, a tablet or a computer (Help, "Install it on any device"). On a phone:
+- a bar at the bottom carries the views of what is open: Today, Actions and Call for a customer; Questions, Qualify and Tender in a workshop; Estate and Grow for an estate; This week for a book; Menu opens the rest;
+- a view's introduction shows two lines, with More for the rest;
+- the four answers to a discovery question share one row, and the filters are one row each, swiped sideways;
+- tables of records read as cards; wide tables (waves, recovery, edge, cost) slide sideways, with a shadow on the edge that has more.
+
+Drop an Excel workbook instead of CSV files, or start from a short form when there are no exports yet. Saved, "On another device", shows a QR code to open the app on a phone and sends your work there as one encrypted file. To run it on your own machine or inside your network, see [self-hosting.md](self-hosting.md).
 
 ## As a browser extension
 

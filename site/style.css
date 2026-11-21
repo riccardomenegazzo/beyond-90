@@ -1491,3 +1491,56 @@ input[type=number],input[type=text],input[type=search],input[type=date],input[ty
 .nbadge.t-info{background:var(--sunk);color:var(--ink2)}
 /* white on the marker blue, in both themes (the dark theme's blue is deep enough for it) */
 .rolepick button[aria-pressed=true],.rail .chip-btn[aria-pressed=true]{color:#FFFFFF}
+
+/* ================================================================ Phone (0.131): the same board, made for a thumb.
+   The bar at the bottom carries the views of the mode that is open (Questions, Qualify and Tender in a workshop;
+   Today, Actions and Call for a customer; Estate and Grow for an estate), light like the board. Pages use the width,
+   wide tables slide sideways instead of being cut, a view's introduction shows two lines with More for the rest,
+   and the discovery filters are one swipeable row each. */
+.tipmore{display:none}
+@media (max-width:900px){
+  body.has-work .mobilebar{background:var(--surface);border-top:3px solid var(--ink)}
+  .mobilebar button{color:var(--muted);font-size:11.5px;line-height:1.1;text-align:center;padding:0 2px;min-height:44px}
+  .mobilebar .mb-ico{background:var(--muted)}
+  .mobilebar button[aria-current],.mobilebar button[aria-expanded=true]{color:var(--ink);font-weight:800}
+  .mobilebar button[aria-current] .mb-ico,.mobilebar button[aria-expanded=true] .mb-ico{background:var(--accent)}
+  .mobilebar button[aria-current]{box-shadow:inset 0 3px 0 var(--accent)}
+  .mobilebar button:focus-visible{outline:2px solid var(--accent);outline-offset:-4px}
+  .mb-q{--m:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill-rule='evenodd' d='M3 4h18v12H9l-6 5zM6.5 7.5h11v2h-11zm0 3.6h7v2h-7z'/%3E%3C/svg%3E")}
+  .mb-qual{--m:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M2.5 6.3 4 4.8l1.6 1.6 3.3-3.3 1.5 1.5-4.8 4.8zM12 5h10v2.4H12zm-9.5 8.3L4 11.8l1.6 1.6 3.3-3.3 1.5 1.5-4.8 4.8zM12 12h10v2.4H12zM3 18h7v2.4H3zm9 0h10v2.4H12z'/%3E%3C/svg%3E")}
+  .mb-tender{--m:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill-rule='evenodd' d='M5 2h9.5L20 7.5V22H5zM8 10h9v1.8H8zm0 3.6h9v1.8H8zm0 3.6h6V19H8z'/%3E%3C/svg%3E")}
+  .mb-estate{--m:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2.5 22 8l-10 5.5L2 8zM2 12.2l10 5.5 10-5.5v2.6l-10 5.5-10-5.5z'/%3E%3C/svg%3E")}
+  .mb-grow{--m:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M2 18.4l7-7 4 4 6-6H15.5V7H23v7.5h-2.4v-3.6L13 18.5l-4-4-5.3 5.3z'/%3E%3C/svg%3E")}
+  .mb-week{--m:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill-rule='evenodd' d='M3 5h18v16H3zM5.2 10h13.6v8.8H5.2zM7 2h2.2v3H7zm7.8 0H17v3h-2.2z'/%3E%3C/svg%3E")}
+}
+@media (max-width:700px){
+  main{padding:12px 12px calc(96px + env(safe-area-inset-bottom))}
+  .card{padding:16px 14px;border-radius:12px}
+  .viewhead{margin:12px 0 10px;gap:4px 10px;align-items:baseline}
+  .viewhead h2{font-size:31px;line-height:1.05}
+  #view-tip{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;flex-basis:100%;margin:0}
+  #view-tip.open{display:block;overflow:visible}
+  .tipmore{display:inline-flex;padding:0;min-height:32px;font-size:14px}
+  .tipmore[hidden]{display:none}
+  .pinbtn{display:none}
+  /* wide tables slide sideways instead of being cut off */
+  .view table:not(.dt){display:block;overflow-x:auto;max-width:100%;-webkit-overflow-scrolling:touch;
+    /* a shadow on the edge that has more to show: the table slides sideways */
+    background:linear-gradient(to right,var(--surface) 30%,transparent) left/28px 100% no-repeat local,
+      linear-gradient(to left,var(--surface) 30%,transparent) right/28px 100% no-repeat local,
+      radial-gradient(farthest-side at 0 50%,rgba(23,25,30,.22),transparent) left/12px 100% no-repeat scroll,
+      radial-gradient(farthest-side at 100% 50%,rgba(23,25,30,.22),transparent) right/12px 100% no-repeat scroll}
+  .view table:not(.dt) :is(th,td){min-width:5.6em}
+  .view table:not(.dt) :is(th,td).n,.view table:not(.dt) :is(th,td):first-child{min-width:3.6em}
+  /* the four answers to a discovery question share one row */
+  .wsq .wsans{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;padding:2px 0 12px}
+  .wsq .wsopt{padding:6px 2px;font-size:13px;line-height:1.15;min-height:46px;white-space:normal}
+  /* the filters: one row each, swiped sideways */
+  .wsnarrow .wsfam{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:0 -14px;padding:2px 14px 6px}
+  .wsnarrow .wsfam::-webkit-scrollbar{display:none}
+  .wsnarrow .wsfam>*{flex:none}
+  .wsfamname{min-width:0}
+}
+/* a sketch's column is the card's width: a wide table slides inside it instead of widening the card */
+.sz{grid-template-columns:minmax(0,1fr)}
+.tablewrap{max-width:100%}
