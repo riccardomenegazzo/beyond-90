@@ -163,3 +163,36 @@ test("on object and file storage, edge sites and microsegmentation, what was hea
   }
   assert.ok(first >= 15, `first ${first} of ${cases.length}`);
 });
+
+test("on platform migration, identity, logs and private AI, what was heard has its question among the three, most first", () => {
+  const cards = [];
+  for (const p of ["platform-migration", "identity", "siem", "private-ai"]) {
+    const file = new URL(`../../src/beyond90/data/profiles/${p}/discovery.json`, import.meta.url);
+    JSON.parse(readFileSync(file, "utf8")).questions.forEach((q, i) => cards.push({ key: `${p}#${i}`, q }));
+  }
+  const cases = [
+    ["Our hypervisor licence renewal is in March and the price tripled", "platform-migration#0"],
+    ["We tried moving a few VMs in the lab and the drivers broke", "platform-migration#4"],
+    ["Nobody has a rollback plan if the cutover goes wrong at night", "platform-migration#5"],
+    ["The ops team has never run anything but the old platform, they need training", "platform-migration#19"],
+    ["About 40 machines still run an operating system out of support", "platform-migration#18"],
+    ["Leavers keep their accounts for weeks", "identity#1"],
+    ["Some admins still log in without MFA", "identity#4"],
+    ["Service account passwords have not changed in ten years", "identity#6"],
+    ["The last access review was signed off two years ago", "identity#5"],
+    ["The OT network sends no logs at all", "siem#2"],
+    ["We only keep logs for 30 days", "siem#6"],
+    ["Most alerts get closed without anyone looking", "siem#7"],
+    ["The GPU servers sit idle most of the time", "private-ai#2"],
+    ["Customer data must stay in the country, so no public AI service", "private-ai#1"],
+    ["Nobody knows what the chatbot can read", "private-ai#4"],
+    ["Each team runs its own model and nobody tracks the spend", "private-ai#7"],
+  ];
+  let first = 0;
+  for (const [said, want] of cases) {
+    const got = match(cards, said).map((h) => h.card.key);
+    assert.ok(got.includes(want), `${said}: ${got.join(" ")}`);
+    if (got[0] === want) first += 1;
+  }
+  assert.ok(first >= 13, `first ${first} of ${cases.length}`);
+});

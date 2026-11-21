@@ -2,6 +2,19 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.155.0
+
+- **Heard something, on platform migration, identity, logs and private AI.** Sixteen more things a customer might say, on the real questions of those four lines, now all have their question among the three offered, thirteen first. That was eight first and ten in the three before. Examples: "our hypervisor licence renewal is in March", "nobody has a rollback plan if the cutover goes wrong", "leavers keep their accounts for weeks", "some admins still log in without MFA", "we only keep logs for 30 days", "the GPU servers sit idle". The matching learned:
+  - a hypervisor and a platform, a contract and a renewal, a licence however it is spelt;
+  - a lab or a pilot as a test, something broken as something gone wrong;
+  - a leaver and offboarding;
+  - multi-factor and MFA;
+  - signing in, logging in and a logon as one;
+  - keeping and retaining;
+  - a country as a matter of jurisdiction;
+  - "out of their vendor's support" as out of support, an operating system as an OS.
+- Every earlier phrase set keeps its results; the new sixteen are kept as tests beside them. In all, 65 sentences across the deal and fourteen lines are now checked on every build.
+
 ## 0.154.0
 
 - **Heard something, on storage, edge sites and microsegmentation too.** Sixteen things a customer might say on the real questions of object storage, file storage, edge sites and microsegmentation now all have their question among the three offered, fifteen of them first. That was nine first and fourteen in the three before. The matching learned:

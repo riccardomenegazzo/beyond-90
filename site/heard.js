@@ -41,8 +41,8 @@ const SAME = [
   ["database", "db", "instance", "schema"],
   ["production", "prod"],
   ["take", "took", "taken", "takes"],
-  ["jurisdiction", "sovereignty", "sovereign", "gdpr", "residency"],
-  ["test", "drill", "exercise", "rehearsal"],
+  ["jurisdiction", "sovereignty", "sovereign", "gdpr", "residency", "country"],
+  ["test", "drill", "exercise", "rehearsal", "lab", "pilot", "poc"],
   ["branch", "office", "warehouse", "store", "shop", "depot", "plant"],
   ["network", "dns", "ip", "address", "firewall", "vlan", "subnet"],
   ["target", "rpo", "rto", "objective", "sla"],
@@ -61,7 +61,14 @@ const SAME = [
   ["decide", "decision", "decider", "choice", "choose", "cio", "cfo", "ceo", "cto", "coo"],
   ["supplier", "vendor", "competitor", "competition", "incumbent", "alternative"],
   ["champion", "advocate", "carry"],
-  ["renewal", "renew", "expire", "expiry", "deadline"],
+  ["renewal", "renew", "expire", "expiry", "deadline", "contract"],
+  ["platform", "hypervisor", "virtualisation", "virtualization"],
+  ["licence", "license", "licensing", "licensed"],
+  ["wrong", "broke", "broken"],
+  ["leave", "leaver", "offboard", "offboarding"],
+  ["mfa", "multifactor", "2fa"],
+  ["signin", "login", "logon"],
+  ["keep", "kept", "retain", "retention"],
   ["procurement", "purchasing", "legal", "tender"],
 ];
 const CANON = new Map(SAME.flatMap((group) => group.map((w) => [bare(w), bare(group[0])])));
@@ -77,7 +84,10 @@ export function tokens(text) {
   const t = String(text == null ? "" : text).toLowerCase()
     .replace(/data\s+cent(re|er)s?/g, "datacentre")
     .replace(/round[\s-]+trips?/g, "roundtrip")
-    .replace(/(?:out|end)\s+of\s+(?:support|life)|\beol\b|support\s+ends?/g, "unsupported")
+    .replace(/(?:out|end)\s+of\s+(?:[a-z']+\s+){0,2}(?:support|life)|\beol\b|support\s+ends?/g, "unsupported")
+    .replace(/multi[\s-]+factor|two[\s-]+factor/g, "multifactor")
+    .replace(/(?:sign|log)(?:s|ged|ging)?[\s-]+(?:in|on)\b/g, "signin")
+    .replace(/operating\s+systems?/g, "os")
     .replace(/fail(?:s|ed|ing)?[\s-]+over/g, "failover")
     .replace(/fail(?:s|ed|ing)?[\s-]+back/g, "failback")
     .replace(/point[\s-]+in[\s-]+time/g, "pointintime")
