@@ -50,3 +50,21 @@ test("a note gains what was heard, without repeating it and within the length of
   assert.equal(joinNote("Never tested end to end", "never tested"), "Never tested end to end");
   assert.equal(joinNote("x".repeat(NOTE_MAX), "more").length, NOTE_MAX);
 });
+
+test("a figure in what was said: the money, and what it is counted per", async () => {
+  const { figureIn } = await import("../heard.js");
+  const day = { q: "What would one day without your main site cost, and has anyone put a number on it?" };
+  const hour = { q: "What does an hour of downtime cost on your most important application?" };
+  const open = { q: "What is at stake if nothing changes?" };
+  assert.deepEqual(figureIn("about 2 million euros, finance agreed", day), { amount: 2000000, per: "day" });
+  assert.deepEqual(figureIn("€40,000 per hour", day), { amount: 40000, per: "hour" });
+  assert.deepEqual(figureIn("roughly 83k", hour), { amount: 83000, per: "hour" });
+  assert.deepEqual(figureIn("1.5m a month in lost orders", open), { amount: 1500000, per: "month" });
+  assert.deepEqual(figureIn("2.000.000 each outage", open), { amount: 2000000, per: "incident" });
+  assert.deepEqual(figureIn("250000 a year", open), { amount: 250000, per: "year" });
+  assert.equal(figureIn("the last test was three years ago, 2 ms apart", day), null);
+  assert.equal(figureIn("40 km away and 300 vms", day), null);
+  assert.equal(figureIn("about 2 million", open), null);           // nothing says per what
+  assert.equal(figureIn("", day), null);
+  assert.equal(figureIn("on the old platform since 2019, daily", day), null);   // a year, not money
+});

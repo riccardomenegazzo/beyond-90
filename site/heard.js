@@ -98,3 +98,40 @@ export function joinNote(before, heard) {
   if (!add || old.toLowerCase().includes(add.toLowerCase())) return old.slice(0, NOTE_MAX);
   return `${old}; ${add}`.slice(0, NOTE_MAX);
 }
+
+// a figure in what was said: "about 2 million a day", "€40,000 per hour", "500k each outage"
+const MULT = { k: 1e3, thousand: 1e3, thousands: 1e3, m: 1e6, mn: 1e6, mio: 1e6, million: 1e6, millions: 1e6, bn: 1e9, billion: 1e9, billions: 1e9 };
+const AMOUNT = /([€$£])?\s?(\d{1,3}(?:[.,]\d{3})+|\d+(?:[.,]\d+)?)\s?(k|thousands?|m|mn|mio|millions?|bn|billions?)?(?![a-z0-9])(?!\s?(?:ms|milliseconds?|km|%|percent|years?|months?|weeks?|days?|hours?|minutes?|tb|gb|vms?|servers?|sites?|hosts?|people|users?)\b)/g;
+const PERIODS = [
+  ["hour", /\b(?:per|an|a|each|every)\s+hour\b|\bhourly\b|\/\s?(?:h|hr|hour)\b/],
+  ["day", /\b(?:per|a|each|every)\s+day\b|\bdaily\b|\/\s?day\b/],
+  ["week", /\b(?:per|a|each|every)\s+week\b|\bweekly\b/],
+  ["month", /\b(?:per|a|each|every)\s+month\b|\bmonthly\b/],
+  ["year", /\b(?:per|a|each|every)\s+year\b|\byearly\b|\bannual(?:ly)?\b|\bper annum\b/],
+  ["incident", /\b(?:per|an|each|every)\s+(?:incident|outage|breach|attack|event)\b/],
+];
+
+/**
+ * The money in what was said, and what it is counted per: the period said, else the one the question asks about.
+ * A bare small number ("three years ago", "2 ms") is not a figure: it needs a currency, a "thousand" or "million",
+ * or to be a thousand or more. Null when there is no figure, or nothing says what it is counted per.
+ * @returns {{amount:number, per:string}|null}
+ */
+export function figureIn(said, question) {
+  const t = ` ${String(said == null ? "" : said).toLowerCase()} `;
+  let best = 0;
+  for (const m of t.matchAll(AMOUNT)) {
+    const [, cur, raw, mult] = m;
+    const n = /^\d{1,3}(?:[.,]\d{3})+$/.test(raw) ? Number(raw.replace(/[.,]/g, "")) : Number(raw.replace(",", "."));
+    const amount = n * (mult ? MULT[mult] : 1);
+    if (!Number.isFinite(amount) || !(cur || mult || amount >= 1000)) continue;
+    if (!cur && !mult && /^(19|20)\d\d$/.test(raw)) continue;        // a year, not money
+    best = Math.max(best, amount);
+  }
+  if (!best || best > 1e13) return null;
+  const q = String((question && question.q) || "").toLowerCase();
+  const said_ = PERIODS.find(([, re]) => re.test(t));
+  const asked = PERIODS.find(([p]) => new RegExp(`\\b${p}s?\\b`).test(q));
+  const per = said_ ? said_[0] : asked ? asked[0] : null;
+  return per ? { amount: Math.round(best), per } : null;
+}

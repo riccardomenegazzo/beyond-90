@@ -2190,20 +2190,23 @@ export function workshopView({ workshop: w, catalog, list, answer, worth, rename
   const heardSay = h("p", { class: "note heardsay", role: "status" });
   const fileHeard = async (card, k, said) => {
     const before = cur.answers[card.key];
+    const fig = card.q.stage === "value" ? HEARD.figureIn(said, card.q) : null;      // a figure heard on a value question goes with it
     cur = await answer(card.line, card.index, k, HEARD.joinNote(before && before.note, said));
+    if (fig) cur = await worth(card.line, card.index, fig.amount, fig.per);
     heardIn.value = "";
     put(heardOut);
     const moved = () => { afterDeck(card.key); syncDeck(); if (fullDeck) fullDeck.sync(); };
     // a tap in a meeting can land on the wrong question: undo puts back what was there, and the words in the box
     const undo = h("button", { type: "button", class: "linkbtn", text: "Undo", onclick: async () => {
       cur = await answer(card.line, card.index, before ? before.a : "", before ? before.note : "");
+      if (before && fig) cur = await worth(card.line, card.index, before.amount == null ? "" : before.amount, before.per || "");
       heardIn.value = said;
       put(heardSay, h("span", { text: `Undone: ${card.q.q}` }));
       moved();
       drawHeard();
       heardIn.focus({ preventScroll: true });
     } });
-    put(heardSay, h("span", { text: `Filed as ${WS.ANSWERS[k].label.toLowerCase()}: ${card.q.q} ` }), undo);
+    put(heardSay, h("span", { text: `Filed as ${WS.ANSWERS[k].label.toLowerCase()}${fig ? `, with ${WS.worthText(fig)} as the figure` : ""}: ${card.q.q} ` }), undo);
     moved();
     heardIn.focus({ preventScroll: true });
   };
@@ -2214,9 +2217,11 @@ export function workshopView({ workshop: w, catalog, list, answer, worth, rename
     if (!hits.length) { put(heardOut, h("p", { class: "note", text: "No question in scope uses these words. Try the words of the question, or write it on the card." })); return; }
     put(heardOut, hits.map(({ card }) => {
       const sug = DECK.suggest(card.q, said), before = cur.answers[card.key];
+      const fig = card.q.stage === "value" ? HEARD.figureIn(said, card.q) : null;
       return h("div", { class: "heardhit" },
         h("small", { class: "muted", text: card.label + (before ? `, answered ${WS.ANSWERS[before.a].label.toLowerCase()}` : "") }),
         h("span", { class: "heardq", text: card.q.q }),
+        fig ? h("small", { class: "heardfig", text: `Figure heard: ${WS.worthText(fig)}. It goes with the answer.` }) : null,
         h("div", { class: "heardopts", role: "group", "aria-label": `File it under: ${card.q.q}` },
           DECK.ORDER.map((k) => h("button", { type: "button", class: `heardopt o-${k}` + (k === sug ? " sug" : ""), text: WS.ANSWERS[k].label,
             "aria-describedby": k === sug ? "wsheard-sug" : null, onclick: () => fileHeard(card, k, said) }))));

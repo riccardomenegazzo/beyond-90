@@ -815,6 +815,9 @@ def main(site: str) -> int:
         check(0 < hits.count() <= 3 and any("administrator account delete" in hits.nth(i).inner_text() for i in range(hits.count()))
               and page.locator("#view .heardhit .heardopt.o-gap.sug").count() >= 1,
               "what was heard finds the question it answers, with the answer the words suggest")
+        page.fill("#wsheard", "One day without the main site would cost about 2 million euros")
+        check(any("Figure heard: 2,000,000 per day" in page.locator("#view .heardhit").nth(i).inner_text() for i in range(page.locator("#view .heardhit").count())),
+              "a figure in what was heard is read, with what it is counted per, on the value question it answers")
         page.fill("#wsheard", "")
         check(page.locator("#view .heardhit").count() == 0, "cleared, the matches go")
         # the meeting's clock: a tap starts it; it keeps the time, on the card too, and the pace on the essential questions

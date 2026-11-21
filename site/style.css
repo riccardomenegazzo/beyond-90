@@ -1726,3 +1726,4 @@ input[type=number],input[type=text],input[type=search],input[type=date],input[ty
 .deckaside[open]{position:absolute;left:0;right:0;bottom:0;z-index:5;max-height:72%;overflow:auto;box-shadow:0 -18px 40px -18px rgba(0,0,0,.35)}
 .deckaside .heard{padding:0 18px calc(18px + env(safe-area-inset-bottom))}
 .deckaside .heard>.decklabel{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.heardfig{font-weight:700;color:var(--accent-text)}
