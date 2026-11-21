@@ -1743,3 +1743,4 @@ input[type=number],input[type=text],input[type=search],input[type=date],input[ty
 /* the first screen for a pre-sales engineer (0.145): a new prospect has no data yet, so the workshop comes first */
 .choose{display:flex;flex-direction:column}
 body[data-role=se] .choose>.wsstart{order:-1;margin:0 0 26px;border:2px solid var(--accent)}
+.heardopt.t-good{--tone:var(--lv-green)}.heardopt.t-mid{--tone:var(--lv-ochre)}.heardopt.t-unknown{--tone:var(--ink2)}

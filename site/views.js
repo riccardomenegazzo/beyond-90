@@ -1922,7 +1922,7 @@ function openDeck({ clock, onClose, aside = null, asideTitle = "", ...rest }) {
 
 const wsFilter = { core: false, roles: [], tender: false, open: false, best: false };
 
-export function workshopView({ workshop: w, catalog, list, answer, worth, rename, preparedBy, setScope, inventory, sizing, waves, gpu, dr, obj, edge, unit, today, newWorkshop, openWorkshop, removeWorkshop, presets = [], go, focus }) {
+export function workshopView({ workshop: w, catalog, list, answer, worth, setDeal, rename, preparedBy, setScope, inventory, sizing, waves, gpu, dr, obj, edge, unit, today, newWorkshop, openWorkshop, removeWorkshop, presets = [], go, focus }) {
   const say = h("p", { class: "note", role: "status" });
   const act = (fn) => async (...a) => { try { await fn(...a); say.textContent = ""; } catch (e) { say.textContent = e.message; } };
   let cur = w;
@@ -2210,12 +2210,41 @@ export function workshopView({ workshop: w, catalog, list, answer, worth, rename
     moved();
     heardIn.focus({ preventScroll: true });
   };
+  // the qualification questions are heard too: the deal is talked about in the same meeting
+  const DEAL_TONE = { known: "good", partly: "mid", unknown: "unknown" };
+  const DEAL_FROM = { solved: "known", partly: "partly", gap: "unknown", unknown: "unknown" };
+  const dealCards = QD.DEAL.map((x) => ({ key: `deal#${x.id}`, id: x.id, label: `Qualify the deal, ${x.tag.toLowerCase()}`, q: x, deal: true }));
+  const fileDeal = async (card, k, said) => {
+    const before = cur.deal && cur.deal[card.id];
+    cur = await setDeal(card.id, k, HEARD.joinNote(before && before.note, said));
+    heardIn.value = "";
+    put(heardOut);
+    const undo = h("button", { type: "button", class: "linkbtn", text: "Undo", onclick: async () => {
+      cur = await setDeal(card.id, before ? before.a : "", before ? before.note : "");
+      heardIn.value = said;
+      put(heardSay, h("span", { text: `Undone: ${card.q.q}` }));
+      drawHeard();
+      heardIn.focus({ preventScroll: true });
+    } });
+    put(heardSay, h("span", { text: `Filed in Qualify the deal as ${QD.STATES[k].label.toLowerCase()}: ${card.q.q} ` }), undo);
+    heardIn.focus({ preventScroll: true });
+  };
+  const dealHit = (card, said) => {
+    const before = cur.deal && cur.deal[card.id], sug = DEAL_FROM[DECK.suggest(card.q, said)] || null;
+    return h("div", { class: "heardhit" },
+      h("small", { class: "muted", text: card.label + (before ? `, ${QD.STATES[before.a].label.toLowerCase()}` : "") }),
+      h("span", { class: "heardq", text: card.q.q }),
+      h("div", { class: "heardopts", role: "group", "aria-label": `File it under: ${card.q.q}` },
+        ["known", "partly", "unknown"].map((k) => h("button", { type: "button", class: `heardopt t-${DEAL_TONE[k]}` + (k === sug ? " sug" : ""), text: QD.STATES[k].label,
+          "aria-describedby": k === sug ? "wsheard-sug" : null, onclick: () => fileDeal(card, k, said) }))));
+  };
   const drawHeard = () => {
     const said = heardIn.value.trim();
     if (said.length < 6) { put(heardOut); return; }
-    const hits = HEARD.match(DECK.deckFrom(catalog, cur.scope), said, 3);
+    const hits = HEARD.match([...DECK.deckFrom(catalog, cur.scope), ...dealCards], said, 3);
     if (!hits.length) { put(heardOut, h("p", { class: "note", text: "No question in scope uses these words. Try the words of the question, or write it on the card." })); return; }
     put(heardOut, hits.map(({ card }) => {
+      if (card.deal) return dealHit(card, said);
       const sug = DECK.suggest(card.q, said), before = cur.answers[card.key];
       const fig = card.q.stage === "value" ? HEARD.figureIn(said, card.q) : null;
       return h("div", { class: "heardhit" },

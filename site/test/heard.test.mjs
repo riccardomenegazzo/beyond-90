@@ -68,3 +68,15 @@ test("a figure in what was said: the money, and what it is counted per", async (
   assert.equal(figureIn("", day), null);
   assert.equal(figureIn("on the old platform since 2019, daily", day), null);   // a year, not money
 });
+
+test("what was heard about the deal finds its qualification question", async () => {
+  const { DEAL } = await import("../qualify.js");
+  const deal = DEAL.map((x) => ({ key: `deal#${x.id}`, label: "Qualify the deal", q: x }));
+  const all = [...DR, ...deal];
+  const first = (said) => (match(all, said)[0] || {}).card?.key;
+  assert.equal(first("The CIO signs off anything above 500k"), "deal#decider");
+  assert.equal(first("Our hosting contract expires in March, so it has to be chosen before then"), "deal#why_now");
+  assert.equal(first("They are also talking to another supplier, or might build it themselves"), "deal#alternatives");
+  assert.equal(first("The infrastructure lead will carry it to the board; she wants it badly"), "deal#champion");
+  assert.equal(first("Any domain admin can wipe the backup repository"), "dr#6");      // the technical ones still find theirs
+});

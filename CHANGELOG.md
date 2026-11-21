@@ -2,6 +2,12 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.146.0
+
+- **Heard something about the deal? It finds the qualification question too.** The same box beside the card now matches what was said against the ten qualification questions as well as the technical ones. "The CIO signs off anything above 500k" goes to who decides and signs, "our contract expires in March" to the date that forces a choice, "they are also talking to another supplier" to what else they weigh. A match there offers **Known**, **Partly** or **Not yet**, files it in Qualify the deal with the words as its note, and can be undone.
+- The matching knows more of a deal's words: signing and approving, deciding and choosing, a supplier and a competitor, carrying it inside, a renewal and an expiry, procurement and legal.
+- Tests for the deal's questions found from what was heard, the technical ones still finding theirs; a browser check for a qualification match and its three answers.
+
 ## 0.145.0
 
 - **The first screen of a pre-sales engineer starts with a new prospect.** A prospect has no exports to drop yet, so with **Pre-sales engineer** chosen under "I work as", **Start a discovery workshop** and the filled-in example come before the customer's files, marked out, and the desk is in the menu as before. Other roles see the page as it was.

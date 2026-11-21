@@ -13,7 +13,7 @@ const STOP = new Set(("a an the and or but nor of to in on at for with by from i
   "we our ours us they their them you your yours i my me he she his her who whom whose what which when where why how " +
   "can could would should will shall may might must just also very really quite so too if as all any some each every " +
   "more most less least only not no yes one two three new old other same such own still today now ever never always " +
-  "get got make made say said tell told know think thing things way lot lots").split(" "));
+  "get got make made say said tell told know think thing things way lot lots off out above below anything something everything").split(" "));
 
 // a word without its common endings: copies and copy, tested and test, branches and branch
 const bare = (word) => {
@@ -42,6 +42,13 @@ const SAME = [
   ["encrypt", "encryption", "encrypted"],
   ["upgrade", "patch", "update", "version"],
   ["ransomware", "attack", "attacker", "malware"],
+  // the words of a deal: who signs, who else is in it, the date that forces a choice
+  ["sign", "approve", "approval", "signoff", "authorise", "authorize"],
+  ["decide", "decision", "decider", "choice", "choose", "cio", "cfo", "ceo", "cto", "coo"],
+  ["supplier", "vendor", "competitor", "competition", "incumbent", "alternative"],
+  ["champion", "advocate", "carry"],
+  ["renewal", "renew", "expire", "expiry", "deadline"],
+  ["procurement", "purchasing", "legal", "tender"],
 ];
 const CANON = new Map(SAME.flatMap((group) => group.map((w) => [bare(w), bare(group[0])])));
 
