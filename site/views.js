@@ -28,6 +28,7 @@ import * as BID from "./bidcall.js";
 import * as QL from "./qlist.js";
 import * as DECK from "./deck.js";
 import * as HEARD from "./heard.js";
+import * as PACE from "./pace.js";
 import * as LS from "./lessons.js";
 import * as TEAM from "./team.js";
 import * as QD from "./qualify.js";
@@ -1684,7 +1685,7 @@ const reducedMotion = () => typeof matchMedia === "function" && matchMedia("(pre
  * One deck, drawn into its own element: in the page (`inline`, with Full screen) or in a dialog (with Close).
  * `state` = {at, drafts}: where the deck is and the words typed on cards not answered yet, shared by both.
  */
-function deckPane({ cards, state, get, answer, go, pfx, inline, onAnswered = () => {}, onFull = () => {}, onDone = () => {} }) {
+function deckPane({ cards, state, get, answer, go, pfx, inline, clock = null, onAnswered = () => {}, onFull = () => {}, onDone = () => {} }) {
   let busy = false, now = null, wasOpen = false;
   const title = h("h2", { id: `${pfx}-title`, class: "deckline" });
   const pos = h("span", { class: "deckpos" });
@@ -1696,7 +1697,7 @@ function deckPane({ cards, state, get, answer, go, pfx, inline, onAnswered = () 
       "data-tip": "The deck on the whole screen: nothing else in view, the same cards and answers." })
     : h("button", { type: "button", class: "linkbtn deckclose", text: "Close", onclick: () => onDone() });
   const root = h("div", { class: "deckpane" + (inline ? " inpage" : "") },
-    h("div", { class: "deckhead" }, h("div", { class: "decktop" }, inline ? h("span", { class: "deckkicker", text: "Ask next" }) : null, title, pos, action), marks), main, status);
+    h("div", { class: "deckhead" }, h("div", { class: "decktop" }, inline ? h("span", { class: "deckkicker", text: "Ask next" }) : null, title, pos, clock ? clock() : null, action), marks), main, status);
 
   const drawMarks = () => {
     const w = get();
@@ -1876,9 +1877,9 @@ function deckPane({ cards, state, get, answer, go, pfx, inline, onAnswered = () 
   return { el: root, draw, sync };
 }
 
-function openDeck({ cards, state, get, answer, go, onAnswered, onClose }) {
+function openDeck({ cards, state, get, answer, go, clock, onAnswered, onClose }) {
   const dlg = h("dialog", { class: "deck", "aria-labelledby": "deck-title" });
-  const pane = deckPane({ cards, state, get, answer, go, pfx: "deck", inline: false, onAnswered, onDone: () => dlg.close() });
+  const pane = deckPane({ cards, state, get, answer, go, pfx: "deck", inline: false, clock, onAnswered, onDone: () => dlg.close() });
   dlg.append(pane.el);
   dlg.addEventListener("close", () => { dlg.remove(); onClose(); });
   document.body.append(dlg);
@@ -2078,24 +2079,71 @@ export function workshopView({ workshop: w, catalog, list, answer, worth, rename
       h("button", { class: "btn small", type: "button", text: "Copy the question guide", onclick: (ev) => copyText(WS.questionGuide(catalog, cur, wsFilter)).then((ok) => { ev.target.textContent = ok ? "Copied" : "Not copied"; }) }),
       h("button", { class: "btn small", type: "button", text: "Question guide (.md)", onclick: () => saveBlob(WS.questionGuide(catalog, cur, wsFilter), `${slug}-questions.md`, "text/markdown") }))) : null;
   requestAnimationFrame(apply);
+  // the meeting's clock: kept in this tab, not in the workshop; the pace is on the essential questions in scope
+  const clockKey = `beyond90.clock.${cur.id}`;
+  const keepClock = (c) => { try { if (c) sessionStorage.setItem(clockKey, JSON.stringify(c)); else sessionStorage.removeItem(clockKey); } catch { /* the clock just does not outlive the page */ } };
+  let meetingClock = (() => { try { const c = JSON.parse(sessionStorage.getItem(clockKey) || "null"); return PACE.validClock(c) ? c : null; } catch { return null; } })();
+  const essentialCards = inScope.length ? DECK.deckFrom(catalog, cur.scope, (key, q) => !!q.core) : [];
+  const miniClocks = new Set();
+  const makeMini = () => { const m = h("span", { class: "deckmini" }); miniClocks.add(m); return m; };
+  const clockBox = h("div", { class: "meetclock" });
+  const clockTime = h("span", { class: "clocktime" });
+  const paceFill = h("i", { class: "pacefill" }), paceTick = h("i", { class: "pacetick" });
+  const paceLine = h("p", { class: "paceline" });
+  const paceAct = h("div", { class: "paceact" });
+  let paceShown = "";
+  const paceNow = () => {
+    if (!meetingClock) return;
+    const r = PACE.reading(meetingClock, Date.now());
+    const t = `${PACE.mmss(r.left)} ${r.left >= 0 ? "left" : "over"}`;
+    clockTime.textContent = t;
+    for (const m of miniClocks) { if (m.isConnected) m.textContent = t; else miniClocks.delete(m); }
+    const p = PACE.pace(meetingClock, r.elapsed, essentialCards.length, essentialCards.filter((c) => cur.answers[c.key]).length);
+    paceFill.style.setProperty("--w", `${(p.share * 100).toFixed(1)}%`);
+    paceTick.style.setProperty("--at", `${(p.timeShare * 100).toFixed(1)}%`);
+    const shown = `${p.line}|${wsFilter.core}`;
+    if (shown === paceShown) return;
+    paceShown = shown;
+    paceLine.textContent = p.line;
+    paceLine.className = `paceline t-${p.state}`;
+    put(paceAct, p.state === "behind" && !wsFilter.core
+      ? h("button", { class: "btn", type: "button", text: "Ask only the essentials", onclick: () => { essential.click(); paceNow(); } }) : null);
+  };
+  const drawClock = () => {
+    paceShown = "";
+    if (!meetingClock) {
+      for (const m of miniClocks) m.textContent = "";
+      put(clockBox, h("span", { class: "decklabel", text: "Meeting clock" }),
+        h("div", { class: "clockstart", role: "group", "aria-label": "Start the meeting clock" }, PACE.LENGTHS.map((m) => h("button", { type: "button", class: "btn", text: `${m} min`,
+          "aria-label": `Start a ${m} minute meeting`, onclick: () => { meetingClock = { start: Date.now(), minutes: m }; keepClock(meetingClock); drawClock(); } }))),
+        h("p", { class: "note", text: "Keeps the time and says whether the essential questions still fit. It stays in this browser tab, not in the workshop." }));
+      return;
+    }
+    put(clockBox, h("div", { class: "clockhead" }, h("span", { class: "decklabel", text: `Meeting clock, ${meetingClock.minutes} minutes` }),
+      h("button", { type: "button", class: "linkbtn", text: "Stop", onclick: () => { meetingClock = null; keepClock(null); drawClock(); } })),
+    clockTime, h("span", { class: "pacebar", "aria-hidden": "true" }, paceFill, paceTick), paceLine, paceAct);
+    paceNow();
+  };
+  const clockTimer = setInterval(() => { if (!clockBox.isConnected) { clearInterval(clockTimer); return; } paceNow(); }, 1000);
+  drawClock();
   // one question at a time, at the top: the questions shown, as a deck; Full screen opens the same deck on the whole screen
   const deckState = { at: 0, drafts: new Map() };
   const deckBox = h("div", { class: "deckslot" });
   let deckInline = null;
-  const afterDeck = (key) => { if (drawers.has(key)) drawers.get(key)(); for (const f of heads) f(); drawProg(); drawStrip(); };
+  const afterDeck = (key) => { if (drawers.has(key)) drawers.get(key)(); for (const f of heads) f(); drawProg(); drawStrip(); paceNow(); };
   const deckAnswer = async (p, i, a, note) => { cur = await answer(p, i, a, note); return cur; };
   function rebuildDeck() {
     const keep = (key, q) => WS.inMeeting(q, wsFilter) && (!wsFilter.tender || (asks.get(key) || []).length > 0) && (!wsFilter.open || !cur.answers[key]);
     const cards = DECK.deckFrom(catalog, cur.scope, keep);
     if (!cards.length) { deckInline = null; put(deckBox, h("p", { class: "note decknone", text: "No question is shown with these filters: clear one to ask them here, one at a time." })); return; }
     deckState.at = DECK.firstOpen(cards, cur.answers);
-    const pane = deckPane({ cards, state: deckState, get: () => cur, answer: deckAnswer, go, pfx: "wsdeck", inline: true, onAnswered: afterDeck,
-      onFull: () => openDeck({ cards, state: deckState, get: () => cur, answer: deckAnswer, go, onAnswered: afterDeck, onClose: () => pane.draw(false) }) });
+    const pane = deckPane({ cards, state: deckState, get: () => cur, answer: deckAnswer, go, pfx: "wsdeck", inline: true, clock: makeMini, onAnswered: afterDeck,
+      onFull: () => openDeck({ cards, state: deckState, get: () => cur, answer: deckAnswer, go, clock: makeMini, onAnswered: afterDeck, onClose: () => pane.draw(false) }) });
     deckInline = pane;
     put(deckBox, pane.el);
     pane.draw(false);
   }
-  function syncDeck() { if (deckInline) deckInline.sync(); }
+  function syncDeck() { if (deckInline) deckInline.sync(); paceNow(); }
   if (inScope.length) rebuildDeck();
   // heard something: written as it was said; the question it answers is found among every question in scope
   const heardIn = h("textarea", { id: "wsheard", class: "heardin", rows: 2, maxlength: HEARD.NOTE_MAX, placeholder: "e.g. any domain admin can wipe the backup repository" });
@@ -2136,7 +2184,7 @@ export function workshopView({ workshop: w, catalog, list, answer, worth, rename
     w.scope.includes("edge-sites") && edge ? edgeCard(w, edge) : null, w.scope.some((p) => WS.UNIT_LINES.includes(p)) && unit ? unitCard(w, unit) : null].filter(Boolean);
   // with lines chosen, the next question comes first, beside where every line stands; the meeting's settings follow
   const top = inScope.length
-    ? [h("div", { class: "card deckpanel" }, deckBox, h("div", { class: "deckside" }, prog, strip, heardBox,
+    ? [h("div", { class: "card deckpanel" }, deckBox, h("div", { class: "deckside" }, clockBox, prog, strip, heardBox,
       h("p", { class: "note", text: "Swipe the card or tap an answer, and write what they said on it: it is kept with the answer. Something said out of turn goes in the box above: it finds the question it answers. Every question is also in the list below, with the same answers; the filters there shape the deck." }))), meeting]
     : [meeting, h("div", { class: "card wsprogcard" }, prog, strip)];
   return h("div", {}, top, narrow, lines,

@@ -2,6 +2,16 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.135.0
+
+- **A meeting clock, and whether the essential questions still fit.** Beside the card of the next question, 30, 45 or 60 minutes start with a tap.
+  - It shows the time left in large type, and on the card's header too, full screen included, so the time is in view while asking.
+  - A bar shows the essential questions asked against a mark for the time gone. A line says it plainly: "On pace: 7 essential questions left, 30 minutes to go", "Behind: 6 essential questions in 15 minutes, about 2 minutes each", "Over time, with 2 essential questions still open: agree a follow-up before you leave", or "Every essential question is asked".
+  - Behind, **Ask only the essentials** narrows the list and the card to them in one tap.
+  - "Nobody knows" counts as asked. The first minutes go on introductions, so ten points behind the time is still on pace.
+  - The clock is the meeting's, not the customer's. It stays in the browser tab (it outlives a change of view or a reload) and is never saved in the workshop or in a file. **Stop** clears it.
+- New: `pace.js` (the reading and the pace, with tests); browser checks for starting the clock, the time on the card, the clock after a change of view, behind with the essentials one tap away, and stopping it.
+
 ## 0.134.0
 
 - **Heard something? Write it as it was said, and the app finds the question it answers.** Beside the card of the next question, a box takes what the customer said out of turn.

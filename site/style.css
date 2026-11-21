@@ -1671,3 +1671,21 @@ input[type=number],input[type=text],input[type=search],input[type=date],input[ty
 .heardopt:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 .heardsay{margin:0}
 .heardsay:empty{display:none}
+
+/* the meeting's clock (0.135): the time left, and whether the essential questions still fit */
+.meetclock{display:grid;gap:8px;padding-bottom:16px;border-bottom:1.5px solid var(--grid)}
+.meetclock .decklabel,.meetclock .note{margin:0}
+.clockhead{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.clockhead .linkbtn{padding:8px 2px;min-height:40px}
+.clockstart{display:flex;flex-wrap:wrap;gap:8px}
+.clocktime{font-family:var(--display);font-weight:800;font-size:40px;line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.pacebar{position:relative;display:block;height:10px;margin:4px 0;border-radius:5px;background:var(--grid)}
+.pacefill{position:absolute;left:0;top:0;bottom:0;width:var(--w,0%);border-radius:5px;background:var(--accent);transition:width .4s}
+.pacetick{position:absolute;top:-5px;bottom:-5px;left:calc(var(--at,0%) - 1.5px);width:3px;border-radius:2px;background:var(--ink)}
+.paceline{margin:0;font-weight:700;line-height:1.35}
+.paceline.t-behind,.paceline.t-over{color:var(--lv-red)}
+.paceline.t-on,.paceline.t-done{color:var(--lv-green)}
+.paceact:empty{display:none}
+.deckmini{flex:none;font-size:13.5px;font-weight:700;color:var(--ink2);font-variant-numeric:tabular-nums}
+.deckmini:empty{display:none}
+@media (prefers-reduced-motion:reduce){.pacefill{transition:none}}

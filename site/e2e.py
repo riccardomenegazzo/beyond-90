@@ -811,6 +811,26 @@ def main(site: str) -> int:
               "what was heard finds the question it answers, with the answer the words suggest")
         page.fill("#wsheard", "")
         check(page.locator("#view .heardhit").count() == 0, "cleared, the matches go")
+        # the meeting's clock: a tap starts it; it keeps the time, on the card too, and the pace on the essential questions
+        page.locator("#view .clockstart .btn", has_text="45 min").click()
+        page.locator("#view .deckpane.inpage .deckmini", has_text="left").wait_for()
+        check(re.match(r"^4[45]:\d\d left$", page.inner_text("#view .clocktime")) is not None and "essential question" in page.inner_text("#view .paceline"),
+              "the meeting clock starts with a tap and gives the time left and the pace")
+        clock_key = page.evaluate("Object.keys(sessionStorage).find((k) => k.startsWith('beyond90.clock.'))")
+        page.evaluate(f"sessionStorage.setItem({json.dumps(clock_key)}, JSON.stringify({{start: Date.now() - 40 * 60000, minutes: 45}}))")
+        page.click("[data-tab=wsqualify]")
+        page.click("[data-tab=workshop]")
+        page.wait_for_selector("#view .clocktime")
+        check(page.inner_text("#view .paceline").startswith("Behind:") and page.locator("#view .paceact .btn", has_text="Ask only the essentials").count() == 1,
+              "the clock outlives a change of view, and behind it offers the essential questions only")
+        page.locator("#view .paceact .btn", has_text="Ask only the essentials").click()
+        check(page.locator("#view .wsnarrow .kindchip[aria-pressed=true]", has_text="Essential questions only").count() == 1
+              and page.locator("#view .deckpane.inpage .decktag.core").count() == 1 and page.locator("#view .paceact .btn").count() == 0,
+              "asking only the essentials narrows the list and the card")
+        page.locator("#view .wsnarrow .kindchip", has_text="Essential questions only").click()
+        page.locator("#view .clockhead .linkbtn", has_text="Stop").click()
+        check(page.locator("#view .clockstart .btn").count() == 3 and page.evaluate(f"sessionStorage.getItem({json.dumps(clock_key)})") is None,
+              "stopped, the clock goes, from the tab too")
         page.get_by_role("button", name="See the journey").click()
         page.wait_for_selector("#view ol.journey")
         check("Yes, this is possible." in page.inner_text("#view .jhero") and "2M in lost orders" in page.inner_text("#view .jhero"), "the journey opens on what is possible, with what is at stake in the customer's words")
