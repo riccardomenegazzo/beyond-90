@@ -1696,3 +1696,5 @@ input[type=number],input[type=text],input[type=search],input[type=date],input[ty
 /* the deck in the qualification (0.136): the ten questions on cards, the compact list beside them */
 .deckside h2.decksidehead{margin:0;font-size:20px}
 .deckside .qdlist{min-width:0}
+/* most useful first (0.137): why this card comes now */
+.decktag.why{color:var(--accent-text);background:color-mix(in srgb,var(--accent) 10%,var(--surface))}

@@ -116,3 +116,19 @@ test("an answer set lays any few answers on the directions, with the keys in the
   assert.deepEqual(t.counts, { known: 1, partly: 0, unknown: 1, open: 1 });
   assert.deepEqual(t.under.known, [{ key: "a", label: "A", q: "Qa", note: "yes" }]);
 });
+
+test("most useful first: open before answered, essential first, the least known lines and the untouched ones ahead", async () => {
+  const { bestFirst } = await import("../deck.js");
+  const cards = [
+    { key: "a#0", line: "a", q: { q: "a0" } }, { key: "a#1", line: "a", q: { q: "a1", core: true } }, { key: "a#2", line: "a", q: { q: "a2" } },
+    { key: "b#0", line: "b", q: { q: "b0" } }, { key: "b#1", line: "b", q: { q: "b1", core: true } },
+  ];
+  const answers = { "a#0": { a: "solved" }, "a#2": { a: "gap" } };
+  const { cards: order, why } = bestFirst(cards, answers);
+  assert.deepEqual(order.map((c) => c.key), ["b#1", "a#1", "b#0", "a#0", "a#2"]);
+  assert.deepEqual(why["b#1"], ["Nothing asked on this line yet"]);
+  assert.deepEqual(why["a#1"], []);
+  const some = bestFirst(cards, { "a#0": { a: "solved" }, "b#0": { a: "unknown" } });
+  assert.equal(some.cards[0].key, "b#1");
+  assert.deepEqual(some.why["b#1"], ["Least known line"]);
+});

@@ -831,6 +831,12 @@ def main(site: str) -> int:
         page.locator("#view .clockhead .linkbtn", has_text="Stop").click()
         check(page.locator("#view .clockstart .btn").count() == 3 and page.evaluate(f"sessionStorage.getItem({json.dumps(clock_key)})") is None,
               "stopped, the clock goes, from the tab too")
+        # most useful first: the card asks the essential questions first, on the lines known least or not touched, and says why
+        page.locator("#view .wsnarrow .kindchip", has_text="Most useful first").click()
+        tags = page.inner_text("#view .deckpane.inpage .decktags")
+        check("Essential" in tags and "Nothing asked on this line yet" in tags and page.inner_text("#view .deckpane.inpage .deckpos").startswith("1 of"),
+              "most useful first starts on an essential question of a line nothing was asked on, and says so")
+        page.locator("#view .wsnarrow .kindchip", has_text="Most useful first").click()
         page.get_by_role("button", name="See the journey").click()
         page.wait_for_selector("#view ol.journey")
         check("Yes, this is possible." in page.inner_text("#view .jhero") and "2M in lost orders" in page.inner_text("#view .jhero"), "the journey opens on what is possible, with what is at stake in the customer's words")

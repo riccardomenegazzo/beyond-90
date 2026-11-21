@@ -189,3 +189,33 @@ export function tally(cards, answerOf, order) {
   }
   return { counts, under, total: cards.length };
 }
+
+/**
+ * The deck in the most useful order: the questions not answered first, the essential ones before the others, then
+ * those of the lines least known (most questions open or answered "nobody knows") and of lines nothing was asked on
+ * yet; the answered ones last, as listed. Each card says why it comes where it does.
+ * @returns {{cards: object[], why: Record<string, string[]>}}
+ */
+export function bestFirst(cards, answers) {
+  const lines = new Map();
+  for (const c of cards) {
+    const l = lines.get(c.line) || { n: 0, dark: 0, asked: 0 };
+    const a = answers[c.key];
+    l.n += 1;
+    if (!a || a.a === "unknown") l.dark += 1;
+    if (a) l.asked += 1;
+    lines.set(c.line, l);
+  }
+  const dark = (p) => lines.get(p).dark / lines.get(p).n;
+  const darkest = Math.max(0, ...[...lines.keys()].map(dark));
+  const open = cards.filter((c) => !answers[c.key]).map((c, i) => {
+    const untouched = lines.get(c.line).asked === 0, least = darkest > 0 && dark(c.line) === darkest;
+    return { c, i, untouched, least, s: (c.q.core ? 3 : 0) + 2 * dark(c.line) + (untouched ? 1 : 0) };
+  });
+  open.sort((a, b) => b.s - a.s || a.i - b.i);
+  const why = {};
+  for (const x of open) {
+    why[x.c.key] = [x.untouched ? "Nothing asked on this line yet" : x.least ? "Least known line" : null].filter(Boolean);
+  }
+  return { cards: [...open.map((x) => x.c), ...cards.filter((c) => answers[c.key])], why };
+}

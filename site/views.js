@@ -1697,6 +1697,7 @@ const DISCOVERY_DECK = {
       lists: [["The gaps, with what they said", s.gaps], ["Nobody could answer", s.unknown]] };
   },
   end: { text: "See the journey", view: "journey" },
+  more: { text: "Write the meeting summary", view: "wsummary" },
 };
 
 /**
@@ -1780,7 +1781,10 @@ function deckPane({ cards, state, answerOf, answer, go, pfx, inline, set = DISCO
       const k = e.type === "pointerup" ? set.released(e.clientX - from.x, e.clientY - from.y) : null;
       from = null;
       card.classList.remove("dragging");
-      if (k) commit(k); else snapBack();
+      if (k) {
+        try { if (navigator.vibrate) navigator.vibrate(12); } catch { /* a buzz is a nicety */ }
+        commit(k);
+      } else snapBack();
     };
     card.addEventListener("pointerup", end);
     card.addEventListener("pointercancel", end);       // in the page, a drag up or down scrolls it instead
@@ -1829,6 +1833,7 @@ function deckPane({ cards, state, answerOf, answer, go, pfx, inline, set = DISCO
     put(front,
       h("div", { class: "decktags" }, q.core ? h("span", { class: "decktag core", text: "Essential" }) : null,
         tag ? h("span", { class: "decktag", text: tag }) : null,
+        ans ? null : (c.why || []).map((w) => h("span", { class: "decktag why", text: w })),
         ans ? h("span", { class: `decktag t-${set.tone(ans.a)}`, text: `Answered: ${set.label(ans.a).toLowerCase()}` }) : null),
       ask,
       h("label", { for: `${pfx}-said`, class: "decklabel", text: "What they said" }), said,
@@ -1868,6 +1873,7 @@ function deckPane({ cards, state, answerOf, answer, go, pfx, inline, set = DISCO
       s.lists.map(said),
       h("div", { class: "btnrow deckendrow" },
         set.end ? h("button", { class: "btn primary", type: "button", text: set.end.text, onclick: () => { onDone(); go(set.end.view); } }) : null,
+        set.more ? h("button", { class: "btn", type: "button", text: set.more.text, onclick: () => { onDone(); go(set.more.view); } }) : null,
         open >= 0 ? h("button", { class: "btn", type: "button", text: "Ask what is still open", onclick: () => { state.at = open; draw(true); } }) : null,
         inline ? null : h("button", { class: "btn", type: "button", text: "Back to the list", onclick: () => onDone() })),
       h("button", { class: "linkbtn", type: "button", text: "Go back to the last question", onclick: () => { state.at = cards.length - 1; draw(true); } })));
@@ -1906,7 +1912,7 @@ function openDeck({ clock, onClose, ...rest }) {
   pane.draw(true);
 }
 
-const wsFilter = { core: false, roles: [], tender: false, open: false };
+const wsFilter = { core: false, roles: [], tender: false, open: false, best: false };
 
 export function workshopView({ workshop: w, catalog, list, answer, worth, rename, preparedBy, setScope, inventory, sizing, waves, gpu, dr, obj, edge, unit, today, newWorkshop, openWorkshop, removeWorkshop, presets = [], go, focus }) {
   const say = h("p", { class: "note", role: "status" });
@@ -2084,6 +2090,9 @@ export function workshopView({ workshop: w, catalog, list, answer, worth, rename
   const fromTender = h("button", { type: "button", class: "kindchip", "aria-pressed": String(wsFilter.tender), text: "Asked by the tender",
     "data-tip": "Only the questions a requirement of the tender touches: what to understand before answering it.",
     onclick: () => { wsFilter.tender = !wsFilter.tender; fromTender.setAttribute("aria-pressed", String(wsFilter.tender)); apply(); rebuildDeck(); } });
+  const bestFirst = h("button", { type: "button", class: "kindchip", "aria-pressed": String(wsFilter.best), text: "Most useful first",
+    "data-tip": "The card asks the essential questions first, on the lines you know least or have not touched yet, and says why. The list keeps its order.",
+    onclick: () => { wsFilter.best = !wsFilter.best; bestFirst.setAttribute("aria-pressed", String(wsFilter.best)); rebuildDeck(); } });
   const used = Object.keys(WS.ROLE_WORDS).filter((r) => cur.scope.some((p) => catalog.lines[p] && catalog.lines[p].questions.some((q) => q.role === r)));
   const roleChips = used.map((r) => {
     const b = h("button", { type: "button", class: "kindchip", "aria-pressed": String(wsFilter.roles.includes(r)), text: WS.ROLE_WORDS[r],
@@ -2092,7 +2101,7 @@ export function workshopView({ workshop: w, catalog, list, answer, worth, rename
   });
   const slug = (cur.customer || "customer").replace(/[^A-Za-z0-9]+/g, "-").replace(/^-|-$/g, "").toLowerCase() || "customer";
   const narrow = used.length ? h("div", { class: "card wsnarrow" }, h("h2", { class: "sr-only", text: "Narrow the questions" }),
-    h("div", { class: "wsfam", role: "group", "aria-label": "Which questions to show" }, h("span", { class: "wsfamname", text: "This meeting" }), essential, notYet, asks.size ? fromTender : null),
+    h("div", { class: "wsfam", role: "group", "aria-label": "Which questions to show" }, h("span", { class: "wsfamname", text: "This meeting" }), essential, notYet, asks.size ? fromTender : null, inScope.length ? bestFirst : null),
     h("div", { class: "wsfam", role: "group", "aria-label": "Who is in the room" }, h("span", { class: "wsfamname", text: "Who is in the room" }), roleChips),
     h("div", { class: "btnrow" }, shown,
       h("button", { class: "btn small", type: "button", text: "Copy the question guide", onclick: (ev) => copyText(WS.questionGuide(catalog, cur, wsFilter)).then((ok) => { ev.target.textContent = ok ? "Copied" : "Not copied"; }) }),
@@ -2153,9 +2162,10 @@ export function workshopView({ workshop: w, catalog, list, answer, worth, rename
   const deckAnswer = async (c, a, note) => { cur = await answer(c.line, c.index, a, note); return cur; };
   function rebuildDeck() {
     const keep = (key, q) => WS.inMeeting(q, wsFilter) && (!wsFilter.tender || (asks.get(key) || []).length > 0) && (!wsFilter.open || !cur.answers[key]);
-    const cards = DECK.deckFrom(catalog, cur.scope, keep);
+    let cards = DECK.deckFrom(catalog, cur.scope, keep);
+    if (wsFilter.best && cards.length) { const b = DECK.bestFirst(cards, cur.answers); cards = b.cards.map((c) => ({ ...c, why: b.why[c.key] || [] })); }
     if (!cards.length) { deckInline = null; put(deckBox, h("p", { class: "note decknone", text: "No question is shown with these filters: clear one to ask them here, one at a time." })); return; }
-    deckState.at = DECK.firstOpen(cards, cur.answers);
+    deckState.at = DECK.firstOpen(cards, cur.answers);       // most useful first puts the open ones first: the same rule
     const same = { cards, state: deckState, answerOf: (c) => cur.answers[c.key], answer: deckAnswer, go, clock: makeMini, onAnswered: afterDeck };
     const pane = deckPane({ ...same, pfx: "wsdeck", inline: true, onFull: () => openDeck({ ...same, onClose: () => pane.draw(false) }) });
     deckInline = pane;

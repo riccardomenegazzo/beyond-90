@@ -2,6 +2,16 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.137.0
+
+- **Most useful first: the card asks what matters most now, and says why.** A new filter, **Most useful first**, orders the card (the list keeps its order):
+  - the questions not answered come first, the essential ones before the others;
+  - then those of the lines known least, where most questions are open or were answered "nobody knows", and of the lines nothing was asked on yet;
+  - the card carries the reason: "Nothing asked on this line yet" or "Least known line".
+- At the end of the discovery deck, **Write the meeting summary** is one tap away, beside the journey.
+- On a phone that can, a swipe that answers gives a short buzz.
+- New: `bestFirst` in `deck.js`, with tests; a browser check that most useful first starts on an essential question of a line nothing was asked on.
+
 ## 0.136.0
 
 - **Qualify the deal on a card too.** The ten qualification questions open as the discovery questions do: **Find out next** shows the first one not answered, with room to write what they said.
