@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.152.0
+
+- **Heard something, checked on Kubernetes and virtual desktops.** Twelve more things a customer might say, on the real questions of those two lines among the platform and disaster recovery ones ("every team spun up its own clusters", "everything is kubectl by hand", "logons take five minutes every Monday", "the antivirus inside the desktops eats half the CPU"), each find their question first. They are kept as tests, beside the nine of 0.151, so a change to the matching that makes any of them worse fails the build.
+
 ## 0.151.0
 
 - **Heard something understands more of how people talk about databases and clouds.** Measured on the real questions of four lines (platform, databases, disaster recovery, hybrid cloud), nine things a customer might say now all have their question among the three offered, six of them first:

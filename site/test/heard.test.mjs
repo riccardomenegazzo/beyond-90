@@ -107,3 +107,26 @@ test("on the real questions of four lines, what was heard has its question among
   }
   assert.ok(first >= 6, `first ${first} of ${cases.length}`);
 });
+
+test("on Kubernetes and virtual desktops too, what was heard finds its question first", () => {
+  const cards = [];
+  for (const p of ["kubernetes-platform", "euc", "hci", "dr-backup"]) {
+    const file = new URL(`../../src/beyond90/data/profiles/${p}/discovery.json`, import.meta.url);
+    JSON.parse(readFileSync(file, "utf8")).questions.forEach((q, i) => cards.push({ key: `${p}#${i}`, q }));
+  }
+  const cases = [
+    ["Every team spun up its own clusters, we have no idea how many", "kubernetes-platform#2"],
+    ["Devs wait three weeks for a namespace", "kubernetes-platform#0"],
+    ["Anyone can deploy a privileged container", "kubernetes-platform#4"],
+    ["Persistent volumes are not backed up at all", "kubernetes-platform#3"],
+    ["Everything is kubectl by hand, no GitOps", "kubernetes-platform#5"],
+    ["We are three minor versions behind on the clusters", "kubernetes-platform#1"],
+    ["On-call finds out from users when pods crash at night", "kubernetes-platform#7"],
+    ["Logons take five minutes every Monday", "euc#4"],
+    ["We have 14 golden images and some are two years old", "euc#3"],
+    ["The antivirus inside the desktops eats half the CPU", "euc#12"],
+    ["Contractors work from their own laptops", "euc#1"],
+    ["Profiles are 20 GB per user and live on a file share", "euc#11"],
+  ];
+  for (const [said, want] of cases) assert.equal((match(cards, said)[0] || {}).card?.key, want, said);
+});
