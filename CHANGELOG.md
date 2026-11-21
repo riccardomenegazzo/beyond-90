@@ -2,6 +2,12 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.149.0
+
+- **The first card says it can be swiped, without a word.** The first card a browser shows leans right, then left, once, with the answer each way faintly stamped on it, then settles. Never twice, never while it is being dragged, and never when the device asks for reduced motion.
+- A browser check that the hint is shown once and remembered.
+- The screenshots and the README's animation are taken again from this version.
+
 ## 0.148.0
 
 - **The card says what an answer puts on the journey.** Answered anything but solved, the next card opens with one line, "On the journey:", and the condition that would now need to be true ("The cost of a day without the main site is known and agreed"), read out to a screen reader with the answer. The deck and the journey are one piece of work, and now it shows while asking.

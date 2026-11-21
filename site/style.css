@@ -1749,3 +1749,8 @@ body[data-role=se] .choose>.wsstart{order:-1;margin:0 0 26px;border:2px solid va
 .deckafter{margin:0 18px 10px;padding:8px 12px;border-radius:10px;background:color-mix(in srgb,var(--accent) 9%,var(--surface));color:var(--ink);font-size:14px;line-height:1.4}
 .deckafter b{color:var(--accent-text)}
 @media (prefers-reduced-motion:no-preference){.deckafter{animation:deckin .3s ease-out}}
+
+/* the first card ever shown leans right then left, once (0.149): it can be swiped */
+@keyframes decknudge{0%{transform:none}30%{transform:translateX(34px) rotate(2deg)}65%{transform:translateX(-34px) rotate(-2deg)}100%{transform:none}}
+.deckcard.nudge{animation:decknudge 1.05s cubic-bezier(.4,0,.2,1)}
+@media (prefers-reduced-motion:reduce){.deckcard.nudge{animation:none}}

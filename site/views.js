@@ -1860,6 +1860,18 @@ function deckPane({ cards, state, answerOf, answer, go, pfx, inline, set = DISCO
     paintSug();
     drag(card, stamp);
     if (focus) requestAnimationFrame(() => ask.focus({ preventScroll: true }));
+    nudgeOnce(card, stamp);
+  };
+  // the first card this browser shows leans right, then left, once, with the answer each way faintly stamped:
+  // a card that can be swiped says so without a word; never with reduced motion, never twice
+  const nudgeOnce = (card, stamp) => {
+    let seen = true;
+    try { seen = localStorage.getItem("beyond90.deckhint") === "1"; localStorage.setItem("beyond90.deckhint", "1"); } catch { /* without storage, no hint */ }
+    if (seen || reducedMotion()) return;
+    const right = set.order.find((k) => set.dir(k).arrow === "right"), left = set.order.find((k) => set.dir(k).arrow === "left");
+    setTimeout(() => { if (!card.isConnected || card.classList.contains("dragging")) return; card.classList.add("nudge"); stampOn(stamp, right, 0.55); }, 700);
+    setTimeout(() => { if (card.isConnected && card.classList.contains("nudge")) stampOn(stamp, left, 0.55); }, 1200);
+    setTimeout(() => { card.classList.remove("nudge"); if (card.isConnected && !card.classList.contains("dragging")) stampOn(stamp, null, 0); }, 1750);
   };
 
   const drawEnd = (focus) => {

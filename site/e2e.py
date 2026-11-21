@@ -770,6 +770,7 @@ def main(site: str) -> int:
         check(page.inner_text(f"{D} .deckq") == first_open and f"of {in_scope}" in page.inner_text(f"{D} .deckpos")
               and page.evaluate("document.querySelector('#view .deckpanel').compareDocumentPosition(document.querySelector('#view .wsline')) & 4") > 0,
               "the questions open on the deck, before the list, at the first question with no answer")
+        check(page.evaluate("localStorage.getItem('beyond90.deckhint')") == "1", "the first card shown leans to say it can be swiped, and only the first time")
         page.fill("#wsdeck-said", "We have never tested it")
         check(page.inner_text(f"{D} .decksug") == "Sounds like a real gap" and page.locator(f"{D} .deckopt.o-gap.sug").count() == 1,
               "what they said suggests an answer, without answering")
