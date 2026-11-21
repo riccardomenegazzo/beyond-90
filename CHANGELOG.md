@@ -2,6 +2,17 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.136.0
+
+- **Qualify the deal on a card too.** The ten qualification questions open as the discovery questions do: **Find out next** shows the first one not answered, with room to write what they said.
+  - Swipe it right if it is known, up if partly, left if not yet, or tap the answer. The keys are the arrows and 1 to 3, and **Full screen** gives the card the whole screen.
+  - Beside the card, the compact list of the ten. An answer given in one shows in the other at once, and the verdict above follows.
+  - Words that say nobody is sure ("not sure", "no idea") suggest **Not yet**; "some", "only", "partly" suggest **Partly**.
+  - At the end, where the deal stands: the verdict and its score, what is not yet known and what only partly, with what was said, and the way forward one tap away.
+- **One deck for any set of answers.** The deck now takes its answers as a set laid on the four directions: four for discovery, three for qualification. The order, the keys, the swipes and the summary come from the set (`answerSet`, `tally` in `deck.js`, with tests).
+- The card's column keeps its ground the whole height of the panel when the list beside it is taller.
+- Browser checks for the qualification card: the first question not answered, its three answers, and an answer on the card showing in the list.
+
 ## 0.135.0
 
 - **A meeting clock, and whether the essential questions still fit.** Beside the card of the next question, 30, 45 or 60 minutes start with a tap.

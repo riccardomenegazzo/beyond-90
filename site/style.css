@@ -1607,7 +1607,9 @@ input[type=number],input[type=text],input[type=search],input[type=date],input[ty
 .deckans{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:0 18px}
 .deckopt{--tone:var(--ink2);display:flex;align-items:center;justify-content:center;gap:8px;min-height:54px;padding:0 10px;border-radius:16px;
   border:2px solid var(--tone);background:var(--surface);color:var(--tone);font:inherit;font-size:16px;font-weight:700;cursor:pointer}
-.deckopt.o-solved{--tone:var(--lv-green)}.deckopt.o-partly{--tone:var(--lv-ochre)}.deckopt.o-gap{--tone:var(--lv-red)}.deckopt.o-unknown{--tone:var(--ink2)}
+.deckopt.t-good{--tone:var(--lv-green)}.deckopt.t-mid{--tone:var(--lv-ochre)}.deckopt.t-bad{--tone:var(--lv-red)}.deckopt.t-unknown{--tone:var(--ink2)}
+.deckans.n3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.deckans.n3 .deckopt{flex-direction:column;gap:2px;font-size:15px}
 .deckopt.sug{background:color-mix(in srgb,var(--tone) 12%,var(--surface))}
 .deckopt[aria-pressed=true]{background:var(--tone);color:var(--lv-on)}
 .deckopt:active{transform:scale(.97)}
@@ -1647,9 +1649,11 @@ input[type=number],input[type=text],input[type=search],input[type=date],input[ty
 .deckside .wsprog .btn{justify-self:start}
 .deckside .note{margin:0}
 .deckslot .decknone{padding:18px 20px;margin:0}
+.deckpanel>.deckslot{background:var(--page)}
 @media (min-width:1000px){
   .card.deckpanel{grid-template-columns:minmax(0,540px) minmax(0,1fr)}
-  .deckpane.inpage{border-bottom:0;border-right:1.5px solid var(--grid)}
+  .deckpane.inpage{border-bottom:0}
+  .deckpanel>.deckslot{border-right:1.5px solid var(--grid)}
 }
 
 /* heard something (0.134): what was said, written as it was said, matched to the question it answers */
@@ -1689,3 +1693,6 @@ input[type=number],input[type=text],input[type=search],input[type=date],input[ty
 .deckmini{flex:none;font-size:13.5px;font-weight:700;color:var(--ink2);font-variant-numeric:tabular-nums}
 .deckmini:empty{display:none}
 @media (prefers-reduced-motion:reduce){.pacefill{transition:none}}
+/* the deck in the qualification (0.136): the ten questions on cards, the compact list beside them */
+.deckside h2.decksidehead{margin:0;font-size:20px}
+.deckside .qdlist{min-width:0}

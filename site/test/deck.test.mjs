@@ -95,3 +95,24 @@ test("the next card still open goes on from where the deck is, round to the top,
   const all = Object.fromEntries(cards.map((c) => [c.key, { a: "solved" }]));
   assert.equal(nextOpen(cards, all, 1), -1);
 });
+
+test("an answer set lays any few answers on the directions, with the keys in their order", async () => {
+  const { answerSet, QUALIFY, DISCOVERY, direction, tally } = await import("../deck.js");
+  assert.equal(direction(-50, 10), "left");
+  assert.equal(direction(0, 0), null);
+  assert.deepEqual(QUALIFY.order, ["known", "partly", "unknown"]);
+  assert.equal(QUALIFY.toward(80, 0), "known");
+  assert.equal(QUALIFY.toward(0, 80), null);                // down holds nothing in qualification
+  assert.equal(QUALIFY.released(-100, 0), "unknown");
+  assert.equal(QUALIFY.released(-40, 0), null);
+  assert.equal(QUALIFY.fromKey("2"), "partly");
+  assert.equal(QUALIFY.fromKey("4"), null);
+  assert.equal(QUALIFY.fromKey("ArrowLeft"), "unknown");
+  assert.deepEqual(QUALIFY.dir("partly"), { dx: 0, dy: -1, key: "ArrowUp", arrow: "up" });
+  assert.equal(DISCOVERY.fromKey("ArrowDown"), "unknown");
+  assert.equal(answerSet({ yes: "right", no: "left" }).released(200, 5), "yes");
+  const cards = [{ key: "a", label: "A", q: { q: "Qa" } }, { key: "b", label: "B", q: { q: "Qb" } }, { key: "c", label: "C", q: { q: "Qc" } }];
+  const t = tally(cards, (c) => ({ a: { a: "known", note: "yes" }, b: { a: "unknown", note: "" } })[c.key], ["known", "partly", "unknown"]);
+  assert.deepEqual(t.counts, { known: 1, partly: 0, unknown: 1, open: 1 });
+  assert.deepEqual(t.under.known, [{ key: "a", label: "A", q: "Qa", note: "yes" }]);
+});

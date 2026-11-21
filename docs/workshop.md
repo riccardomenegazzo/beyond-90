@@ -80,7 +80,7 @@ The questions above ask whether the customer needs this. **Qualify the deal** as
 
 Each one is **Known**, **Partly** or **Not yet**, with what was heard, and has the same **How to ask it** as the technical questions. The tags are the words most sales methods use (MEDDPICC among them), so the seller and the engineer read one list.
 
-They are a compact list, as in bid or no bid:
+They open on a card, as the discovery questions do: **Find out next** shows the first question not answered, with room to write what they said. Swipe it right if it is known, up if partly, left if not yet, or tap the answer; the keys are the arrows and 1 to 3, and **Full screen** gives the card the whole screen. Beside the card they are also a compact list, as in bid or no bid, and an answer given in one shows in the other at once:
 - three tiles group them as a deal is won: why they would buy (pain, event, metrics), how they decide (economic buyer, criteria, process, paper), how we win it (technical validation, champion, competition), with a dot per question;
 - each question is one line: its tag, what was heard (or the question, until something was), the answer in line;
 - opened, it shows the whole question, why it matters, how to ask it and the note; the keys 1 to 3 answer it and open the next one still open.

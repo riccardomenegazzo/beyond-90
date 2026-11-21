@@ -139,3 +139,53 @@ export function deckSummary(cards, answers) {
   const head = `${parts.join(", ")}${counts.open ? `, ${counts.open} still to ask` : ""}.`;
   return { counts, gaps, unknown, head, total: cards.length };
 }
+
+// ---------- answer sets: any few answers laid on the four directions of a swipe
+const ARROWS = {
+  right: { dx: 1, dy: 0, key: "ArrowRight" },
+  up: { dx: 0, dy: -1, key: "ArrowUp" },
+  left: { dx: -1, dy: 0, key: "ArrowLeft" },
+  down: { dx: 0, dy: 1, key: "ArrowDown" },
+};
+
+/** Where a drag is heading: the main axis decides. */
+export function direction(dx, dy) {
+  if (!dx && !dy) return null;
+  if (Math.abs(dx) >= Math.abs(dy)) return dx > 0 ? "right" : "left";
+  return dy < 0 ? "up" : "down";
+}
+
+/**
+ * A set of answers, each on a direction, in the order of their keys (1, 2, 3...) and of the buttons.
+ * @param {Record<string, "right"|"up"|"left"|"down">} dirs
+ */
+export function answerSet(dirs) {
+  const order = Object.keys(dirs);
+  const byDir = Object.fromEntries(order.map((k) => [dirs[k], k]));
+  const byKey = Object.fromEntries(order.map((k) => [ARROWS[dirs[k]].key, k]));
+  return {
+    order,
+    dir: (k) => ({ ...ARROWS[dirs[k]], arrow: dirs[k] }),
+    toward: (dx, dy) => byDir[direction(dx, dy)] || null,
+    released: (dx, dy, threshold = THRESHOLD) => (Math.hypot(dx, dy) >= threshold ? byDir[direction(dx, dy)] || null : null),
+    fromKey: (key) => (/^[1-9]$/.test(key) ? order[Number(key) - 1] || null : byKey[key] || null),
+  };
+}
+
+/** The discovery answers: right solved, up partly, left a real gap, down nobody knows. */
+export const DISCOVERY = answerSet({ solved: "right", partly: "up", gap: "left", unknown: "down" });
+/** The qualification answers: right known, up partly, left not yet. */
+export const QUALIFY = answerSet({ known: "right", partly: "up", unknown: "left" });
+
+/** How many of each answer, and the cards under each with what was said; `answerOf` gives a card's answer or nothing. */
+export function tally(cards, answerOf, order) {
+  const counts = Object.fromEntries([...order, "open"].map((k) => [k, 0]));
+  const under = Object.fromEntries(order.map((k) => [k, []]));
+  for (const c of cards) {
+    const a = answerOf(c);
+    if (!a || !(a.a in under)) { counts.open += 1; continue; }
+    counts[a.a] += 1;
+    under[a.a].push({ key: c.key, label: c.label, q: c.q.q, note: a.note || "" });
+  }
+  return { counts, under, total: cards.length };
+}

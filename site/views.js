@@ -1674,18 +1674,37 @@ const STAGE_TAG = { value: "Value", L1: "L1 connected", L2: "L2 seen", L3: "L3 s
 const painPct = (v) => `${Math.round(v * 100)}%`;
 
 // ---------- one question at a time: the deck
-// A card per question. Swipe it (right solved, left a real gap, up partly, down nobody knows), tap an answer, or
-// press an arrow or 1 to 4. What they said is written on the card and saved with the answer. The same deck sits at
-// the top of the questions and opens full screen; both share where they are and what was typed.
+// A card per question. Swipe it, tap an answer, or press an arrow or a number; what they said is written on the card
+// and saved with the answer. The same deck sits at the top of a view and opens full screen; both share where they are
+// and what was typed. The answers are a set laid on the four directions: discovery has four, qualification three.
 const DECK_ARROW = { right: "M9 6l6 6-6 6", left: "M15 6l-6 6 6 6", up: "M6 15l6-6 6 6", down: "M6 9l6 6 6-6" };
 const DECK_TALLY = { gap: (n) => (n === 1 ? "real gap" : "real gaps"), unknown: () => "nobody knows", partly: () => "partly", solved: () => "solved" };
 const reducedMotion = () => typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+/** The discovery questions as a deck: four answers, what was said suggesting one, the journey at the end. */
+const DISCOVERY_DECK = {
+  ...DECK.DISCOVERY,
+  label: (k) => WS.ANSWERS[k].label,
+  tone: (k) => DECK.TONE[k],
+  suggest: (q, said) => DECK.suggest(q, said),
+  tag: (c) => (c.q.role && WS.ROLE_WORDS[c.q.role] ? `Ask: ${WS.ROLE_WORDS[c.q.role].toLowerCase()}` : null),
+  hint: "Swipe the card, or tap an answer",
+  summary: (cards, answerOf) => {
+    const answers = {};
+    for (const c of cards) { const a = answerOf(c); if (a) answers[c.key] = a; }
+    const s = DECK.deckSummary(cards, answers);
+    return { head: s.head, total: s.total, open: s.counts.open, counts: s.counts, tallies: ["gap", "unknown", "partly", "solved"].map((k) => [k, DECK_TALLY[k](s.counts[k])]),
+      lists: [["The gaps, with what they said", s.gaps], ["Nobody could answer", s.unknown]] };
+  },
+  end: { text: "See the journey", view: "journey" },
+};
+
 /**
  * One deck, drawn into its own element: in the page (`inline`, with Full screen) or in a dialog (with Close).
  * `state` = {at, drafts}: where the deck is and the words typed on cards not answered yet, shared by both.
+ * `answerOf(card)` gives a card's answer ({a, note}) or nothing; `answer(card, a, note)` saves one.
  */
-function deckPane({ cards, state, get, answer, go, pfx, inline, clock = null, onAnswered = () => {}, onFull = () => {}, onDone = () => {} }) {
+function deckPane({ cards, state, answerOf, answer, go, pfx, inline, set = DISCOVERY_DECK, kicker = "Ask next", clock = null, onAnswered = () => {}, onFull = () => {}, onDone = () => {} }) {
   let busy = false, now = null, wasOpen = false;
   const title = h("h2", { id: `${pfx}-title`, class: "deckline" });
   const pos = h("span", { class: "deckpos" });
@@ -1697,11 +1716,10 @@ function deckPane({ cards, state, get, answer, go, pfx, inline, clock = null, on
       "data-tip": "The deck on the whole screen: nothing else in view, the same cards and answers." })
     : h("button", { type: "button", class: "linkbtn deckclose", text: "Close", onclick: () => onDone() });
   const root = h("div", { class: "deckpane" + (inline ? " inpage" : "") },
-    h("div", { class: "deckhead" }, h("div", { class: "decktop" }, inline ? h("span", { class: "deckkicker", text: "Ask next" }) : null, title, pos, clock ? clock() : null, action), marks), main, status);
+    h("div", { class: "deckhead" }, h("div", { class: "decktop" }, inline ? h("span", { class: "deckkicker", text: kicker }) : null, title, pos, clock ? clock() : null, action), marks), main, status);
 
   const drawMarks = () => {
-    const w = get();
-    put(marks, cards.map((c, j) => { const a = w.answers[c.key]; return h("i", { class: a ? `t-${DECK.TONE[a.a]}` : j === state.at ? "now" : "" }); }));
+    put(marks, cards.map((c, j) => { const a = answerOf(c); return h("i", { class: a ? `t-${set.tone(a.a)}` : j === state.at ? "now" : "" }); }));
   };
   const place = (card, dx, dy) => {
     card.style.setProperty("--dx", `${dx}px`);
@@ -1709,15 +1727,15 @@ function deckPane({ cards, state, get, answer, go, pfx, inline, clock = null, on
     card.style.setProperty("--rot", `${(dx / 16).toFixed(2)}deg`);
   };
   const stampOn = (stamp, k, strength) => {
-    stamp.textContent = k ? WS.ANSWERS[k].label : "";
-    stamp.className = "deckstamp" + (k ? ` t-${DECK.TONE[k]}` : "");
+    stamp.textContent = k ? set.label(k) : "";
+    stamp.className = "deckstamp" + (k ? ` t-${set.tone(k)}` : "");
     stamp.style.setProperty("--on", String(k ? strength : 0));
   };
   const snapBack = () => { if (!now) return; now.card.classList.add("back"); place(now.card, 0, 0); stampOn(now.stamp, null, 0); };
   const fly = (k) => new Promise((resolve) => {
     stampOn(now.stamp, k, 1);
     if (reducedMotion()) { resolve(); return; }
-    const d = DECK.DIRECTIONS[k];
+    const d = set.dir(k);
     now.card.classList.remove("enter");
     now.card.classList.add("fly");
     place(now.card, d.dx * 520, d.dy * 760);
@@ -1728,9 +1746,9 @@ function deckPane({ cards, state, get, answer, go, pfx, inline, clock = null, on
     busy = true;
     const c = cards[state.at];
     try {
-      await answer(c.line, c.index, k, now.said.value);
+      await answer(c, k, now.said.value);
       state.drafts.delete(c.key);
-      status.textContent = `${WS.ANSWERS[k].label}.`;
+      status.textContent = `${set.label(k)}.`;
       onAnswered(c.key);
       await fly(k);
       state.at += 1;
@@ -1755,11 +1773,11 @@ function deckPane({ cards, state, get, answer, go, pfx, inline, clock = null, on
       if (!from || e.pointerId !== from.id) return;
       const dx = e.clientX - from.x, dy = e.clientY - from.y;
       place(card, dx, dy);
-      stampOn(stamp, DECK.heading(dx, dy), DECK.hintStrength(dx, dy));
+      stampOn(stamp, set.toward(dx, dy), DECK.hintStrength(dx, dy));
     });
     const end = (e) => {
       if (!from || e.pointerId !== from.id) return;
-      const k = e.type === "pointerup" ? DECK.released(e.clientX - from.x, e.clientY - from.y) : null;
+      const k = e.type === "pointerup" ? set.released(e.clientX - from.x, e.clientY - from.y) : null;
       from = null;
       card.classList.remove("dragging");
       if (k) commit(k); else snapBack();
@@ -1769,7 +1787,7 @@ function deckPane({ cards, state, get, answer, go, pfx, inline, clock = null, on
   };
 
   const drawCard = (focus) => {
-    const c = cards[state.at], ans = get().answers[c.key], q = c.q;
+    const c = cards[state.at], ans = answerOf(c), q = c.q;
     wasOpen = !ans;
     title.textContent = c.label;
     pos.textContent = `${state.at + 1} of ${cards.length}`;
@@ -1779,19 +1797,19 @@ function deckPane({ cards, state, get, answer, go, pfx, inline, clock = null, on
     const said = h("textarea", { id: `${pfx}-said`, class: "decksaid", maxlength: 300, rows: 3, placeholder: "Their words, a number, a name" });
     said.value = state.drafts.has(c.key) ? state.drafts.get(c.key) : ans ? ans.note : "";
     const sug = h("span", { class: "decksug", "aria-live": "polite" });
-    const opts = DECK.ORDER.map((k, i) => h("button", { type: "button", class: `deckopt o-${k}`, "data-a": k, "aria-pressed": String(!!ans && ans.a === k),
-      "aria-keyshortcuts": `${DECK.DIRECTIONS[k].key} ${i + 1}`, onclick: () => commit(k) },
+    const opts = set.order.map((k, i) => h("button", { type: "button", class: `deckopt o-${k} t-${set.tone(k)}`, "data-a": k, "aria-pressed": String(!!ans && ans.a === k),
+      "aria-keyshortcuts": `${set.dir(k).key} ${i + 1}`, onclick: () => commit(k) },
     svgEl("svg", { width: 18, height: 18, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", "stroke-width": 2.6, "stroke-linecap": "round", "stroke-linejoin": "round", "aria-hidden": "true" },
-      svgEl("path", { d: DECK_ARROW[DECK.DIRECTIONS[k].arrow] })),
-    h("span", { text: WS.ANSWERS[k].label })));
+      svgEl("path", { d: DECK_ARROW[set.dir(k).arrow] })),
+    h("span", { text: set.label(k) })));
     let shown = null;
     const paintSug = () => {
-      const s = DECK.suggest(q, said.value);
+      const s = set.suggest ? set.suggest(q, said.value) : null;
       for (const b of opts) b.classList.toggle("sug", b.dataset.a === s);
       if (s === shown) return;
       shown = s;
-      sug.className = "decksug" + (s ? ` t-${DECK.TONE[s]}` : "");
-      sug.textContent = s ? `Sounds like ${WS.ANSWERS[s].label.toLowerCase()}` : "";
+      sug.className = "decksug" + (s ? ` t-${set.tone(s)}` : "");
+      sug.textContent = s ? `Sounds like ${set.label(s).toLowerCase()}` : "";
     };
     said.addEventListener("input", () => { state.drafts.set(c.key, said.value); paintSug(); });
     // how to ask it: the other side of the card
@@ -1807,10 +1825,11 @@ function deckPane({ cards, state, get, answer, go, pfx, inline, clock = null, on
     };
     if (howBtn) howBtn.addEventListener("click", () => flip(true));
     backBtn.addEventListener("click", () => flip(false));
+    const tag = set.tag ? set.tag(c) : null;
     put(front,
       h("div", { class: "decktags" }, q.core ? h("span", { class: "decktag core", text: "Essential" }) : null,
-        q.role && WS.ROLE_WORDS[q.role] ? h("span", { class: "decktag", text: `Ask: ${WS.ROLE_WORDS[q.role].toLowerCase()}` }) : null,
-        ans ? h("span", { class: `decktag t-${DECK.TONE[ans.a]}`, text: `Answered: ${WS.ANSWERS[ans.a].label.toLowerCase()}` }) : null),
+        tag ? h("span", { class: "decktag", text: tag }) : null,
+        ans ? h("span", { class: `decktag t-${set.tone(ans.a)}`, text: `Answered: ${set.label(ans.a).toLowerCase()}` }) : null),
       ask,
       h("label", { for: `${pfx}-said`, class: "decklabel", text: "What they said" }), said,
       h("div", { class: "deckfoot" }, howBtn, sug));
@@ -1824,8 +1843,8 @@ function deckPane({ cards, state, get, answer, go, pfx, inline, clock = null, on
     const prev = h("button", { type: "button", class: "linkbtn", text: "Previous", disabled: state.at === 0, onclick: () => { state.at -= 1; draw(true); } });
     const skip = h("button", { type: "button", class: "linkbtn", text: "Skip", onclick: () => { state.at += 1; draw(true); } });
     put(main, h("div", { class: "deckstage" }, card),
-      h("div", { class: "deckans", role: "group", "aria-label": `Answer to: ${q.q}` }, opts),
-      h("div", { class: "deckbar" }, prev, h("span", { class: "deckhint", text: "Swipe the card, or tap an answer" }), skip));
+      h("div", { class: `deckans n${set.order.length}`, role: "group", "aria-label": `Answer to: ${q.q}` }, opts),
+      h("div", { class: "deckbar" }, prev, h("span", { class: "deckhint", text: set.hint }), skip));
     paintSug();
     drag(card, stamp);
     if (focus) requestAnimationFrame(() => ask.focus({ preventScroll: true }));
@@ -1834,22 +1853,22 @@ function deckPane({ cards, state, get, answer, go, pfx, inline, clock = null, on
   const drawEnd = (focus) => {
     now = null;
     wasOpen = false;
-    const s = DECK.deckSummary(cards, get().answers);
+    const s = set.summary(cards, answerOf);
     title.textContent = "Where it stands";
-    pos.textContent = `${s.total - s.counts.open} of ${s.total} answered`;
+    pos.textContent = `${s.total - s.open} of ${s.total} answered`;
     drawMarks();
-    const said = (heading, rows) => (rows.length ? [h("h3", { class: "decksub", text: heading }),
+    const said = ([heading, rows]) => (rows.length ? [h("h3", { class: "decksub", text: heading }),
       h("ul", { class: "deckgaps" }, rows.map((r) => h("li", {}, h("span", { text: r.q }), h("small", { class: "muted", text: r.label }),
         r.note ? h("span", { class: "decksaidline", text: `“${r.note}”` }) : null)))] : null);
     const headline = h("p", { class: "deckheadline", tabindex: "-1", text: s.head });
-    const open = DECK.firstOpen(cards, get().answers);
+    const open = cards.findIndex((c) => !answerOf(c));
     put(main, h("div", { class: "decksum" }, headline,
-      h("div", { class: "decktallies" }, ["gap", "unknown", "partly", "solved"].map((k) => h("div", { class: `decktally t-${DECK.TONE[k]}` },
-        h("b", { text: String(s.counts[k]) }), h("span", { text: DECK_TALLY[k](s.counts[k]) })))),
-      said("The gaps, with what they said", s.gaps), said("Nobody could answer", s.unknown),
+      h("div", { class: "decktallies" }, s.tallies.map(([k, words]) => h("div", { class: `decktally t-${set.tone(k)}` },
+        h("b", { text: String(s.counts[k]) }), h("span", { text: words })))),
+      s.lists.map(said),
       h("div", { class: "btnrow deckendrow" },
-        h("button", { class: "btn primary", type: "button", text: "See the journey", onclick: () => { onDone(); go("journey"); } }),
-        s.counts.open ? h("button", { class: "btn", type: "button", text: "Ask what is still open", onclick: () => { state.at = open; draw(true); } }) : null,
+        set.end ? h("button", { class: "btn primary", type: "button", text: set.end.text, onclick: () => { onDone(); go(set.end.view); } }) : null,
+        open >= 0 ? h("button", { class: "btn", type: "button", text: "Ask what is still open", onclick: () => { state.at = open; draw(true); } }) : null,
         inline ? null : h("button", { class: "btn", type: "button", text: "Back to the list", onclick: () => onDone() })),
       h("button", { class: "linkbtn", type: "button", text: "Go back to the last question", onclick: () => { state.at = cards.length - 1; draw(true); } })));
     if (focus) requestAnimationFrame(() => headline.focus({ preventScroll: true }));
@@ -1861,25 +1880,25 @@ function deckPane({ cards, state, get, answer, go, pfx, inline, clock = null, on
     if (e.key === "Escape") return;
     if (!inline) e.stopPropagation();
     if (e.ctrlKey || e.metaKey || e.altKey || !now || e.target.tagName === "TEXTAREA" || e.target.tagName === "INPUT") return;
-    const k = DECK.forKey(e.key);
+    const k = set.fromKey(e.key);
     if (k) { e.preventDefault(); e.stopPropagation(); commit(k); }
   });
   /** After an answer given elsewhere: a card that was open and is now answered gives way to the next one still open. */
   const sync = () => {
     if (busy) return;
-    const answers = get().answers;
-    if (state.at < cards.length && wasOpen && answers[cards[state.at].key]) {
-      const n = DECK.nextOpen(cards, answers, state.at);
-      state.at = n < 0 ? cards.length : n;
+    if (state.at < cards.length && wasOpen && answerOf(cards[state.at])) {
+      const n = cards.findIndex((c, i) => i > state.at && !answerOf(c));
+      const m = n >= 0 ? n : cards.findIndex((c) => !answerOf(c));
+      state.at = m < 0 ? cards.length : m;
     }
     draw(false);
   };
   return { el: root, draw, sync };
 }
 
-function openDeck({ cards, state, get, answer, go, clock, onAnswered, onClose }) {
+function openDeck({ clock, onClose, ...rest }) {
   const dlg = h("dialog", { class: "deck", "aria-labelledby": "deck-title" });
-  const pane = deckPane({ cards, state, get, answer, go, pfx: "deck", inline: false, clock, onAnswered, onDone: () => dlg.close() });
+  const pane = deckPane({ ...rest, pfx: "deck", inline: false, clock, onDone: () => dlg.close() });
   dlg.append(pane.el);
   dlg.addEventListener("close", () => { dlg.remove(); onClose(); });
   document.body.append(dlg);
@@ -2131,14 +2150,14 @@ export function workshopView({ workshop: w, catalog, list, answer, worth, rename
   const deckBox = h("div", { class: "deckslot" });
   let deckInline = null;
   const afterDeck = (key) => { if (drawers.has(key)) drawers.get(key)(); for (const f of heads) f(); drawProg(); drawStrip(); paceNow(); };
-  const deckAnswer = async (p, i, a, note) => { cur = await answer(p, i, a, note); return cur; };
+  const deckAnswer = async (c, a, note) => { cur = await answer(c.line, c.index, a, note); return cur; };
   function rebuildDeck() {
     const keep = (key, q) => WS.inMeeting(q, wsFilter) && (!wsFilter.tender || (asks.get(key) || []).length > 0) && (!wsFilter.open || !cur.answers[key]);
     const cards = DECK.deckFrom(catalog, cur.scope, keep);
     if (!cards.length) { deckInline = null; put(deckBox, h("p", { class: "note decknone", text: "No question is shown with these filters: clear one to ask them here, one at a time." })); return; }
     deckState.at = DECK.firstOpen(cards, cur.answers);
-    const pane = deckPane({ cards, state: deckState, get: () => cur, answer: deckAnswer, go, pfx: "wsdeck", inline: true, clock: makeMini, onAnswered: afterDeck,
-      onFull: () => openDeck({ cards, state: deckState, get: () => cur, answer: deckAnswer, go, clock: makeMini, onAnswered: afterDeck, onClose: () => pane.draw(false) }) });
+    const same = { cards, state: deckState, answerOf: (c) => cur.answers[c.key], answer: deckAnswer, go, clock: makeMini, onAnswered: afterDeck };
+    const pane = deckPane({ ...same, pfx: "wsdeck", inline: true, onFull: () => openDeck({ ...same, onClose: () => pane.draw(false) }) });
     deckInline = pane;
     put(deckBox, pane.el);
     pane.draw(false);
@@ -2894,7 +2913,7 @@ export function qualifyView({ workshop: w, catalog, setDeal, setAlt, go }) {
       return { id: x.id, group: QGROUP[x.id] || "win", label: x.tag, text: x.q, a: ans ? ans.a : "", aside: ans && ans.note ? `“${ans.note}”` : x.q };
     }),
     answer: async (id, a) => { const have = cur.deal && cur.deal[id]; cur = await setDeal(id, a, a && have ? have.note : ""); },
-    onAnswered: () => drawHero(),
+    onAnswered: () => { drawHero(); qdDeck.sync(); },
     detail: (item) => {
       const x = QD.DEAL.find((d) => d.id === item.id);
       const ans = cur.deal && cur.deal[x.id];
@@ -2944,10 +2963,37 @@ export function qualifyView({ workshop: w, catalog, setDeal, setAlt, go }) {
   drawAlts();
   const altCard = WS.alternativesFor(catalog, w).length ? card("What else they weigh", h("div", {}, altBox, altSay),
     { sub: "Renewing, a public cloud, another platform, building it, or waiting: the alternatives every deal is measured against, written to be fair. Knowing when the other choice wins is what makes the rest believable." }) : null;
+  // one question at a time: the ten questions as a deck, the list beside it; answered in one, it shows in the other
+  const QD_TONE = { known: "good", partly: "mid", unknown: "unknown" };
+  const QD_GROUP_LABEL = { why: "Why they would buy", decide: "How they decide", win: "How we win it" };
+  const qdCards = QD.DEAL.map((x) => ({ key: x.id, label: QD_GROUP_LABEL[QGROUP[x.id] || "win"], tag: x.tag, q: x }));
+  const qdSet = {
+    ...DECK.QUALIFY,
+    label: (k) => QD.STATES[k].label,
+    tone: (k) => QD_TONE[k],
+    suggest: (q, said) => { const a = DECK.suggest(q, said); return a === "unknown" || a === "partly" ? a : null; },
+    tag: (c) => c.tag,
+    hint: "Right if known, up if partly, left if not yet",
+    summary: (cards, answerOf) => {
+      const t = DECK.tally(cards, answerOf, ["known", "partly", "unknown"]);
+      const st = QD.dealState(cur.deal);
+      return { head: `${st.verdict}: ${st.score} out of 100.`, total: t.total, open: t.counts.open, counts: t.counts,
+        tallies: [["unknown", "not yet"], ["partly", "partly"], ["known", "known"]], lists: [["Not yet known", t.under.unknown], ["Only partly known", t.under.partly]] };
+    },
+    end: { text: "See the way forward", view: "wsforward" },
+  };
+  const qdShared = { cards: qdCards, state: { at: Math.max(0, qdCards.findIndex((c) => !(cur.deal && cur.deal[c.key]))), drafts: new Map() }, set: qdSet, go,
+    kicker: "Find out next", answerOf: (c) => cur.deal && cur.deal[c.key],
+    answer: async (c, a, note) => { cur = await setDeal(c.key, a, note); return cur; },
+    onAnswered: () => { qdList.draw(); drawHero(); } };
+  const qdDeck = deckPane({ ...qdShared, pfx: "qddeck", inline: true, onFull: () => openDeck({ ...qdShared, onClose: () => qdDeck.draw(false) }) });
+  qdDeck.draw(false);
   return h("div", {}, hero,
-    card("The ten questions", h("div", {}, qdList.el, say,
-      h("div", { class: "btnrow" }, copy, h("button", { class: "btn small", type: "button", text: "Back to the questions", onclick: () => go("workshop") }))),
-    { sub: "The same on every line, asked alongside the technical ones: known, partly or not yet, with what you heard. Named as most sales methods name them, so the seller reads the same list; never in the customer readout." }),
+    h("div", { class: "card deckpanel" }, h("div", { class: "deckslot" }, qdDeck.el),
+      h("div", { class: "deckside" }, h("h2", { class: "decksidehead", text: "The ten questions" }),
+        h("p", { class: "note", text: "The same on every line, asked alongside the technical ones: known, partly or not yet, with what you heard. Named as most sales methods name them, so the seller reads the same list; never in the customer readout." }),
+        qdList.el, say,
+        h("div", { class: "btnrow" }, copy, h("button", { class: "btn small", type: "button", text: "Back to the questions", onclick: () => go("workshop") })))),
     altCard);
 }
 

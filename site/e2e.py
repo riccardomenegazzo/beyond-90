@@ -890,6 +890,22 @@ def main(site: str) -> int:
         hero = page.inner_text("#view .qdhero")
         check("Ready for a demo built for them" in hero and "To be ready to propose a proof of value, find out" in hero and "Economic buyer:" in hero,
               "three answers make it ready for a demo built for them, and say what a proof of value still needs")
+        # the ten questions on a card too: the first one not answered, three answers, and the list beside it follows
+        Q = "#view .deckpane.inpage"
+        first_q = page.inner_text(f"{Q} .deckq")
+        check(page.locator(f"{Q} .deckopt").count() == 3 and page.inner_text(f"{Q} .deckkicker") == "Find out next" and "Which date makes this a decision" in first_q,
+              "the qualification questions open on a card too, at the first one not answered, with their three answers")
+        answered = page.locator("#view .qdlist .qlopt[aria-pressed=true]").count()
+        page.locator(f"{Q} .deckopt.o-partly").click()
+        page.locator(f"{Q} .deckq", has_not_text=first_q).wait_for()
+        row = page.locator("#view .qdlist .qlrow").filter(has_text="Event")
+        check(page.locator("#view .qdlist .qlopt[aria-pressed=true]").count() == answered + 1 and row.locator(".qlopt[aria-pressed=true]").get_attribute("aria-label") == "Partly",
+              "answered on the card, it shows in the list beside it")
+        row.locator(".qlopt[aria-pressed=true]").click()           # cleared again, so what follows reads as before
+        for _ in range(30):
+            if page.locator("#view .qdlist .qlopt[aria-pressed=true]").count() == answered:
+                break
+            page.wait_for_timeout(100)
         # what else they weigh: marked from the conversation, each with what to ask and when the other choice wins
         alt = page.locator("#view .altlist").get_by_role("button", name="Do nothing for now")
         alt.click()
