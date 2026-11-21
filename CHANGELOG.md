@@ -2,6 +2,12 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.141.0
+
+- **Undo, after heard something.** In a meeting a tap can land on the wrong question. Filed, the line under the box now offers **Undo**: it puts back what that question had (its answer and its note, or nothing), returns the words to the box with their matches, and moves the card back in step.
+- **The deck's keys are in the list of shortcuts** (the ? key): the arrows on a question card, and 1 to 4 on a card or a question in the list.
+- A browser check for undo on a phone.
+
 ## 0.140.0
 
 - **Heard something, full screen too.** On the whole screen the deck had only the card: something said out of turn meant leaving it. **Heard something else?** now sits under the card as a sheet: open it, write what was said, and file it under the question it answers. The card moves on if it was the one answered. Closed, the box is back beside the card in the page, with nothing lost.

@@ -5,6 +5,8 @@ export const JUMPS = { t: "today", o: "overview", a: "actions", f: "findings", c
 export const LIST = [
   ["g then t", "Today"], ["g then o", "Overview"], ["g then a", "Actions"], ["g then f", "Findings"], ["g then c", "Accounts"],
   ["g then b", "Risk burn-down"], ["g then p", "Prep a call"], ["g then m", "Promises"], ["g then v", "Proof of value"], ["g then w", "This week (book)"],
+  ["← or → or ↑ or ↓", "On a question card: right solved (or known), left a real gap (or not yet), up partly, down nobody knows"],
+  ["1 or 2 or 3 or 4", "On a question card or a question in the list: its answers, in the order of the buttons"],
   ["[ and ]", "Previous and next view in the menu"], ["/ or Ctrl K", "Search and jump"], ["?", "This list"],
 ];
 

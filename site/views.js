@@ -2193,10 +2193,18 @@ export function workshopView({ workshop: w, catalog, list, answer, worth, rename
     cur = await answer(card.line, card.index, k, HEARD.joinNote(before && before.note, said));
     heardIn.value = "";
     put(heardOut);
-    heardSay.textContent = `Filed as ${WS.ANSWERS[k].label.toLowerCase()}: ${card.q.q}`;
-    afterDeck(card.key);
-    syncDeck();
-    if (fullDeck) fullDeck.sync();
+    const moved = () => { afterDeck(card.key); syncDeck(); if (fullDeck) fullDeck.sync(); };
+    // a tap in a meeting can land on the wrong question: undo puts back what was there, and the words in the box
+    const undo = h("button", { type: "button", class: "linkbtn", text: "Undo", onclick: async () => {
+      cur = await answer(card.line, card.index, before ? before.a : "", before ? before.note : "");
+      heardIn.value = said;
+      put(heardSay, h("span", { text: `Undone: ${card.q.q}` }));
+      moved();
+      drawHeard();
+      heardIn.focus({ preventScroll: true });
+    } });
+    put(heardSay, h("span", { text: `Filed as ${WS.ANSWERS[k].label.toLowerCase()}: ${card.q.q} ` }), undo);
+    moved();
     heardIn.focus({ preventScroll: true });
   };
   const drawHeard = () => {

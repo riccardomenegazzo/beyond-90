@@ -1813,6 +1813,11 @@ def main(site: str) -> int:
         filed = mp.locator("#view .wsq", has=mp.locator(".wsqq", has_text=heard_q)).first
         check("failover drill was three years ago" in filed.inner_text() and mp.locator("#view .heardhit").count() == 0,
               "on a phone, what was heard is filed under the question it answers, with the words as the note")
+        mp.locator("#view .heardsay .linkbtn", has_text="Undo").click()
+        mp.locator("#view .heardsay", has_text="Undone").wait_for()
+        check("failover drill was three years ago" not in filed.inner_text() and mp.input_value("#wsheard").startswith("The last failover drill"),
+              "undo puts back what the question had, and the words in the box")
+        mp.fill("#wsheard", "")
         essential.dispatch_event("click")
         mp.locator("#view .deckfull").click()
         mp.wait_for_selector("dialog.deck[open] .deckcard")
