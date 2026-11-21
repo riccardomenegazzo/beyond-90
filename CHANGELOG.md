@@ -2,6 +2,11 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.143.0
+
+- **The README shows the deck in use.** An animated picture recorded from the app on a phone, with the invented example workshop: what was said written on a card, the answer it suggests, a swipe with the answer stamped on the card, and the next cards answered. Beside it, what the deck does in a meeting.
+- New: `scripts/deck_gif.py` records it again from a built site (it needs ffmpeg): `python3 scripts/deck_gif.py <site> docs/img/deck.gif`.
+
 ## 0.142.0
 
 - **A figure heard goes with the answer.** When what was heard holds money ("about 2 million euros", "€40,000 per hour", "500k each outage") and it answers a question about value, the match shows the figure it read and what it is counted per. Filing it puts that figure on the question too, where the case for change and the journey read it. The period is the one said ("a day", "per hour", "each outage"), else the one the question asks about ("one day without your main site"). A bare small number is not money ("three years ago", "2 ms", "300 VMs"), nor is a year; with nothing to say what it is counted per, no figure is offered. Undo puts the earlier figure back.

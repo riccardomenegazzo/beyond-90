@@ -16,6 +16,20 @@ A customer says "we're at 92%". That usually means 92% of the accounts someone p
 
 Nobody lied. Each team reported its own step. [Why multiply, and why both numbers](docs/why-multiply.md).
 
+## In the meeting, one question at a time
+
+<img src="docs/img/deck.gif" width="300" align="right" alt="On a phone: what the customer said is written on a question card, the answer it suggests lights up, the card is swiped left and stamped A real gap, and the next cards are answered with a swipe up and a tap">
+
+The discovery questions come as cards, on a phone or a laptop. Write what the customer said on the card, then swipe it or tap the answer: right solved, left a real gap, up partly, down nobody knows.
+
+- The words suggest the answer ("Sounds like a real gap"); you decide.
+- **Most useful first** puts the essential questions of the lines you know least ahead, and says why.
+- A **meeting clock** says whether the essential questions still fit in the time left.
+- Something said out of turn goes in **Heard something?**: it finds the question it answers, and a figure in it ("about 2 million a day") goes with the answer.
+- The qualification questions work the same way. All of it runs in the browser ([the workshop guide](docs/workshop.md)).
+
+<br clear="right">
+
 ## Try it
 
 - **In the browser, nothing to install:** open the [live page](https://riccardomenegazzo.github.io/beyond-90/) and press "See it on an example". Your files are read inside the tab and kept on your device.
