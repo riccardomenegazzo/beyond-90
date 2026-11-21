@@ -763,36 +763,41 @@ def main(site: str) -> int:
         page.get_by_role("button", name="Not answered yet").click()
         check(page.locator("#ws-dr-backup .wsq:not([hidden])").count() == page.locator("#ws-dr-backup .wsq").count() - 8, "the questions narrow to those not answered yet")
         page.get_by_role("button", name="Not answered yet").click()
-        # one question at a time: the deck opens on the first question with no answer; written words suggest an answer
+        # one question at a time: the deck at the top of the questions shows the first one with no answer; words suggest an answer
         first_open = page.evaluate("document.querySelector('#view .wsq:not([data-answered=\"1\"]) .wsqq').textContent")
-        page.get_by_role("button", name="Ask one at a time").click()
-        page.wait_for_selector("dialog.deck[open] .deckcard")
-        check(page.inner_text("dialog.deck .deckq") == first_open and f"of {in_scope}" in page.inner_text("dialog.deck .deckpos"),
-              "the deck opens on the first question with no answer, out of every question shown")
-        page.fill("#deck-said", "We have never tested it")
-        check(page.inner_text("dialog.deck .decksug") == "Sounds like a real gap" and page.locator("dialog.deck .deckopt.o-gap.sug").count() == 1,
+        D = "#view .deckpane.inpage"
+        check(page.inner_text(f"{D} .deckq") == first_open and f"of {in_scope}" in page.inner_text(f"{D} .deckpos")
+              and page.evaluate("document.querySelector('#view .deckpanel').compareDocumentPosition(document.querySelector('#view .wsline')) & 4") > 0,
+              "the questions open on the deck, before the list, at the first question with no answer")
+        page.fill("#wsdeck-said", "We have never tested it")
+        check(page.inner_text(f"{D} .decksug") == "Sounds like a real gap" and page.locator(f"{D} .deckopt.o-gap.sug").count() == 1,
               "what they said suggests an answer, without answering")
-        box = page.locator("dialog.deck .deckcard").bounding_box()
-        cx, cy = box["x"] + box["width"] / 2, box["y"] + 40
+        page.evaluate("document.querySelector('#view .deckpane.inpage .deckstage').scrollIntoView({block: 'center', behavior: 'instant'})")
+        box = page.locator(f"{D} .deckcard").bounding_box()
+        cx, cy = box["x"] + box["width"] / 2, box["y"] + 60
         page.mouse.move(cx, cy)
         page.mouse.down()
         page.mouse.move(cx - 70, cy + 4, steps=4)
-        check(page.inner_text("dialog.deck .deckstamp") == "A real gap", "dragged, the card shows the answer it is heading for")
+        check(page.inner_text(f"{D} .deckstamp") == "A real gap", "dragged, the card shows the answer it is heading for")
         page.mouse.move(cx - 220, cy + 10, steps=6)
         page.mouse.up()
-        page.locator("dialog.deck .deckq", has_not_text=first_open).wait_for()      # polling a script would break the page's policy
-        second = page.inner_text("dialog.deck .deckq")
+        page.locator(f"{D} .deckq", has_not_text=first_open).wait_for()      # polling a script would break the page's policy
+        second = page.inner_text(f"{D} .deckq")
         page.keyboard.press("ArrowUp")
-        page.locator("dialog.deck .deckq", has_not_text=second).wait_for()
-        page.locator("dialog.deck .deckbar .linkbtn", has_text="Previous").click()
-        check(page.locator("dialog.deck .deckopt.o-partly[aria-pressed=true]").count() == 1 and "Answered: partly" in page.inner_text("dialog.deck .decktags"),
+        page.locator(f"{D} .deckq", has_not_text=second).wait_for()
+        page.locator(f"{D} .deckbar .linkbtn", has_text="Previous").click()
+        check(page.locator(f"{D} .deckopt.o-partly[aria-pressed=true]").count() == 1 and "Answered: partly" in page.inner_text(f"{D} .decktags"),
               "a swipe left answers a real gap, an arrow answers, and Previous goes back to the card with its answer")
+        page.locator(f"{D} .deckfull").click()
+        page.wait_for_selector("dialog.deck[open] .deckcard")
+        check(page.inner_text("dialog.deck .deckq") == second and page.locator("dialog.deck .deckopt.o-partly[aria-pressed=true]").count() == 1,
+              "Full screen opens the same deck where it was")
         page.locator("dialog.deck .deckclose").click()
         page.wait_for_selector("dialog.deck", state="detached")
         gap_q = page.locator("#view .wsq", has=page.locator(".wsqq", has_text=first_open)).first
         check("“We have never tested it”" in gap_q.inner_text() and gap_q.locator(".o-gap[aria-pressed=true]").count() == 1
               and f"18 of {in_scope} questions answered" in page.inner_text("#view .wsprog"),
-              "closed, the list carries the deck's answers and what they said")
+              "the list carries the deck's answers and what they said, as they are given")
         for qtext in (second, first_open):        # the two answers go again, so the journey below reads as before
             row = page.locator("#view .wsq", has=page.locator(".wsqq", has_text=qtext)).first
             row.locator(".wsopt[aria-pressed=true]").click()
@@ -1734,10 +1739,12 @@ def main(site: str) -> int:
         check(more.get_attribute("aria-expanded") == "true" and more.inner_text() == "Less", "More opens the rest")
         # the deck on a phone: the whole screen, one card, the answers within reach; skipped to the end, where it stands
         mp.click("#mobilebar [data-go=workshop]")
-        mp.wait_for_selector("#view .deckgo")
+        mp.wait_for_selector("#view .deckpane.inpage .deckcard")
+        check(mp.evaluate("document.querySelector('#view .deckpane.inpage .deckcard').getBoundingClientRect().top < innerHeight / 2"),
+              "on a phone the questions open on the card of the next question")
         essential = mp.locator("#view .wsnarrow").get_by_role("button", name="Essential questions only")
         essential.dispatch_event("click")
-        mp.locator("#view .deckgo").click()
+        mp.locator("#view .deckfull").click()
         mp.wait_for_selector("dialog.deck[open] .deckcard")
         fit = mp.evaluate("""(() => { const d = document.querySelector('dialog.deck').getBoundingClientRect(), a = document.querySelector('dialog.deck .deckans').getBoundingClientRect();
           return Math.round(d.width) === innerWidth && Math.round(d.height) === innerHeight && a.bottom <= innerHeight && a.right <= innerWidth; })()""")
@@ -1796,7 +1803,7 @@ def main(site: str) -> int:
                 apage.wait_for_selector("#view .wsq")
                 apage.locator("#view .wsq").first.get_by_role("button", name="A real gap", exact=True).click()
                 bad += [f"workshop: {v}" for v in audit()]
-                apage.get_by_role("button", name="Ask one at a time").click()
+                apage.locator("#view .deckfull").click()
                 apage.wait_for_selector("dialog.deck[open] .deckcard")
                 apage.fill("#deck-said", "We have never tested it")
                 bad += [f"deck: {v}" for v in audit()]

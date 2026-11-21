@@ -2,6 +2,17 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.133.0
+
+- **The questions open on the card of the next question.** The deck of 0.132 was behind a button; now it is the first thing in the questions of a workshop, in the page:
+  - the next question to ask, as a card, with room to write what they said and the four answers under it;
+  - beside it on a larger screen (under it on a phone), the progress and a strip of every line with a dot per answer;
+  - the list of every question follows, as before, with the same answers.
+- **Swipe in the page:** left for a real gap, right for solved; on a touch screen a drag up or down scrolls the page. **Full screen** opens the same deck on the whole screen, where it was, with all four directions.
+- **The card follows the meeting:** an answer given in the list moves it on to the next question still open, and the filters (essential only, who is in the room, not answered yet, asked by the tender) reshape it.
+- At the end of the deck, **Ask what is still open** goes back to the first question skipped.
+- New screenshot `app-nextcard.png`, in the README and the workshop guide; browser checks for the card at the top, Full screen where the card was, and the card at the top on a phone.
+
 ## 0.132.0
 
 - **One question at a time: the discovery questions as a deck of cards.** **Ask one at a time**, at the top of the questions, opens the questions shown as a deck, full screen on a phone and a card in the middle of a larger screen.

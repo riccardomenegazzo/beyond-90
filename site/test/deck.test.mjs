@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { heading, released, hintStrength, forKey, deckFrom, firstOpen, suggest, deckSummary, ORDER, THRESHOLD } from "../deck.js";
+import { heading, released, hintStrength, forKey, deckFrom, firstOpen, nextOpen, suggest, deckSummary, ORDER, THRESHOLD } from "../deck.js";
 
 const catalog = {
   lines: {
@@ -86,4 +86,12 @@ test("the summary counts each answer, keeps the gaps and the unknowns with what 
   assert.equal(s.unknown[0].label, "Disaster recovery");
   assert.equal(s.head, "2 real gaps, 1 nobody could answer, 1 still to ask.");
   assert.equal(deckSummary(cards.slice(0, 1), { "dr#1": { a: "gap" } }).head, "1 real gap, 0 nobody could answer.");
+});
+
+test("the next card still open goes on from where the deck is, round to the top, and says when none is left", () => {
+  const cards = deckFrom(catalog, ["dr", "hci"]);
+  assert.equal(nextOpen(cards, { "dr#2": { a: "gap" } }, 0), 2);
+  assert.equal(nextOpen(cards, { "hci#0": { a: "gap" } }, 2), 0);
+  const all = Object.fromEntries(cards.map((c) => [c.key, { a: "solved" }]));
+  assert.equal(nextOpen(cards, all, 1), -1);
 });

@@ -103,6 +103,13 @@ def shoot(site: Path, out: Path) -> None:
             pg.locator("#ws-dr-backup").scroll_into_view_if_needed()
             pg.wait_for_timeout(300)
             pg.screenshot(path=str(out / "app-workshop.png"))
+            # the questions open on the card of the next one to ask, beside every line in scope
+            pg.evaluate("window.scrollTo({top: 0, behavior: 'instant'})")
+            pg.fill("#wsdeck-said", "Not sure, the platform team would know")
+            pg.evaluate("window.scrollTo({top: 0, behavior: 'instant'})")
+            pg.wait_for_timeout(300)
+            pg.screenshot(path=str(out / "app-nextcard.png"))
+            pg.fill("#wsdeck-said", "")
             # a first meeting: the essential questions only, one of them opened on how to ask it
             pg.get_by_role("button", name="Essential questions only").click()
             pg.wait_for_timeout(200)
@@ -339,7 +346,7 @@ def shoot(site: Path, out: Path) -> None:
             mp.locator("#demo-workshop").dispatch_event("click")
             mp.wait_for_selector("#view ol.journey")
             mp.click("#mobilebar [data-go=workshop]")
-            mp.locator("#view .deckgo").click()
+            mp.locator("#view .deckfull").click()
             mp.wait_for_selector("dialog.deck[open] .deckcard")
             mp.wait_for_timeout(300)
             mp.fill("#deck-said", "Nobody has said; IT just wants off the old platform")

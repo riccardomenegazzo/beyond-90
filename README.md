@@ -34,7 +34,7 @@ Leading a presales team? [docs/leaders.md](docs/leaders.md) shows what the team 
 - **Writes for the customer:** a CISO one-pager, an executive QBR and slides, a status page, all through a preview that can swap names for aliases.
 - **Works across a book of customers:** this week's priorities, shared patterns, and one budget of hours where it gains most.
 - **Gives a pre-sales engineer a desk of their own:** every prospect from discovery to decision, what is due and what is late, what could stop each deal, how deals ended and what they teach, the partners on each deal and the review with them, and the weekly update for the account team. A presales manager reads the team's desk snapshots together ([docs/presales.md](docs/presales.md), [docs/leaders.md](docs/leaders.md)).
-- **Starts before there is any data:** a discovery workshop asks each product line's questions (each with who to ask, what to listen for and the follow-up, the essential ones marked for a first meeting), qualifies the deal with ten questions that are the same on every line, places the prospect on the way from discovery to handover with a demo planned from what they said, and turns the answers into a journey: "yes, this is possible", what would need to be true, the first step towards each condition and the test that proves it. It ends in a readout for the customer and a proof of value with that line's own criteria ([docs/workshop.md](docs/workshop.md)).
+- **Starts before there is any data:** a discovery workshop asks each product line's questions one card at a time: write what the customer said on the card, then swipe it or tap the answer (each question with who to ask, what to listen for and the follow-up, the essential ones marked for a first meeting), qualifies the deal with ten questions that are the same on every line, places the prospect on the way from discovery to handover with a demo planned from what they said, and turns the answers into a journey: "yes, this is possible", what would need to be true, the first step towards each condition and the test that proves it. It ends in a readout for the customer and a proof of value with that line's own criteria ([docs/workshop.md](docs/workshop.md)).
 - **Prepares the conversation and does the presales arithmetic:**
   - the message for the executive, the technical team and finance, who to bring, and the objections to expect with the question to ask first and how to prove the answer;
   - from a VM inventory, a sizing sketch and a plan in waves;
@@ -51,6 +51,7 @@ Leading a presales team? [docs/leaders.md](docs/leaders.md) shows what the team 
 |---|---|
 | ![The journey, from a discovery workshop](docs/img/app-journey.png) | ![One customer across every product line](docs/img/app-estate.png) |
 | ![Prep a call](docs/img/app-prep.png) | ![Accounts](docs/img/app-accounts.png) |
+| ![The questions, one card at a time](docs/img/app-nextcard.png) | ![The card on a phone, swiped for a real gap](docs/img/app-deck.png) |
 | ![Proof of value](docs/img/app-pov.png) | ![On a phone](docs/img/app-phone.png) |
 
 ## Security and privacy, in short

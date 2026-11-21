@@ -70,6 +70,15 @@ export function firstOpen(cards, answers) {
   return i < 0 ? 0 : i;
 }
 
+/** The next card with no answer after `at`, going round to the top; -1 when every card is answered. */
+export function nextOpen(cards, answers, at) {
+  for (let k = 1; k <= cards.length; k++) {
+    const i = (at + k) % cards.length;
+    if (!answers[cards[i].key]) return i;
+  }
+  return -1;
+}
+
 // what the customer said, read for an answer: a few patterns, in order of how much they settle
 const UNSURE = /(not sure|don.?t know|do not know|no idea|nobody knows|no one knows|unclear|maybe|i think|probably|need to check|to be checked)/;
 const SAFE = /(immutable|cannot|can.?t|locked|nobody can|no one can|second approver|two approvers|read.only)/;

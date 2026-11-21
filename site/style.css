@@ -1548,14 +1548,13 @@ input[type=number],input[type=text],input[type=search],input[type=date],input[ty
 /* ================================================================ The deck (0.132): one question at a time.
    A card per question, full screen on a phone. Swiped right it is solved, left a real gap, up partly, down nobody
    knows; the answer it is heading for is stamped on it while it moves. What they said is written on the card. */
-.wsprog{grid-template-columns:auto minmax(0,1fr) auto auto}
 .deck[open]{display:flex;flex-direction:column}
 .deck{width:min(480px,100vw);height:min(880px,calc(100dvh - 32px));max-width:100vw;max-height:100dvh;padding:0;border:0;border-radius:22px;
   background:var(--page);color:var(--ink);overflow:hidden;box-shadow:0 30px 70px -24px rgba(0,0,0,.5)}
 .deck::backdrop{background:rgba(23,25,30,.62)}
 .deckhead{display:flex;flex-direction:column;gap:9px;padding:14px 18px 12px;background:var(--surface);border-bottom:3px solid var(--ink)}
-.decktop{display:flex;align-items:baseline;gap:12px;min-width:0}
-.deck h2.deckline{margin:0;font-size:21px;line-height:1.15;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.decktop{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:12px;row-gap:2px;min-width:0}
+.deckpane h2.deckline{margin:0;font-size:21px;line-height:1.15;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
 .deckpos{flex:none;font-size:13.5px;font-weight:700;color:var(--ink2)}
 .deckclose{margin-left:auto;flex:none;padding:6px 2px;min-height:40px;font-size:15px;text-decoration:none}
 .deckmarks{display:flex;gap:4px}.deckmarks.many{gap:2px}
@@ -1624,7 +1623,7 @@ input[type=number],input[type=text],input[type=search],input[type=date],input[ty
 .decktally b{font-family:var(--display);font-size:32px;font-weight:800;line-height:1}
 .decktally span{font-size:14px;color:var(--ink2)}
 .decktally.t-good b{color:var(--lv-green)}.decktally.t-mid b{color:var(--lv-ochre)}.decktally.t-bad b{color:var(--lv-red)}.decktally.t-unknown b{color:var(--ink2)}
-.deck h3.decksub{margin:6px 0 -4px;font-size:15px;color:var(--ink2)}
+.deckpane h3.decksub{margin:6px 0 -4px;font-size:15px;color:var(--ink2)}
 .deckgaps{margin:0;padding:0;list-style:none;display:grid;gap:12px}
 .deckgaps li{display:grid;gap:2px;font-size:15px;line-height:1.4}
 .decksaidline{font-style:italic;color:var(--ink2)}
@@ -1634,3 +1633,21 @@ input[type=number],input[type=text],input[type=search],input[type=date],input[ty
   .deck{width:100vw;height:100dvh;margin:0;border-radius:0}
 }
 @media (prefers-reduced-motion:reduce){.deckcard.back,.deckcard.fly,.deckcard.enter{transition:none;animation:none}}
+
+/* the deck in the page (0.133): the first thing in the questions, beside where every line stands */
+.deckpane{display:flex;flex-direction:column;flex:1;min-height:0;min-width:0}
+.deckkicker{flex-basis:100%;font-size:13px;font-weight:700;color:var(--accent-text)}
+.card.deckpanel{display:grid;grid-template-columns:minmax(0,1fr);padding:0;overflow:hidden}
+.deckpane.inpage{background:var(--page);border-bottom:1.5px solid var(--grid)}
+.deckpane.inpage .deckstage{flex:none;height:clamp(360px,52vh,470px)}
+.deckpane.inpage .deckcard{touch-action:pan-y}      /* in the page a drag up or down scrolls it; left and right answer */
+.deckpane.inpage .deckbar{padding-bottom:12px}
+.deckside{display:flex;flex-direction:column;gap:16px;padding:20px 22px;min-width:0}
+.deckside .wsprog{grid-template-columns:minmax(0,1fr)}
+.deckside .wsprog .btn{justify-self:start}
+.deckside .note{margin:0}
+.deckslot .decknone{padding:18px 20px;margin:0}
+@media (min-width:1000px){
+  .card.deckpanel{grid-template-columns:minmax(0,540px) minmax(0,1fr)}
+  .deckpane.inpage{border-bottom:0;border-right:1.5px solid var(--grid)}
+}
