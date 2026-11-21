@@ -1822,7 +1822,7 @@ def main(site: str) -> int:
         mp.fill("#wsheard", "The last failover drill was three years ago and nobody signed it off")
         hit = mp.locator("#view .heardhit").first
         heard_q = hit.locator(".heardq").inner_text()
-        hit.locator(".heardopt.sug").click()
+        mp.locator("#wsheard").press("Control+Enter")       # files it under the first match, as suggested
         mp.locator("#view .heardsay", has_text="Filed as").wait_for()
         filed = mp.locator("#view .wsq", has=mp.locator(".wsqq", has_text=heard_q)).first
         check("failover drill was three years ago" in filed.inner_text() and mp.locator("#view .heardhit").count() == 0,

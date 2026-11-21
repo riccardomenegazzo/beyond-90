@@ -2,6 +2,12 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.147.0
+
+- **Heard something sits right under the clock**, before the progress and the strip of lines: the two things used while the customer talks are together, and on a phone the box is just under the card.
+- **Ctrl+Enter files it.** On a keyboard, what was heard is filed under the first match with the answer its words suggest, without leaving the box; when nothing is suggested, it says so and waits for a tap. Undo works the same.
+- The browser check on a phone now files what was heard with the keyboard.
+
 ## 0.146.0
 
 - **Heard something about the deal? It finds the qualification question too.** The same box beside the card now matches what was said against the ten qualification questions as well as the technical ones. "The CIO signs off anything above 500k" goes to who decides and signs, "our contract expires in March" to the date that forces a choice, "they are also talking to another supplier" to what else they weigh. A match there offers **Known**, **Partly** or **Not yet**, files it in Qualify the deal with the words as its note, and can be undone.

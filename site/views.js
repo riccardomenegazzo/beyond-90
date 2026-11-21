@@ -2185,7 +2185,8 @@ export function workshopView({ workshop: w, catalog, list, answer, worth, setDea
   function syncDeck() { if (deckInline) deckInline.sync(); paceNow(); }
   if (inScope.length) rebuildDeck();
   // heard something: written as it was said; the question it answers is found among every question in scope
-  const heardIn = h("textarea", { id: "wsheard", class: "heardin", rows: 2, maxlength: HEARD.NOTE_MAX, placeholder: "e.g. any domain admin can wipe the backup repository" });
+  const heardIn = h("textarea", { id: "wsheard", class: "heardin", rows: 2, maxlength: HEARD.NOTE_MAX, placeholder: "e.g. any domain admin can wipe the backup repository",
+    "aria-keyshortcuts": "Control+Enter" });
   const heardOut = h("div", { class: "heardout" });
   const heardSay = h("p", { class: "note heardsay", role: "status" });
   const fileHeard = async (card, k, said) => {
@@ -2257,6 +2258,14 @@ export function workshopView({ workshop: w, catalog, list, answer, worth, setDea
     }), h("span", { id: "wsheard-sug", class: "sr-only", text: "Suggested by the words" }));
   };
   heardIn.addEventListener("input", drawHeard);
+  // on a keyboard, Ctrl+Enter files it under the first match, with the answer the words suggest
+  heardIn.addEventListener("keydown", (e) => {
+    if (e.key !== "Enter" || !(e.ctrlKey || e.metaKey)) return;
+    e.preventDefault();
+    const first = heardOut.querySelector(".heardhit:first-child .heardopt.sug");
+    if (first) first.click();
+    else if (heardIn.value.trim()) put(heardSay, h("span", { text: "Nothing is suggested for the first match: tap the answer that fits." }));
+  });
   const heardBox = h("div", { class: "heard" },
     h("label", { for: "wsheard", class: "decklabel", text: "Heard something else? Write it as it was said" }), heardIn, heardOut, heardSay);
   // the conversation first: where it stands on every line, what to show, the questions; then the sketches from their numbers
@@ -2266,8 +2275,8 @@ export function workshopView({ workshop: w, catalog, list, answer, worth, setDea
     w.scope.includes("edge-sites") && edge ? edgeCard(w, edge) : null, w.scope.some((p) => WS.UNIT_LINES.includes(p)) && unit ? unitCard(w, unit) : null].filter(Boolean);
   // with lines chosen, the next question comes first, beside where every line stands; the meeting's settings follow
   const top = inScope.length
-    ? [h("div", { class: "card deckpanel" }, deckBox, h("div", { class: "deckside" }, clockBox, prog, strip, heardBox,
-      h("p", { class: "note", text: "Swipe the card or tap an answer, and write what they said on it: it is kept with the answer. Something said out of turn goes in the box above: it finds the question it answers. Every question is also in the list below, with the same answers; the filters there shape the deck." }))), meeting]
+    ? [h("div", { class: "card deckpanel" }, deckBox, h("div", { class: "deckside" }, clockBox, heardBox, prog, strip,
+      h("p", { class: "note", text: "Swipe the card or tap an answer, and write what they said on it: it is kept with the answer. Something said out of turn goes in Heard something: it finds the question it answers, and Ctrl+Enter files it under the first one as suggested. Every question is also in the list below, with the same answers; the filters there shape the deck." }))), meeting]
     : [meeting, h("div", { class: "card wsprogcard" }, prog, strip)];
   return h("div", {}, top, narrow, lines,
     sketches.length ? h("h2", { class: "wssketchhead", text: "Sketches from their numbers" }) : null, sketches);
