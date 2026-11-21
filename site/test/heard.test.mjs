@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { stem, tokens, match, joinNote, NOTE_MAX } from "../heard.js";
 
 const card = (key, q, listen = "", why = "", probe = "") => ({ key, label: "Disaster recovery", q: { q, listen, why, probe } });
@@ -79,4 +80,30 @@ test("what was heard about the deal finds its qualification question", async () 
   assert.equal(first("They are also talking to another supplier, or might build it themselves"), "deal#alternatives");
   assert.equal(first("The infrastructure lead will carry it to the board; she wants it badly"), "deal#champion");
   assert.equal(first("Any domain admin can wipe the backup repository"), "dr#6");      // the technical ones still find theirs
+});
+
+test("on the real questions of four lines, what was heard has its question among the three offered", () => {
+  const cards = [];
+  for (const p of ["hci", "dbaas", "dr-backup", "hybrid-cloud"]) {
+    const file = new URL(`../../src/beyond90/data/profiles/${p}/discovery.json`, import.meta.url);
+    JSON.parse(readFileSync(file, "utf8")).questions.forEach((q, i) => cards.push({ key: `${p}#${i}`, q }));
+  }
+  const cases = [
+    ["Developers open a ticket and wait two weeks for a clone of prod", "dbaas#0"],
+    ["Nobody really owns half of the instances", "dbaas#2"],
+    ["Restoring last Tuesday's state of the orders DB took us two days", "dbaas#1"],
+    ["Patching takes a weekend per database, so we skip most of them", "dbaas#11"],
+    ["The cloud bill doubled and nobody looks at it", "hybrid-cloud#7"],
+    ["Egress fees are eating us alive", "hybrid-cloud#13"],
+    ["Customer data has to stay in the EU because of GDPR", "hybrid-cloud#1"],
+    ["We have never tested failing over to the cloud", "hybrid-cloud#4"],
+    ["The two data centres are linked by a 1 Gb line, the network team pays for it", "hybrid-cloud#14"],
+  ];
+  let first = 0;
+  for (const [said, want] of cases) {
+    const got = match(cards, said).map((h) => h.card.key);
+    assert.ok(got.includes(want), `${said}: ${got.join(" ")}`);
+    if (got[0] === want) first += 1;
+  }
+  assert.ok(first >= 6, `first ${first} of ${cases.length}`);
 });

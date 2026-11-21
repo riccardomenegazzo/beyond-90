@@ -2,6 +2,15 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.151.0
+
+- **Heard something understands more of how people talk about databases and clouds.** Measured on the real questions of four lines (platform, databases, disaster recovery, hybrid cloud), nine things a customer might say now all have their question among the three offered, six of them first:
+  - a database is also a DB, an instance or a schema; production is prod; a copy can be a clone;
+  - "failing over" and "failing back" read as one word; "point in time" is one idea;
+  - a bill and an invoice, egress and outbound traffic, a fee and a price, a jurisdiction, sovereignty and GDPR each fold together;
+  - short words that carry meaning here (DB, VM, OS) are kept.
+- New tests on those nine sentences against the real questions, so the matching cannot quietly get worse.
+
 ## 0.150.0
 
 - **A page for the hour with the customer: [Running a discovery meeting](docs/meeting.md).** Before (the workshop, who is in the room, most useful first, the card's other side), during (the meeting clock, writing what they said and swiping, heard something for what is said out of turn, full screen, the qualification on cards), after (where it stands, the journey, the summary and the readout, the way forward), and what it is not: no recording, no transcript, no model in the cloud. Linked from the README, the workshop guide and the presales guide.

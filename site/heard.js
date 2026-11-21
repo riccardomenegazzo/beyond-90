@@ -8,6 +8,7 @@
 
 export const NOTE_MAX = 300;      // as long as a note on an answer can be
 
+const SHORT = new Set(["ms", "ip", "dc", "db", "vm", "os"]);     // short words that still carry meaning here
 const STOP = new Set(("a an the and or but nor of to in on at for with by from into onto about over under after before than then " +
   "is are was were be been being am do does did done has have had having it its it's this that these those there here " +
   "we our ours us they their them you your yours i my me he she his her who whom whose what which when where why how " +
@@ -28,13 +29,19 @@ const bare = (word) => {
 
 // words that mean the same thing in these conversations: each folds into the first of its group
 const SAME = [
-  ["copy", "backup", "snapshot", "replica", "vault"],
+  ["copy", "backup", "snapshot", "replica", "vault", "clone"],
   ["recover", "recovery", "restore", "failover", "failback"],
   ["admin", "administrator", "privileged", "superuser", "root"],
   ["delete", "wipe", "erase", "purge"],
   ["site", "datacentre", "datacenter", "dc"],
   ["latency", "millisecond", "ms", "roundtrip", "rtt"],
-  ["cost", "money", "revenue", "euro", "dollar", "budget", "spend"],
+  ["cost", "money", "revenue", "euro", "dollar", "budget", "spend", "fee", "price"],
+  ["bill", "invoice", "billing"],
+  ["traffic", "egress", "outbound"],
+  ["database", "db", "instance", "schema"],
+  ["production", "prod"],
+  ["take", "took", "taken", "takes"],
+  ["jurisdiction", "sovereignty", "sovereign", "gdpr", "residency"],
   ["test", "drill", "exercise", "rehearsal"],
   ["branch", "office", "warehouse", "store", "shop", "depot", "plant"],
   ["network", "dns", "ip", "address", "firewall", "vlan", "subnet"],
@@ -63,12 +70,15 @@ export function tokens(text) {
   const t = String(text == null ? "" : text).toLowerCase()
     .replace(/data\s+cent(re|er)s?/g, "datacentre")
     .replace(/round[\s-]+trips?/g, "roundtrip")
+    .replace(/fail(?:s|ed|ing)?[\s-]+over/g, "failover")
+    .replace(/fail(?:s|ed|ing)?[\s-]+back/g, "failback")
+    .replace(/point[\s-]+in[\s-]+time/g, "pointintime")
     .replace(/recovery[\s-]+points?(\s+objectives?)?/g, "rpo")
     .replace(/recovery[\s-]+times?(\s+objectives?)?/g, "rto")
     .replace(/(\d)\s*ms\b/g, "$1 ms");
   const out = [];
   for (const w of t.split(/[^a-z0-9]+/)) {
-    if (!w || /^\d+$/.test(w) || (w.length < 3 && w !== "ms" && w !== "ip" && w !== "dc") || STOP.has(w)) continue;
+    if (!w || /^\d+$/.test(w) || (w.length < 3 && !SHORT.has(w)) || STOP.has(w)) continue;
     out.push(stem(w));
   }
   return out;
