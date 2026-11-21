@@ -623,6 +623,7 @@ function setRole(id) {
 function paintRoles() {
   const now = savedRole();
   $("desk-btn").hidden = !(now === "se" || now === "all");     // a pre-sales engineer gets a desk of their own
+  document.body.dataset.role = now;                            // the first screen leads with what this role starts from
   for (const [id, host] of [["role-pick", $("role-pick")], ["hero-roles", $("hero-roles")]]) {
     if (!host) continue;
     host.replaceChildren(...(id === "hero-roles" ? [el_("span", { class: "fine", text: "I work as" })] : []), ...ROLE_IDS.map((r) => el_("button", { type: "button", class: "chip-btn", dataset: { role: r }, "aria-pressed": String(r === now), title: ROLES[r].hint, text: id === "hero-roles" ? (r === "core" ? "Not sure yet" : r === "all" ? "Show everything" : ROLES[r].label) : ROLES[r].short, onclick: () => setRole(r) })));

@@ -2,6 +2,11 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.145.0
+
+- **The first screen of a pre-sales engineer starts with a new prospect.** A prospect has no exports to drop yet, so with **Pre-sales engineer** chosen under "I work as", **Start a discovery workshop** and the filled-in example come before the customer's files, marked out, and the desk is in the menu as before. Other roles see the page as it was.
+- A browser check that the workshop comes first for a pre-sales engineer.
+
 ## 0.144.0
 
 - **What could stop a deal, one block per prospect.** On the presales desk the risks were a long column of near-identical cards, each with its own badge, red edge and Open button, the same prospect several times over; on a phone, screens of it. Now each prospect is one block: its name, how many risks can lose it on their own and how many to watch, its risks as short lines (a red dot for those that can lose it, read out to a screen reader), and one Open. The prospects with the most to lose come first, and none is cut off.

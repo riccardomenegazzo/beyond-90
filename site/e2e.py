@@ -1338,6 +1338,8 @@ def main(site: str) -> int:
         check(not page.is_visible("#desk-btn"), "the presales desk is not in the way of other roles")
         page.locator("#hero-roles [data-role=se]").click()
         check(page.is_visible("#desk-btn"), "choosing pre-sales engineer adds a desk to the menu")
+        check(page.evaluate("document.querySelector('.choose > .wsstart').getBoundingClientRect().top < document.getElementById('drop').getBoundingClientRect().top"),
+              "and puts the discovery workshop for a new prospect before the customer's files")
         page.click("#desk-btn")
         page.wait_for_selector("#desk-body .deskfunnel")
         check("Your presales desk" in page.inner_text("#desk-body") and page.locator("#desk-body table", has_text="Kestrel Logistics").count() >= 1, "the desk lists every prospect kept in this browser")
