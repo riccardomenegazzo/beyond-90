@@ -147,9 +147,10 @@ def main(site: str) -> int:
         check("Yield" in page.inner_text("#kpis") and "Maturity level" in page.inner_text("#kpis"), "demo produces a Yield tile and a maturity level")
         # the native dashboard
         check(page.locator("#view .todayhero").count() == 1 and "72." in page.inner_text("#view .todayhero") and page.locator("#view .opp").count() == 3, "the first screen gives the score, one sentence and three things to do")
-        check(page.locator("#view .tour li").count() == 3, "the first screen offers a first minute in three steps")
+        check(page.locator("#view .firstmin li").count() == 3 and page.evaluate("getComputedStyle(document.querySelector('#view .firstmin')).position") == "static",
+              "the first screen offers a first minute in three steps, in the page and not over it")
         page.get_by_role("button", name="Got it, hide this").click()
-        check(page.locator("#view .tour").count() == 0 and page.evaluate("localStorage.getItem('beyond90.tour')") == "1", "the first minute can be dismissed and stays dismissed")
+        check(page.locator("#view .firstmin").count() == 0 and page.evaluate("localStorage.getItem('beyond90.tour')") == "1", "the first minute can be dismissed and stays dismissed")
         check("29 of 121 accounts" in page.inner_text("#view .e2e-lead") and page.locator("#view .e2e-bar i").count() == 5, "Today shows how many accounts pass every stage, and where the others stop")
         page.click("#tabs [data-tab=overview]")
         check("Most accounts stop first at L3 (42 of 121)" in page.inner_text("#view .nextstep"), "a view ends with one next step worked out from the data")
@@ -1771,7 +1772,7 @@ def main(site: str) -> int:
             mp.locator(f"#tabs [data-tab={tab}]").click()
             check(not mp.locator("#rail").is_visible(), f"choosing {tab} from the menu closes it")
             mp.wait_for_timeout(300)
-            wide[tab] = mp.evaluate("document.documentElement.scrollWidth - innerWidth")
+            wide[tab] = mp.evaluate("document.documentElement.scrollWidth") - mp.viewport_size["width"]    # the phone's width: the page's own grows with it
         check(not any(wide.values()), f"no view is wider than a phone: {wide}")
         mp.click("#m-menu")
         mp.locator("#tabs [data-tab=accounts]").click()
@@ -1826,7 +1827,7 @@ def main(site: str) -> int:
         for tab in ("workshop", "wsqualify", "wsrfp", "journey", "wsforward", "wsprep", "wspartners", "wscase", "wspov", "hurt"):
             mp.locator(f"#tabs [data-tab={tab}]").dispatch_event("click")
             mp.wait_for_timeout(400)
-            wide[tab] = mp.evaluate("document.documentElement.scrollWidth - innerWidth")
+            wide[tab] = mp.evaluate("document.documentElement.scrollWidth") - mp.viewport_size["width"]
         check(not any(wide.values()), f"no workshop view is wider than a phone: {wide}")
         mctx.close()
 

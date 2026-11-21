@@ -2,6 +2,12 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.139.0
+
+- **Fixed: "Your first minute" on Today sat over the page.** The three first steps shared a class name with the guided tour, which floats over the page, so on a phone the card hung at the top of the screen, half under the header, over the customer's numbers. It is a card in the page again, as meant.
+- **Fixed: Partners was ten pixels wider than a phone.** The route to purchase put its label and its choice side by side; on a phone the choice goes under its label and stays within the screen, and the bar at the bottom no longer slides out of view.
+- **A stricter check on width.** The browser check measured a page against a window that grows with it, so an overflow could never show. It now measures against the phone's own width, on every customer view and every workshop view.
+
 ## 0.138.0
 
 - **Fixed: the bar at the bottom of a phone before a customer is open.** The Lavagna layer had given Start, Saved and Help rounded corners and made the current one see-through, so the page showed through the bar on the very first screen. On a phone they are a solid bar again, the current place marked by a line on top.
