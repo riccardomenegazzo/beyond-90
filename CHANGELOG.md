@@ -2,6 +2,14 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.134.0
+
+- **Heard something? Write it as it was said, and the app finds the question it answers.** Beside the card of the next question, a box takes what the customer said out of turn.
+  - As you write, the best three questions it answers are offered, from every question in scope. Each shows its line, whether it has an answer already, and the four answers, the one the words suggest lit.
+  - A tap files it: the answer, and the words added to that question's note, never over what was written before. The card, the list, the strip and the progress follow.
+  - The matching weighs the words of each question twice and what to listen for, why it matters and the follow-up once, rare words more than common ones. It folds words that mean the same here: a backup and a copy, a restore and a failover, a data centre and a site, a round trip and milliseconds, a recovery point and an RPO. It runs in the browser, and nothing leaves it.
+- New: `heard.js` (the words, the matching and the note, with tests); browser checks for the matches and their suggested answer on a computer, and on a phone for filing what was heard under its question with the words as the note.
+
 ## 0.133.0
 
 - **The questions open on the card of the next question.** The deck of 0.132 was behind a button; now it is the first thing in the questions of a workshop, in the page:

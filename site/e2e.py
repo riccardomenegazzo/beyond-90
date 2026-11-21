@@ -803,6 +803,14 @@ def main(site: str) -> int:
             row.locator(".wsopt[aria-pressed=true]").click()
             row.locator(".wsopt[aria-pressed=true]").wait_for(state="detached")
         page.locator("#view .wsprog", has_text=f"16 of {in_scope} questions answered").wait_for()
+        # heard something: written as it was said, it finds the question it answers, with the answer the words suggest
+        page.fill("#wsheard", "Any domain admin can wipe the backup repository")
+        hits = page.locator("#view .heardhit")
+        check(0 < hits.count() <= 3 and any("administrator account delete" in hits.nth(i).inner_text() for i in range(hits.count()))
+              and page.locator("#view .heardhit .heardopt.o-gap.sug").count() >= 1,
+              "what was heard finds the question it answers, with the answer the words suggest")
+        page.fill("#wsheard", "")
+        check(page.locator("#view .heardhit").count() == 0, "cleared, the matches go")
         page.get_by_role("button", name="See the journey").click()
         page.wait_for_selector("#view ol.journey")
         check("Yes, this is possible." in page.inner_text("#view .jhero") and "2M in lost orders" in page.inner_text("#view .jhero"), "the journey opens on what is possible, with what is at stake in the customer's words")
@@ -1743,6 +1751,14 @@ def main(site: str) -> int:
         check(mp.evaluate("document.querySelector('#view .deckpane.inpage .deckcard').getBoundingClientRect().top < innerHeight / 2"),
               "on a phone the questions open on the card of the next question")
         essential = mp.locator("#view .wsnarrow").get_by_role("button", name="Essential questions only")
+        mp.fill("#wsheard", "The last failover drill was three years ago and nobody signed it off")
+        hit = mp.locator("#view .heardhit").first
+        heard_q = hit.locator(".heardq").inner_text()
+        hit.locator(".heardopt.sug").click()
+        mp.locator("#view .heardsay", has_text="Filed as").wait_for()
+        filed = mp.locator("#view .wsq", has=mp.locator(".wsqq", has_text=heard_q)).first
+        check("failover drill was three years ago" in filed.inner_text() and mp.locator("#view .heardhit").count() == 0,
+              "on a phone, what was heard is filed under the question it answers, with the words as the note")
         essential.dispatch_event("click")
         mp.locator("#view .deckfull").click()
         mp.wait_for_selector("dialog.deck[open] .deckcard")

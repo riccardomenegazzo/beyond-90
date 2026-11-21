@@ -1651,3 +1651,23 @@ input[type=number],input[type=text],input[type=search],input[type=date],input[ty
   .card.deckpanel{grid-template-columns:minmax(0,540px) minmax(0,1fr)}
   .deckpane.inpage{border-bottom:0;border-right:1.5px solid var(--grid)}
 }
+
+/* heard something (0.134): what was said, written as it was said, matched to the question it answers */
+.heard{display:grid;gap:8px}
+.heard .decklabel{margin:0}
+.heardin{width:100%;min-height:64px;box-sizing:border-box;resize:vertical;padding:10px 12px;border:2px solid var(--line);border-radius:12px;
+  background:var(--sunk);color:var(--ink);font:inherit;font-size:16px;line-height:1.4}
+.heardin::placeholder{color:var(--muted)}
+.heardin:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent);background:var(--surface)}
+.heardout{display:grid;gap:8px}
+.heardout:empty{display:none}
+.heardhit{display:grid;gap:4px;padding:10px 12px;border:1.5px solid var(--grid);border-radius:12px;background:var(--surface)}
+.heardq{font-weight:700;line-height:1.3}
+.heardopts{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.heardopt{--tone:var(--ink2);min-height:44px;padding:0 12px;border-radius:12px;border:2px solid var(--tone);background:var(--surface);color:var(--tone);
+  font:inherit;font-size:14px;font-weight:700;cursor:pointer}
+.heardopt.o-solved{--tone:var(--lv-green)}.heardopt.o-partly{--tone:var(--lv-ochre)}.heardopt.o-gap{--tone:var(--lv-red)}.heardopt.o-unknown{--tone:var(--ink2)}
+.heardopt.sug{background:color-mix(in srgb,var(--tone) 12%,var(--surface))}
+.heardopt:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.heardsay{margin:0}
+.heardsay:empty{display:none}
