@@ -1727,3 +1727,15 @@ input[type=number],input[type=text],input[type=search],input[type=date],input[ty
 .deckaside .heard{padding:0 18px calc(18px + env(safe-area-inset-bottom))}
 .deckaside .heard>.decklabel{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .heardfig{font-weight:700;color:var(--accent-text)}
+
+/* what could stop a deal (0.144): one block per prospect, its risks as short lines, the way back to it once */
+.deskstops{display:grid;gap:12px}
+.deskstop{display:grid;gap:8px;padding:12px 14px;border:1.5px solid var(--grid);border-radius:12px;background:var(--surface)}
+.deskstophead{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px}
+.deskstophead b{font-size:16px}
+.deskstopcount{font-size:13.5px;color:var(--ink2)}
+.deskstophead .btn{margin-left:auto}
+.deskstoplist{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.deskstoplist li{position:relative;padding-left:18px;line-height:1.4}
+.deskstoplist li::before{content:"";position:absolute;left:2px;top:.45em;width:9px;height:9px;border-radius:50%;background:var(--lv-ochre)}
+.deskstoplist li.high::before{background:var(--lv-red)}

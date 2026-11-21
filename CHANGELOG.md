@@ -2,6 +2,11 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.144.0
+
+- **What could stop a deal, one block per prospect.** On the presales desk the risks were a long column of near-identical cards, each with its own badge, red edge and Open button, the same prospect several times over; on a phone, screens of it. Now each prospect is one block: its name, how many risks can lose it on their own and how many to watch, its risks as short lines (a red dot for those that can lose it, read out to a screen reader), and one Open. The prospects with the most to lose come first, and none is cut off.
+- A browser check that the blocks are one per prospect, the one with most to lose first.
+
 ## 0.143.0
 
 - **The README shows the deck in use.** An animated picture recorded from the app on a phone, with the invented example workshop: what was said written on a card, the answer it suggests, a swipe with the answer stamped on the card, and the next cards answered. Beside it, what the deck does in a meeting.

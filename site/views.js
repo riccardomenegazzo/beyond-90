@@ -3755,14 +3755,21 @@ export function deskView({ workshops, povs, catalog, today, openOpp, openTender,
   ];
   const table = dataTable({ columns: cols, rows: opps, label: "Opportunities", pageSize: 50 });
   const md = DESK.weeklyMarkdown(opps, items, today);
-  // what could stop a deal: the risks that can lose one on their own first, each with what to do, and the way back to it
-  const flagged = opps.filter((o) => !o.stopped && o.risks.length);
-  const riskCard = flagged.length ? card("What could stop a deal", h("ul", { class: "deskrisks" }, flagged.flatMap((o) => o.risks.map((r) => ({ o, r })))
-    .sort((x, y) => (x.r.level === y.r.level ? 0 : x.r.level === "high" ? -1 : 1)).slice(0, 12).map(({ o, r }) => h("li", { class: r.level },
-      h("span", { class: "chip2 " + (r.level === "high" ? "bad" : "warn"), text: r.level === "high" ? "Can lose it" : "Watch" }),
-      h("span", {}, h("b", { text: o.customer }), " ", h("span", { text: r.text })),
-      o.workshop ? h("button", { class: "btn small", type: "button", text: "Open", "aria-label": `Open ${o.customer}`, onclick: () => openOpp(o) }) : null))),
-  { sub: "Read from what is recorded: late conditions, a proof without a sponsor or ending with tests not tried, concerns left out of the proof, no figures for finance. Each says what to do." }) : null;
+  // what could stop a deal: one block per prospect, the risks that can lose it on their own first, each with what to do;
+  // the prospects with the most of those first, and the way back to each once
+  const highs = (o) => o.risks.filter((r) => r.level === "high").length;
+  const flagged = opps.filter((o) => !o.stopped && o.risks.length).sort((a, b) => highs(b) - highs(a) || b.risks.length - a.risks.length);
+  const riskCard = flagged.length ? card("What could stop a deal", h("div", { class: "deskstops" }, flagged.map((o) => {
+    const high = highs(o), watch = o.risks.length - high;
+    const list = [...o.risks].sort((x, y) => (x.level === y.level ? 0 : x.level === "high" ? -1 : 1));
+    return h("section", { class: "deskstop", "aria-label": o.customer },
+      h("div", { class: "deskstophead" }, h("b", { text: o.customer }),
+        h("span", { class: "deskstopcount", text: [high ? `${high} can lose it` : "", watch ? `${watch} to watch` : ""].filter(Boolean).join(", ") }),
+        o.workshop ? h("button", { class: "btn small", type: "button", text: "Open", "aria-label": `Open ${o.customer}`, onclick: () => openOpp(o) }) : null),
+      h("ul", { class: "deskstoplist" }, list.map((r) => h("li", { class: r.level },
+        h("span", { class: "sr-only", text: r.level === "high" ? "Can lose it: " : "Watch: " }), r.text))));
+  })),
+  { sub: "Read from what is recorded: late conditions, a proof without a sponsor or ending with tests not tried, concerns left out of the proof, no figures for finance. Each says what to do; a red dot can lose the deal on its own." }) : null;
   const me = h("input", { type: "text", maxlength: 100, value: [...workshops].sort((a, b) => (b.updated_on > a.updated_on ? 1 : -1)).map((w) => w.prepared_by || "").find(Boolean) || "",
     "aria-label": "Your name, as your manager should see it", placeholder: "Your name" });
   const snapshot = () => TEAM.snapshotFrom(opps, facts, me.value, today);

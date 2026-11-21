@@ -1345,8 +1345,12 @@ def main(site: str) -> int:
         with page.expect_download() as dl:
             page.get_by_role("button", name="Download it (.md)").click()
         check(Path(dl.value.path()).read_text(encoding="utf-8").startswith("# Presales update"), "and the weekly update for the account team")
-        check("What could stop a deal" in page.inner_text("#desk-body") and "No sponsor named for the proof of value" in page.inner_text("#desk-body .deskrisks"),
+        check("What could stop a deal" in page.inner_text("#desk-body") and "No sponsor named for the proof of value" in page.inner_text("#desk-body .deskstops"),
               "the desk says what could stop a deal, read from what is recorded: here, a proof of value with no sponsor")
+        stops = page.locator("#desk-body .deskstop")
+        names = [stops.nth(i).locator(".deskstophead b").inner_text() for i in range(stops.count())]
+        check(stops.count() > 0 and len(names) == len(set(names)) and "can lose it" in stops.first.locator(".deskstopcount").inner_text(),
+              "what could stop a deal is one block per prospect, the one with most to lose first")
         check("## What could stop a deal" in Path(dl.value.path()).read_text(encoding="utf-8"), "and the Monday note carries it to the account team")
         page.get_by_role("button", name="Fill it with invented examples").click()
         page.wait_for_selector("#desk-body :text('Pietra Bank')")
