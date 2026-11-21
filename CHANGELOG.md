@@ -2,6 +2,11 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.140.0
+
+- **Heard something, full screen too.** On the whole screen the deck had only the card: something said out of turn meant leaving it. **Heard something else?** now sits under the card as a sheet: open it, write what was said, and file it under the question it answers. The card moves on if it was the one answered. Closed, the box is back beside the card in the page, with nothing lost.
+- Browser checks for the sheet full screen, its matches, and the box back in its place.
+
 ## 0.139.0
 
 - **Fixed: "Your first minute" on Today sat over the page.** The three first steps shared a class name with the guided tour, which floats over the page, so on a phone the card hung at the top of the screen, half under the header, over the customer's numbers. It is a card in the page again, as meant.

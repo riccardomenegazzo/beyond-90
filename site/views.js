@@ -1902,14 +1902,22 @@ function deckPane({ cards, state, answerOf, answer, go, pfx, inline, set = DISCO
   return { el: root, draw, sync };
 }
 
-function openDeck({ clock, onClose, ...rest }) {
+/** The deck on the whole screen. `aside`, when given, is lent to it under the cards (heard something) and given back on close. */
+function openDeck({ clock, onClose, aside = null, asideTitle = "", ...rest }) {
   const dlg = h("dialog", { class: "deck", "aria-labelledby": "deck-title" });
   const pane = deckPane({ ...rest, pfx: "deck", inline: false, clock, onDone: () => dlg.close() });
   dlg.append(pane.el);
-  dlg.addEventListener("close", () => { dlg.remove(); onClose(); });
+  const home = aside ? { parent: aside.parentNode, next: aside.nextSibling } : null;
+  if (aside) dlg.append(h("details", { class: "deckaside" }, h("summary", { text: asideTitle }), aside));
+  dlg.addEventListener("close", () => {
+    if (home && home.parent) home.parent.insertBefore(aside, home.next);
+    dlg.remove();
+    onClose();
+  });
   document.body.append(dlg);
   dlg.showModal();
   pane.draw(true);
+  return pane;
 }
 
 const wsFilter = { core: false, roles: [], tender: false, open: false, best: false };
@@ -2157,7 +2165,7 @@ export function workshopView({ workshop: w, catalog, list, answer, worth, rename
   // one question at a time, at the top: the questions shown, as a deck; Full screen opens the same deck on the whole screen
   const deckState = { at: 0, drafts: new Map() };
   const deckBox = h("div", { class: "deckslot" });
-  let deckInline = null;
+  let deckInline = null, fullDeck = null;
   const afterDeck = (key) => { if (drawers.has(key)) drawers.get(key)(); for (const f of heads) f(); drawProg(); drawStrip(); paceNow(); };
   const deckAnswer = async (c, a, note) => { cur = await answer(c.line, c.index, a, note); return cur; };
   function rebuildDeck() {
@@ -2167,7 +2175,9 @@ export function workshopView({ workshop: w, catalog, list, answer, worth, rename
     if (!cards.length) { deckInline = null; put(deckBox, h("p", { class: "note decknone", text: "No question is shown with these filters: clear one to ask them here, one at a time." })); return; }
     deckState.at = DECK.firstOpen(cards, cur.answers);       // most useful first puts the open ones first: the same rule
     const same = { cards, state: deckState, answerOf: (c) => cur.answers[c.key], answer: deckAnswer, go, clock: makeMini, onAnswered: afterDeck };
-    const pane = deckPane({ ...same, pfx: "wsdeck", inline: true, onFull: () => openDeck({ ...same, onClose: () => pane.draw(false) }) });
+    const pane = deckPane({ ...same, pfx: "wsdeck", inline: true, onFull: () => {
+      fullDeck = openDeck({ ...same, aside: heardBox, asideTitle: "Heard something else?", onClose: () => { fullDeck = null; pane.draw(false); } });
+    } });
     deckInline = pane;
     put(deckBox, pane.el);
     pane.draw(false);
@@ -2186,6 +2196,7 @@ export function workshopView({ workshop: w, catalog, list, answer, worth, rename
     heardSay.textContent = `Filed as ${WS.ANSWERS[k].label.toLowerCase()}: ${card.q.q}`;
     afterDeck(card.key);
     syncDeck();
+    if (fullDeck) fullDeck.sync();
     heardIn.focus({ preventScroll: true });
   };
   const drawHeard = () => {

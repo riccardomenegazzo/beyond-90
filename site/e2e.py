@@ -793,8 +793,13 @@ def main(site: str) -> int:
         page.wait_for_selector("dialog.deck[open] .deckcard")
         check(page.inner_text("dialog.deck .deckq") == second and page.locator("dialog.deck .deckopt.o-partly[aria-pressed=true]").count() == 1,
               "Full screen opens the same deck where it was")
+        page.locator("dialog.deck .deckaside > summary").click()
+        page.fill("dialog.deck #wsheard", "Any domain admin can wipe the backup repository")
+        check(page.locator("dialog.deck .heardhit").count() > 0, "full screen, heard something is a sheet under the card, with its matches")
+        page.fill("dialog.deck #wsheard", "")
         page.locator("dialog.deck .deckclose").click()
         page.wait_for_selector("dialog.deck", state="detached")
+        check(page.locator("#view .deckside #wsheard").count() == 1, "closed, heard something is back beside the card")
         gap_q = page.locator("#view .wsq", has=page.locator(".wsqq", has_text=first_open)).first
         check("“We have never tested it”" in gap_q.inner_text() and gap_q.locator(".o-gap[aria-pressed=true]").count() == 1
               and f"18 of {in_scope} questions answered" in page.inner_text("#view .wsprog"),
