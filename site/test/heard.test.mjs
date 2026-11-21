@@ -130,3 +130,36 @@ test("on Kubernetes and virtual desktops too, what was heard finds its question 
   ];
   for (const [said, want] of cases) assert.equal((match(cards, said)[0] || {}).card?.key, want, said);
 });
+
+test("on object and file storage, edge sites and microsegmentation, what was heard has its question among the three, most first", () => {
+  const cards = [];
+  for (const p of ["object-storage", "file-storage", "edge-sites", "microsegmentation"]) {
+    const file = new URL(`../../src/beyond90/data/profiles/${p}/discovery.json`, import.meta.url);
+    JSON.parse(readFileSync(file, "utf8")).questions.forEach((q, i) => cards.push({ key: `${p}#${i}`, q }));
+  }
+  const cases = [
+    ["We pay about 20 euros a terabyte plus egress", "object-storage#1"],
+    ["Nobody knows how many access keys are out there", "object-storage#3"],
+    ["The backup bucket has no object lock", "object-storage#4"],
+    ["Old data never moves to a cheaper tier, it just piles up", "object-storage#10"],
+    ["We had ransomware two years ago and restored from tape", "file-storage#1"],
+    ["Users call the helpdesk to get yesterday's file back", "file-storage#4"],
+    ["Half the shares are open to Everyone and nobody checks", "file-storage#6"],
+    ["Most of the files have not been touched in years", "file-storage#8"],
+    ["An engineer drives to a store every week to swap a disk", "edge-sites#1"],
+    ["The shops are on a 20 Mb line that drops twice a week", "edge-sites#3"],
+    ["Opening a new store takes three weeks before the tills work", "edge-sites#12"],
+    ["Some branch servers are out of support since last year", "edge-sites#4"],
+    ["One compromised server could reach the whole data centre", "microsegmentation#0"],
+    ["Test and prod sit on the same flat network", "microsegmentation#4"],
+    ["We have no idea which servers talk to which", "microsegmentation#2"],
+    ["The auditors want proof that the payment environment is separated", "microsegmentation#1"],
+  ];
+  let first = 0;
+  for (const [said, want] of cases) {
+    const got = match(cards, said).map((h) => h.card.key);
+    assert.ok(got.includes(want), `${said}: ${got.join(" ")}`);
+    if (got[0] === want) first += 1;
+  }
+  assert.ok(first >= 15, `first ${first} of ${cases.length}`);
+});

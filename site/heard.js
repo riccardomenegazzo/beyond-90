@@ -8,7 +8,7 @@
 
 export const NOTE_MAX = 300;      // as long as a note on an answer can be
 
-const SHORT = new Set(["ms", "ip", "dc", "db", "vm", "os"]);     // short words that still carry meaning here
+const SHORT = new Set(["ms", "ip", "dc", "db", "vm", "os", "mb"]);     // short words that still carry meaning here
 const STOP = new Set(("a an the and or but nor of to in on at for with by from into onto about over under after before than then " +
   "is are was were be been being am do does did done has have had having it its it's this that these those there here " +
   "we our ours us they their them you your yours i my me he she his her who whom whose what which when where why how " +
@@ -48,7 +48,14 @@ const SAME = [
   ["target", "rpo", "rto", "objective", "sla"],
   ["encrypt", "encryption", "encrypted"],
   ["upgrade", "patch", "update", "version"],
-  ["ransomware", "attack", "attacker", "malware"],
+  ["ransomware", "malware", "cryptolocker"],
+  ["attack", "attacker", "breach", "compromise", "intruder"],
+  ["machine", "server", "host"],
+  ["travel", "drive", "trip", "visit"],
+  ["replace", "swap"],
+  ["bandwidth", "mbps", "mb", "gbps", "link"],
+  ["old", "age", "aging", "ageing", "stale"],
+  ["tier", "tiering", "archive", "cold"],
   // the words of a deal: who signs, who else is in it, the date that forces a choice
   ["sign", "approve", "approval", "signoff", "authorise", "authorize"],
   ["decide", "decision", "decider", "choice", "choose", "cio", "cfo", "ceo", "cto", "coo"],
@@ -70,6 +77,7 @@ export function tokens(text) {
   const t = String(text == null ? "" : text).toLowerCase()
     .replace(/data\s+cent(re|er)s?/g, "datacentre")
     .replace(/round[\s-]+trips?/g, "roundtrip")
+    .replace(/(?:out|end)\s+of\s+(?:support|life)|\beol\b|support\s+ends?/g, "unsupported")
     .replace(/fail(?:s|ed|ing)?[\s-]+over/g, "failover")
     .replace(/fail(?:s|ed|ing)?[\s-]+back/g, "failback")
     .replace(/point[\s-]+in[\s-]+time/g, "pointintime")

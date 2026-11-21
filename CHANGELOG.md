@@ -2,6 +2,17 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.154.0
+
+- **Heard something, on storage, edge sites and microsegmentation too.** Sixteen things a customer might say on the real questions of object storage, file storage, edge sites and microsegmentation now all have their question among the three offered, fifteen of them first. That was nine first and fourteen in the three before. The matching learned:
+  - ransomware is its own word, no longer folded with any attack; an attack, a breach and a compromise fold together;
+  - a machine, a server and a host are the same here;
+  - travelling or driving to a site, and swapping or replacing a part, read as such;
+  - bandwidth reads in Mb and Gbps;
+  - old data and ageing data, tiering and archive, go together;
+  - "out of support", "end of life" and "support ends" are one idea.
+- The earlier phrase sets (databases and clouds, Kubernetes and virtual desktops, disaster recovery, the deal) keep their results; the new sixteen are kept as tests beside them.
+
 ## 0.153.0
 
 - **A recap for the account team, from the end of the deck.** Where it stands now offers **Copy the recap** and **Email the recap**: plain text with how many questions were asked and how each was answered, the real gaps and what nobody could answer with what the customer said, and what would need to be true. Email opens the person's own mail app with it written in (no server sends anything); it is kept short enough for any mail app. It names the gaps, so it is for the team, not the customer: the customer readout is the page for them.
