@@ -26,6 +26,7 @@ import * as RFP from "./rfp.js";
 import * as AWD from "./award.js";
 import * as BID from "./bidcall.js";
 import * as QL from "./qlist.js";
+import * as DECK from "./deck.js";
 import * as LS from "./lessons.js";
 import * as TEAM from "./team.js";
 import * as QD from "./qualify.js";
@@ -1669,6 +1670,191 @@ export function growView({ estate, focus, startWorkshop }) {
 // ------------------------------------------------------------------ the discovery workshop: before there is any data
 const STAGE_TAG = { value: "Value", L1: "L1 connected", L2: "L2 seen", L3: "L3 switched on", L4: "L4 decided" };
 const painPct = (v) => `${Math.round(v * 100)}%`;
+
+// ---------- one question at a time: the deck
+// A full-screen card per question. Swipe it (right solved, left a real gap, up partly, down nobody knows), tap an
+// answer, or press an arrow or 1 to 4. What they said is written on the card and saved with the answer.
+const DECK_ARROW = { right: "M9 6l6 6-6 6", left: "M15 6l-6 6 6 6", up: "M6 15l6-6 6 6", down: "M6 9l6 6 6-6" };
+const DECK_TALLY = { gap: (n) => (n === 1 ? "real gap" : "real gaps"), unknown: () => "nobody knows", partly: () => "partly", solved: () => "solved" };
+const reducedMotion = () => typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+function openDeck({ cards, start, get, answer, onClose, go }) {
+  const drafts = new Map();          // words typed on a card left without an answer, kept while the deck is open
+  let at = start, busy = false, now = null;
+  const dlg = h("dialog", { class: "deck", "aria-labelledby": "deck-title" });
+  const title = h("h2", { id: "deck-title", class: "deckline" });
+  const pos = h("span", { class: "deckpos" });
+  const marks = h("div", { class: "deckmarks" + (cards.length > 30 ? " many" : ""), "aria-hidden": "true" });
+  const main = h("div", { class: "deckmain" });
+  const status = h("p", { class: "sr-only", role: "status" });
+  dlg.append(h("div", { class: "deckhead" },
+    h("div", { class: "decktop" }, title, pos, h("button", { type: "button", class: "linkbtn deckclose", text: "Close", onclick: () => dlg.close() })), marks), main, status);
+
+  const drawMarks = () => {
+    const w = get();
+    put(marks, cards.map((c, j) => { const a = w.answers[c.key]; return h("i", { class: a ? `t-${DECK.TONE[a.a]}` : j === at ? "now" : "" }); }));
+  };
+  const place = (card, dx, dy) => {
+    card.style.setProperty("--dx", `${dx}px`);
+    card.style.setProperty("--dy", `${dy}px`);
+    card.style.setProperty("--rot", `${(dx / 16).toFixed(2)}deg`);
+  };
+  const stampOn = (stamp, k, strength) => {
+    stamp.textContent = k ? WS.ANSWERS[k].label : "";
+    stamp.className = "deckstamp" + (k ? ` t-${DECK.TONE[k]}` : "");
+    stamp.style.setProperty("--on", String(k ? strength : 0));
+  };
+  const snapBack = () => { if (!now) return; now.card.classList.add("back"); place(now.card, 0, 0); stampOn(now.stamp, null, 0); };
+  const fly = (k) => new Promise((resolve) => {
+    stampOn(now.stamp, k, 1);
+    if (reducedMotion()) { resolve(); return; }
+    const d = DECK.DIRECTIONS[k];
+    now.card.classList.remove("enter");
+    now.card.classList.add("fly");
+    place(now.card, d.dx * 520, d.dy * 760);
+    setTimeout(resolve, 220);
+  });
+  const commit = async (k) => {
+    if (busy || !now) return;
+    busy = true;
+    const c = cards[at];
+    try {
+      await answer(c.line, c.index, k, now.said.value);
+      drafts.delete(c.key);
+      status.textContent = `${WS.ANSWERS[k].label}.`;
+      await fly(k);
+      at += 1;
+      busy = false;
+      draw();
+    } catch (e) {
+      busy = false;
+      status.textContent = e.message;
+      snapBack();
+    }
+  };
+  const drag = (card, stamp) => {
+    let from = null;
+    card.addEventListener("pointerdown", (e) => {
+      if (busy || e.button > 0 || e.target.closest("button, textarea, input, select, a, label, .deckguide")) return;
+      from = { x: e.clientX, y: e.clientY, id: e.pointerId };
+      try { card.setPointerCapture(e.pointerId); } catch { /* capturing is a nicety: the drag works without it */ }
+      card.classList.remove("back", "enter");
+      card.classList.add("dragging");
+    });
+    card.addEventListener("pointermove", (e) => {
+      if (!from || e.pointerId !== from.id) return;
+      const dx = e.clientX - from.x, dy = e.clientY - from.y;
+      place(card, dx, dy);
+      stampOn(stamp, DECK.heading(dx, dy), DECK.hintStrength(dx, dy));
+    });
+    const end = (e) => {
+      if (!from || e.pointerId !== from.id) return;
+      const k = e.type === "pointerup" ? DECK.released(e.clientX - from.x, e.clientY - from.y) : null;
+      from = null;
+      card.classList.remove("dragging");
+      if (k) commit(k); else snapBack();
+    };
+    card.addEventListener("pointerup", end);
+    card.addEventListener("pointercancel", end);
+  };
+
+  const drawCard = () => {
+    const c = cards[at], ans = get().answers[c.key], q = c.q;
+    title.textContent = c.label;
+    pos.textContent = `${at + 1} of ${cards.length}`;
+    drawMarks();
+    const stamp = h("div", { class: "deckstamp", "aria-hidden": "true" });
+    const ask = h("p", { class: "deckq", id: "deck-q", tabindex: "-1", text: q.q });
+    const said = h("textarea", { id: "deck-said", class: "decksaid", maxlength: 300, rows: 3, placeholder: "Their words, a number, a name" });
+    said.value = drafts.has(c.key) ? drafts.get(c.key) : ans ? ans.note : "";
+    const sug = h("span", { class: "decksug", "aria-live": "polite" });
+    const opts = DECK.ORDER.map((k, i) => h("button", { type: "button", class: `deckopt o-${k}`, "data-a": k, "aria-pressed": String(!!ans && ans.a === k),
+      "aria-keyshortcuts": `${DECK.DIRECTIONS[k].key} ${i + 1}`, onclick: () => commit(k) },
+    svgEl("svg", { width: 18, height: 18, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", "stroke-width": 2.6, "stroke-linecap": "round", "stroke-linejoin": "round", "aria-hidden": "true" },
+      svgEl("path", { d: DECK_ARROW[DECK.DIRECTIONS[k].arrow] })),
+    h("span", { text: WS.ANSWERS[k].label })));
+    let shown = null;
+    const paintSug = () => {
+      const s = DECK.suggest(q, said.value);
+      for (const b of opts) b.classList.toggle("sug", b.dataset.a === s);
+      if (s === shown) return;
+      shown = s;
+      sug.className = "decksug" + (s ? ` t-${DECK.TONE[s]}` : "");
+      sug.textContent = s ? `Sounds like ${WS.ANSWERS[s].label.toLowerCase()}` : "";
+    };
+    said.addEventListener("input", () => { drafts.set(c.key, said.value); paintSug(); });
+    // how to ask it: the other side of the card
+    const guide = q.why || q.listen || q.probe;
+    const front = h("div", { class: "deckfront" });
+    const back = h("div", { class: "deckguide", hidden: true });
+    const howBtn = guide ? h("button", { type: "button", class: "linkbtn", "aria-expanded": "false", text: "How to ask it" }) : null;
+    const backBtn = h("button", { type: "button", class: "linkbtn", text: "Back to the question" });
+    const flip = (on) => {
+      front.hidden = on; back.hidden = !on;
+      if (howBtn) howBtn.setAttribute("aria-expanded", String(on));
+      (on ? backBtn : howBtn || ask).focus({ preventScroll: true });
+    };
+    if (howBtn) howBtn.addEventListener("click", () => flip(true));
+    backBtn.addEventListener("click", () => flip(false));
+    put(front,
+      h("div", { class: "decktags" }, q.core ? h("span", { class: "decktag core", text: "Essential" }) : null,
+        q.role && WS.ROLE_WORDS[q.role] ? h("span", { class: "decktag", text: `Ask: ${WS.ROLE_WORDS[q.role].toLowerCase()}` }) : null,
+        ans ? h("span", { class: `decktag t-${DECK.TONE[ans.a]}`, text: `Answered: ${WS.ANSWERS[ans.a].label.toLowerCase()}` }) : null),
+      ask,
+      h("label", { for: "deck-said", class: "decklabel", text: "What they said" }), said,
+      h("div", { class: "deckfoot" }, howBtn, sug));
+    put(back,
+      h("dl", { class: "deckdl" }, q.why ? [h("dt", { text: "Why it matters" }), h("dd", { text: q.why })] : null,
+        q.listen ? [h("dt", { text: "Listen for" }), h("dd", { text: q.listen })] : null,
+        q.probe ? [h("dt", { text: "Then ask" }), h("dd", { class: "deckprobe", text: q.probe })] : null),
+      backBtn);
+    const card = h("article", { class: "deckcard" + (reducedMotion() ? "" : " enter"), "aria-labelledby": "deck-q" }, stamp, front, back);
+    now = { card, stamp, said };
+    const prev = h("button", { type: "button", class: "linkbtn", text: "Previous", disabled: at === 0, onclick: () => { at -= 1; draw(); } });
+    const skip = h("button", { type: "button", class: "linkbtn", text: "Skip", onclick: () => { at += 1; draw(); } });
+    put(main, h("div", { class: "deckstage" }, card),
+      h("div", { class: "deckans", role: "group", "aria-label": `Answer to: ${q.q}` }, opts),
+      h("div", { class: "deckbar" }, prev, h("span", { class: "deckhint", text: "Swipe the card, or tap an answer" }), skip));
+    paintSug();
+    drag(card, stamp);
+    requestAnimationFrame(() => ask.focus({ preventScroll: true }));
+  };
+
+  const drawEnd = () => {
+    now = null;
+    const s = DECK.deckSummary(cards, get().answers);
+    title.textContent = "Where it stands";
+    pos.textContent = `${s.total - s.counts.open} of ${s.total} answered`;
+    drawMarks();
+    const said = (heading, rows) => (rows.length ? [h("h3", { class: "decksub", text: heading }),
+      h("ul", { class: "deckgaps" }, rows.map((r) => h("li", {}, h("span", { text: r.q }), h("small", { class: "muted", text: r.label }),
+        r.note ? h("span", { class: "decksaidline", text: `“${r.note}”` }) : null)))] : null);
+    const headline = h("p", { class: "deckheadline", tabindex: "-1", text: s.head });
+    put(main, h("div", { class: "decksum" }, headline,
+      h("div", { class: "decktallies" }, ["gap", "unknown", "partly", "solved"].map((k) => h("div", { class: `decktally t-${DECK.TONE[k]}` },
+        h("b", { text: String(s.counts[k]) }), h("span", { text: DECK_TALLY[k](s.counts[k]) })))),
+      said("The gaps, with what they said", s.gaps), said("Nobody could answer", s.unknown),
+      h("div", { class: "btnrow deckendrow" },
+        h("button", { class: "btn primary", type: "button", text: "See the journey", onclick: () => { dlg.close(); go("journey"); } }),
+        h("button", { class: "btn", type: "button", text: "Back to the list", onclick: () => dlg.close() })),
+      h("button", { class: "linkbtn", type: "button", text: "Go back to the last question", onclick: () => { at = cards.length - 1; draw(); } })));
+    requestAnimationFrame(() => headline.focus({ preventScroll: true }));
+  };
+  const draw = () => (at >= cards.length ? drawEnd() : drawCard());
+
+  // the keys answer the card in view; the app's own shortcuts wait until the deck is closed
+  dlg.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") return;
+    e.stopPropagation();
+    if (e.ctrlKey || e.metaKey || e.altKey || !now || e.target.tagName === "TEXTAREA") return;
+    const k = DECK.forKey(e.key);
+    if (k) { e.preventDefault(); commit(k); }
+  });
+  dlg.addEventListener("close", () => { dlg.remove(); onClose(); });
+  document.body.append(dlg);
+  dlg.showModal();
+  draw();
+}
 // how the questions are narrowed for this meeting: kept while the page is open, never stored
 const wsFilter = { core: false, roles: [], tender: false, open: false };
 
@@ -1716,6 +1902,8 @@ export function workshopView({ workshop: w, catalog, list, answer, worth, rename
   const drawProg = () => {
     const res = WS.assess(catalog, cur);
     put(prog, h("span", { text: `${res.answered} of ${res.total} questions answered` }), h("span", { class: "ebar wsbar" }, h("i", { class: "er", style: `width:${(res.coverage * 100).toFixed(1)}%` })),
+      h("button", { class: "btn primary deckgo", type: "button", text: "Ask one at a time", onclick: () => startDeck(),
+        "data-tip": "The questions shown below, one card each: swipe or tap to answer, and write what they said. Starts at the first one with no answer." }),
       h("button", { class: "btn", type: "button", text: "See the journey", onclick: () => go("journey") }));
   };
   drawProg();
@@ -1726,6 +1914,7 @@ export function workshopView({ workshop: w, catalog, list, answer, worth, rename
   const TONE = { solved: "good", partly: "mid", gap: "bad", unknown: "unknown" };
   const uiq = { open: "" };
   const drawers = new Map();
+  const heads = [];
   const toggle = (key) => {
     const prev = uiq.open;
     uiq.open = prev === key ? "" : key;
@@ -1743,6 +1932,7 @@ export function workshopView({ workshop: w, catalog, list, answer, worth, rename
         st.answered ? h("span", { class: "wspain " + (st.pain >= 0.6 ? "hi" : st.pain >= 0.35 ? "mid" : "lo"), text: `${painPct(st.pain)} missing` }) : null);
     };
     drawHead();
+    heads.push(drawHead);
     const items = WS.displayOrder(line).map(({ q, index: i }) => {
       const key = `${p}#${i}`;
       const asked = asks.get(key) || [];
@@ -1860,12 +2050,23 @@ export function workshopView({ workshop: w, catalog, list, answer, worth, rename
       h("button", { class: "btn small", type: "button", text: "Copy the question guide", onclick: (ev) => copyText(WS.questionGuide(catalog, cur, wsFilter)).then((ok) => { ev.target.textContent = ok ? "Copied" : "Not copied"; }) }),
       h("button", { class: "btn small", type: "button", text: "Question guide (.md)", onclick: () => saveBlob(WS.questionGuide(catalog, cur, wsFilter), `${slug}-questions.md`, "text/markdown") }))) : null;
   requestAnimationFrame(apply);
+  // one question at a time: the questions shown, as a deck; closed, the list catches up with what was answered
+  const startDeck = () => {
+    const keep = (key, q) => WS.inMeeting(q, wsFilter) && (!wsFilter.tender || (asks.get(key) || []).length > 0) && (!wsFilter.open || !cur.answers[key]);
+    const cards = DECK.deckFrom(catalog, cur.scope, keep);
+    if (!cards.length) { say.textContent = "No question is shown with these filters: clear one to ask them one at a time."; return; }
+    openDeck({ cards, start: DECK.firstOpen(cards, cur.answers), get: () => cur, go,
+      answer: async (p, i, a, note) => { cur = await answer(p, i, a, note); return cur; },
+      onClose: () => { for (const d of drawers.values()) d(); for (const f of heads) f(); drawProg(); drawStrip(); apply(); } });
+  };
   // the conversation first: where it stands on every line, what to show, the questions; then the sketches from their numbers
   const sketches = [inventory ? inventoryCard(w, inventory) : null, w.inventory && sizing ? sizingCard(w, sizing) : null,
     w.inventory && waves ? wavesCard(w, waves, today) : null, w.scope.includes("private-ai") && gpu ? gpuCard(w, gpu) : null,
     w.scope.includes("dr-backup") && dr ? drCard(w, dr) : null, w.scope.includes("object-storage") && obj ? objCard(w, obj) : null,
     w.scope.includes("edge-sites") && edge ? edgeCard(w, edge) : null, w.scope.some((p) => WS.UNIT_LINES.includes(p)) && unit ? unitCard(w, unit) : null].filter(Boolean);
-  return h("div", {}, meeting, h("div", { class: "card wsprogcard" }, prog, strip), narrow, lines,
+  // with lines chosen, where it stands and the way to ask come first: on a phone the meeting's settings are a long scroll
+  const progCard = h("div", { class: "card wsprogcard" }, prog, strip);
+  return h("div", {}, inScope.length ? [progCard, meeting] : [meeting, progCard], narrow, lines,
     sketches.length ? h("h2", { class: "wssketchhead", text: "Sketches from their numbers" }) : null, sketches);
 }
 

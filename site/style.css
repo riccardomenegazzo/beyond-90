@@ -1544,3 +1544,93 @@ input[type=number],input[type=text],input[type=search],input[type=date],input[ty
 /* a sketch's column is the card's width: a wide table slides inside it instead of widening the card */
 .sz{grid-template-columns:minmax(0,1fr)}
 .tablewrap{max-width:100%}
+
+/* ================================================================ The deck (0.132): one question at a time.
+   A card per question, full screen on a phone. Swiped right it is solved, left a real gap, up partly, down nobody
+   knows; the answer it is heading for is stamped on it while it moves. What they said is written on the card. */
+.wsprog{grid-template-columns:auto minmax(0,1fr) auto auto}
+.deck[open]{display:flex;flex-direction:column}
+.deck{width:min(480px,100vw);height:min(880px,calc(100dvh - 32px));max-width:100vw;max-height:100dvh;padding:0;border:0;border-radius:22px;
+  background:var(--page);color:var(--ink);overflow:hidden;box-shadow:0 30px 70px -24px rgba(0,0,0,.5)}
+.deck::backdrop{background:rgba(23,25,30,.62)}
+.deckhead{display:flex;flex-direction:column;gap:9px;padding:14px 18px 12px;background:var(--surface);border-bottom:3px solid var(--ink)}
+.decktop{display:flex;align-items:baseline;gap:12px;min-width:0}
+.deck h2.deckline{margin:0;font-size:21px;line-height:1.15;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.deckpos{flex:none;font-size:13.5px;font-weight:700;color:var(--ink2)}
+.deckclose{margin-left:auto;flex:none;padding:6px 2px;min-height:40px;font-size:15px;text-decoration:none}
+.deckmarks{display:flex;gap:4px}.deckmarks.many{gap:2px}
+.deckmarks i{flex:1;height:6px;border-radius:3px;background:var(--grid)}
+.deckmarks i.now{background:var(--ink)}
+.deckmarks i.t-good{background:var(--lv-green)}.deckmarks i.t-mid{background:var(--lv-ochre)}.deckmarks i.t-bad{background:var(--lv-red)}.deckmarks i.t-unknown{background:var(--muted)}
+.deckmain{flex:1;min-height:0;display:flex;flex-direction:column}
+.deckstage{flex:1;min-height:0;position:relative}
+.deckstage::before,.deckstage::after{content:"";position:absolute;background:var(--surface);border:1.5px solid var(--grid);border-radius:24px}
+.deckstage::before{left:36px;right:36px;top:34px;bottom:6px}
+.deckstage::after{left:27px;right:27px;top:26px;bottom:11px}
+.deckcard{position:absolute;inset:18px 18px 16px;z-index:1;display:flex;flex-direction:column;box-sizing:border-box;padding:20px 18px 8px;
+  background:var(--surface);border:2px solid var(--ink);border-radius:24px;box-shadow:0 14px 34px -12px rgba(23,25,30,.28);
+  touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab;
+  transform:translate(var(--dx,0px),var(--dy,0px)) rotate(var(--rot,0deg))}
+.deckcard.dragging{cursor:grabbing}
+.deckcard.back{transition:transform .25s cubic-bezier(.2,.8,.2,1)}
+.deckcard.fly{transition:transform .22s cubic-bezier(.4,0,1,1),opacity .22s;opacity:0}
+.deckcard.enter{animation:deckin .22s cubic-bezier(.2,.8,.2,1)}
+@keyframes deckin{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:none}}
+.deckfront,.deckguide{display:flex;flex-direction:column;gap:12px;flex:1;min-height:0}
+.deckfront[hidden],.deckguide[hidden]{display:none}
+.deckguide{overflow:auto;touch-action:pan-y}
+.decktags{display:flex;flex-wrap:wrap;gap:6px;padding-right:96px}
+.decktag{font-size:13px;color:var(--ink2);background:var(--sunk);border-radius:7px;padding:4px 9px}
+.decktag.core{font-weight:700;color:var(--accent-text);background:transparent;box-shadow:inset 0 0 0 1.5px var(--accent)}
+.decktag.t-good{color:var(--lv-green)}.decktag.t-mid{color:var(--lv-ochre)}.decktag.t-bad{color:var(--lv-red)}
+.deckq{margin:0;font-family:var(--display);font-weight:700;font-size:clamp(21px,6vw,26px);line-height:1.17;letter-spacing:-.02em;outline:none;user-select:text}
+.decklabel{font-size:13px;font-weight:700;color:var(--ink2);margin:2px 0 -6px}
+.decksaid{flex:1;min-height:84px;width:100%;box-sizing:border-box;resize:none;padding:12px 14px;border:2px solid var(--line);border-radius:14px;
+  background:var(--sunk);color:var(--ink);font:inherit;font-size:16px;line-height:1.4;user-select:text;cursor:text}
+.decksaid::placeholder{color:var(--muted)}
+.decksaid:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent);background:var(--surface)}
+.deckfoot{display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:44px}
+.deckfoot .linkbtn{padding:8px 2px;font-size:15px}
+.decksug{font-size:13px;font-weight:700;border-radius:7px;padding:4px 9px;text-align:right}
+.decksug:empty{padding:0}
+.decksug.t-good{color:var(--lv-green);background:color-mix(in srgb,var(--lv-green) 12%,var(--surface))}
+.decksug.t-mid{color:var(--lv-ochre);background:color-mix(in srgb,var(--lv-ochre) 12%,var(--surface))}
+.decksug.t-bad{color:var(--lv-red);background:color-mix(in srgb,var(--lv-red) 12%,var(--surface))}
+.decksug.t-unknown{color:var(--ink2);background:var(--sunk)}
+.deckstamp{position:absolute;top:14px;right:12px;z-index:2;padding:5px 14px;border:3px solid currentColor;border-radius:58% 42% 55% 45%/52% 58% 42% 48%;
+  font-family:var(--display);font-weight:800;font-size:20px;background:var(--surface);transform:rotate(-8deg);opacity:var(--on,0);pointer-events:none}
+.deckstamp:empty{display:none}
+.deckstamp.t-good{color:var(--lv-green)}.deckstamp.t-mid{color:var(--lv-ochre)}.deckstamp.t-bad{color:var(--lv-red)}.deckstamp.t-unknown{color:var(--ink2)}
+.deckdl{margin:0;display:grid;gap:4px}
+.deckdl dt{font-size:13px;font-weight:700;color:var(--ink2);margin-top:8px}.deckdl dt:first-child{margin-top:0}
+.deckdl dd{margin:0;font-size:16px;line-height:1.45}.deckdl dd.deckprobe{font-weight:700}
+.deckguide>.linkbtn{align-self:flex-start;margin-top:auto;padding:8px 2px;font-size:15px}
+.deckans{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:0 18px}
+.deckopt{--tone:var(--ink2);display:flex;align-items:center;justify-content:center;gap:8px;min-height:54px;padding:0 10px;border-radius:16px;
+  border:2px solid var(--tone);background:var(--surface);color:var(--tone);font:inherit;font-size:16px;font-weight:700;cursor:pointer}
+.deckopt.o-solved{--tone:var(--lv-green)}.deckopt.o-partly{--tone:var(--lv-ochre)}.deckopt.o-gap{--tone:var(--lv-red)}.deckopt.o-unknown{--tone:var(--ink2)}
+.deckopt.sug{background:color-mix(in srgb,var(--tone) 12%,var(--surface))}
+.deckopt[aria-pressed=true]{background:var(--tone);color:var(--lv-on)}
+.deckopt:active{transform:scale(.97)}
+.deckopt:focus-visible,.deckbar .linkbtn:focus-visible,.deckclose:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.deckbar{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:2px 14px calc(10px + env(safe-area-inset-bottom))}
+.deckbar .linkbtn{padding:10px 6px;min-height:44px;font-size:15px;text-decoration:none}
+.deckbar .linkbtn[disabled]{color:var(--muted);cursor:default}
+.deckhint{font-size:13px;color:var(--muted);text-align:center}
+.decksum{flex:1;overflow:auto;display:flex;flex-direction:column;gap:14px;padding:22px 20px calc(18px + env(safe-area-inset-bottom))}
+.deckheadline{margin:0;font-family:var(--display);font-weight:800;font-size:clamp(26px,7.4vw,32px);line-height:1.08;letter-spacing:-.03em;outline:none}
+.decktallies{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.decktally{display:flex;flex-direction:column;gap:2px;padding:10px 14px;background:var(--surface);border:1.5px solid var(--grid);border-radius:14px}
+.decktally b{font-family:var(--display);font-size:32px;font-weight:800;line-height:1}
+.decktally span{font-size:14px;color:var(--ink2)}
+.decktally.t-good b{color:var(--lv-green)}.decktally.t-mid b{color:var(--lv-ochre)}.decktally.t-bad b{color:var(--lv-red)}.decktally.t-unknown b{color:var(--ink2)}
+.deck h3.decksub{margin:6px 0 -4px;font-size:15px;color:var(--ink2)}
+.deckgaps{margin:0;padding:0;list-style:none;display:grid;gap:12px}
+.deckgaps li{display:grid;gap:2px;font-size:15px;line-height:1.4}
+.decksaidline{font-style:italic;color:var(--ink2)}
+.deckendrow{margin-top:auto;padding-top:6px}
+.decksum>.linkbtn{align-self:flex-start;padding:6px 2px}
+@media (max-width:640px){
+  .deck{width:100vw;height:100dvh;margin:0;border-radius:0}
+}
+@media (prefers-reduced-motion:reduce){.deckcard.back,.deckcard.fly,.deckcard.enter{transition:none;animation:none}}

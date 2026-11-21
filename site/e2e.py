@@ -763,6 +763,41 @@ def main(site: str) -> int:
         page.get_by_role("button", name="Not answered yet").click()
         check(page.locator("#ws-dr-backup .wsq:not([hidden])").count() == page.locator("#ws-dr-backup .wsq").count() - 8, "the questions narrow to those not answered yet")
         page.get_by_role("button", name="Not answered yet").click()
+        # one question at a time: the deck opens on the first question with no answer; written words suggest an answer
+        first_open = page.evaluate("document.querySelector('#view .wsq:not([data-answered=\"1\"]) .wsqq').textContent")
+        page.get_by_role("button", name="Ask one at a time").click()
+        page.wait_for_selector("dialog.deck[open] .deckcard")
+        check(page.inner_text("dialog.deck .deckq") == first_open and f"of {in_scope}" in page.inner_text("dialog.deck .deckpos"),
+              "the deck opens on the first question with no answer, out of every question shown")
+        page.fill("#deck-said", "We have never tested it")
+        check(page.inner_text("dialog.deck .decksug") == "Sounds like a real gap" and page.locator("dialog.deck .deckopt.o-gap.sug").count() == 1,
+              "what they said suggests an answer, without answering")
+        box = page.locator("dialog.deck .deckcard").bounding_box()
+        cx, cy = box["x"] + box["width"] / 2, box["y"] + 40
+        page.mouse.move(cx, cy)
+        page.mouse.down()
+        page.mouse.move(cx - 70, cy + 4, steps=4)
+        check(page.inner_text("dialog.deck .deckstamp") == "A real gap", "dragged, the card shows the answer it is heading for")
+        page.mouse.move(cx - 220, cy + 10, steps=6)
+        page.mouse.up()
+        page.locator("dialog.deck .deckq", has_not_text=first_open).wait_for()      # polling a script would break the page's policy
+        second = page.inner_text("dialog.deck .deckq")
+        page.keyboard.press("ArrowUp")
+        page.locator("dialog.deck .deckq", has_not_text=second).wait_for()
+        page.locator("dialog.deck .deckbar .linkbtn", has_text="Previous").click()
+        check(page.locator("dialog.deck .deckopt.o-partly[aria-pressed=true]").count() == 1 and "Answered: partly" in page.inner_text("dialog.deck .decktags"),
+              "a swipe left answers a real gap, an arrow answers, and Previous goes back to the card with its answer")
+        page.locator("dialog.deck .deckclose").click()
+        page.wait_for_selector("dialog.deck", state="detached")
+        gap_q = page.locator("#view .wsq", has=page.locator(".wsqq", has_text=first_open)).first
+        check("“We have never tested it”" in gap_q.inner_text() and gap_q.locator(".o-gap[aria-pressed=true]").count() == 1
+              and f"18 of {in_scope} questions answered" in page.inner_text("#view .wsprog"),
+              "closed, the list carries the deck's answers and what they said")
+        for qtext in (second, first_open):        # the two answers go again, so the journey below reads as before
+            row = page.locator("#view .wsq", has=page.locator(".wsqq", has_text=qtext)).first
+            row.locator(".wsopt[aria-pressed=true]").click()
+            row.locator(".wsopt[aria-pressed=true]").wait_for(state="detached")
+        page.locator("#view .wsprog", has_text=f"16 of {in_scope} questions answered").wait_for()
         page.get_by_role("button", name="See the journey").click()
         page.wait_for_selector("#view ol.journey")
         check("Yes, this is possible." in page.inner_text("#view .jhero") and "2M in lost orders" in page.inner_text("#view .jhero"), "the journey opens on what is possible, with what is at stake in the customer's words")
@@ -1697,6 +1732,25 @@ def main(site: str) -> int:
         check(more.is_visible() and mp.evaluate("document.getElementById('view-tip').scrollHeight > document.getElementById('view-tip').clientHeight"), "a long introduction shows two lines and More")
         more.click()
         check(more.get_attribute("aria-expanded") == "true" and more.inner_text() == "Less", "More opens the rest")
+        # the deck on a phone: the whole screen, one card, the answers within reach; skipped to the end, where it stands
+        mp.click("#mobilebar [data-go=workshop]")
+        mp.wait_for_selector("#view .deckgo")
+        essential = mp.locator("#view .wsnarrow").get_by_role("button", name="Essential questions only")
+        essential.dispatch_event("click")
+        mp.locator("#view .deckgo").click()
+        mp.wait_for_selector("dialog.deck[open] .deckcard")
+        fit = mp.evaluate("""(() => { const d = document.querySelector('dialog.deck').getBoundingClientRect(), a = document.querySelector('dialog.deck .deckans').getBoundingClientRect();
+          return Math.round(d.width) === innerWidth && Math.round(d.height) === innerHeight && a.bottom <= innerHeight && a.right <= innerWidth; })()""")
+        check(fit, "on a phone the deck fills the screen, with the answers within reach")
+        for _ in range(80):
+            if mp.locator("dialog.deck .decksum").count():
+                break
+            mp.locator("dialog.deck .deckbar .linkbtn", has_text="Skip").click()
+        check(mp.locator("dialog.deck .deckheadline").count() == 1 and mp.locator("dialog.deck .decktally").count() == 4,
+              "skipped to the end, the deck says where the meeting stands")
+        mp.locator("dialog.deck .deckendrow .btn", has_text="Back to the list").click()
+        mp.wait_for_selector("dialog.deck", state="detached")
+        essential.dispatch_event("click")
         wide = {}
         for tab in ("workshop", "wsqualify", "wsrfp", "journey", "wsforward", "wsprep", "wspartners", "wscase", "wspov", "hurt"):
             mp.locator(f"#tabs [data-tab={tab}]").dispatch_event("click")
@@ -1742,6 +1796,12 @@ def main(site: str) -> int:
                 apage.wait_for_selector("#view .wsq")
                 apage.locator("#view .wsq").first.get_by_role("button", name="A real gap", exact=True).click()
                 bad += [f"workshop: {v}" for v in audit()]
+                apage.get_by_role("button", name="Ask one at a time").click()
+                apage.wait_for_selector("dialog.deck[open] .deckcard")
+                apage.fill("#deck-said", "We have never tested it")
+                bad += [f"deck: {v}" for v in audit()]
+                apage.locator("dialog.deck .deckclose").click()
+                apage.wait_for_selector("dialog.deck", state="detached")
                 apage.get_by_role("button", name="Try it with an invented export").click()
                 apage.wait_for_selector("#view .invkpis")
                 bad += [f"inventory: {v}" for v in audit()]

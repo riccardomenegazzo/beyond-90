@@ -2,6 +2,18 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.132.0
+
+- **One question at a time: the discovery questions as a deck of cards.** **Ask one at a time**, at the top of the questions, opens the questions shown as a deck, full screen on a phone and a card in the middle of a larger screen.
+  - It starts at the first question with no answer and follows the filters of the meeting: essential only, who is in the room, not answered yet, asked by the tender.
+  - **Each card has room to write what they said**, saved with the answer as the note the list already keeps.
+  - **Swipe to answer:** right for Solved, left for A real gap, up for Partly, down for Nobody knows. The answer the card is heading for is stamped on it while it moves. The buttons under the card, the arrow keys and 1 to 4 do the same.
+  - **The words suggest the answer:** "never tested" sounds like a real gap, "some of them" like partly, "not sure" like nobody knows. On a question a yes answers badly ("could an administrator delete your backups?") the reading turns round, and a round trip under about five milliseconds reads as solved. The suggestion lights a button and never answers on its own. It is a few word patterns read in the browser; nothing leaves it.
+  - **How to ask it** turns the card over: why it matters, what to listen for, what to ask next. Previous goes back to a card and its answer; Skip leaves one for later.
+  - **At the end, where it stands:** how many of each answer, the gaps and the unknowns with what was said, and the journey one tap away. Closed, the list, the strip and the progress show what the deck answered.
+- With lines in scope, the progress and the way to ask come before the meeting's settings, which on a phone are a long scroll.
+- New: `deck.js` (the order, the gestures, the keys, the suggestion and the summary, with tests); browser checks for a swipe, a key, Previous, the note in the list, the deck on a phone and its summary, and an accessibility audit with the deck open, light and dark. A new screenshot, `app-deck.png`.
+
 ## 0.131.0
 
 - **The phone, made for a thumb.**

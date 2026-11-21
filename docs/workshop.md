@@ -13,6 +13,14 @@ The rest of Beyond 90 reads what a customer runs. The first meetings with a pros
 - a question opens on its own, one at a time, for why it matters, who to ask, how to ask it, and the customer's words in a short note; Escape closes it;
 - closed, an answered question shows what they said in one line, and a question their inventory already answers shows what it says.
 
+**Ask one at a time** turns the questions shown into a deck: one card per question, full screen on a phone, starting at the first one with no answer and following the filters of the meeting (essential only, who is in the room, not answered yet, asked by the tender).
+- Write what they said on the card, in their words. The words suggest an answer ("Sounds like a real gap") and light its button; the suggestion never answers on its own, and it is read in the browser from a few word patterns.
+- Answer by swiping the card: right for **Solved**, left for **A real gap**, up for **Partly**, down for **Nobody knows**. While it moves, the answer it is heading for is stamped on it. The buttons under the card, the arrow keys and 1 to 4 do the same.
+- **How to ask it** turns the card over: why it matters, what to listen for, and the question that goes one level deeper. **Previous** goes back to a card and its answer; **Skip** leaves one for later.
+- At the end, **Where it stands**: how many gaps, unknowns, partial and solved answers, the gaps and the unknowns with what was said, and the journey one tap away. Closed, the list shows everything the deck answered.
+
+![One question at a time, on a phone: what they said written on the card, swiped left for a real gap](img/app-deck.png)
+
 On a business-value question you can also put a figure on what is at stake, counted per hour, day, week, month, year or incident; it heads the journey and the readout. The sketches from their numbers (inventory, sizing, waves, disaster recovery and the others) come after the questions.
 3. **Where to start** updates as you go:
    - **Start here:** the line that hurts most, once at least three questions were answered on it, with the questions and the customer's own words that point there.
