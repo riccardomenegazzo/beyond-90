@@ -1698,6 +1698,8 @@ const DISCOVERY_DECK = {
   },
   end: { text: "See the journey", view: "journey" },
   more: { text: "Write the meeting summary", view: "wsummary" },
+  // what an answer that is not solved puts on the journey: the condition that would need to be true
+  after: (c, k) => (k !== "solved" && c.q.need ? c.q.need : ""),
 };
 
 /**
@@ -1749,7 +1751,8 @@ function deckPane({ cards, state, answerOf, answer, go, pfx, inline, set = DISCO
     try {
       await answer(c, k, now.said.value);
       state.drafts.delete(c.key);
-      status.textContent = `${set.label(k)}.`;
+      state.after = set.after ? set.after(c, k) : "";
+      status.textContent = `${set.label(k)}.${state.after ? ` ${state.after}` : ""}`;
       onAnswered(c.key);
       await fly(k);
       state.at += 1;
@@ -1841,13 +1844,17 @@ function deckPane({ cards, state, answerOf, answer, go, pfx, inline, set = DISCO
     put(back,
       h("dl", { class: "deckdl" }, q.why ? [h("dt", { text: "Why it matters" }), h("dd", { text: q.why })] : null,
         q.listen ? [h("dt", { text: "Listen for" }), h("dd", { text: q.listen })] : null,
-        q.probe ? [h("dt", { text: "Then ask" }), h("dd", { class: "deckprobe", text: q.probe })] : null),
+        q.probe ? [h("dt", { text: "Then ask" }), h("dd", { class: "deckprobe", text: q.probe })] : null,
+        q.need ? [h("dt", { text: "What would need to be true" }), h("dd", { text: q.need })] : null,
+        q.how ? [h("dt", { text: "A first step" }), h("dd", { text: q.how })] : null),
       backBtn);
     const card = h("article", { class: "deckcard" + (reducedMotion() || !focus ? "" : " enter"), "aria-labelledby": `${pfx}-q` }, stamp, front, back);
     now = { card, stamp, said };
-    const prev = h("button", { type: "button", class: "linkbtn", text: "Previous", disabled: state.at === 0, onclick: () => { state.at -= 1; draw(true); } });
-    const skip = h("button", { type: "button", class: "linkbtn", text: "Skip", onclick: () => { state.at += 1; draw(true); } });
-    put(main, h("div", { class: "deckstage" }, card),
+    const prev = h("button", { type: "button", class: "linkbtn", text: "Previous", disabled: state.at === 0, onclick: () => { state.after = ""; state.at -= 1; draw(true); } });
+    const skip = h("button", { type: "button", class: "linkbtn", text: "Skip", onclick: () => { state.after = ""; state.at += 1; draw(true); } });
+    const after = state.after ? h("p", { class: "deckafter" }, h("b", { text: "On the journey: " }), state.after) : null;
+    state.after = "";
+    put(main, h("div", { class: "deckstage" }, card), after,
       h("div", { class: `deckans n${set.order.length}`, role: "group", "aria-label": `Answer to: ${q.q}` }, opts),
       h("div", { class: "deckbar" }, prev, h("span", { class: "deckhint", text: set.hint }), skip));
     paintSug();

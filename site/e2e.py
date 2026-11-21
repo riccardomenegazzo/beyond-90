@@ -784,6 +784,8 @@ def main(site: str) -> int:
         page.mouse.up()
         page.locator(f"{D} .deckq", has_not_text=first_open).wait_for()      # polling a script would break the page's policy
         second = page.inner_text(f"{D} .deckq")
+        check(page.locator(f"{D} .deckafter", has_text="On the journey:").count() == 1,
+              "a real gap says, under the next card, what it puts on the journey")
         page.keyboard.press("ArrowUp")
         page.locator(f"{D} .deckq", has_not_text=second).wait_for()
         page.locator(f"{D} .deckbar .linkbtn", has_text="Previous").click()

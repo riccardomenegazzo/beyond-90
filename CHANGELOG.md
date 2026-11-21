@@ -2,6 +2,12 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.148.0
+
+- **The card says what an answer puts on the journey.** Answered anything but solved, the next card opens with one line, "On the journey:", and the condition that would now need to be true ("The cost of a day without the main site is known and agreed"), read out to a screen reader with the answer. The deck and the journey are one piece of work, and now it shows while asking.
+- **The back of the card has the way forward too:** after why it matters, what to listen for and what to ask next, what would need to be true and a first step towards it, so a gap can be answered with a next step in the same breath.
+- A browser check that a real gap says what it puts on the journey.
+
 ## 0.147.0
 
 - **Heard something sits right under the clock**, before the progress and the strip of lines: the two things used while the customer talks are together, and on a phone the box is just under the card.

@@ -1744,3 +1744,8 @@ input[type=number],input[type=text],input[type=search],input[type=date],input[ty
 .choose{display:flex;flex-direction:column}
 body[data-role=se] .choose>.wsstart{order:-1;margin:0 0 26px;border:2px solid var(--accent)}
 .heardopt.t-good{--tone:var(--lv-green)}.heardopt.t-mid{--tone:var(--lv-ochre)}.heardopt.t-unknown{--tone:var(--ink2)}
+
+/* what the last answer put on the journey (0.148), said once under the next card */
+.deckafter{margin:0 18px 10px;padding:8px 12px;border-radius:10px;background:color-mix(in srgb,var(--accent) 9%,var(--surface));color:var(--ink);font-size:14px;line-height:1.4}
+.deckafter b{color:var(--accent-text)}
+@media (prefers-reduced-motion:no-preference){.deckafter{animation:deckin .3s ease-out}}
