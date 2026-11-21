@@ -1890,6 +1890,10 @@ function deckPane({ cards, state, answerOf, answer, go, pfx, inline, set = DISCO
       h("div", { class: "decktallies" }, s.tallies.map(([k, words]) => h("div", { class: `decktally t-${set.tone(k)}` },
         h("b", { text: String(s.counts[k]) }), h("span", { text: words })))),
       s.lists.map(said),
+      set.recap ? h("div", { class: "btnrow deckrecap" },
+        h("button", { class: "btn", type: "button", text: "Copy the recap", onclick: (ev) => copyText(set.recap(cards, answerOf)).then((ok) => { ev.target.textContent = ok ? "Copied" : "Not copied"; }) }),
+        h("a", { class: "btn", href: DECK.recapMailto(set.recapSubject || "Discovery recap", set.recap(cards, answerOf)), text: "Email the recap",
+          "data-tip": "Opens your own mail app with the recap written in, for the account team. It names the gaps: it is not for the customer." })) : null,
       h("div", { class: "btnrow deckendrow" },
         set.end ? h("button", { class: "btn primary", type: "button", text: set.end.text, onclick: () => { onDone(); go(set.end.view); } }) : null,
         set.more ? h("button", { class: "btn", type: "button", text: set.more.text, onclick: () => { onDone(); go(set.more.view); } }) : null,
@@ -2193,7 +2197,9 @@ export function workshopView({ workshop: w, catalog, list, answer, worth, setDea
     if (wsFilter.best && cards.length) { const b = DECK.bestFirst(cards, cur.answers); cards = b.cards.map((c) => ({ ...c, why: b.why[c.key] || [] })); }
     if (!cards.length) { deckInline = null; put(deckBox, h("p", { class: "note decknone", text: "No question is shown with these filters: clear one to ask them here, one at a time." })); return; }
     deckState.at = DECK.firstOpen(cards, cur.answers);       // most useful first puts the open ones first: the same rule
-    const same = { cards, state: deckState, answerOf: (c) => cur.answers[c.key], answer: deckAnswer, go, clock: makeMini, onAnswered: afterDeck };
+    const recapSet = { ...DISCOVERY_DECK, recapSubject: `Discovery recap: ${cur.customer}`,
+      recap: (all, answerOf) => DECK.recapText(cur.customer, all, Object.fromEntries(all.filter((c) => answerOf(c)).map((c) => [c.key, answerOf(c)]))) };
+    const same = { cards, state: deckState, set: recapSet, answerOf: (c) => cur.answers[c.key], answer: deckAnswer, go, clock: makeMini, onAnswered: afterDeck };
     const pane = deckPane({ ...same, pfx: "wsdeck", inline: true, onFull: () => {
       fullDeck = openDeck({ ...same, aside: heardBox, asideTitle: "Heard something else?", onClose: () => { fullDeck = null; pane.draw(false); } });
     } });

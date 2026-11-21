@@ -132,3 +132,19 @@ test("most useful first: open before answered, essential first, the least known 
   assert.equal(some.cards[0].key, "b#1");
   assert.deepEqual(some.why["b#1"], ["Least known line"]);
 });
+
+test("the recap says how much was asked, the gaps and the unknowns with what was said, and what would need to be true", async () => {
+  const { recapText, recapMailto } = await import("../deck.js");
+  const cards = deckFrom({ lines: { dr: { label: "Disaster recovery", questions: [
+    { q: "Could an administrator delete your backups?", stage: "L3", need: "No single account can delete the copies" },
+    { q: "When was the last recovery test?", stage: "L2", need: "A recovery is tested" },
+    { q: "Where is the second site?", stage: "L1" },
+  ] } } }, ["dr"]);
+  const text = recapText("Kestrel (mock)", cards, { "dr#0": { a: "gap", note: "Any admin can" }, "dr#1": { a: "unknown", note: "" } });
+  assert.match(text, /^Discovery recap: Kestrel \(mock\)\n\nAsked 2 of 3 questions: 1 real gap, 1 nobody could answer, 0 partly, 0 solved\./);
+  assert.match(text, /Real gaps\n- Could an administrator delete your backups\? "Any admin can"/);
+  assert.match(text, /Nobody could answer\n- When was the last recovery test\?/);
+  assert.match(text, /What would need to be true\n- A recovery is tested\n- No single account can delete the copies$/);        // in the order the list shows
+  const link = recapMailto("Recap", "x".repeat(3000));
+  assert.ok(link.startsWith("mailto:?subject=Recap&body=") && decodeURIComponent(link.split("body=")[1]).length === 1800);
+});

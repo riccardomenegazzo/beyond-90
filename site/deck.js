@@ -219,3 +219,29 @@ export function bestFirst(cards, answers) {
   }
   return { cards: [...open.map((x) => x.c), ...cards.filter((c) => answers[c.key])], why };
 }
+
+/**
+ * A recap of the deck in plain text, for the account team: how much was asked, the real gaps and what nobody could
+ * answer with what was said, and what would need to be true. Internal: it names gaps, so it is not the customer's.
+ * @param {string} customer
+ * @param {object[]} cards
+ * @param {Record<string, {a:string, note?:string}>} answers
+ */
+export function recapText(customer, cards, answers) {
+  const s = deckSummary(cards, answers);
+  const asked = s.total - s.counts.open;
+  const lines = [`Discovery recap: ${customer}`, "",
+    `Asked ${asked} of ${s.total} questions: ${plural(s.counts.gap, "real gap", "real gaps")}, ${s.counts.unknown} nobody could answer, ${s.counts.partly} partly, ${s.counts.solved} solved.`];
+  const said = (r) => `- ${r.q}${r.note ? ` "${r.note}"` : ""}`;
+  if (s.gaps.length) lines.push("", "Real gaps", ...s.gaps.map(said));
+  if (s.unknown.length) lines.push("", "Nobody could answer", ...s.unknown.map(said));
+  const needs = [...new Set(cards.filter((c) => answers[c.key] && answers[c.key].a !== "solved" && c.q.need).map((c) => c.q.need))];
+  if (needs.length) lines.push("", "What would need to be true", ...needs.map((n) => `- ${n}`));
+  return lines.join("\n");
+}
+
+/** A mail link that opens the person's own mail app with the recap written in, kept short enough for every mail app. */
+export function recapMailto(subject, body, max = 1800) {
+  const text = body.length > max ? `${body.slice(0, max - 1).trimEnd()}…` : body;
+  return `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`;
+}

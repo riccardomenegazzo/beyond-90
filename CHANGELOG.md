@@ -2,6 +2,11 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.153.0
+
+- **A recap for the account team, from the end of the deck.** Where it stands now offers **Copy the recap** and **Email the recap**: plain text with how many questions were asked and how each was answered, the real gaps and what nobody could answer with what the customer said, and what would need to be true. Email opens the person's own mail app with it written in (no server sends anything); it is kept short enough for any mail app. It names the gaps, so it is for the team, not the customer: the customer readout is the page for them.
+- New: `recapText` and `recapMailto` in `deck.js`, with tests; a browser check for both on a phone.
+
 ## 0.152.0
 
 - **Heard something, checked on Kubernetes and virtual desktops.** Twelve more things a customer might say, on the real questions of those two lines among the platform and disaster recovery ones ("every team spun up its own clusters", "everything is kubectl by hand", "logons take five minutes every Monday", "the antivirus inside the desktops eats half the CPU"), each find their question first. They are kept as tests, beside the nine of 0.151, so a change to the matching that makes any of them worse fails the build.

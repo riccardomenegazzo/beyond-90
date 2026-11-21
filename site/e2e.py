@@ -1847,6 +1847,9 @@ def main(site: str) -> int:
             mp.locator("dialog.deck .deckbar .linkbtn", has_text="Skip").click()
         check(mp.locator("dialog.deck .deckheadline").count() == 1 and mp.locator("dialog.deck .decktally").count() == 4,
               "skipped to the end, the deck says where the meeting stands")
+        mail = mp.locator("dialog.deck .deckrecap a", has_text="Email the recap")
+        check(mail.count() == 1 and mail.get_attribute("href").startswith("mailto:?subject=Discovery%20recap") and mp.locator("dialog.deck .deckrecap button", has_text="Copy the recap").count() == 1,
+              "at the end, the recap can be copied or opened in the phone's own mail app, for the account team")
         mp.locator("dialog.deck .deckendrow .btn", has_text="Back to the list").click()
         mp.wait_for_selector("dialog.deck", state="detached")
         essential.dispatch_event("click")

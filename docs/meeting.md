@@ -22,7 +22,7 @@ A page for the hour with the customer: what to set up before, what to do while t
 
 ## After: the same day
 
-- **Where it stands**, at the end of the deck: how many gaps, how many nobody could answer, the gaps with what was said.
+- **Where it stands**, at the end of the deck: how many gaps, how many nobody could answer, the gaps with what was said. **Copy the recap** or **Email the recap** gives the account team the same in plain text, opened in your own mail app.
 - **The journey**: "Yes, this is possible", what would need to be true, the first step towards each condition and the test that proves it. It is built from the answers; nothing to write.
 - **The meeting summary**, for the account team, and the **customer readout**, for the customer: what we heard, what would need to be true, the first steps, and how each is proven, with no internal scores. Both download as a file.
 - **The way forward** says what the next meeting is for: a demo built from what they said, a proof of value, or a decision.
