@@ -2,6 +2,12 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.138.0
+
+- **Fixed: the bar at the bottom of a phone before a customer is open.** The Lavagna layer had given Start, Saved and Help rounded corners and made the current one see-through, so the page showed through the bar on the very first screen. On a phone they are a solid bar again, the current place marked by a line on top.
+- **Fixed: Presales desk on that bar.** With the desk among the places (the presales role, or everything shown), it sat on top of Start: the bar had room for three. Four now share it, a quarter each.
+- A browser check keeps the bar so: fixed at the bottom, square, opaque, and each place reachable where it is drawn.
+
 ## 0.137.0
 
 - **Most useful first: the card asks what matters most now, and says why.** A new filter, **Most useful first**, orders the card (the list keeps its order):

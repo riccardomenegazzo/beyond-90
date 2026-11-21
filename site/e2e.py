@@ -1741,6 +1741,12 @@ def main(site: str) -> int:
         mp = mctx.new_page()
         mp.goto(base)
         mp.wait_for_selector("#demo:not([disabled])", timeout=180_000)
+        places = mp.evaluate("""(() => { const b = document.querySelector('.place-btn[aria-current]'), cs = getComputedStyle(b), r = b.getBoundingClientRect();
+          const shown = [...document.querySelectorAll('.place-btn')].filter((x) => !x.hidden);
+          const own = shown.every((x) => { const q = x.getBoundingClientRect(); const e = document.elementFromPoint(q.left + q.width / 2, q.top + q.height / 2); return e && e.closest('.place-btn') === x; });
+          return [cs.position, cs.borderTopLeftRadius, cs.backgroundColor !== 'rgba(0, 0, 0, 0)', Math.round(r.bottom) === innerHeight, shown.length >= 3, own]; })()""")
+        check(places == ["fixed", "0px", True, True, True, True],
+              f"on a phone with no customer open, the places are a solid bar at the bottom, each in its own place, nothing showing through: {places}")
         mp.click("#demo")
         mp.click("#run")
         mp.wait_for_selector("#results:not([hidden])", timeout=180_000)
