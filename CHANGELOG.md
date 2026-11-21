@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.150.0
+
+- **A page for the hour with the customer: [Running a discovery meeting](docs/meeting.md).** Before (the workshop, who is in the room, most useful first, the card's other side), during (the meeting clock, writing what they said and swiping, heard something for what is said out of turn, full screen, the qualification on cards), after (where it stands, the journey, the summary and the readout, the way forward), and what it is not: no recording, no transcript, no model in the cloud. Linked from the README, the workshop guide and the presales guide.
+
 ## 0.149.0
 
 - **The first card says it can be swiped, without a word.** The first card a browser shows leans right, then left, once, with the answer each way faintly stamped on it, then settles. Never twice, never while it is being dragged, and never when the device asks for reduced motion.

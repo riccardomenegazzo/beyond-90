@@ -26,7 +26,7 @@ The discovery questions come as cards, on a phone or a laptop. Write what the cu
 - **Most useful first** puts the essential questions of the lines you know least ahead, and says why.
 - A **meeting clock** says whether the essential questions still fit in the time left.
 - Something said out of turn goes in **Heard something?**: it finds the question it answers, and a figure in it ("about 2 million a day") goes with the answer.
-- The qualification questions work the same way. All of it runs in the browser ([the workshop guide](docs/workshop.md)).
+- The qualification questions work the same way. All of it runs in the browser: see [running a discovery meeting](docs/meeting.md), before, during and after.
 
 <br clear="right">
 
@@ -231,6 +231,7 @@ beyond90 explain acme --store history.db   # what changed since the last stored 
 - [docs/leaders.md](docs/leaders.md): for presales leaders: what the team gets, the team view, what the deals teach, a five-minute tour
 - [docs/presales.md](docs/presales.md): the presales desk and the path from discovery to handover
 - [docs/partners.md](docs/partners.md): working with partners: who leads, the deal registration, who does what, a brief and a discovery kit for them, the partner review
+- [docs/meeting.md](docs/meeting.md): running a discovery meeting, before, during and after
 - [docs/workshop.md](docs/workshop.md): the discovery workshop, its sketches, the case for change and the handover
 - [SPEC.md](SPEC.md): formulas and rules; the contract for the code
 - [docs/data-format.md](docs/data-format.md): input files

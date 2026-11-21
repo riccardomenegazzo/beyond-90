@@ -4,6 +4,8 @@ The rest of Beyond 90 reads what a customer runs. The first meetings with a pros
 
 ![Recording what the customer says](img/app-workshop.png)
 
+For the hour with the customer itself, the short version is [Running a discovery meeting](meeting.md).
+
 ## How it works
 
 1. **Start a discovery workshop** on the start page (or, from an estate, on a line the customer does not run yet), or **See a filled-in example** (an invented logistics company leaving its virtualisation platform, with its inventory, owners and dates, the concerns it raised and its case for change) to show the method in thirty seconds. Give the prospect a name (and yours, to sign the readout) and choose the product lines in scope, or start from a conversation (resilience and ransomware, leaving a virtualisation platform, modernising applications, securing the cloud) that sets the usual lines for you: platform, databases, disaster recovery, object storage, file storage, Kubernetes platform, or the security lines (cloud, identity, SaaS, monitoring, endpoint, AI). Once chosen, the lines in scope read as one line; **Change them** opens the whole choice.
