@@ -18,7 +18,7 @@ from pathlib import Path
 
 from playwright.sync_api import sync_playwright
 
-INIT = "localStorage.setItem('beyond90.role','all');localStorage.setItem('beyond90.tour','1');localStorage.setItem('beyond90.rank','effect')"
+INIT = "localStorage.setItem('beyond90.role','all');localStorage.setItem('beyond90.tour','1');localStorage.setItem('beyond90.wstour','1');localStorage.setItem('beyond90.rank','effect')"
 SINGLE = {"today": "app-today.png", "overview": "app-results.png", "connections": "app-connections.png", "accounts": "app-accounts.png",
           "whatif": "app-whatif.png", "execqbr": "app-execqbr.png", "onboarding": "app-onboarding.png", "outlook": "app-outlook.png",
           "prep": "app-prep.png", "pov": "app-pov.png"}

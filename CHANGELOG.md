@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.183.0
+
+- **The example prospect explains itself.** Opened from "See a filled-in example", the invented prospect's journey starts with **Your first minute with a prospect**: the meetings it goes through, each a tap away (the questions, qualifying the deal, the demo planned and run card by card, and rehearsing the objections before any of them). **Got it, hide this** puts it away for good; it never shows on a real prospect.
+
 ## 0.182.0
 
 - **The desk knows how the demo went.** The Monday note says, for each prospect, when the demo was given and how many of the parts shown landed ("demo given 2026-11-18, 3 of 4 parts landed, 1 did not"); never what was said. While parts did not land and no proof of value is planned, the desk lists it among what could stop the deal: ask what they expected before planning a proof.

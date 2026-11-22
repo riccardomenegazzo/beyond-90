@@ -1984,6 +1984,11 @@ def main(site: str) -> int:
         mp.wait_for_selector("#demo-workshop:not([disabled])", state="attached", timeout=180_000)
         mp.locator("#demo-workshop").dispatch_event("click")
         mp.wait_for_selector("#view ol.journey")
+        guide = mp.locator("#view .firstmin")
+        check(guide.count() == 1 and "Your first minute with a prospect" in guide.inner_text() and guide.locator("button", has_text="Plan the demo").count() == 1,
+              "the example prospect explains itself: its meetings, each a tap away")
+        guide.get_by_role("button", name="Got it, hide this").click()
+        check(mp.locator("#view .firstmin").count() == 0 and mp.evaluate("localStorage.getItem('beyond90.wstour')") == "1", "and puts the guide away for good")
         shown = [b.get_attribute("data-go") or "menu" for b in mp.locator("#mobilebar button:visible").all()]
         check(shown == ["workshop", "wsqualify", "wsforward", "menu"], f"in a workshop the phone bar carries Questions, Qualify and the way forward: {shown}")
         mp.click("#mobilebar [data-go=wsqualify]")

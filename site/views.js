@@ -3920,7 +3920,20 @@ export function journeyView({ workshop: w, catalog, go, startPov, present, plan 
   drawCalendar(w);
   const calendar = card("The plan by date", calBody, { sub: "The dated conditions, earliest first: what each side said it would make true, and by when." });
   const dest = card("Where it can go", h("p", { class: "note first", text: `With these steps done, ${w.customer} runs ${j.destination.join(", then ").toLowerCase()} with every condition above made true, validated as it went rather than promised up front.` }));
-  return h("div", {}, presentBtn(present), hero, steps, calendar, dest);
+  // the invented example says where to look first, once: the four meetings a prospect goes through, each a tap away
+  let seenTour = true;
+  try { seenTour = localStorage.getItem("beyond90.wstour") === "1"; } catch { /* without storage, no guide */ }
+  const tour = /\|example\d$/.test(w.id) && !seenTour ? h("section", { class: "card firstmin", "aria-label": "Your first minute with a prospect" },
+    h("header", { class: "cardhead" }, h("h2", { text: "Your first minute with a prospect" })),
+    h("p", { class: "note first", text: "An invented prospect, part way through. The meetings it goes through, one card at a time:" }),
+    h("ol", { class: "tourlist" }, [
+      ["Discovery: ask the next question, and swipe the answer.", "Open the questions", "workshop"],
+      ["Qualify the deal: ten questions that are the same on every line.", "Qualify the deal", "wsqualify"],
+      ["The demo: planned from what they said, timed, then run card by card.", "Plan the demo", "wsforward"],
+      ["Before any of them: rehearse the objections to expect.", "Rehearse", "wsprep"],
+    ].map(([text, cta, to]) => h("li", {}, h("span", { text }), h("button", { class: "btn small", type: "button", text: cta, onclick: () => go(to) })))),
+    h("button", { class: "btn small", type: "button", text: "Got it, hide this", onclick: (e) => { try { localStorage.setItem("beyond90.wstour", "1"); } catch { /* storage may be off */ } e.target.closest(".firstmin").remove(); } })) : null;
+  return h("div", {}, presentBtn(present), tour, hero, steps, calendar, dest);
 }
 
 // ------------------------------------------------------------------ the presales desk
