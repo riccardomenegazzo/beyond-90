@@ -1391,6 +1391,16 @@ def main(site: str) -> int:
         users.dispatch_event("change")
         page.wait_for_timeout(300)
         check(int(vdicard.locator(".szhead > b").inner_text()) > 8, "and follows the users given")
+        # a figure said in the meeting goes into its sketch with a tap, and the card follows
+        page.fill("#wsheard", "We have about 1,500 users, 900 at the same time")
+        page.get_by_role("button", name="Use 1,500 as the users of the desktop sizing sketch").click()
+        page.locator("#view .heardsay", has_text="Put in the desktop sizing sketch: 1,500 users").wait_for()
+        check(users.input_value() == "1500" and "1,500 users" in vdicard.inner_text(), "a figure heard in the meeting goes into its sketch with a tap, and the card follows")
+        page.get_by_role("button", name="Use 60 as the share connected at the busiest hour, in the desktop sizing sketch").click()
+        page.locator("#view .heardsay", has_text="Put in the desktop sizing sketch: 60 percent connected at once").wait_for()
+        page.locator("#view .heardsay button", has_text="Undo").click()
+        page.locator("#view .heardsay", has_text="Undone: the desktop sizing sketch is back as it was").wait_for()
+        page.fill("#wsheard", "")
         # the digital workplace has file shares too: a first file storage sketch, the cold share on a cheaper tier
         filecard = page.locator("#view .card").filter(has_text="A first file storage sketch")
         check(filecard.locator(".szhead > b").inner_text() == "111.5" and "46.1 TiB on a cheaper tier" in filecard.inner_text() and "Snapshots are not a backup" in filecard.inner_text(),

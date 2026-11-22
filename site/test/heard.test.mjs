@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
-import { stem, tokens, match, joinNote, NOTE_MAX, concernCards, concernsHeard } from "../heard.js";
+import { stem, tokens, match, joinNote, NOTE_MAX, concernCards, concernsHeard, sketchFigures } from "../heard.js";
 
 const card = (key, q, listen = "", why = "", probe = "") => ({ key, label: "Disaster recovery", q: { q, listen, why, probe } });
 const DR = [
@@ -473,4 +473,23 @@ test("the security lines' concerns are recognised as customers say them", () => 
     const got = concernsHeard(cards, said);
     assert.equal(got.length ? got[0].card.key : "", `obj:${want}`, said);
   }
+});
+
+test("a figure a first sketch starts from is read from what was said, for the lines in scope only", () => {
+  const all = ["euc", "dbaas", "kubernetes-platform", "file-storage"];
+  const got = (said, scope = all, current) => sketchFigures(said, scope, current).map((x) => `${x.sketch}.${x.field}=${x.value}`);
+  assert.deepEqual(got("We have about 1,200 users, 900 at the same time"), ["vdi.users=1200", "vdi.concurrency_pct=75"]);
+  assert.deepEqual(got("circa 1.200 utenti, 800 in contemporanea"), ["vdi.users=1200", "vdi.concurrency_pct=67"]);
+  assert.deepEqual(got("2k users on the old desktops"), ["vdi.users=2000"]);
+  assert.deepEqual(got("We run 45 databases, licensed on 256 cores"), ["db.databases=45", "db.cores_today=256"]);
+  assert.deepEqual(got("30 applications in containers"), ["k8s.apps=30"]);
+  assert.deepEqual(got("300 TB of file shares"), ["files.data_tib=272.8"], "a terabyte is a little less than a tebibyte");
+  assert.deepEqual(got("1.5 PB di file sulle condivisioni"), ["files.data_tib=1364.2"]);
+  assert.deepEqual(got("600 connected at once", ["euc"], { vdi: { users: 1000 } }), ["vdi.concurrency_pct=60"]);
+  // not a figure for a sketch: per site, about something else, or a line out of scope
+  assert.deepEqual(got("The 3 sites have 40 users each"), []);
+  assert.deepEqual(got("300 TB of backups"), []);
+  assert.deepEqual(got("600 connected at once", ["euc"]), [], "a share needs the number of users");
+  assert.deepEqual(got("1,200 users and 45 databases", ["hci"]), []);
+  assert.equal(sketchFigures("1,200 users", ["euc"])[0].label, "users of the desktop sizing sketch");
 });

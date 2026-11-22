@@ -2003,7 +2003,13 @@ function deckPane({ cards, state, answerOf, answer, go, pfx, inline, set = DISCO
  * every question in scope and the ten of the qualification, and filed with a tap (or Ctrl+Enter), undoable. Shared by
  * the questions and the qualification. `get`/`set` read and keep the workshop; `onFiled(key)` lets the view follow.
  */
-function heardPanel({ catalog, get, set, answer, worth, setDeal, raise = null, onFiled = () => {}, id = "wsheard" }) {
+// the sketches a figure heard can go in: how each is cleaned, and what it is called
+const SKETCH_CLEAN = { vdi: (x) => VDI.cleanVdi(x), db: (x) => DBS.cleanDb(x), k8s: (x) => K8S.cleanK8s(x), files: (x) => FILES.cleanFiles(x) };
+const SKETCH_NAME = { vdi: "desktop sizing sketch", db: "database licence sketch", k8s: "container platform sizing sketch", files: "file storage sketch" };
+/** A sketch's card on the page, if it is there, shows the settings just changed. */
+const refreshSketch = (name, settings) => { const el = document.querySelector(`[data-sketch="${name}"]`); if (el) el.dispatchEvent(new CustomEvent("sketch-settings", { detail: settings })); };
+
+function heardPanel({ catalog, get, set, answer, worth, setDeal, raise = null, sketches = null, onFiled = () => {}, id = "wsheard" }) {
   // heard something: written as it was said; the question it answers is found among every question in scope
   const heardIn = h("textarea", { id, class: "heardin", rows: 2, maxlength: HEARD.NOTE_MAX, placeholder: "e.g. any domain admin can wipe the backup repository",
     "aria-keyshortcuts": "Control+Enter" });
@@ -2080,13 +2086,38 @@ function heardPanel({ catalog, get, set, answer, worth, setDeal, raise = null, o
       raise && !raised ? h("div", { class: "heardopts" }, h("button", { type: "button", class: "heardopt t-mid", text: "Mark it raised",
         "aria-label": `Mark it raised: ${card.o.says}`, onclick: () => fileConcern(card, true) })) : null);
   };
+  // a figure a first sketch starts from: put in the sketch with a tap, and undone the same way
+  const useFigure = async (f) => {
+    const before = get()[f.sketch];
+    const next = SKETCH_CLEAN[f.sketch]({ ...(before || {}), [f.field]: f.value });
+    set(await sketches[f.sketch](next));
+    refreshSketch(f.sketch, next);
+    const undo = h("button", { type: "button", class: "linkbtn", text: "Undo", onclick: async () => {
+      set(await sketches[f.sketch](before || null));
+      refreshSketch(f.sketch, SKETCH_CLEAN[f.sketch](before || {}));
+      put(heardSay, h("span", { text: `Undone: the ${SKETCH_NAME[f.sketch]} is back as it was.` }));
+      drawHeard();
+    } });
+    put(heardSay, h("span", { text: `Put in the ${SKETCH_NAME[f.sketch]}: ${INV.fmt(f.value)} ${f.what}. ` }), undo);
+    drawHeard();
+    heardIn.focus({ preventScroll: true });
+  };
+  const figureHit = (f) => {
+    const now = get()[f.sketch] && get()[f.sketch][f.field] === f.value;
+    return h("div", { class: "heardhit heardsketch" },
+      h("small", { class: "muted", text: `A figure for the ${SKETCH_NAME[f.sketch]}${now ? ", already in it" : ""}` }),
+      h("span", { class: "heardq", text: `${INV.fmt(f.value)} ${f.what}` }),
+      now ? null : h("div", { class: "heardopts" }, h("button", { type: "button", class: "heardopt t-good", text: "Use it in the sketch",
+        "aria-label": `Use ${INV.fmt(f.value)} as the ${f.label}`, onclick: () => useFigure(f) })));
+  };
   const drawHeard = () => {
     const said = heardIn.value.trim();
     if (said.length < 6) { put(heardOut); return; }
     const hits = HEARD.match([...DECK.deckFrom(catalog, get().scope), ...dealCards], said, 3);
     const concern = HEARD.concernsHeard(HEARD.concernCards(catalog, get().scope), said)[0];
-    if (!hits.length && !concern) { put(heardOut, h("p", { class: "note", text: "No question in scope uses these words. Try the words of the question, or write it on the card." })); return; }
-    put(heardOut, concern ? concernHit(concern.card) : null, hits.map(({ card }) => {
+    const figs = sketches ? HEARD.sketchFigures(said, get().scope, get()).filter((f) => sketches[f.sketch]) : [];
+    if (!hits.length && !concern && !figs.length) { put(heardOut, h("p", { class: "note", text: "No question in scope uses these words. Try the words of the question, or write it on the card." })); return; }
+    put(heardOut, concern ? concernHit(concern.card) : null, figs.map(figureHit), hits.map(({ card }) => {
       if (card.deal) return dealHit(card, said);
       const sug = DECK.suggest(card.q, said), before = get().answers[card.key];
       const fig = card.q.stage === "value" ? HEARD.figureIn(said, card.q) : null;
@@ -2424,7 +2455,7 @@ export function workshopView({ workshop: w, catalog, list, answer, worth, setDea
   }
   function syncDeck() { if (deckInline) deckInline.sync(); paceNow(); }
   if (inScope.length) rebuildDeck();
-  const heardBox = heardPanel({ catalog, get: () => cur, set: (x) => { cur = x; }, answer, worth, setDeal, raise,
+  const heardBox = heardPanel({ catalog, get: () => cur, set: (x) => { cur = x; }, answer, worth, setDeal, raise, sketches: { vdi, db, k8s, files },
     onFiled: (key) => { if (key) afterDeck(key); syncDeck(); if (fullDeck) fullDeck.sync(); } }).el;
   // the conversation first: where it stands on every line, what to show, the questions; then the sketches from their numbers
   const sketches = [inventory ? inventoryCard(w, inventory) : null, w.inventory && sizing ? sizingCard(w, sizing) : null,
@@ -2687,6 +2718,17 @@ function objCard(w, obj) {
   { sub: "For backups kept on object storage: what the retention holds after reduction, with protection and room to grow, and what the nightly window needs. The backup product's own calculator, on the customer's data, has the last word." });
 }
 
+/** A sketch's card, named so a figure heard in the meeting can be shown in it: its fields and its result follow. */
+function sketchCard(name, inputs, draw, el, more = () => {}) {
+  el.dataset.sketch = name;
+  el.addEventListener("sketch-settings", (e) => {
+    for (const [k, input] of Object.entries(inputs)) if (e.detail[k] !== undefined) input.value = String(e.detail[k]);
+    more(e.detail);
+    draw(e.detail);
+  });
+  return el;
+}
+
 /** A first file storage sketch: growth, the cold share to a cheaper tier, snapshots, reduction, protection. */
 function filesCard(w, files) {
   const a = FILES.cleanFiles(w.files || {});
@@ -2714,13 +2756,13 @@ function filesCard(w, files) {
     return h("label", { class: "szf" }, h("span", { text: label }), inputs[k]);
   }));
   draw(a);
-  return card("A first file storage sketch", h("div", { class: "sz" }, out, h("details", { class: "szassume" }, h("summary", { text: "The data, its growth, the snapshots and the assumptions, to agree with the customer" }), grid,
+  return sketchCard("files", inputs, draw, card("A first file storage sketch", h("div", { class: "sz" }, out, h("details", { class: "szassume" }, h("summary", { text: "The data, its growth, the snapshots and the assumptions, to agree with the customer" }), grid,
     h("div", { class: "btnrow" }, h("button", { class: "btn small", type: "button", text: "Back to the defaults", onclick: async () => {
       for (const [k] of fields) inputs[k].value = String(FILES.FILE_DEFAULTS[k]);
       draw(FILES.FILE_DEFAULTS);
       try { await files(null); } catch (e) { say.textContent = e.message; }
     } }))), say),
-  { sub: "For file shares: the data after growth, the share nobody opens moved to a cheaper tier, the snapshots kept on the rest, with reduction, protection and room to fill. A scan of last-access times and the product's own sizing have the last word." });
+  { sub: "For file shares: the data after growth, the share nobody opens moved to a cheaper tier, the snapshots kept on the rest, with reduction, protection and room to fill. A scan of last-access times and the product's own sizing have the last word." }));
 }
 
 /** A first database licence sketch: the busy cores at the planned peak, on whole hosts kept for the databases. */
@@ -2752,7 +2794,7 @@ function dbCard(w, db) {
     return h("label", { class: "szf" }, h("span", { text: label }), inputs[k]);
   }));
   draw(a);
-  return card("A first database licence sketch", h("div", { class: "sz" }, out, h("details", { class: "szassume" }, h("summary", { text: "The databases, their busiest hour and the hosts, to agree with the customer" }), grid,
+  return sketchCard("db", inputs, draw, card("A first database licence sketch", h("div", { class: "sz" }, out, h("details", { class: "szassume" }, h("summary", { text: "The databases, their busiest hour and the hosts, to agree with the customer" }), grid,
     h("div", { class: "btnrow" }, h("label", { class: "vcopt" }, spare, h("span", { text: "The agreement asks for the spare host to be licensed too" }))),
     h("div", { class: "btnrow" }, h("button", { class: "btn small", type: "button", text: "Back to the defaults", onclick: async () => {
       for (const [k] of fields) inputs[k].value = String(DBS.DB_DEFAULTS[k]);
@@ -2760,7 +2802,7 @@ function dbCard(w, db) {
       draw(DBS.DB_DEFAULTS);
       try { await db(null); } catch (e) { say.textContent = e.message; }
     } }))), say),
-  { sub: "For databases licensed per processor core: the cores their busiest hour needs, planned on whole hosts kept for them, against the cores licensed today. The licence agreement and the customer's licensing specialist have the last word." });
+  { sub: "For databases licensed per processor core: the cores their busiest hour needs, planned on whole hosts kept for them, against the cores licensed today. The licence agreement and the customer's licensing specialist have the last word." }), (v) => { spare.checked = !!v.spare_licensed; });
 }
 
 /** A first container platform sizing sketch: workers per cluster by processor, memory and pods, the control plane, the volumes. */
@@ -2792,7 +2834,7 @@ function k8sCard(w, k8s) {
     return h("label", { class: "szf" }, h("span", { text: label }), inputs[k]);
   }));
   draw(a);
-  return card("A first container platform sizing sketch", h("div", { class: "sz" }, out,
+  return sketchCard("k8s", inputs, draw, card("A first container platform sizing sketch", h("div", { class: "sz" }, out,
     h("details", { class: "szassume" }, h("summary", { text: "The applications and what they ask for, to agree with the teams" }), grid(load)),
     h("details", { class: "szassume" }, h("summary", { text: "The nodes and the room kept on them" }), grid(nodes),
       h("div", { class: "btnrow" }, h("button", { class: "btn small", type: "button", text: "Back to the defaults", onclick: async () => {
@@ -2800,7 +2842,7 @@ function k8sCard(w, k8s) {
         draw(K8S.K8S_DEFAULTS);
         try { await k8s(null); } catch (e) { say.textContent = e.message; }
       } }))), say),
-  { sub: "For a container platform: the workers each cluster needs, counted by processor, by memory and by pods per node, with room for bursts and rolling updates and a node to drain; the control plane; the persistent volumes. The requests read from a running cluster have the last word." });
+  { sub: "For a container platform: the workers each cluster needs, counted by processor, by memory and by pods per node, with room for bursts and rolling updates and a node to drain; the control plane; the persistent volumes. The requests read from a running cluster have the last word." }));
 }
 
 /** A first desktop sizing sketch: hosts by processor and by memory, a host kept free, and the storage. */
@@ -2833,7 +2875,7 @@ function vdiCard(w, vdi) {
     return h("label", { class: "szf" }, h("span", { text: label }), inputs[k]);
   }));
   draw(a);
-  return card("A first desktop sizing sketch", h("div", { class: "sz" }, out,
+  return sketchCard("vdi", inputs, draw, card("A first desktop sizing sketch", h("div", { class: "sz" }, out,
     h("details", { class: "szassume" }, h("summary", { text: "The users, the mix and the hosts, to agree with the customer" }), grid(people)),
     h("details", { class: "szassume" }, h("summary", { text: "What each kind of desktop is given, and the storage" }), grid(given),
       h("div", { class: "btnrow" }, h("button", { class: "btn small", type: "button", text: "Back to the defaults", onclick: async () => {
@@ -2841,7 +2883,7 @@ function vdiCard(w, vdi) {
         draw(VDI.VDI_DEFAULTS);
         try { await vdi(null); } catch (e) { say.textContent = e.message; }
       } }))), say),
-  { sub: "For virtual desktops: the hosts the busiest hour needs, counted by processor and by memory, with a host kept free for a failure, and the storage the desktops, their images and the profiles take. A week of real use on a pilot group has the last word." });
+  { sub: "For virtual desktops: the hosts the busiest hour needs, counted by processor and by memory, with a host kept free for a failure, and the storage the desktops, their images and the profiles take. A week of real use on a pilot group has the last word." }));
 }
 
 /** A first recovery design: per tier, the replication its recovery point calls for, the bandwidth, a retention. */

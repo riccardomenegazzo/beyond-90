@@ -388,3 +388,58 @@ export function concernsHeard(cards, said, { min = 0.7, n = 1 } = {}) {
   }).filter((x) => (x.share >= min && x.hit >= x.need) || x.hit >= 4).sort((a, b) => b.share - a.share || b.hit - a.hit || a.i - b.i)
     .slice(0, n).map(({ card, share }) => ({ card, share }));
 }
+
+// ------------------------------------------------------------------ a figure for a sketch
+// "about 1,200 users", "45 databases", "300 TB of file shares", "30 applications": said in a meeting, they are the
+// figures a first sketch starts from. Only for the lines in scope, in English or Italian; nothing is put in a sketch
+// until the person says so.
+
+const num = (raw, mult) => {
+  const n = /^\d{1,3}(?:[.,]\d{3})+$/.test(raw) ? Number(raw.replace(/[.,]/g, "")) : Number(raw.replace(",", "."));
+  return Number.isFinite(n) ? n * (mult ? 1000 : 1) : NaN;
+};
+const NUM = String.raw`(\d{1,3}(?:[.,]\d{3})+|\d+(?:[.,]\d+)?)\s?(k|mila|thousand)?`;
+const SKETCH_FIGURES = [
+  { sketch: "vdi", field: "users", line: "euc", what: "users", label: "users of the desktop sizing sketch",
+    re: new RegExp(String.raw`\b${NUM}\s+(?:named\s+)?(?:users|utenti|employees|dipendenti|desktops|postazioni)\b(?![^.;]*\b(?:each|per (?:site|branch|store|office)|a site|ciascun[ao]|per sede|per filiale)\b)`) },
+  { sketch: "db", field: "databases", line: "dbaas", what: "databases", label: "databases of the licence sketch",
+    re: new RegExp(String.raw`\b${NUM}\s+(?:production\s+)?(?:databases|database|db|instances|istanze)\b`) },
+  { sketch: "db", field: "cores_today", line: "dbaas", what: "cores licensed today", label: "cores licensed today, in the licence sketch",
+    re: new RegExp(String.raw`\b${NUM}\s+(?:licensed\s+|physical\s+)?cores?\b(?=[^.;]*\blicen)|\blicen[a-z]*\s+(?:on\s+|for\s+|su\s+|per\s+)?${NUM}\s+(?:cores?|core)\b`) },
+  { sketch: "k8s", field: "apps", line: "kubernetes-platform", what: "applications", label: "applications of the container platform sketch",
+    re: new RegExp(String.raw`\b${NUM}\s+(?:containeri[sz]ed\s+)?(?:applications|apps|microservices|applicazioni|microservizi)\b`) },
+  { sketch: "files", field: "data_tib", line: "file-storage", what: "TiB of file data", label: "file data of the file storage sketch",
+    re: new RegExp(String.raw`\b${NUM}\s*(tb|tib|pb|pib)\b(?=[^.;]*\b(?:files?|shares?|nas|condivis[a-z]*|cartelle)\b)`), size: true },
+];
+const FMT = new Intl.NumberFormat("en");
+const TIB = { tb: 1e12 / 2 ** 40, tib: 1, pb: 1e15 / 2 ** 40, pib: 1024 };
+// the first number a pattern caught, with what it is multiplied by: patterns with two places for it hold two pairs
+const pick = (m) => { for (let i = 1; i < m.length; i += 2) if (m[i] !== undefined) return [m[i], m[i + 1]]; return ["", ""]; };
+
+/**
+ * The figures in what was said that a first sketch on a line in scope starts from, each with the sketch and the
+ * setting it goes in. "900 at the same time", beside a number of users (said, or already in the sketch), is the
+ * share connected at once.
+ * @returns {{sketch:string, field:string, value:number, what:string, label:string}[]}
+ */
+export function sketchFigures(said, scope, current = {}) {
+  const t = ` ${String(said == null ? "" : said).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "")} `;
+  const out = [];
+  for (const f of SKETCH_FIGURES) {
+    if (!(scope || []).includes(f.line)) continue;
+    const m = t.match(f.re);
+    if (!m) continue;
+    const [raw, mult] = pick(m);
+    let value = num(raw, f.size ? "" : mult);
+    if (f.size) value *= TIB[m[3]] || 1;
+    if (!Number.isFinite(value) || value <= 0) continue;
+    out.push({ sketch: f.sketch, field: f.field, value: f.size ? Math.round(value * 10) / 10 : Math.round(value), what: f.what, label: f.label });
+  }
+  const users = (out.find((x) => x.field === "users") || {}).value || (current.vdi && current.vdi.users) || 0;
+  const at = (scope || []).includes("euc") && t.match(new RegExp(String.raw`\b${NUM}\s+(?:of them\s+)?(?:concurrent|connected at once|at once|at the same time|contemporane[ia]|in contemporanea)\b`));
+  if (at && users) {
+    const n = num(at[1], at[2] || "");
+    if (n > 0 && n <= users) out.push({ sketch: "vdi", field: "concurrency_pct", value: Math.round((n / users) * 100), what: `percent connected at once (${FMT.format(n)} of ${FMT.format(users)})`, label: "share connected at the busiest hour, in the desktop sizing sketch" });
+  }
+  return out;
+}
