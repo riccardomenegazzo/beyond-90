@@ -83,6 +83,46 @@
       "role": "security",
       "listen": "A named service or person, with the power to isolate; otherwise the morning shift finds it.",
       "probe": "When did the last night-time alert get answered, and by whom?"
+    },
+    {
+      "stage": "L3",
+      "q": "How long does it take to deploy a patch for a critical vulnerability to every device?",
+      "why": "Unpatched devices are the door the next attack uses.",
+      "need": "A critical patch reaches every device within an agreed number of days",
+      "how": "Measure the last critical patch from release to the last device, and agree the target",
+      "role": "operations",
+      "listen": "Days is good; weeks, or \"servers are different\", means the risk stays open.",
+      "probe": "Which devices were the last to get the last critical patch, and why?"
+    },
+    {
+      "stage": "L3",
+      "q": "Could a user, or an attacker with their account, switch the agent off?",
+      "why": "The first thing an attacker does is blind the defence.",
+      "need": "The agent cannot be switched off or removed without authorisation",
+      "how": "Turn on tamper protection, and alert when an agent stops reporting",
+      "role": "security",
+      "listen": "Protected and alerting is the answer; \"local admins can\" means an attacker can.",
+      "probe": "How many users are local administrators of their machine?"
+    },
+    {
+      "stage": "L1",
+      "q": "Are phones and tablets that reach company data in scope?",
+      "why": "Mobile devices reach mail and files too, and are often outside every control.",
+      "need": "Mobile devices that reach company data are known and protected",
+      "how": "List the mobile devices reaching company data, and decide what each must have",
+      "role": "operations",
+      "listen": "Managed and known is the target; \"personal phones get mail\" is common and worth discussing.",
+      "probe": "Which company data can a personal phone reach today?"
+    },
+    {
+      "stage": "value",
+      "q": "What did the last incident cost in rebuilt machines and lost working days?",
+      "why": "The cost of the last incident is the most credible figure for the next.",
+      "need": "The cost of an incident in rebuild time and lost work is known",
+      "how": "Ask IT and the business for the rebuild hours and the days lost last time",
+      "role": "finance",
+      "listen": "A figure in hours or money; \"it was contained\" without a cost means it was never counted.",
+      "probe": "Who counted it, and would they share the number?"
     }
   ]
 }

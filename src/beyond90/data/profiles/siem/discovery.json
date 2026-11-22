@@ -83,6 +83,46 @@
       "role": "security",
       "listen": "Closing alerts unread is a decision; it needs an owner and a rule, not habit.",
       "probe": "Who decided which alerts can be closed without a look, and when was that last checked?"
+    },
+    {
+      "stage": "L4",
+      "q": "Who covers the alerts outside working hours, and how fast do they act?",
+      "why": "Most attacks run at night and at weekends.",
+      "need": "An alert outside working hours is acted on within an agreed time",
+      "how": "Name who covers the nights, in house or a service, and the time they act within",
+      "role": "operations",
+      "listen": "A named team or service with a time to act; \"the on-call checks in the morning\" means hours of free run.",
+      "probe": "When did the last alert at night get acted on, and by whom?"
+    },
+    {
+      "stage": "L3",
+      "q": "How do you check that a detection still works after a system or a log format changes?",
+      "why": "Detections break quietly when what they read changes.",
+      "need": "Detections are tested after changes, and a broken one is noticed",
+      "how": "Replay a known attack step regularly and check the detection still fires",
+      "role": "security",
+      "listen": "Tested on a schedule is rare and strong; \"we would notice\" usually means a broken rule goes unseen for months.",
+      "probe": "Which detection would you most hate to find broken, and when was it last tested?"
+    },
+    {
+      "stage": "L2",
+      "q": "Which threat intelligence do you use, and who turns it into detections?",
+      "why": "Intelligence that is never turned into detections is a subscription, not a defence.",
+      "need": "Threat intelligence that matters to the business becomes detections",
+      "how": "Pick the sources that fit the business and give someone the job of using them",
+      "role": "security",
+      "listen": "A person who turns it into detections; a feed straight into the console is noise.",
+      "probe": "What did the last piece of intelligence change in your detections?"
+    },
+    {
+      "stage": "value",
+      "q": "After an incident, who must be told, by when, and what must you show them?",
+      "why": "Reporting duties fix how fast evidence has to be found.",
+      "need": "What must be reported after an incident, and by when, is known and can be met",
+      "how": "List the duties to report and the evidence each asks for",
+      "role": "executive",
+      "listen": "A regulator or a customer contract with hours to report makes fast investigation a must.",
+      "probe": "Could you produce that evidence in time today, and who would gather it?"
     }
   ]
 }

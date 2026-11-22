@@ -84,6 +84,7 @@ def test_the_security_lines_are_told_and_challenged_too(profile):
 def test_the_security_questions_say_how_to_ask_them_and_their_proofs_have_criteria(profile):
     cat = Catalogue.load(profile=profile)
     assert all(q.get("role") and q.get("listen") and q.get("probe") for q in cat.discovery), profile
+    assert len(cat.discovery) >= 12, "as deep as a discovery meeting needs"
     assert 3 <= sum(1 for q in cat.discovery if q.get("core")) <= 6, "a few essential questions, not all"
     assert len(cat.pov_criteria) >= 5 and 4 <= len(cat.pov_readiness) <= 10
     for f in ("discovery.json", "pov.json"):

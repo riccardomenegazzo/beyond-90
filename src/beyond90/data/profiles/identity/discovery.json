@@ -83,6 +83,46 @@
       "role": "security",
       "listen": "Minutes, by a named team, with the power to block the session; otherwise the alert is a log line.",
       "probe": "What did the last risky sign-in turn out to be, and how long did it take to know?"
+    },
+    {
+      "stage": "L3",
+      "q": "Are there shared administrator accounts, and who holds their passwords?",
+      "why": "A shared account cannot be traced to a person.",
+      "need": "No administrator account is shared, or its use is traced to a person",
+      "how": "Replace shared admin accounts with personal ones, or vault and log their use",
+      "role": "security",
+      "listen": "\"A few, for emergencies\" is fine if they are vaulted and every use is logged.",
+      "probe": "When was a shared account last used, and could you say by whom?"
+    },
+    {
+      "stage": "L1",
+      "q": "How do partners, contractors and suppliers sign in to your systems?",
+      "why": "Outside accounts are often the least watched way in.",
+      "need": "External people sign in through the same controls as employees, and their access ends with the contract",
+      "how": "List the external accounts and tie each one to a sponsor and an end date",
+      "role": "operations",
+      "listen": "Through the same directory, with an end date; local accounts created by request are the usual gap.",
+      "probe": "Which supplier account would reach the most, and who sponsors it?"
+    },
+    {
+      "stage": "L3",
+      "q": "Are privileged sessions recorded, and could you replay what an administrator did last week?",
+      "why": "Evidence of what was done is what an investigation and an auditor ask for.",
+      "need": "What privileged users did can be reviewed after the fact",
+      "how": "Record or log privileged sessions on the systems that matter",
+      "role": "security",
+      "listen": "Recorded on the critical systems is the target; \"we have the sign-in logs\" shows who, not what.",
+      "probe": "Which systems would you need that record for first?"
+    },
+    {
+      "stage": "value",
+      "q": "How quickly could you show an auditor who had access to a sensitive system last quarter?",
+      "why": "Proving access history is a common audit ask, and a slow one without the right data.",
+      "need": "Who had access to a sensitive system, and when, can be shown quickly",
+      "how": "Pick one sensitive system and produce its access history",
+      "role": "executive",
+      "listen": "Hours is good; \"we would have to ask around\" means weeks before every audit.",
+      "probe": "When was that last asked, and how long did it take to answer?"
     }
   ]
 }

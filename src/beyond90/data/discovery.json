@@ -84,6 +84,46 @@
       "role": "security",
       "listen": "Acceptances with no end date are decisions nobody remembers making.",
       "probe": "When did someone last review an accepted risk, and change their mind?"
+    },
+    {
+      "stage": "L2",
+      "q": "Do you see what runs inside workloads, or only how the cloud is configured?",
+      "why": "Configuration alone misses an attacker already running inside a workload.",
+      "need": "What runs inside the workloads that matter is seen, not only their configuration",
+      "how": "Choose the workloads where run-time visibility is worth it, and turn it on there",
+      "role": "architect",
+      "listen": "Configuration only is common; it means a breach in progress looks like a clean estate.",
+      "probe": "Which workloads hold data or reach the internet, and what would you see if one were taken over?"
+    },
+    {
+      "stage": "L3",
+      "q": "Are infrastructure templates checked before they are deployed, or only after?",
+      "why": "A risk stopped in the pipeline never reaches production.",
+      "need": "Templates are checked in the pipeline, and the risky ones do not deploy",
+      "how": "Add the checks to one pipeline and agree which findings block a deploy",
+      "role": "application",
+      "listen": "Checks after deploy only means the same mistakes come back with every release.",
+      "probe": "Who decides which findings block a deploy, and what happens when one does?"
+    },
+    {
+      "stage": "L4",
+      "q": "How long does a critical finding stay open, from found to fixed?",
+      "why": "Time to fix is what the attacker races against.",
+      "need": "Critical findings are fixed within an agreed number of days",
+      "how": "Agree the days per severity with the owning teams, and track them",
+      "role": "security",
+      "listen": "Days is good; weeks or \"we do not measure it\" means the list only grows.",
+      "probe": "Which critical finding has been open longest, and who owns it?"
+    },
+    {
+      "stage": "value",
+      "q": "Which audit, regulation or customer questionnaire must you answer about the cloud this year?",
+      "why": "A dated obligation turns the work into a project with a deadline.",
+      "need": "The cloud evidence the next audit asks for can be produced on demand",
+      "how": "List the controls the audit asks for and where each one's evidence comes from",
+      "role": "executive",
+      "listen": "A named audit with a date makes this urgent; \"none this year\" means find another reason.",
+      "probe": "Who signs the answer, and what did the last one cost in hours?"
     }
   ]
 }

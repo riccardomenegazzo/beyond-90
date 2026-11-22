@@ -83,6 +83,46 @@
       "role": "executive",
       "listen": "An audit with a date makes this a project with a deadline.",
       "probe": "What did the last audit find, and is it closed?"
+    },
+    {
+      "stage": "L4",
+      "q": "How would you know an account in a SaaS application had been taken over?",
+      "why": "A taken-over account looks like a normal user until someone checks.",
+      "need": "A taken-over SaaS account is detected and stopped",
+      "how": "Turn on the alerts for risky sign-ins and unusual downloads, and name who acts",
+      "role": "security",
+      "listen": "Alerts with a named owner; \"the provider would tell us\" usually means the takeover runs for weeks.",
+      "probe": "What would someone see if an account started downloading everything tonight?"
+    },
+    {
+      "stage": "L3",
+      "q": "What happens to the files and mail of someone who leaves?",
+      "why": "Leavers' data is often shared, forgotten, or kept with a link that still works.",
+      "need": "A leaver's data is handed over or removed, and their shares are closed",
+      "how": "Agree what happens to a leaver's data and links, and check the last few leavers",
+      "role": "operations",
+      "listen": "A handover and closed shares; \"the account is disabled\" leaves the links working.",
+      "probe": "Do the public links a leaver created still work after they go?"
+    },
+    {
+      "stage": "L2",
+      "q": "Is the data in these applications backed up somewhere you control?",
+      "why": "The provider keeps the service running, not every version of your data.",
+      "need": "The data that matters in each application can be restored after a deletion or an attack",
+      "how": "Decide which data needs its own copy and test a restore",
+      "role": "data",
+      "listen": "Backed up and restored once in a test; \"the provider keeps it\" is a common misunderstanding.",
+      "probe": "If someone deleted a shared folder today, how far back could you get it?"
+    },
+    {
+      "stage": "L3",
+      "q": "Who can connect a new integration or app to your tenants?",
+      "why": "Every integration is a new door with its own permissions.",
+      "need": "New integrations need approval, and their permissions are reviewed",
+      "how": "Restrict who can approve integrations and review the ones already connected",
+      "role": "security",
+      "listen": "Admins only, with a review; \"anyone can consent\" is how data leaves quietly.",
+      "probe": "Which integration has the widest access today, and who approved it?"
     }
   ]
 }

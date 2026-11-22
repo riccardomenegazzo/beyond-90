@@ -83,6 +83,46 @@
       "role": "executive",
       "listen": "A regulation or a customer's questionnaire with a date makes this urgent.",
       "probe": "Who has to sign the answer, and by when?"
+    },
+    {
+      "stage": "L2",
+      "q": "Which teams build their own models, retrieval pipelines or agents?",
+      "why": "Home-built AI carries its own data, keys and risks.",
+      "need": "Every team building its own AI is known, with what it builds on",
+      "how": "List the teams building AI and what each pipeline reads and writes",
+      "role": "architect",
+      "listen": "A short list with owners; \"data science does some things\" means more than anyone knows.",
+      "probe": "Which of those pipelines read personal or confidential data?"
+    },
+    {
+      "stage": "L3",
+      "q": "How is a model, a prompt or an agent changed and tested before it goes live?",
+      "why": "A changed prompt can change behaviour as much as new code.",
+      "need": "Changes to models, prompts and agents are reviewed and tested before release",
+      "how": "Treat prompts and agent tools as code: review, test and record each change",
+      "role": "application",
+      "listen": "Reviewed like code is strong; \"people tweak the prompt in production\" is common.",
+      "probe": "When did a change to a prompt last cause a problem, and how was it found?"
+    },
+    {
+      "stage": "L2",
+      "q": "Where does the data used to train or feed the models come from, and who approved it?",
+      "why": "Unapproved data in an index or a training set is a leak waiting to be asked for.",
+      "need": "The data feeding each model or index is known and approved by its owner",
+      "how": "List the data sources of each index or model and get their owners' approval",
+      "role": "data",
+      "listen": "Named sources with an owner's approval; \"we indexed the shared drive\" is the usual finding.",
+      "probe": "Could the index answer a question with data the person asking should not see?"
+    },
+    {
+      "stage": "L4",
+      "q": "When a model gives a wrong or harmful answer, who hears about it and what happens?",
+      "why": "Bad answers reach customers before anyone in the company notices.",
+      "need": "A wrong or harmful answer is reported, reviewed and fixed",
+      "how": "Give users a way to report an answer, and name who reviews and fixes",
+      "role": "operations",
+      "listen": "A route to report and an owner who fixes; \"we monitor usage\" counts calls, not mistakes.",
+      "probe": "What was the last wrong answer someone reported, and what changed after it?"
     }
   ]
 }

@@ -2,6 +2,11 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.191.0
+
+- **Four more questions on each security line.** Cloud security, SIEM, identity, endpoint, SaaS and AI security go from eight questions to twelve, each saying who to ask, what to listen for and the follow-up: what runs inside workloads and checks before deploy, and how long a critical finding stays open; who covers alerts at night, whether detections still work after a change, and what must be reported after an incident; shared administrator accounts, partners' and contractors' sign-ins, and recorded privileged sessions; patch times, an agent nobody can switch off, and phones that reach company data; taken-over SaaS accounts, leavers' files and links, backups of SaaS data and who can connect integrations; teams building their own AI, changes to prompts and agents, the data feeding the models, and what happens after a wrong answer.
+- They are added after the existing ones, so answers already saved keep their place. Every earlier phrase set of Heard something keeps its results.
+
 ## 0.190.0
 
 - **The tender answer kit covers the security lines.** A tender for cloud security, SIEM, identity, endpoint, SaaS or AI security now finds answers to adapt, as the infrastructure lines do: coverage of every cloud account and findings routed to their owners; log retention, sources and automated response; strong multi-factor and joiners and leavers; supported systems and isolation; the tenants covered; the inventory of AI use and sensitive data in prompts. Each with the evidence to attach and what to check before using it, and matched from the requirement's words in English or Italian ("conservazione dei log", "autenticazione forte", "isolamento").
