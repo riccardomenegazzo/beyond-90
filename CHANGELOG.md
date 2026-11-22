@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.190.0
+
+- **The tender answer kit covers the security lines.** A tender for cloud security, SIEM, identity, endpoint, SaaS or AI security now finds answers to adapt, as the infrastructure lines do: coverage of every cloud account and findings routed to their owners; log retention, sources and automated response; strong multi-factor and joiners and leavers; supported systems and isolation; the tenants covered; the inventory of AI use and sensitive data in prompts. Each with the evidence to attach and what to check before using it, and matched from the requirement's words in English or Italian ("conservazione dei log", "autenticazione forte", "isolamento").
+
 ## 0.189.0
 
 - **What else a security customer weighs.** A workshop on the security lines now shows **What else they weigh**, as the infrastructure ones do: keeping the tools they have, using what comes with a suite they already pay for, handing it to a managed security service, building it with open-source tools and their own team, or waiting for the next audit or incident. Each with why they consider it, what to ask, when it fits the proposal, when the other choice is the better one, and how to prove it. Written to be fair: a managed service on top of the right tool is often the answer, and the two go together.

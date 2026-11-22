@@ -61,3 +61,10 @@ def test_the_command_prints_the_kit_for_a_line_then_for_any_line(capsys: pytest.
     assert list(json.loads((tmp_path / "kit.json").read_text(encoding="utf-8"))) == ["any"]
     assert main(["answers", "--profile", "nope"]) == 2
 
+
+
+def test_the_kit_covers_the_security_lines_too() -> None:
+    kit = estate.read_answers()
+    assert {"cnapp", "siem", "identity", "endpoint", "saas", "ai"} <= set(kit)
+    # a tender in Italian finds them too
+    assert any(any("conservazione" in m for m in a["match"]) for a in kit["siem"])

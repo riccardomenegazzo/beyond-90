@@ -624,5 +624,251 @@
       ],
       "check": "Check that the metering export fits the billing system."
     }
+  ],
+  "cnapp": [
+    {
+      "id": "coverage",
+      "topic": "Coverage of every cloud account",
+      "match": [
+        "all cloud accounts",
+        "every subscription",
+        "multi-cloud",
+        "multicloud",
+        "tutti gli account",
+        "tutte le sottoscrizioni",
+        "inventory of cloud",
+        "inventario cloud"
+      ],
+      "answer": "Every account, subscription and project in [the clouds in scope] is connected at the organisation level, so new ones are covered the day they are created; [N] are in scope today.",
+      "evidence": [
+        "The accounts the tool sees, compared with the bill",
+        "How a new account is connected without a ticket"
+      ],
+      "check": "Check that accounts created outside the organisation, and regions turned off, are counted too."
+    },
+    {
+      "id": "finding_owner",
+      "topic": "Findings routed to their owners",
+      "match": [
+        "ticketing",
+        "ticket",
+        "remediation workflow",
+        "assign",
+        "owner",
+        "assegnaz",
+        "responsabile della risoluzione",
+        "workflow di rimedio"
+      ],
+      "answer": "Each finding reaches the team that owns the resource in [the ticketing tool], with a due date by severity: [critical: N days; high: N days]. Accepted risks need an owner and an end date.",
+      "evidence": [
+        "A finding followed from detection to its ticket",
+        "The severity and due-date rules"
+      ],
+      "check": "Check how ownership is known: tags, account owners, or a mapping someone has to keep."
+    }
+  ],
+  "siem": [
+    {
+      "id": "retention",
+      "topic": "How long logs are kept",
+      "match": [
+        "retention",
+        "log retention",
+        "conservazione dei log",
+        "conservazione",
+        "months of logs",
+        "mesi di log",
+        "archiv"
+      ],
+      "answer": "Logs are searchable for [N months] and kept for [N years] in cheaper storage that can still be searched on request, within [the regulation or policy named in the tender].",
+      "evidence": [
+        "The retention per log source and tier",
+        "A search on an archived log, timed"
+      ],
+      "check": "Check the cost of the retention asked for at the expected daily volume, not only that it is possible."
+    },
+    {
+      "id": "sources",
+      "topic": "Log sources collected",
+      "match": [
+        "log sources",
+        "fonti di log",
+        "sorgenti",
+        "collection",
+        "raccolta",
+        "connectors",
+        "connettori",
+        "parsers"
+      ],
+      "answer": "The sources in scope [list] are collected with [built-in connectors / agents / syslog]; a source that stops sending raises an alert within [time].",
+      "evidence": [
+        "The list of sources with how each is collected",
+        "An alert when a source goes quiet, shown"
+      ],
+      "check": "Check the sources the tender lists one by one, including the custom applications."
+    },
+    {
+      "id": "playbooks",
+      "topic": "Automated response",
+      "match": [
+        "soar",
+        "automated response",
+        "risposta automatica",
+        "playbook",
+        "orchestration",
+        "orchestrazione"
+      ],
+      "answer": "The response to [the common alerts named] is automated with playbooks: [contain, enrich, notify]. Actions that change production need [an approval step].",
+      "evidence": [
+        "A playbook run end to end",
+        "Which actions need approval"
+      ],
+      "check": "Check which systems the playbooks can act on, and with what rights."
+    }
+  ],
+  "identity": [
+    {
+      "id": "mfa",
+      "topic": "Strong multi-factor authentication",
+      "match": [
+        "mfa",
+        "multi-factor",
+        "multifactor",
+        "autenticazione a più fattori",
+        "autenticazione forte",
+        "strong authentication",
+        "2fa",
+        "phishing-resistant"
+      ],
+      "answer": "Strong multi-factor is required for [all users / privileged users], [phishing-resistant methods] for administrators, with no standing exceptions; service accounts use [managed secrets / certificates].",
+      "evidence": [
+        "The sign-in policy as configured",
+        "A week of privileged sign-ins, all with strong authentication"
+      ],
+      "check": "Check legacy protocols and service accounts: they are where multi-factor is usually bypassed."
+    },
+    {
+      "id": "lifecycle",
+      "topic": "Joiners, movers and leavers",
+      "match": [
+        "provisioning",
+        "deprovisioning",
+        "joiner",
+        "leaver",
+        "lifecycle",
+        "ciclo di vita",
+        "cessazione",
+        "revoca degli accessi"
+      ],
+      "answer": "Access is granted and removed from [the HR system] as the source: a leaver loses every access in scope within [time], applications outside the directory included through [connectors / tickets].",
+      "evidence": [
+        "A leaver followed to the last access removed",
+        "The applications connected, and those that are not"
+      ],
+      "check": "Check the applications with their own accounts outside the directory."
+    }
+  ],
+  "endpoint": [
+    {
+      "id": "coverage",
+      "topic": "Supported systems and coverage",
+      "match": [
+        "operating systems",
+        "sistemi operativi",
+        "supported platforms",
+        "piattaforme supportate",
+        "servers and workstations",
+        "server e postazioni",
+        "legacy"
+      ],
+      "answer": "The agent supports [the systems and versions in scope]; [N] devices are covered, and the unsupported systems in scope are [isolated / monitored by other means].",
+      "evidence": [
+        "The support matrix for the versions in scope",
+        "Agents reporting, compared with the inventory"
+      ],
+      "check": "Check the oldest systems in the tender, and servers that cannot take an agent."
+    },
+    {
+      "id": "isolation",
+      "topic": "Isolation and response",
+      "match": [
+        "isolation",
+        "isolamento",
+        "containment",
+        "contenimento",
+        "remote response",
+        "risposta remota",
+        "ransomware"
+      ],
+      "answer": "A compromised device can be isolated in one action, [automatically for the clearest cases], at any hour, while it stays reachable for investigation.",
+      "evidence": [
+        "An isolation timed during the proof",
+        "The rules for automatic isolation"
+      ],
+      "check": "Check who answers out of hours: the team or a service, and with what rights."
+    }
+  ],
+  "saas": [
+    {
+      "id": "tenants",
+      "topic": "Applications and tenants covered",
+      "match": [
+        "saas applications",
+        "applicazioni saas",
+        "tenant",
+        "cloud applications",
+        "applicazioni cloud",
+        "posture",
+        "sspm"
+      ],
+      "answer": "The tenants in scope [list] are connected read-only; settings, admin roles, third-party apps and public sharing are checked against [the baseline named].",
+      "evidence": [
+        "The tenants connected and the checks run on each",
+        "A risky setting found and fixed"
+      ],
+      "check": "Check which applications the tender names, and whether each is supported with its own checks."
+    }
+  ],
+  "ai": [
+    {
+      "id": "inventory",
+      "topic": "Inventory of AI use",
+      "match": [
+        "artificial intelligence",
+        "intelligenza artificiale",
+        "ai inventory",
+        "inventario ia",
+        "models",
+        "modelli",
+        "ai act",
+        "agents",
+        "agenti"
+      ],
+      "answer": "The AI services, models and agents in use are listed with an owner, from [network, spend and sign-in records]; agents are listed with the tools they can call and what each can change.",
+      "evidence": [
+        "The inventory and how it is kept current",
+        "One agent's tools and their rights"
+      ],
+      "check": "Check how a team starting a new AI service is found without telling anyone."
+    },
+    {
+      "id": "data_leak",
+      "topic": "Sensitive data in prompts",
+      "match": [
+        "data leakage",
+        "fuga di dati",
+        "dlp",
+        "prompt",
+        "sensitive data",
+        "dati sensibili",
+        "dati personali"
+      ],
+      "answer": "Sensitive data is checked before it reaches a prompt or a retrieval index, [blocked / masked], and what was sent is logged for [N months].",
+      "evidence": [
+        "A test prompt with invented sensitive data, caught",
+        "Where prompts and answers are logged"
+      ],
+      "check": "Check the services reached outside the controlled path, such as personal accounts."
+    }
   ]
 }
