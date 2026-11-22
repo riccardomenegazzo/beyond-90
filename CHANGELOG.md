@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.176.0
+
+- **On a phone, a workshop's bar carries the way forward.** The bar at the bottom now offers Questions, Qualify and **Forward** (the phase the prospect is in, and the demo with Run the demo), instead of Tender: in the meetings a phone is used for, the demo comes up far more often than a tender, which stays one tap away under Menu.
+
 ## 0.175.0
 
 - **The demo card, tidied.** **Run the demo** now sits at the top of the plan, under its length and who should be there, where it is found in the meeting; the other buttons are grouped by when they are used: before the demo (the invitation and the agenda for the customer), the plan (copy or download it), and after (mark it given).

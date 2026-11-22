@@ -1975,7 +1975,7 @@ def main(site: str) -> int:
         mp.locator("#demo-workshop").dispatch_event("click")
         mp.wait_for_selector("#view ol.journey")
         shown = [b.get_attribute("data-go") or "menu" for b in mp.locator("#mobilebar button:visible").all()]
-        check(shown == ["workshop", "wsqualify", "wsrfp", "menu"], f"in a workshop the phone bar carries Questions, Qualify and Tender: {shown}")
+        check(shown == ["workshop", "wsqualify", "wsforward", "menu"], f"in a workshop the phone bar carries Questions, Qualify and the way forward: {shown}")
         mp.click("#mobilebar [data-go=wsqualify]")
         mp.wait_for_selector("#view .qdlist")
         check(mp.get_attribute("#mobilebar [data-go=wsqualify]", "aria-current") is not None, "and opens each in one tap")
