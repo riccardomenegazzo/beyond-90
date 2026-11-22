@@ -1898,8 +1898,10 @@ function deckPane({ cards, state, answerOf, answer, go, pfx, inline, set = DISCO
     const prev = h("button", { type: "button", class: "linkbtn", text: "Previous", disabled: state.at === 0, onclick: () => { state.after = ""; state.at -= 1; draw(true); } });
     const skip = h("button", { type: "button", class: "linkbtn", text: "Skip", onclick: () => { state.after = ""; state.at += 1; draw(true); } });
     const after = state.after ? h("p", { class: "deckafter" }, h("b", { text: "On the journey: " }), state.after) : null;
+    const noted = set.note ? set.note(c, state.at) : null;
+    const pace = noted && noted.line ? h("p", { class: `decknote p-${noted.state}`, role: "status", text: noted.line }) : null;
     state.after = "";
-    put(main, h("div", { class: "deckstage" }, card), after,
+    put(main, h("div", { class: "deckstage" }, card), after, pace,
       h("div", { class: `deckans n${set.order.length}`, role: "group", "aria-label": `Answer to: ${q.q}` }, opts),
       h("div", { class: "deckbar" }, prev, h("span", { class: "deckhint", text: set.hint }), skip));
     paintSug();
@@ -3095,6 +3097,8 @@ export function forwardView({ workshop: w, catalog, povs, today, go, setDemo, se
     share: { text: "Copy the note for the customer", tip: "What we showed against what they told us, their questions with a line for each answer, and the proof we propose. No reaction is named in it.",
       make: (cards, answerOf) => DEMO.customerNote(cur.customer, cards, answerOf) },
     get end() { return cur.demo && cur.demo.on ? { text: "See the way forward", view: "wsforward" } : { text: "Mark the demo as given today", view: "wsforward", act: () => setDemo(today) }; },
+    // with the meeting clock running, each card says whether the demo is on time
+    note: (c, i) => { const ck = clockOf(w.id); return ck ? DEMO.demoPace(dt, dcards, i, PACE.reading(ck, Date.now()).elapsed) : null; },
   };
   const runDemo = () => openDeck({ cards: dcards, state: { at: Math.max(0, dcards.findIndex((c) => !seenOf(c))), drafts: new Map() }, set: demoSet, go,
     answerOf: seenOf, answer: async (c, a, note) => { cur = await setDemoSeen(c.key, a, note); return cur; }, clock: () => miniClock(w.id), onClose: () => go("wsforward") });
@@ -3107,7 +3111,7 @@ export function forwardView({ workshop: w, catalog, povs, today, go, setDemo, se
       onclick: (ev) => copyText(DEMO.customerNote(cur.customer, dcards, seenOf)).then((ok) => { ev.target.textContent = ok ? "Copied" : "Not copied"; }) })))) : null;
   const run = dcards.length ? h("button", { class: "btn small primary", type: "button", text: landed ? "Run the demo again" : "Run the demo",
     "data-tip": "One card per part of the plan, full screen: swipe each as it landed, with what they said. On a phone beside you while the screen is shared.", onclick: runDemo }) : null;
-  const timing = h("div", { class: "fwtime" }, h("label", { class: "szf" }, h("span", { text: "The meeting" }), lengthPick),
+  const timing = h("div", { class: "fwtime" }, h("label", { class: "fwlen" }, h("span", { text: "The meeting" }), lengthPick),
     h("p", { class: "note", text: dt.fit < dp.segments.length
       ? `${dt.fit ? `${nOf(dt.fit, "gap")} fit${dt.fit === 1 ? "s" : ""}, about ${dt.each} minutes each` : "No gap fits"} after the situation, the result, the concerns and the close; ${dt.later.length} ${dt.later.length === 1 ? "waits" : "wait"} for the next meeting.`
       : `About ${dt.each} minutes for each gap${dt.spare ? `, and ${dt.spare} left for their questions` : ""}.` }));

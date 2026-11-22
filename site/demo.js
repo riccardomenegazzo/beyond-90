@@ -152,3 +152,33 @@ export function customerNote(customer, cards, seenOf) {
   out.push("- Before it starts: the success criteria, who signs them off, and the dates.");
   return out.join("\n");
 }
+
+/**
+ * Whether the demo is on time at the card in view, from the meeting clock: by the plan, the situation and the result
+ * take the first five minutes, each card its own minutes, and the close the last five. A minute or more past the end of
+ * this card's time is behind; three minutes or more before its start is ahead.
+ * @param {{situation:number, result:number, close:number, each:number, concern:number, length:number}} time from `demoTime`
+ * @param {object[]} cards from `demoCards`, dealt for that time
+ * @param {number} at the card in view
+ * @param {number} elapsed seconds gone on the meeting clock
+ * @returns {{state:"on"|"behind"|"ahead"|"close", minutes:number, line:string}}
+ */
+export function demoPace(time, cards, at, elapsed) {
+  const gone = elapsed / 60;
+  const dur = (c) => (c.key.startsWith("c:") ? time.concern : time.each);
+  const start = time.situation + time.result + cards.slice(0, at).reduce((s, c) => s + dur(c), 0);
+  if (at >= cards.length) {
+    const left = Math.round(time.length - gone);
+    return { state: "close", minutes: left, line: left <= time.close ? "Time to close: agree what a proof would have to show, and who signs it off." : "" };
+  }
+  const end = start + dur(cards[at]);
+  if (gone >= end + 1) {
+    const late = Math.round(gone - end);
+    return { state: "behind", minutes: late, line: `${plural(late, "minute", "minutes")} behind: keep this part to its point, and say what you will send in writing.` };
+  }
+  if (gone <= start - 3) {
+    const early = Math.round(start - gone);
+    return { state: "ahead", minutes: early, line: `${plural(early, "minute", "minutes")} ahead: there is time for their questions on this part.` };
+  }
+  return { state: "on", minutes: 0, line: `On time: about ${plural(dur(cards[at]), "minute", "minutes")} for this part.` };
+}

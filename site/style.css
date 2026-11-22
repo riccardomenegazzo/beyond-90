@@ -1779,3 +1779,10 @@ body[data-role=se] .choose>.wsstart{order:-1;margin:0 0 26px;border:2px solid va
 .fwtime{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;margin-bottom:6px}
 .fwtime .note{margin:0}
 .fwsegs li.fwlater>span:first-child{color:var(--ink2);text-decoration:line-through;text-decoration-color:color-mix(in srgb,var(--ink2) 50%,transparent)}
+
+/* the demo against the clock (0.168) */
+.fwlen{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--ink2)}
+.fwlen select{font-size:14px}
+.decknote{margin:0 18px 10px;padding:7px 12px;border-radius:10px;font-size:14px;line-height:1.4;background:color-mix(in srgb,var(--ink2) 8%,var(--surface));color:var(--ink)}
+.decknote.p-behind{background:color-mix(in srgb,var(--warn) 14%,var(--surface))}
+.decknote.p-ahead,.decknote.p-on{background:color-mix(in srgb,var(--pos) 10%,var(--surface))}

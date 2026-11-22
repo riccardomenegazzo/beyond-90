@@ -2,6 +2,12 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.168.0
+
+- **Running the demo against the clock.** With the meeting clock running, each card of Run the demo says whether the demo is on time, from the plan's minutes: "On time: about 8 minutes for this part", "2 minutes behind: keep this part to its point, and say what you will send in writing", or ahead, with time for their questions. At the end, in the last five minutes: time to close, and agree what a proof would have to show.
+- The length of the demo meeting sits on one line with its select.
+- New: `demoPace` in `demo.js`, with a test; a browser check with the clock twenty minutes in.
+
 ## 0.167.0
 
 - **The demo, timed.** The demo plan under The way forward now sets the length of the meeting (30, 45 or 60 minutes; the meeting clock's when it runs) and spends it: two minutes for their situation, three for the result, three for each concern they raised, five to close, and the rest shared among the gaps it closes, three to ten minutes each. What does not fit waits for the next meeting, the last gaps first, struck through in the plan; what is left over is said as time for their questions.

@@ -1213,10 +1213,15 @@ def main(site: str) -> int:
         with page.expect_download() as dl:
             page.get_by_role("button", name="Demo plan (.md)").click()
         check(Path(dl.value.path()).read_text(encoding="utf-8").startswith("# Demo plan: Kestrel Logistics"), "and downloads as a plan to share with the seller")
-        # running it: one card per part of the plan, swiped as it landed, with what they said
+        # running it: one card per part of the plan, swiped as it landed, with what they said; twenty minutes in,
+        # the first part is late
+        page.evaluate(f"sessionStorage.setItem({json.dumps(clock_key)}, JSON.stringify({{start: Date.now() - 20 * 60000, minutes: 45}}))")
         page.get_by_role("button", name="Run the demo", exact=True).click()
         page.wait_for_selector("dialog.deck[open] .deckcard")
         DD = "dialog.deck"
+        check("minutes behind" in page.inner_text(f"{DD} .decknote.p-behind") and "left" in page.inner_text(f"{DD} .deckmini"),
+              "with the meeting clock running, the demo's card says it is behind, and by how much")
+        page.evaluate(f"sessionStorage.removeItem({json.dumps(clock_key)})")
         total = int(page.inner_text(f"{DD} .deckpos").split(" of ")[1])
         check(page.inner_text(f"{DD} .deckq").startswith("Show that ") and page.locator(f"{DD} .deckopt").count() == 4 and total >= 4
               and "For the architect" in page.inner_text(f"{DD} .decktags"),

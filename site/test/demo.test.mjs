@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { REACTIONS, ORDER, DEMO, demoCards, demoSuggest, demoSummary, demoRecapText, demoFollowUps, cardsFor, proofFromDemo, customerNote } from "../demo.js";
+import { REACTIONS, ORDER, DEMO, demoCards, demoSuggest, demoSummary, demoRecapText, demoFollowUps, cardsFor, proofFromDemo, customerNote, demoPace } from "../demo.js";
 import { demoPlan, forward, demoTime } from "../forward.js";
 import { exampleWorkshop, makeWorkshop, setDemo, setDemoSeen, validWorkshop, assess, mergeWorkshops } from "../workshop.js";
 import { nextMeeting, agendaText } from "../nextmeeting.js";
@@ -149,4 +149,22 @@ test("dealt for the length of the meeting, the cards say how long each part has 
   assert.match(cards[4].tag, /^Their concern, about 3 minutes$/);
   const short = demoCards(plan, demoTime(plan, 20));
   assert.deepEqual(short.map((c) => c.key), [plan.segments[0].key, ...plan.concerns.map((c) => c.key)]);
+});
+
+test("against the meeting clock, each card says whether the demo is on time, behind or ahead", () => {
+  const plan = demoPlan(CAT, exampleWorkshop(D));
+  const time = demoTime(plan, 45);                      // 5 minutes to open, 7 a gap, 3 a concern, 5 to close
+  const cards = demoCards(plan, time);
+  assert.deepEqual(demoPace(time, cards, 0, 6 * 60), { state: "on", minutes: 0, line: "On time: about 7 minutes for this part." });
+  const late = demoPace(time, cards, 0, 14 * 60);
+  assert.equal(late.state, "behind");
+  assert.equal(late.minutes, 2);
+  assert.match(late.line, /^2 minutes behind: keep this part to its point/);
+  const early = demoPace(time, cards, 2, 10 * 60);    // the third gap starts at 19 minutes
+  assert.equal(early.state, "ahead");
+  assert.equal(early.minutes, 9);
+  assert.equal(demoPace(time, cards, 4, 34 * 60).line, "On time: about 3 minutes for this part.", "a concern has three minutes");
+  assert.equal(demoPace(time, cards, cards.length, 41 * 60).state, "close");
+  assert.match(demoPace(time, cards, cards.length, 41 * 60).line, /^Time to close/);
+  assert.equal(demoPace(time, cards, cards.length, 20 * 60).line, "");
 });
