@@ -364,7 +364,7 @@ At the end, **Where it stands** says how many parts landed out of those shown, a
 - what landed, for the proof to confirm;
 - what was not shown, for the next meeting.
 
-**Copy the recap** and **Email the recap** give the account team the same in plain text. **Mark the demo as given today** closes the deck and ticks the phase. Afterwards:
+**Copy the recap** and **Email the recap** give the account team the same in plain text. **Copy the note for the customer** gives the follow-up to send them: what we showed against what they told us in discovery, their questions with a line for each answer, the concerns with how we propose to prove them, and the proof of value we propose to confirm what landed. It names no reaction: what did not land stays with the account team. **Mark the demo as given today** closes the deck and ticks the phase. Afterwards:
 
 - what landed goes into the proof of value as criteria, after the line's own: "Landed in the demo. Now on their own systems";
 - the next meeting's agenda opens with **Back from the demo**: their questions, and what to show again, closer to their case. What they said where it did not land stays with the account team.

@@ -32,7 +32,7 @@ const PROBE = "Is this what you meant when you said it? Who else would need to s
 export function demoCards(plan) {
   if (!plan || !plan.ready) return [];
   const cards = plan.segments.filter((s) => s.key).map((s) => ({
-    key: s.key, label: plan.line, part: clean(s.show),
+    key: s.key, label: plan.line, part: clean(s.show), heard: clean(s.heard),
     tag: s.role && ROLE_WORDS[s.role] ? `For ${INVITE[s.role] || ROLE_WORDS[s.role].toLowerCase()}` : s.status === "gap" ? "A real gap" : "Partly there",
     q: { q: s.need ? `Show that ${lowerFirst(clean(s.need))}` : `Show: ${clean(s.show)}`,
       why: s.heard ? `They said: “${clean(s.heard)}”` : s.status === "gap" ? "A real gap, heard in discovery." : "Partly there today, heard in discovery.",
@@ -112,4 +112,41 @@ export const cardsFor = (catalog, w, res) => demoCards(demoPlan(catalog, w, res)
 export function proofFromDemo(cards, demo) {
   return demoFollowUps(cards, demo).landed.filter((x) => !x.key.startsWith("c:")).slice(0, 3)
     .map((x) => ({ text: x.part, target: x.note ? `Landed in the demo: "${x.note}". Now on their own systems` : "Landed in the demo. Now on their own systems" }));
+}
+
+/**
+ * The note to send the customer after the demo, in plain text: what we showed against what they told us, their
+ * questions with a line for each answer, and the proof we propose. It speaks to the customer: no reaction is named
+ * ("did not land" stays with the account team), and what was said in the demo appears only as their questions.
+ */
+export function customerNote(customer, cards, seenOf) {
+  const shown = cards.filter((c) => { const s = seenOf(c); return s && s.a !== "skipped"; });
+  const out = [`Thank you for your time today, ${clean(customer)}.`, ""];
+  const parts = shown.filter((c) => !c.key.startsWith("c:"));
+  if (parts.length) {
+    out.push("What we showed, against what you told us");
+    for (const c of parts) out.push(`- ${c.part}${c.heard ? `. You told us: "${c.heard}"` : ""}`);
+    out.push("");
+  }
+  const concerns = shown.filter((c) => c.key.startsWith("c:"));
+  if (concerns.length) {
+    out.push("The concerns you raised");
+    for (const c of concerns) out.push(`- "${c.part}" ${c.q.why.replace(/^The proof that settles it: (\w)/, (m, ch) => `We propose to prove it: ${ch.toLowerCase()}`)}`);
+    out.push("");
+  }
+  const asked = shown.filter((c) => seenOf(c).a === "questions");
+  if (asked.length) {
+    out.push("Your questions, and our answers");
+    for (const c of asked) {
+      const said = clean(seenOf(c).note);
+      out.push(`- ${said ? `"${said}"` : `Your question on: ${c.part}`}`, "  Answer: ");
+    }
+    out.push("");
+  }
+  const confirm = shown.filter((c) => !c.key.startsWith("c:") && seenOf(c).a === "landed").map((c) => c.part);
+  out.push("What we propose next");
+  if (confirm.length) out.push("- A proof of value on your own systems, to confirm:", ...confirm.map((t) => `  - ${t}`));
+  else out.push("- A short call to agree what a proof of value on your own systems would have to show.");
+  out.push("- Before it starts: the success criteria, who signs them off, and the dates.");
+  return out.join("\n");
 }

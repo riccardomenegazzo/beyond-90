@@ -1938,7 +1938,9 @@ function deckPane({ cards, state, answerOf, answer, go, pfx, inline, set = DISCO
       set.recap ? h("div", { class: "btnrow deckrecap" },
         h("button", { class: "btn", type: "button", text: "Copy the recap", onclick: (ev) => copyText(set.recap(cards, answerOf)).then((ok) => { ev.target.textContent = ok ? "Copied" : "Not copied"; }) }),
         h("button", { class: "btn", type: "button", text: "Email the recap", onclick: () => mailText(set.recapSubject || "Discovery recap", set.recap(cards, answerOf), DECK.recapMailto),
-          "data-tip": "Opens your own mail app with the recap written in, for the account team, after the same check as a copy. It names the gaps: it is not for the customer." })) : null,
+          "data-tip": "Opens your own mail app with the recap written in, for the account team, after the same check as a copy. It names the gaps: it is not for the customer." }),
+        set.share ? h("button", { class: "btn", type: "button", text: set.share.text, "data-tip": set.share.tip || "",
+          onclick: (ev) => copyText(set.share.make(cards, answerOf)).then((ok) => { ev.target.textContent = ok ? "Copied" : "Not copied"; }) }) : null) : null,
       h("div", { class: "btnrow deckendrow" },
         set.end ? h("button", { class: "btn primary", type: "button", text: set.end.text, onclick: async (ev) => {
           if (set.end.act) { try { await set.end.act(); } catch (e) { ev.target.textContent = e.message; return; } }
@@ -3081,6 +3083,8 @@ export function forwardView({ workshop: w, catalog, povs, today, go, setDemo, se
     summary: (cards, answerOf) => DEMO.demoSummary(cards, answerOf),
     recap: (cards, answerOf) => DEMO.demoRecapText(cur.customer, cards, answerOf),
     recapSubject: `Demo recap: ${w.customer}`,
+    share: { text: "Copy the note for the customer", tip: "What we showed against what they told us, their questions with a line for each answer, and the proof we propose. No reaction is named in it.",
+      make: (cards, answerOf) => DEMO.customerNote(cur.customer, cards, answerOf) },
     get end() { return cur.demo && cur.demo.on ? { text: "See the way forward", view: "wsforward" } : { text: "Mark the demo as given today", view: "wsforward", act: () => setDemo(today) }; },
   };
   const runDemo = () => openDeck({ cards: dcards, state: { at: Math.max(0, dcards.findIndex((c) => !seenOf(c))), drafts: new Map() }, set: demoSet, go,
@@ -3088,7 +3092,10 @@ export function forwardView({ workshop: w, catalog, povs, today, go, setDemo, se
   const landed = dcards.some(seenOf) ? DEMO.demoSummary(dcards, seenOf) : null;
   const landedSec = landed ? sec("How it landed", h("div", { class: "fwlanded" }, h("p", { text: landed.head }),
     landed.lists.filter(([, rows]) => rows.length).map(([heading, rows]) => h("div", { class: "growproof" }, h("small", { text: heading }),
-      h("ul", {}, rows.map((r) => h("li", {}, h("span", { text: r.q }), r.note ? h("span", { class: "muted", text: ` “${r.note}”` }) : null))))))) : null;
+      h("ul", {}, rows.map((r) => h("li", {}, h("span", { text: r.q }), r.note ? h("span", { class: "muted", text: ` “${r.note}”` }) : null))))),
+    h("div", { class: "btnrow" }, h("button", { class: "btn small", type: "button", text: "Copy the note for the customer",
+      "data-tip": "What we showed against what they told us, their questions with a line for each answer, and the proof we propose. No reaction is named in it.",
+      onclick: (ev) => copyText(DEMO.customerNote(cur.customer, dcards, seenOf)).then((ok) => { ev.target.textContent = ok ? "Copied" : "Not copied"; }) })))) : null;
   const run = dcards.length ? h("button", { class: "btn small primary", type: "button", text: landed ? "Run the demo again" : "Run the demo",
     "data-tip": "One card per part of the plan, full screen: swipe each as it landed, with what they said. On a phone beside you while the screen is shared.", onclick: runDemo }) : null;
   const demo = card("The demo, built from what they said", dp.ready ? h("div", {},

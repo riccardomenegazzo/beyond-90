@@ -1239,6 +1239,7 @@ def main(site: str) -> int:
                 break
             page.wait_for_timeout(100)
         check(mailed.startswith("mailto:?subject=Demo%20recap%3A%20Kestrel"), "and a recap of the demo for the account team, drafted in their own mail app")
+        check(page.locator(f"{DD} .deckrecap button", has_text="Copy the note for the customer").count() == 1, "and a note for the customer, with no reaction named in it")
         page.locator(f"{DD} .deckendrow .btn", has_text="Mark the demo as given today").click()
         page.wait_for_selector(f"{DD}", state="detached")
         page.wait_for_selector("#view .fwlanded")

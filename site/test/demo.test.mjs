@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { REACTIONS, ORDER, DEMO, demoCards, demoSuggest, demoSummary, demoRecapText, demoFollowUps, cardsFor, proofFromDemo } from "../demo.js";
+import { REACTIONS, ORDER, DEMO, demoCards, demoSuggest, demoSummary, demoRecapText, demoFollowUps, cardsFor, proofFromDemo, customerNote } from "../demo.js";
 import { demoPlan, forward } from "../forward.js";
 import { exampleWorkshop, makeWorkshop, setDemo, setDemoSeen, validWorkshop, assess, mergeWorkshops } from "../workshop.js";
 import { nextMeeting, agendaText } from "../nextmeeting.js";
@@ -121,4 +121,22 @@ test("what landed goes to the proof, the questions and what did not land to the 
   assert.equal(forward(CAT, setDemo(exampleWorkshop(D), D, D), null, D).phases[1].checks.find((c) => /landed/.test(c.text)).ok, false);
   // with nothing noted, the agenda has no demo section
   assert.doesNotMatch(agendaText(nextMeeting(CAT, makeWorkshop({ customer: "A (mock)", scope: ["hci"], createdOn: D, nonce: "abcdef" }), D)), /Back from the demo/);
+});
+
+test("the note for the customer: what we showed against what they said, their questions to answer, the proof; no reaction named", () => {
+  const cards = demoCards(demoPlan(CAT, exampleWorkshop(D)));
+  const concern = cards.find((c) => c.key.startsWith("c:"));
+  const seen = { [cards[0].key]: { a: "landed", note: "That's the one" }, [cards[1].key]: { a: "questions", note: "How long does a restore take?" },
+    [cards[2].key]: { a: "missed", note: "We have runbooks already" }, [cards[3].key]: { a: "skipped", note: "" }, [concern.key]: { a: "questions", note: "" } };
+  const t = customerNote("Kestrel Logistics (mock)", cards, (c) => seen[c.key] || null);
+  assert.match(t, /^Thank you for your time today, Kestrel Logistics \(mock\)\./);
+  assert.match(t, /What we showed, against what you told us\n- Every site/);
+  assert.ok(t.includes(`- ${cards[1].part}. You told us: "${cards[1].heard}"`), "what they said in discovery, beside what was shown");
+  assert.ok(!t.includes(cards[3].part), "what was not shown is not in it");
+  assert.match(t, /The concerns you raised\n- ".*" We propose to prove it: /);
+  assert.match(t, /Your questions, and our answers\n- "How long does a restore take\?"\n {2}Answer: \n- Your question on: /);
+  assert.match(t, /What we propose next\n- A proof of value on your own systems, to confirm:\n {2}- Every site/);
+  for (const internal of ["did not land", "Did not land", "We have runbooks already", "That's the one", "Landed", "landed"]) assert.ok(!t.includes(internal), internal);
+  const none = customerNote("A (mock)", cards, () => null);
+  assert.match(none, /A short call to agree what a proof of value/);
 });

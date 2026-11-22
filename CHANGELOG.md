@@ -2,6 +2,11 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.166.0
+
+- **After the demo, a note for the customer.** At the end of the demo deck, and under How it landed, **Copy the note for the customer** gives the follow-up to send: what we showed, each beside what they told us in discovery; the concerns they raised, with how we propose to prove each; their questions, each with a line for the answer; and the proof of value we propose, to confirm on their own systems what landed. It names no reaction: what did not land, and what was said about it, stays in the recap for the account team. It leaves the page through the same check as every copy.
+- New: `customerNote` in `demo.js`, with a test that nothing internal is in it.
+
 ## 0.165.0
 
 - **The README says what the cards carry now:** the discovery questions, the deal's qualification, the demo built from what they said, and the readout of a proof of value, each ending with where it stands and a recap; and a concern recognised as it is said.
