@@ -234,6 +234,47 @@ test("on AI, cloud operations, endpoints, SaaS, service provider clouds and the 
   assert.ok(first >= 18, `first ${first} of ${cases.length}`);
 });
 
+test("on the security lines' newest questions, what was heard finds its question first", () => {
+  const cards = [];
+  for (const [name, dir] of [["cnapp", ""], ["siem", "profiles/siem/"], ["identity", "profiles/identity/"], ["endpoint", "profiles/endpoint/"], ["saas", "profiles/saas/"], ["ai", "profiles/ai/"]]) {
+    const file = new URL(`../../src/beyond90/data/${dir}discovery.json`, import.meta.url);
+    JSON.parse(readFileSync(file, "utf8")).questions.forEach((q, i) => cards.push({ key: `${name}#${i}`, q }));
+  }
+  const cases = [
+    ["We only check the cloud configuration, we have no idea what runs inside the containers", "cnapp#8"],
+    ["Terraform templates go straight to production without any check", "cnapp#9"],
+    ["Critical findings stay open for months", "cnapp#10"],
+    ["This year we must answer an audit questionnaire on the cloud", "cnapp#11"],
+    ["Nobody watches the alerts at night or at weekends", "siem#8"],
+    ["A log format changed and a detection silently stopped firing", "siem#9"],
+    ["We pay for a threat intelligence feed but nobody reads it", "siem#10"],
+    ["After an incident we must report to the regulator within 72 hours", "siem#11"],
+    ["Three admins share the same domain admin password", "identity#8"],
+    ["Contractors and suppliers keep their accounts after the contract ends", "identity#9"],
+    ["We cannot see what an administrator did in a privileged session", "identity#10"],
+    ["The auditor asked who had access to the payroll system last quarter and it took weeks", "identity#11"],
+    ["A critical patch takes a month to reach every laptop", "endpoint#8"],
+    ["Local admins can switch off the antivirus agent", "endpoint#9"],
+    ["Personal phones read company mail with no control", "endpoint#10"],
+    ["The last ransomware cost us two weeks of rebuilding machines", "endpoint#11"],
+    ["We would not notice if someone took over an Office 365 account", "saas#8"],
+    ["When people leave, their shared links keep working", "saas#9"],
+    ["Nothing in the SaaS tenants is backed up, we trust the provider", "saas#10"],
+    ["Any user can connect a third-party integration to the tenant", "saas#11"],
+    ["Data science builds its own RAG pipelines and agents", "ai#8"],
+    ["People edit the prompts directly in production", "ai#9"],
+    ["We indexed the whole shared drive into the assistant without asking anyone", "ai#10"],
+    ["When the chatbot gives a wrong answer nobody hears about it", "ai#11"],
+  ];
+  let first = 0;
+  for (const [said, want] of cases) {
+    const got = match(cards, said).map((h) => h.card.key);
+    assert.ok(got.includes(want), `${said}: ${got.join(" ")}`);
+    if (got[0] === want) first += 1;
+  }
+  assert.ok(first >= 22, `first ${first} of ${cases.length}`);
+});
+
 test("a concern the line expects is recognised as the customer says it, and an ordinary sentence is not one", () => {
   const cat = JSON.parse(readFileSync(new URL("./workshop-catalog.json", import.meta.url), "utf-8"));
   const cards = concernCards(cat, Object.keys(cat.lines));

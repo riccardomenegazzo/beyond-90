@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.192.0
+
+- **Heard something knows the new security questions.** Written in **Heard something** during a meeting, what a customer says about the twenty-four questions added in 0.191 now finds its question first: "Nobody watches the alerts at night or at weekends", "Three admins share the same domain admin password", "Local admins can switch off the antivirus agent", "When people leave, their shared links keep working", "People edit the prompts directly in production". A test holds a sentence for each of them, across all six security lines at once, so a question on one line does not take what was said about another.
+
 ## 0.191.0
 
 - **Four more questions on each security line.** Cloud security, SIEM, identity, endpoint, SaaS and AI security go from eight questions to twelve, each saying who to ask, what to listen for and the follow-up: what runs inside workloads and checks before deploy, and how long a critical finding stays open; who covers alerts at night, whether detections still work after a change, and what must be reported after an incident; shared administrator accounts, partners' and contractors' sign-ins, and recorded privileged sessions; patch times, an agent nobody can switch off, and phones that reach company data; taken-over SaaS accounts, leavers' files and links, backups of SaaS data and who can connect integrations; teams building their own AI, changes to prompts and agents, the data feeding the models, and what happens after a wrong answer.
