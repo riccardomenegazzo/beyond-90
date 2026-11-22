@@ -60,3 +60,20 @@ def test_infrastructure_profiles_name_no_vendor_or_product(profile):
     for f in sorted((PROFILES_DIR / profile).glob("*.json")):
         found = NAMES.findall(f.read_text(encoding="utf-8"))
         assert not found, f"{f.name}: {sorted({x.lower() for x in found})}"
+
+
+SECURITY_TOLD = ["siem", "identity", "endpoint", "saas", "ai"]
+
+
+@pytest.mark.parametrize("profile", SECURITY_TOLD)
+def test_the_security_lines_are_told_and_challenged_too(profile):
+    story = Catalogue.load(profile=profile).story
+    assert set(story["audiences"]) == {"executive", "technical", "financial"}
+    assert 3 <= len(story["people"]) <= 6
+    assert 3 <= len(story["objections"]) <= 8
+    for o in story["objections"]:
+        assert o["clarify"].endswith("?"), o["clarify"]
+        assert len(o["prove"]) <= 200 and not o["prove"].endswith("?")
+    text = (PROFILES_DIR / profile / "story.json").read_text(encoding="utf-8")
+    assert not NAMES.search(text), NAMES.search(text)
+    assert workshop_catalog()["lines"][profile]["story"]["objections"]

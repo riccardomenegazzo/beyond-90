@@ -2,6 +2,12 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.186.0
+
+- **The security lines are told and challenged too.** SIEM, identity, endpoint, SaaS and AI security now ship a story like the infrastructure lines: the line in one sentence for the executive, the technical team and finance, who to have in the room, and three or four objections each ("We already collect all our logs", "We already have multi-factor for everyone", "Prevention mode will break our applications", "The vendor is responsible for security in the cloud", "We do not use AI in production yet"), each with the question to ask first, the answer and the test that settles it.
+- So, on those lines too: Prepare tells them, the rehearsal deals them, Heard something recognises them as they are said, and a concern raised goes to the readout, the demo and the proof of value.
+- Tests: their shape and that they name no vendor; eight of them said in other words are recognised; each finds itself.
+
 ## 0.185.0
 
 - **A demo noted again and again never refuses a card.** A demo's plan changes as answers come in, so reactions to parts no longer in it pile up; past sixteen, the next card used to be refused in the middle of the demo. The oldest reaction now gives way instead, and the card in hand is always kept.

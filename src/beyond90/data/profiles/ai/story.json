@@ -1,0 +1,34 @@
+{
+  "audiences": {
+    "executive": "Use AI where it pays, and be able to say which models and agents run, what data they see, and what they can change.",
+    "technical": "Every AI service and agent known, the tools each agent can call and what they change, prompts and answers logged, sensitive data kept out, and the models tested against misuse.",
+    "financial": "Fewer AI services paid for twice by different teams, and no fine or lost customer because of an answer nobody can explain."
+  },
+  "people": [
+    "The owner of AI use or the data and AI team",
+    "Security, for agents, keys and misuse testing",
+    "Legal or compliance, for the regulation that applies",
+    "The owners of the AI use cases in production",
+    "Procurement, for the AI services teams subscribe to"
+  ],
+  "objections": [
+    {
+      "says": "We do not use AI in production yet.",
+      "clarify": "Which teams pay for an AI service or call a model from their code today?",
+      "answer": "Most companies find AI already in use where nobody registered it: the list comes before the policy.",
+      "prove": "List the AI services called from your network and paid for in a month, and match them to an owner."
+    },
+    {
+      "says": "Our policy already forbids pasting sensitive data into AI tools.",
+      "clarify": "How would you know if someone did it yesterday?",
+      "answer": "A policy needs a check: find sensitive data before it reaches a prompt or an index, and log what was sent.",
+      "prove": "Send a test prompt with invented sensitive data, and show it is caught and logged."
+    },
+    {
+      "says": "Testing our models for misuse is for specialists.",
+      "clarify": "What could your agents change if someone gave them the wrong instruction?",
+      "answer": "Start with the agents that can change something, and test the instructions that should be refused.",
+      "prove": "Try ten instructions an agent should refuse, and record which ones it carried out."
+    }
+  ]
+}

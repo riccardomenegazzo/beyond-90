@@ -279,3 +279,24 @@ test("on every line that has them, each concern finds itself first, as it is wri
     for (const c of cards) assert.equal(concernsHeard(cards, c.o.says)[0].card.key, c.key, `${p}: ${c.o.says}`);
   }
 });
+
+test("the security lines' concerns are recognised as customers say them", () => {
+  const lines = {};
+  for (const p of ["siem", "identity", "endpoint", "saas", "ai"]) {
+    lines[p] = { label: p, story: JSON.parse(readFileSync(new URL(`../../src/beyond90/data/profiles/${p}/story.json`, import.meta.url), "utf-8")) };
+  }
+  const cards = concernCards({ lines }, Object.keys(lines));
+  for (const [want, said] of [
+    ["siem#0", "we collect all our logs already"],
+    ["siem#1", "the analysts are drowning in alerts"],
+    ["identity#0", "everyone already has multi-factor"],
+    ["endpoint#0", "every machine already has antivirus"],
+    ["endpoint#1", "prevention mode would break our applications"],
+    ["saas#0", "security in the cloud is the vendor's job"],
+    ["ai#0", "we don't use AI in production yet"],
+    ["ai#1", "our policy forbids pasting sensitive data into AI tools"],
+  ]) {
+    const got = concernsHeard(cards, said);
+    assert.equal(got.length ? got[0].card.key : "", `obj:${want}`, said);
+  }
+});

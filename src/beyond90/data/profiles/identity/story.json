@@ -1,0 +1,40 @@
+{
+  "audiences": {
+    "executive": "One stolen account should not open the whole company: know who can reach what, and close access the day someone leaves.",
+    "technical": "Every privileged account known, human and machine, strong sign-in with no exceptions list, access reviewed and signed, and alerts on risky sign-ins that someone acts on.",
+    "financial": "Fewer directories and licences to run, fewer hours spent on access requests and reviews, and less exposure to what a breach costs."
+  },
+  "people": [
+    "The owner of identity and access",
+    "Security operations, who act on risky sign-ins",
+    "Human resources, for joiners and leavers",
+    "The owners of the most sensitive applications",
+    "Audit, for access reviews"
+  ],
+  "objections": [
+    {
+      "says": "We already have multi-factor for everyone.",
+      "clarify": "Who is on the exceptions list, and which service accounts sign in without it?",
+      "answer": "Multi-factor with exceptions leaves the doors attackers use: privileged and machine accounts need it, or a strong control in its place.",
+      "prove": "List every privileged sign-in in a week, and show which ones skipped strong authentication and why."
+    },
+    {
+      "says": "Our directory is too tangled to clean up.",
+      "clarify": "Which accounts would hurt most if taken today, and are they known?",
+      "answer": "Start from the privileged accounts, not the whole directory: know them, reduce them, watch them.",
+      "prove": "Find every account with administrative rights in one directory, and remove the ones nobody can explain."
+    },
+    {
+      "says": "Access reviews are a box we tick once a year.",
+      "clarify": "When a review last removed access, who noticed it was gone?",
+      "answer": "Review the rights that matter more often, with the owner who knows them, and remove what nobody claims.",
+      "prove": "Run one review of a sensitive application with its owner, and count the rights it removed."
+    },
+    {
+      "says": "Removing a leaver's access already works.",
+      "clarify": "How long did it take for the last leaver, and in how many systems?",
+      "answer": "Time it from the day they left to the last access removed, including the applications outside the directory.",
+      "prove": "Follow one leaver from the day they left to the last access removed, and time it."
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "audiences": {
+    "executive": "Ransomware on one laptop should stay on one laptop: seen in minutes, isolated in one click, any time of day.",
+    "technical": "An agent on every device, prevention on everywhere, exclusions reviewed, isolation in seconds, and someone answering a critical alert at night.",
+    "financial": "Fewer machines rebuilt and fewer hours lost to an attack that spreads; one agent instead of several overlapping tools."
+  },
+  "people": [
+    "The owner of endpoint security",
+    "Security operations, who answer the alerts",
+    "The desktop and server teams, who deploy the agent",
+    "Branch and contractor managers, for the devices nobody counts",
+    "The incident response lead"
+  ],
+  "objections": [
+    {
+      "says": "We already have antivirus on every machine.",
+      "clarify": "How many devices have no agent at all, servers, branches and contractors included?",
+      "answer": "Coverage is what counts: find the devices without an agent first, then make sure prevention is on where it is installed.",
+      "prove": "Compare the device inventory with the agents reporting, and list the machines missing."
+    },
+    {
+      "says": "Prevention mode will break our applications.",
+      "clarify": "Which applications broke last time, and which groups are still in detect-only mode because of them?",
+      "answer": "Turn prevention on group by group, with exclusions that are narrow, reviewed and owned.",
+      "prove": "Switch one detect-only group to prevention for two weeks, and record what was blocked and what broke."
+    },
+    {
+      "says": "Nobody is watching the alerts at night.",
+      "clarify": "When the last critical alert fired out of hours, when was it answered?",
+      "answer": "Isolation can happen on its own for the clearest cases, and a service can answer the rest out of hours.",
+      "prove": "Trigger a test alert at night, and time it from the alert to the machine isolated."
+    }
+  ]
+}

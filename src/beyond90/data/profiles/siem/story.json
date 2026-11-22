@@ -1,0 +1,40 @@
+{
+  "audiences": {
+    "executive": "Know about an incident before anyone outside does, and answer an auditor or a regulator with evidence, not estimates.",
+    "technical": "Every environment sending the logs it should, detections that fire and are tuned, and the common responses automated, so an investigation takes hours, not weeks.",
+    "financial": "Pay to keep the logs an investigation needs, not every log forever; fewer hours spent closing alerts nobody reads."
+  },
+  "people": [
+    "The head of security operations",
+    "The analysts who handle alerts every day",
+    "The owners of the environments that send no logs",
+    "Compliance or audit, for how long logs must be kept",
+    "The incident response lead"
+  ],
+  "objections": [
+    {
+      "says": "We already collect all our logs.",
+      "clarify": "Which environments sent nothing during the last investigation, and how did you find out?",
+      "answer": "Collecting is not covering: check, for each environment, which sources are expected and which are missing, and alert when one goes quiet.",
+      "prove": "List the expected sources for three environments, and show an alert when one of them stops sending."
+    },
+    {
+      "says": "Our analysts are drowning in alerts already.",
+      "clarify": "How many alerts were closed last month without anyone looking at them?",
+      "answer": "Fewer, better detections, and the common responses automated: the analysts look at what only a person can decide.",
+      "prove": "Take a week of alerts, automate the response to the most common one, and count the hours saved."
+    },
+    {
+      "says": "Keeping logs longer costs too much.",
+      "clarify": "How far back did your last investigation, or your last audit, need to look?",
+      "answer": "Keep what an investigation needs searchable, and the rest in cheaper storage that can still be read when asked.",
+      "prove": "Answer one question about an event a year old, and show what keeping it cost."
+    },
+    {
+      "says": "Moving to a new platform would leave us blind for months.",
+      "clarify": "Which detections would you need on day one, and which can follow?",
+      "answer": "Run both side by side, move the detections that matter most first, and switch over when they are proven.",
+      "prove": "Run the five detections you rely on most on the new platform beside the old one, and compare what they catch."
+    }
+  ]
+}

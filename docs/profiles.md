@@ -99,7 +99,7 @@ A profile may ship `story.json`: how that kind of product is told and challenged
 }
 ```
 
-Each sentence is at most 240 characters, a proof at most 200 (it becomes a success criterion); at most 6 roles and 8 objections. The discovery workshop shows them under Prepare. Shipped for every infrastructure line; never inherited, and never naming a vendor or a product (a test checks the infrastructure profiles for vendor and product names).
+Each sentence is at most 240 characters, a proof at most 200 (it becomes a success criterion); at most 6 roles and 8 objections. The discovery workshop shows them under Prepare. Shipped for every infrastructure line and for SIEM, identity, endpoint, SaaS and AI security; never inherited, and never naming a vendor or a product (a test checks the infrastructure profiles for vendor and product names).
 
 A profile may ship `pov.json`: `{"criteria": [{"text": "...", "how": "..."}]}`, up to 200 characters each. They are tests a sponsor can sign off for that kind of product (for object storage: an object under lock cannot be deleted even by an administrator). The Proof of value view lists the ones not yet in the plan, each with an Add button. A profile does not inherit the base profile's criteria, because another kind of product proves other things. Shipped for `cnapp`, `hci`, `object-storage`, `dbaas`, `file-storage`, `kubernetes-platform`, `dr-backup`, `platform-migration`, `private-ai`, `hybrid-cloud`, `euc` and `microsegmentation`. A profile's `pov.json` may also carry `"readiness": ["..."]`, the checks to settle before the first day of the test (for hyperconverged infrastructure: the addresses per server, DNS and NTP, switch ports, supported hardware); a proof of value started from a workshop lists them first.
 

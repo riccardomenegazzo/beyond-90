@@ -1,0 +1,34 @@
+{
+  "audiences": {
+    "executive": "Know where the company's data lives in the applications it rents, who can reach it, and pass the next audit without a scramble.",
+    "technical": "Every tenant known, strong sign-in for everyone, third-party apps and public links found, admin roles reviewed, and each risky setting owned by a team that fixes it.",
+    "financial": "Fewer tenants and licences nobody uses, and fewer days spent preparing each audit by hand."
+  },
+  "people": [
+    "The owners of the main business applications",
+    "Security, for the settings and the alerts",
+    "IT, for sign-in and admin roles",
+    "Procurement or finance, for the tenants bought on a card",
+    "Compliance or audit"
+  ],
+  "objections": [
+    {
+      "says": "The vendor is responsible for security in the cloud.",
+      "clarify": "Who configured the sharing settings and the admin roles in your tenants?",
+      "answer": "The vendor runs the service; the settings, the accounts and the data shared are yours to get right.",
+      "prove": "Check one tenant's sharing settings and admin roles, and list what is set wrong today."
+    },
+    {
+      "says": "We only use a handful of SaaS applications.",
+      "clarify": "How many tenants did finance pay for last year, including the ones bought on a card?",
+      "answer": "Start from what is paid and who signs in, not from what IT bought: that is the real list.",
+      "prove": "Compare the tenants on the card statements with the ones IT manages, and count the difference."
+    },
+    {
+      "says": "Locking down sharing will stop people working.",
+      "clarify": "Which files shared with anyone who has the link would you not want found?",
+      "answer": "Close the public links on sensitive data first, and keep sharing open where it is meant to be.",
+      "prove": "Find the public links on one sensitive site, close them, and count the complaints in a week."
+    }
+  ]
+}
