@@ -5,56 +5,84 @@
       "q": "If ransomware started on one laptop right now, how far could it spread before anyone saw it?",
       "why": "Turns endpoint coverage into business risk.",
       "need": "Ransomware on one laptop is seen before it spreads",
-      "how": "Measure detection time in a safe simulation"
+      "how": "Measure detection time in a safe simulation",
+      "role": "security",
+      "core": true,
+      "listen": "\"We would see it in minutes\" needs proof; \"we would hear from users\" means too late.",
+      "probe": "When did a test or a real case last show how far it got?"
     },
     {
       "stage": "value",
       "q": "How long does it take today to isolate a compromised machine?",
       "why": "Isolation time is the number that limits damage.",
       "need": "A compromised machine is isolated in minutes",
-      "how": "Give the on-call team one-click isolation and rehearse it"
+      "how": "Give the on-call team one-click isolation and rehearse it",
+      "role": "operations",
+      "core": true,
+      "listen": "Minutes, by one click, at any hour; \"we call the desk\" means hours.",
+      "probe": "Who can isolate a machine at night, and have they done it?"
     },
     {
       "stage": "L1",
       "q": "How many devices have no agent, including servers, branches and contractors?",
       "why": "Uncovered devices are where attacks land.",
       "need": "Every device has an agent, servers and contractors included",
-      "how": "Compare the agent list with the asset list and close the gap"
+      "how": "Compare the agent list with the asset list and close the gap",
+      "role": "operations",
+      "core": true,
+      "listen": "Every device counted against the inventory; servers, branches and contractors are where agents are missing.",
+      "probe": "Which list of devices do you compare against, and who keeps it?"
     },
     {
       "stage": "L2",
       "q": "Do you know every operating system and version in use, and which are out of support?",
       "why": "Unsupported systems need a different plan.",
       "need": "Every operating system in use is known, with the unsupported ones planned",
-      "how": "List versions and plan the out-of-support ones"
+      "how": "List versions and plan the out-of-support ones",
+      "role": "operations",
+      "listen": "Unsupported systems need a plan and a date; unknown ones are the bigger risk.",
+      "probe": "Which unsupported systems hold something important, and when do they go?"
     },
     {
       "stage": "L3",
       "q": "Is prevention switched on everywhere, or are some groups still in detect-only mode?",
       "why": "Detect-only left on by habit is a common gap.",
       "need": "Prevention is on everywhere it should be",
-      "how": "Move detect-only groups to prevention, one group at a time"
+      "how": "Move detect-only groups to prevention, one group at a time",
+      "role": "security",
+      "core": true,
+      "listen": "Detect-only groups are usually there for an old reason nobody re-checked.",
+      "probe": "Why is that group in detect-only mode, and what would it take to switch it?"
     },
     {
       "stage": "L3",
       "q": "Are exclusions reviewed, and who can add one?",
       "why": "Broad exclusions quietly turn protection off.",
       "need": "Exclusions are few, reviewed and owned",
-      "how": "Review exclusions and limit who can add them"
+      "how": "Review exclusions and limit who can add them",
+      "role": "security",
+      "listen": "Few exclusions, each with an owner and a reason; a long list is a list of holes.",
+      "probe": "Who added the last exclusion, and does anyone review them?"
     },
     {
       "stage": "L3",
       "q": "Is device control or application control in use where it matters?",
       "why": "Separates basic antivirus from real hardening.",
       "need": "Device or application control is in place where it matters",
-      "how": "Start with the machines that handle the most sensitive data"
+      "how": "Start with the machines that handle the most sensitive data",
+      "role": "security",
+      "listen": "Where machines handle payments or production, only approved software should run.",
+      "probe": "Which machines should run only what was approved, and do they?"
     },
     {
       "stage": "L4",
       "q": "When the console raises a critical alert at night, who answers it?",
       "why": "Coverage without response is a dashboard.",
       "need": "A critical alert at night is answered",
-      "how": "Agree who answers, how fast, and with what authority"
+      "how": "Agree who answers, how fast, and with what authority",
+      "role": "security",
+      "listen": "A named service or person, with the power to isolate; otherwise the morning shift finds it.",
+      "probe": "When did the last night-time alert get answered, and by whom?"
     }
   ]
 }

@@ -1,0 +1,16 @@
+{
+  "criteria": [
+    {"text": "Every account with administrative rights in scope is listed, human and machine, and the ones nobody can explain are removed", "how": "List them from every directory in scope and review the list with their owners."},
+    {"text": "Every privileged sign-in in scope uses strong multi-factor, with no exceptions list", "how": "Report a week of privileged sign-ins and show none skipped strong authentication."},
+    {"text": "A leaver loses every access in scope within a day, applications outside the directory included", "how": "Follow one leaver from the day they left to the last access removed, and time it."},
+    {"text": "A risky sign-in is blocked or challenged within minutes, and the team that acts on it is named", "how": "Simulate a risky sign-in and time it to the block or the challenge."},
+    {"text": "One access review of a sensitive application is done by its owner, and the rights nobody claims are removed", "how": "Run the review with the owner and count the rights removed."}
+  ],
+  "readiness": [
+    "The directories and identity providers in scope listed",
+    "Read access to sign-in and audit logs, and who approves it",
+    "A test account for the risky sign-in, agreed with security operations",
+    "The owner of one sensitive application, for the access review",
+    "Security, legal and procurement steps known"
+  ]
+}

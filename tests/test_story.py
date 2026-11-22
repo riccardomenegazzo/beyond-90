@@ -77,3 +77,15 @@ def test_the_security_lines_are_told_and_challenged_too(profile):
     text = ((PROFILES_DIR / profile) if profile != "cnapp" else PROFILES_DIR.parent).joinpath("story.json").read_text(encoding="utf-8")
     assert not NAMES.search(text), NAMES.search(text)
     assert workshop_catalog()["lines"][profile]["story"]["objections"]
+
+
+
+@pytest.mark.parametrize("profile", SECURITY_TOLD)
+def test_the_security_questions_say_how_to_ask_them_and_their_proofs_have_criteria(profile):
+    cat = Catalogue.load(profile=profile)
+    assert all(q.get("role") and q.get("listen") and q.get("probe") for q in cat.discovery), profile
+    assert 3 <= sum(1 for q in cat.discovery if q.get("core")) <= 6, "a few essential questions, not all"
+    assert len(cat.pov_criteria) >= 5 and 4 <= len(cat.pov_readiness) <= 10
+    for f in ("discovery.json", "pov.json"):
+        text = ((PROFILES_DIR / profile) if profile != "cnapp" else PROFILES_DIR.parent).joinpath(f).read_text(encoding="utf-8")
+        assert not NAMES.search(text), (f, NAMES.search(text))

@@ -5,56 +5,84 @@
       "q": "If an attacker took one privileged account today, what could they reach?",
       "why": "Puts a price on privilege before any tool is discussed.",
       "need": "One stolen privileged account cannot reach everything",
-      "how": "Map what each privileged role can reach and cut what it does not need"
+      "how": "Map what each privileged role can reach and cut what it does not need",
+      "role": "security",
+      "core": true,
+      "listen": "\"Everything\" is honest and common; a clear limit means tiers and separate admin accounts already exist.",
+      "probe": "Which privileged account would hurt most, and who uses it every day?"
     },
     {
       "stage": "value",
       "q": "How long does it take to remove every access of someone who leaves?",
       "why": "Offboarding time is the identity metric executives understand.",
       "need": "Every access of a leaver is removed within a day",
-      "how": "Automate offboarding from the HR system"
+      "how": "Automate offboarding from the HR system",
+      "role": "operations",
+      "core": true,
+      "listen": "Same day across every system is the target; \"the directory is quick, the apps are not\" is the usual gap.",
+      "probe": "Which applications keep their own accounts outside the directory?"
     },
     {
       "stage": "L1",
       "q": "How many directories and identity providers do you run, including the ones from acquisitions?",
       "why": "Unconnected directories are where old accounts survive.",
       "need": "Every directory and identity provider is known and connected",
-      "how": "List them, acquisitions included, and connect each one"
+      "how": "List them, acquisitions included, and connect each one",
+      "role": "architect",
+      "listen": "Several directories are normal after acquisitions; what matters is that each is known and joined.",
+      "probe": "Which directory would an attacker use to reach the others?"
     },
     {
       "stage": "L2",
       "q": "Do you know every account with administrative rights, human and machine?",
       "why": "Privileged inventory sizes the work.",
       "need": "Every privileged account, human or machine, is known",
-      "how": "Build the privileged inventory and give each an owner"
+      "how": "Build the privileged inventory and give each an owner",
+      "role": "security",
+      "core": true,
+      "listen": "Machine accounts are usually the gap: count them as carefully as the people.",
+      "probe": "How many of those accounts have more rights than their task needs?"
     },
     {
       "stage": "L3",
       "q": "Is strong multi-factor required for every privileged sign-in, with no exceptions list?",
       "why": "Exceptions are where breaches start.",
       "need": "Strong multi-factor protects every privileged sign-in, with no exceptions",
-      "how": "Close the exceptions list one account at a time"
+      "how": "Close the exceptions list one account at a time",
+      "role": "security",
+      "core": true,
+      "listen": "\"Except\" is the answer to listen for: the exceptions are where attacks get in.",
+      "probe": "Who is on the exceptions list, and since when?"
     },
     {
       "stage": "L3",
       "q": "When were access rights last reviewed, and who signed the review?",
       "why": "Unsigned reviews are paperwork, not control.",
       "need": "Access is reviewed on a schedule, and someone signs",
-      "how": "Set a review cycle with named reviewers"
+      "how": "Set a review cycle with named reviewers",
+      "role": "application",
+      "listen": "Reviewed by the owner who knows the access, and something removed each time; otherwise it is a signature.",
+      "probe": "What did the last review remove?"
     },
     {
       "stage": "L3",
       "q": "How many service accounts have passwords that never change?",
       "why": "Static secrets are the quiet risk.",
       "need": "Service account secrets change",
-      "how": "Vault the secrets and set rotation"
+      "how": "Vault the secrets and set rotation",
+      "role": "operations",
+      "listen": "Secrets that never change are reused by attackers for years.",
+      "probe": "Which of those service accounts could reach production data?"
     },
     {
       "stage": "L4",
       "q": "When a risky sign-in alert fires, who acts and how fast?",
       "why": "Detection without an owner is noise.",
       "need": "A risky sign-in alert is acted on quickly",
-      "how": "Agree who acts and how fast"
+      "how": "Agree who acts and how fast",
+      "role": "security",
+      "listen": "Minutes, by a named team, with the power to block the session; otherwise the alert is a log line.",
+      "probe": "What did the last risky sign-in turn out to be, and how long did it take to know?"
     }
   ]
 }

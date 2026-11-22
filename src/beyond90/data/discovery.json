@@ -5,56 +5,85 @@
       "q": "What would have to be true in six months for you to call this a success?",
       "why": "Sets the criteria before the tool sets them for you.",
       "need": "Success in six months is written down and agreed with the sponsor",
-      "how": "Write three outcomes with the sponsor and a date for each"
+      "how": "Write three outcomes with the sponsor and a date for each",
+      "role": "executive",
+      "core": true,
+      "listen": "A dated outcome the sponsor would sign; \"better visibility\" alone means nobody will notice success.",
+      "probe": "Who would have to agree that it worked, and what would they look at?"
     },
     {
       "stage": "value",
       "q": "What happened last time a cloud risk reached production, and who found it?",
       "why": "A real incident is the strongest reason to change, and shows who cares.",
       "need": "A cloud risk is found by the security team before it reaches production",
-      "how": "Agree which risks must be caught before deployment, and who sees them first"
+      "how": "Agree which risks must be caught before deployment, and who sees them first",
+      "role": "security",
+      "core": true,
+      "listen": "Found by a customer, an auditor or an attacker means the tool is not where the risk enters.",
+      "probe": "What would have caught it earlier: a check before deploy, or an alert the day it changed?"
     },
     {
       "stage": "L1",
       "q": "Where does your full list of cloud accounts live: the bill, the organisation, or someone's spreadsheet?",
       "why": "Coverage measured against the platform's own list is always perfect.",
       "need": "There is one list of cloud accounts everyone trusts",
-      "how": "Pull accounts from the organisation and the bill, and reconcile the two"
+      "how": "Pull accounts from the organisation and the bill, and reconcile the two",
+      "role": "operations",
+      "core": true,
+      "listen": "One trusted list; three partial ones means accounts nobody watches.",
+      "probe": "When did someone last find an account that was on none of the lists?"
     },
     {
       "stage": "L1",
       "q": "Who creates new accounts, and how long until security hears about one?",
       "why": "Accounts made outside the process are the ones nobody connects.",
       "need": "Security hears about a new account the day it is created",
-      "how": "Hook account creation to an automatic connection"
+      "how": "Hook account creation to an automatic connection",
+      "role": "operations",
+      "listen": "Same day is good; \"when the bill arrives\" means weeks with nothing watched.",
+      "probe": "Is a new account connected by the same step that creates it, or by a ticket afterwards?"
     },
     {
       "stage": "L2",
       "q": "Are there accounts that are connected but where you rarely see anything?",
       "why": "Connected without inventory looks covered and is not.",
       "need": "Every connected account is really seen, not just connected",
-      "how": "List accounts with little or no inventory and fix their permissions"
+      "how": "List accounts with little or no inventory and fix their permissions",
+      "role": "security",
+      "listen": "Connected but quiet usually means missing permissions or a region nobody turned on.",
+      "probe": "Which of those accounts hold something you would not want exposed?"
     },
     {
       "stage": "L3",
       "q": "Which capabilities did you buy that nobody has switched on yet, and what stopped them?",
       "why": "The answer is usually a person or an approval, not the technology.",
       "need": "What was bought is switched on, and what blocked it is known",
-      "how": "Name the blocker for each capability not in use, with an owner"
+      "how": "Name the blocker for each capability not in use, with an owner",
+      "role": "security",
+      "core": true,
+      "listen": "Bought and off is the cheapest gain there is; ask what blocked it, not whether it matters.",
+      "probe": "Who would have to say yes to switch it on, and what are they worried about?"
     },
     {
       "stage": "L4",
       "q": "When the tool finds something critical, who gets it and how do they know it is theirs?",
       "why": "Findings without an owner are where risk stays open.",
       "need": "Every critical finding reaches a named owner who knows it is theirs",
-      "how": "Map owners to accounts and route findings to them"
+      "how": "Map owners to accounts and route findings to them",
+      "role": "application",
+      "core": true,
+      "listen": "A finding that lands in a shared queue is a finding nobody owns.",
+      "probe": "How would the team that owns that resource hear about it, in the tool they already use?"
     },
     {
       "stage": "L4",
       "q": "How do you accept a risk today, and does that acceptance ever expire?",
       "why": "Acceptances without an end date quietly become permanent.",
       "need": "Accepted risks have an owner and an end date",
-      "how": "Record each acceptance with who accepted it and when it expires"
+      "how": "Record each acceptance with who accepted it and when it expires",
+      "role": "security",
+      "listen": "Acceptances with no end date are decisions nobody remembers making.",
+      "probe": "When did someone last review an accepted risk, and change their mind?"
     }
   ]
 }

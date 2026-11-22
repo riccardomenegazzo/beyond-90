@@ -1,0 +1,16 @@
+{
+  "criteria": [
+    {"text": "Every device in scope reports an agent, servers, branches and contractors included, checked against the inventory", "how": "Compare the inventory with the agents reporting at the end of week one, and list the gaps."},
+    {"text": "A ransomware simulation on one test machine is blocked or contained before it reaches a second machine", "how": "Run a harmless simulation on a test machine and watch whether it spreads."},
+    {"text": "A compromised machine is isolated in minutes, at any hour, by one action", "how": "Trigger a test alert out of hours and time it to the machine isolated."},
+    {"text": "A group in detect-only mode runs in prevention for two weeks without breaking its applications", "how": "Switch one group to prevention, and record what was blocked and what broke."},
+    {"text": "Every exclusion in scope has an owner and a reason, and the ones without are removed", "how": "Export the exclusions and review them with their owners."}
+  ],
+  "readiness": [
+    "The devices in scope listed, from the inventory the customer trusts",
+    "Test machines for the simulation, isolated from production",
+    "The detect-only group to switch, and its application owners told",
+    "Who answers an alert out of hours during the test",
+    "Security, legal and procurement steps known"
+  ]
+}

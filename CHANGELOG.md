@@ -2,6 +2,12 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.188.0
+
+- **The security lines' questions say how to ask them.** Cloud security, SIEM, identity, endpoint, SaaS and AI security had their questions, but not who to ask, which few are essential, what a strong or a worrying answer sounds like, or the follow-up: now each of their 48 questions does, as on the infrastructure lines. So on those lines too, **Essential questions only** keeps four or five, the role chips narrow the questions to the people in the room, the card says who to ask and turns over to how to ask it, and the end of the deck says who to invite next.
+- **Their proofs of value come with criteria.** SIEM, identity, endpoint, SaaS and AI security now ship five success criteria each, written so a sponsor can sign them off (a source that goes quiet raises an alert within an hour; every privileged sign-in uses strong multi-factor, with no exceptions list; a ransomware simulation stays on one machine; public links on sensitive data closed without stopping the work; ten instructions an agent should refuse, tried), and the checklist for the proof's first day. A proof started from a workshop on those lines now opens with them.
+- Tests: every security question says how to ask it, a few are essential, the proofs have criteria and a first-day checklist, and none names a vendor.
+
 ## 0.187.0
 
 - **Cloud security, the first line, is told and challenged too.** Its story: the line for the executive, the technical team and finance, who to have in the room, and four objections ("We already have a cloud security tool", "Developers will ignore the findings", "Agents will slow down our workloads", "We have thousands of findings already"), each with the question to ask first, the answer and the test that settles it. Every line now ships one.

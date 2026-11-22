@@ -5,56 +5,84 @@
       "q": "Which business applications hold the data you would least like to see leaked?",
       "why": "Ranks tenants by what is at stake, not by size.",
       "need": "The applications holding the most sensitive data are known",
-      "how": "Rank tenants by the data they hold"
+      "how": "Rank tenants by the data they hold",
+      "role": "executive",
+      "core": true,
+      "listen": "Two or three named applications; \"all of them\" means nobody has ranked them.",
+      "probe": "Who owns each of those applications on the business side?"
     },
     {
       "stage": "L1",
       "q": "How many SaaS tenants do you have, including ones teams bought on a card?",
       "why": "Shadow tenants are the ones with no one watching.",
       "need": "Every SaaS tenant is known, card purchases included",
-      "how": "Find tenants from sign-ins and expenses, and connect them"
+      "how": "Find tenants from sign-ins and expenses, and connect them",
+      "role": "finance",
+      "core": true,
+      "listen": "The card statements are the honest list; the IT list is usually shorter.",
+      "probe": "Who could pull the list of SaaS paid for by card last year?"
     },
     {
       "stage": "L2",
       "q": "Do you know which third-party apps can read your mail or files today?",
       "why": "OAuth grants are a common, quiet path to data.",
       "need": "Third-party apps with access to mail or files are known and approved",
-      "how": "Review app grants and remove the risky ones"
+      "how": "Review app grants and remove the risky ones",
+      "role": "security",
+      "core": true,
+      "listen": "Third-party apps with read access to mail or files are a quiet way out for data.",
+      "probe": "Who approves an app's access, and has any been removed?"
     },
     {
       "stage": "L3",
       "q": "Is strong sign-in enforced for everyone, admins included, with no exceptions list?",
       "why": "Exceptions lists tend to grow and are where accounts get taken.",
       "need": "Strong sign-in protects everyone, admins included",
-      "how": "Close the exceptions one group at a time"
+      "how": "Close the exceptions one group at a time",
+      "role": "security",
+      "core": true,
+      "listen": "\"Except\" again: admins without strong sign-in are the accounts attackers want.",
+      "probe": "Which admins are on the exceptions list, and why?"
     },
     {
       "stage": "L3",
       "q": "How do you find files shared with anyone who has the link?",
       "why": "Public links are the most frequent SaaS data leak.",
       "need": "Files shared with anyone who has the link are found and reviewed",
-      "how": "Find public links and agree a policy"
+      "how": "Find public links and agree a policy",
+      "role": "security",
+      "listen": "Public links on sensitive data are the leak most often found by someone else.",
+      "probe": "When did someone last find a public link that should not have been?"
     },
     {
       "stage": "L3",
       "q": "Who reviews admin roles, and how often?",
       "why": "Standing admin rights outlive the people and projects that needed them.",
       "need": "Admin roles are reviewed on a schedule",
-      "how": "Set a review cycle with a named reviewer"
+      "how": "Set a review cycle with a named reviewer",
+      "role": "security",
+      "listen": "Reviewed on a schedule, with admins removed; too many global admins is the common finding.",
+      "probe": "How many people hold the highest admin role today?"
     },
     {
       "stage": "L4",
       "q": "When a risky setting is found, which team owns the fix?",
       "why": "SaaS settings often belong to the business, not to IT.",
       "need": "Every risky setting has a team that owns the fix",
-      "how": "Map settings to owning teams"
+      "how": "Map settings to owning teams",
+      "role": "application",
+      "listen": "A team named per application; security finding it and nobody fixing it is the usual stall.",
+      "probe": "What happened to the last risky setting that was found?"
     },
     {
       "stage": "value",
       "q": "What would a clean audit of these tenants mean for you this year?",
       "why": "Ties posture work to a date the sponsor already cares about.",
       "need": "A clean audit of these tenants is within reach this year",
-      "how": "Agree what the auditor will ask, and close the gaps"
+      "how": "Agree what the auditor will ask, and close the gaps",
+      "role": "executive",
+      "listen": "An audit with a date makes this a project with a deadline.",
+      "probe": "What did the last audit find, and is it closed?"
     }
   ]
 }

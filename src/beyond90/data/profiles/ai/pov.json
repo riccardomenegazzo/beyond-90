@@ -1,0 +1,16 @@
+{
+  "criteria": [
+    {"text": "Every AI service and model called in scope is listed with an owner, including the ones teams pay for themselves", "how": "Compare the network, spend and sign-in records of a month with the list the customer has."},
+    {"text": "Every agent in scope is listed with the tools it can call and what each tool can change", "how": "Review each agent's tools with its owner and mark the ones that change records, send messages or spend."},
+    {"text": "A test prompt with invented sensitive data is caught before it reaches the model, and logged", "how": "Send the test prompt from a normal account and follow it to the block and the log."},
+    {"text": "Ten instructions an agent should refuse are tried, and every one it carried out is fixed and tried again", "how": "Run the ten against the agent, fix what passed, and run them again."},
+    {"text": "The prompt and the answer behind a chosen response can be found within minutes", "how": "Pick an answer from last week and find its prompt live."}
+  ],
+  "readiness": [
+    "The AI services, models and agents in scope listed, with their owners",
+    "Read access to the network, spend and sign-in records for a month",
+    "The invented sensitive data for the test prompt, agreed with the data owner",
+    "The agent to test, in a setting where its actions do no harm",
+    "Security, legal and procurement steps known"
+  ]
+}

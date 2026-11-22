@@ -1,0 +1,16 @@
+{
+  "criteria": [
+    {"text": "Every SaaS tenant in scope is listed, including the ones paid for by card, and matched to an owner", "how": "Compare the card and invoice statements with the tenants IT manages, and name an owner for each."},
+    {"text": "Every third-party app with access to mail or files in scope is listed, and the ones nobody approved are removed", "how": "List the apps and their permissions, and review them with security."},
+    {"text": "Strong sign-in is enforced for every admin in scope, with no exceptions list", "how": "Report every admin sign-in for a week and show none skipped strong authentication."},
+    {"text": "Public links on sensitive data in scope are found, and closed without stopping the work that needs sharing", "how": "Find the public links on one sensitive site, close them, and count the complaints in a week."},
+    {"text": "A risky setting found in a tenant reaches the team that owns the fix, and is fixed within the agreed time", "how": "Introduce one risky setting in a test tenant and follow it to the fix."}
+  ],
+  "readiness": [
+    "The tenants in scope listed, with their business owners",
+    "Read access to each tenant's settings and audit logs, and who approves it",
+    "A test tenant, or a test setting agreed with the owner",
+    "The card and invoice statements for the last year, from finance",
+    "Security, legal and procurement steps known"
+  ]
+}

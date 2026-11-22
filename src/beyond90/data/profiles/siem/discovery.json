@@ -5,56 +5,84 @@
       "q": "Which incident would you most hate to find out about from someone outside?",
       "why": "Anchors the log sources that matter.",
       "need": "The incident nobody wants to hear about from outside is covered",
-      "how": "Map the sources and detections that would catch it"
+      "how": "Map the sources and detections that would catch it",
+      "role": "executive",
+      "core": true,
+      "listen": "A named incident (a leak, a ransom note, a regulator's letter) gives the detections their priority.",
+      "probe": "Which logs would show that incident starting, and are they collected today?"
     },
     {
       "stage": "value",
       "q": "How long did the last real investigation take, from alert to answer?",
       "why": "Investigation time is what the platform must cut.",
       "need": "Investigations take hours, not days",
-      "how": "Time one investigation and remove the slowest step"
+      "how": "Time one investigation and remove the slowest step",
+      "role": "security",
+      "core": true,
+      "listen": "Days or weeks means missing logs or manual searching; hours means the basics are in place.",
+      "probe": "Where did the time go: finding the logs, reading them, or deciding what to do?"
     },
     {
       "stage": "L1",
       "q": "Which environments send no logs at all today?",
       "why": "Blind spots are the first gap to close.",
       "need": "Every environment sends its logs",
-      "how": "Connect the silent environments first"
+      "how": "Connect the silent environments first",
+      "role": "operations",
+      "core": true,
+      "listen": "A short, known list is fine; \"we are not sure\" means blind spots nobody has counted.",
+      "probe": "Which of those environments would an attacker go to first?"
     },
     {
       "stage": "L2",
       "q": "Do you know which log sources are expected for each environment, and which are missing?",
       "why": "A list of expected sources makes silence visible.",
       "need": "Expected log sources are listed, and missing ones are visible",
-      "how": "Write the expected list per environment"
+      "how": "Write the expected list per environment",
+      "role": "security",
+      "listen": "A list per environment, and an alert when a source goes quiet; otherwise silence looks like safety.",
+      "probe": "When a source stopped sending last time, how long until someone noticed?"
     },
     {
       "stage": "L3",
       "q": "How many detections are switched on, and how many have fired in the last month?",
       "why": "Rules that never fire may be broken, not quiet.",
       "need": "Detections that are on actually fire when they should",
-      "how": "Test the top detections with safe simulations"
+      "how": "Test the top detections with safe simulations",
+      "role": "security",
+      "core": true,
+      "listen": "Many detections on and few firing means noise or broken rules; ask which ones they trust.",
+      "probe": "Which detection caught something real last month, and which ones nobody believes?"
     },
     {
       "stage": "L3",
       "q": "Are response playbooks automated for the most common alerts?",
       "why": "Automation decides how much the team can handle.",
       "need": "Common alerts are handled by automated playbooks",
-      "how": "Automate the three most frequent responses"
+      "how": "Automate the three most frequent responses",
+      "role": "security",
+      "listen": "Automated containment for the common alerts frees analysts for the ones that need judgement.",
+      "probe": "Which alert takes most analyst hours, and what do they do every time it fires?"
     },
     {
       "stage": "L3",
       "q": "How long are logs kept, and is that enough for an investigation or an auditor?",
       "why": "Retention gaps appear at the worst moment.",
       "need": "Logs are kept long enough for an investigation and an audit",
-      "how": "Agree retention with legal and the auditors"
+      "how": "Agree retention with legal and the auditors",
+      "role": "data",
+      "listen": "Kept as long as an investigation looks back, and as long as the auditor asks; cheaper storage for the rest.",
+      "probe": "How far back did the last investigation, or the last audit, need to look?"
     },
     {
       "stage": "L4",
       "q": "How many alerts are closed without anyone looking, and who decides that?",
       "why": "Unreviewed closures hide real incidents.",
       "need": "No alert is closed without someone deciding",
-      "how": "Make closure need a reason and an owner"
+      "how": "Make closure need a reason and an owner",
+      "role": "security",
+      "listen": "Closing alerts unread is a decision; it needs an owner and a rule, not habit.",
+      "probe": "Who decided which alerts can be closed without a look, and when was that last checked?"
     }
   ]
 }

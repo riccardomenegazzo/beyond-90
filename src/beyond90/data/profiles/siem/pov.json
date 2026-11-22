@@ -1,0 +1,16 @@
+{
+  "criteria": [
+    {"text": "Every environment in scope sends the log sources expected for it, and a source that goes quiet raises an alert within an hour", "how": "List the expected sources per environment, stop one on purpose, and time the alert."},
+    {"text": "The incident the customer most fears is detected end to end in a replay, from the first log to the alert", "how": "Replay the steps of that incident in a test environment and follow it to the alert."},
+    {"text": "An investigation the team runs today takes hours, not days, with every log it needs searchable", "how": "Repeat a recent investigation with the team and time it from the alert to the answer."},
+    {"text": "The most common alert is handled by an automated response, with the hours saved counted", "how": "Automate the response to that alert for two weeks and compare the analyst hours with before."},
+    {"text": "A question about an event a year old is answered from kept logs, within the agreed cost of keeping them", "how": "Ask the question live, and show what keeping those logs costs."}
+  ],
+  "readiness": [
+    "The environments and log sources in scope listed, with their owners",
+    "Read access to the log sources, and who approves it",
+    "The incident to replay chosen, and a test environment to replay it in",
+    "The analysts who will run the investigation named",
+    "Security, legal and procurement steps known"
+  ]
+}
