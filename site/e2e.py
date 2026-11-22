@@ -866,6 +866,12 @@ def main(site: str) -> int:
         page.fill("#wsheard", "One day without the main site would cost about 2 million euros")
         check(any("Figure heard: 2,000,000 per day" in page.locator("#view .heardhit").nth(i).inner_text() for i in range(page.locator("#view .heardhit").count())),
               "a figure in what was heard is read, with what it is counted per, on the value question it answers")
+        page.fill("#wsheard", "Qualsiasi amministratore di dominio può cancellare i backup")
+        it_hits = [page.locator("#view .heardhit").nth(i).inner_text() for i in range(page.locator("#view .heardhit").count())]
+        page.fill("#wsheard", "Un giorno senza la sede principale costerebbe circa 2 milioni di euro")
+        check(any("administrator account delete" in t for t in it_hits)
+              and any("Figure heard: 2,000,000 per day" in page.locator("#view .heardhit").nth(i).inner_text() for i in range(page.locator("#view .heardhit").count())),
+              "a note written in Italian finds the same question, and its figure")
         page.fill("#wsheard", "The CIO signs off anything above 500k")
         deal_hit = page.locator("#view .heardhit", has_text="Who decides, who signs")
         check(deal_hit.count() == 1 and "Qualify the deal" in deal_hit.inner_text() and deal_hit.locator(".heardopt").count() == 3

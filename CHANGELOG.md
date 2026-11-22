@@ -2,6 +2,12 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.194.0
+
+- **Heard something reads notes written in Italian.** In a meeting in Italy the notes are written in Italian, and the questions are in English. What was heard is now read through a glossary of the words these meetings use (il rinnovo, la licenza, i backup, il ripristino, la sede, l'amministratore, fuori supporto, il fine settimana...), so "Le password degli account di servizio non cambiano da dieci anni" finds the question on service accounts, "Il CIO firma tutto sopra i 500 mila" finds who decides and signs, and "abbiamo già i backup" is recognised as the concern it voices.
+- **Money said in Italian is a figure too:** "300 mila al giorno", "40.000 euro all'ora", "1,5 milioni al mese", "2.000.000 per ogni fermo". "Per ora" stays "for now", and "1500 utenti" is not money.
+- English notes are read exactly as before: only words that are not also English are read as Italian ("data" stays data). Tests hold thirty-one Italian sentences on the real questions of thirteen lines, the deal's questions, ten concerns and the figures.
+
 ## 0.193.0
 
 - **More questions where the infrastructure lines were thinnest.** Every infrastructure line now asks at least fourteen questions, each saying who to ask, what to listen for and the follow-up. Microsegmentation gains three: what a breach that spread from machine to machine would cost, and whether an insurer has asked; which kinds of workload the separation must cover (virtual machines, containers, bare metal, desktops); who is alerted when a machine tries a connection its policy forbids. Edge sites ask what must keep working when a site's network link is down; virtual desktops, what a desktop costs per user per month; object storage, how an open bucket would be noticed; service provider clouds, how the provider's own staff reach tenant environments.

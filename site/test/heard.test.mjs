@@ -293,6 +293,117 @@ test("on the infrastructure lines' newest questions, what was heard finds its qu
   for (const [said, want] of cases) assert.equal(match(cards, said)[0].card.key, want, said);
 });
 
+test("a note written in Italian finds the same questions as one in English", () => {
+  let first = 0, all = 0;
+  for (const [lines, cases] of [
+    [["hci", "dbaas", "dr-backup", "hybrid-cloud"], [
+      ["Gli sviluppatori aprono un ticket e aspettano due settimane per una copia della produzione", "dbaas#0"],
+      ["Nessuno è davvero responsabile di metà delle istanze", "dbaas#2"],
+      ["Ripristinare lo stato di martedì scorso del database ordini ci ha richiesto due giorni", "dbaas#1"],
+      ["Le patch richiedono un weekend per database, quindi ne saltiamo molte", "dbaas#11"],
+      ["La bolletta del cloud è raddoppiata e nessuno la guarda", "hybrid-cloud#7"],
+      ["I costi di egress ci stanno uccidendo", "hybrid-cloud#13"],
+      ["I dati dei clienti devono restare nell'UE per il GDPR", "hybrid-cloud#1"],
+      ["Non abbiamo mai provato il failover verso il cloud", "hybrid-cloud#4"],
+      ["I due data center sono collegati da una linea da 1 Gb, la paga il team di rete", "hybrid-cloud#14"],
+    ]],
+    [["platform-migration", "identity", "siem", "private-ai"], [
+      ["Il rinnovo della licenza dell'hypervisor è a marzo e il prezzo è triplicato", "platform-migration#0"],
+      ["Abbiamo provato a migrare qualche VM in laboratorio e i driver si sono rotti", "platform-migration#4"],
+      ["Nessuno ha un piano di rollback se il passaggio fallisce di notte", "platform-migration#5"],
+      ["Il team operativo non ha mai gestito altro che la vecchia piattaforma, serve formazione", "platform-migration#19"],
+      ["Circa 40 macchine hanno ancora un sistema operativo fuori supporto", "platform-migration#18"],
+      ["Chi lascia l'azienda mantiene l'account per settimane", "identity#1"],
+      ["Alcuni amministratori accedono ancora senza MFA", "identity#4"],
+      ["Le password degli account di servizio non cambiano da dieci anni", "identity#6"],
+      ["L'ultima revisione degli accessi è stata firmata due anni fa", "identity#5"],
+      ["La rete OT non invia nessun log", "siem#2"],
+      ["Teniamo i log solo per 30 giorni", "siem#6"],
+      ["La maggior parte degli alert viene chiusa senza che nessuno la guardi", "siem#7"],
+      ["I server GPU restano fermi quasi tutto il tempo", "private-ai#2"],
+      ["I dati dei clienti devono restare in Italia, quindi niente servizi AI pubblici", "private-ai#1"],
+      ["Nessuno sa cosa può leggere il chatbot", "private-ai#4"],
+      ["Ogni team usa il suo modello e nessuno tiene traccia della spesa", "private-ai#7"],
+    ]],
+    [["siem", "identity", "endpoint", "saas", "ai"], [
+      ["Nessuno guarda gli alert di notte o nel fine settimana", "siem#8"],
+      ["Tre amministratori condividono la stessa password di domain admin", "identity#8"],
+      ["Gli admin locali possono spegnere l'agente antivirus", "endpoint#9"],
+      ["Quando le persone se ne vanno, i loro link condivisi continuano a funzionare", "saas#9"],
+      ["Le persone modificano i prompt direttamente in produzione", "ai#9"],
+      ["Una patch critica impiega un mese ad arrivare su tutti i portatili", "endpoint#8"],
+    ]]
+  ]) {
+    const cards = [];
+    for (const p of lines) {
+      const file = new URL(`../../src/beyond90/data/profiles/${p}/discovery.json`, import.meta.url);
+      JSON.parse(readFileSync(file, "utf8")).questions.forEach((q, i) => cards.push({ key: `${p}#${i}`, q }));
+    }
+    for (const [said, want] of cases) {
+      const got = match(cards, said).map((h) => h.card.key);
+      assert.ok(got.includes(want), `${said}: ${got.join(" ")}`);
+      if (got[0] === want) first += 1;
+      all += 1;
+    }
+  }
+  assert.ok(first >= 25, `first ${first} of ${all}`);
+});
+
+test("in Italian too: the deal's questions, the concerns a line expects, and the money said", async () => {
+  const { DEAL } = await import("../qualify.js");
+  const { figureIn } = await import("../heard.js");
+  const deal = DEAL.map((x) => ({ key: `deal#${x.id}`, label: "Qualify the deal", q: x }));
+  const first = (said) => (match([...DR, ...deal], said)[0] || {}).card?.key;
+  for (const [said, want] of [
+    ["Qualsiasi amministratore di dominio può cancellare i backup", "dr#6"],
+    ["Il secondo data center è a 40 km, circa 2 ms", "dr#3"],
+    ["L'ultima prova di failover è stata tre anni fa", "dr#1"],
+    ["Nessuno ha mai stimato quanto costa un giorno di fermo, forse un milione di fatturato perso", "dr#0"],
+    ["I magazzini non hanno nulla di protetto", "dr#2"],
+    ["Il DNS e le regole del firewall non sono mai stati nel piano", "dr#7"],
+    ["RPO e RTO esistono sulla carta, li ha scritti l'IT", "dr#4"],
+    ["Il CIO firma tutto sopra i 500 mila", "deal#decider"],
+    ["Il contratto di hosting scade a marzo, quindi va scelto prima", "deal#why_now"],
+    ["Stanno parlando anche con un altro fornitore, o potrebbero farlo in casa", "deal#alternatives"],
+    ["Il capo infrastruttura lo porterà al consiglio e lo sosterrà, ci tiene molto", "deal#champion"],
+  ]) assert.equal(first(said), want, said);
+
+  const cat = JSON.parse(readFileSync(new URL("./workshop-catalog.json", import.meta.url), "utf-8"));
+  const cards = concernCards(cat, Object.keys(cat.lines));
+  for (const [want, said] of [
+    ["dr-backup#0", "abbiamo già i backup, girano ogni notte"],
+    ["dr-backup#1", "un secondo sito è troppo costoso per noi"],
+    ["dr-backup#2", "provare il ripristino disturberebbe la produzione"],
+    ["dr-backup#3", "il ransomware non cifrerebbe anche i backup?"],
+    ["edge-sites#0", "le nostre sedi sono troppo piccole per questo"],
+    ["edge-sites#1", "i collegamenti verso le sedi sono troppo scarsi, alcune vanno in 4G"],
+    ["cloud-operations#0", "abbiamo già strumenti di monitoraggio, tre"],
+    ["cloud-operations#3", "temo che l'automazione rompa la produzione"],
+    ["hci#2", "abbiamo appena comprato nuovi storage array"],
+    ["dbaas#2", "servirebbero nuove licenze?"],
+  ]) assert.equal((concernsHeard(cards, said)[0] || {}).card?.key, `obj:${want}`, said);
+  for (const said of ["Il CIO firma tutto sopra i 500 mila", "L'ultima prova di failover è stata tre anni fa"]) assert.deepEqual(concernsHeard(cards, said), [], said);
+
+  const day = { q: "What would one day without your main site cost, and has anyone put a number on it?" };
+  const open = { q: "What is at stake if nothing changes?" };
+  assert.deepEqual(figureIn("circa 2 milioni di euro, la finanza è d'accordo", day), { amount: 2000000, per: "day" });
+  assert.deepEqual(figureIn("40.000 euro all'ora", day), { amount: 40000, per: "hour" });
+  assert.deepEqual(figureIn("1,5 milioni al mese di ordini persi", open), { amount: 1500000, per: "month" });
+  assert.deepEqual(figureIn("2.000.000 per ogni fermo", open), { amount: 2000000, per: "incident" });
+  assert.deepEqual(figureIn("250000 all'anno", open), { amount: 250000, per: "year" });
+  assert.deepEqual(figureIn("300 mila al giorno", open), { amount: 300000, per: "day" });
+  assert.equal(figureIn("l'ultima prova è di tre anni fa", day), null);
+  assert.equal(figureIn("1500 utenti", day), null);
+  assert.equal(figureIn("2 milioni, per ora", open), null);     // "per ora" is "for now", not per hour
+});
+
+test("an English note is read exactly as before: Italian is read only in words that are not English", () => {
+  assert.deepEqual(tokens("Il rinnovo della licenza scade a marzo"), [stem("renewal"), stem("licence"), stem("renewal"), "marzo"]);
+  assert.deepEqual(tokens("l'accesso degli ex dipendenti"), [stem("access"), stem("leave")]);
+  assert.deepEqual(tokens("the data will serve several teams"), ["data", "serv", "several", "team"]);
+  assert.deepEqual(tokens("the admin's account can't be deleted"), [stem("admin"), "account", stem("delete")]);
+});
+
 test("a concern the line expects is recognised as the customer says it, and an ordinary sentence is not one", () => {
   const cat = JSON.parse(readFileSync(new URL("./workshop-catalog.json", import.meta.url), "utf-8"));
   const cards = concernCards(cat, Object.keys(cat.lines));

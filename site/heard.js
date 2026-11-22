@@ -4,7 +4,8 @@
 // every question in scope, its text counting twice and what to listen for, why it matters and the follow-up once each,
 // with rare words weighing more than common ones and a few groups of words that mean the same thing in these
 // conversations (a backup and a copy, a restore and a failover). The best few are offered; the person files it.
-// No DOM, so Node can test it. Nothing leaves the browser.
+// Notes are often written in the customer's language: a note written in Italian is read through a glossary of the
+// words these meetings use, so it finds the same questions. No DOM, so Node can test it. Nothing leaves the browser.
 
 export const NOTE_MAX = 300;      // as long as a note on an answer can be
 
@@ -75,6 +76,181 @@ const SAME = [
 ];
 const CANON = new Map(SAME.flatMap((group) => group.map((w) => [bare(w), bare(group[0])])));
 
+// Italian, as a note taken in a meeting in Italy is written. Words that carry nothing are dropped; the words these
+// meetings use become the English word the questions use, then are compared as any other. Only words that are not
+// also English words are read this way ("data" stays data), so an English note is compared exactly as before.
+const STOP_IT = new Set(("il lo la gli le una uno del dello della dei degli delle dal dallo dalla dai dagli dalle nel nello " +
+  "nella nei negli nelle sul sullo sulla sui sugli sulle con per tra fra al allo alla ai agli alle che chi cui come dove " +
+  "quando perche quanto quanti quanta quante quale quali questo questa questi queste quello quella quelli quelle nostro " +
+  "nostra nostri nostre vostro vostra loro suo sua suoi sue mio mia noi voi lui lei essi esse anche ancora sempre mai piu " +
+  "meno molto molti molte molta poco pochi poche tutto tutti tutte tutta solo sono siamo sei era erano essere stato stata " +
+  "stati state abbiamo hanno avete avere aveva avevano fanno fare viene vengono puo possono potrebbe potremmo deve devono " +
+  "dobbiamo bisogna stanno stiamo cosa cose nessun nessuna altro altra altri altre circa oggi adesso qui ogni " +
+  "sappiamo sanno sapere detto dice dicono pero quindi oppure mentre dopo prima sopra sotto non proprio tanto tanti cioe " +
+  "ovvero invece fino verso durante almeno nuovo nuova nuovi nuove due quattro cinque sette otto nove dieci").split(" "));
+const IT = new Map(`copy: copia copie copiato copiati
+restore: ripristino ripristini ripristinare ripristinato ripristinata ripristinati ripristinate recupero recuperare ripartenza
+site: sito siti sede sedi
+datacentre: datacenter
+branch: filiale filiali negozio negozi magazzino magazzini stabilimento stabilimenti
+machine: macchina macchine
+network: rete reti
+link: collegamento collegamenti connettivita collegato collegati collegata collegate linea linee
+bandwidth: banda
+cost: costo costi costa costano costerebbe spesa spese prezzo prezzi pagare paghiamo pagato paga pagano
+bill: fattura fatture fatturazione fatturare bolletta bollette
+licence: licenza licenze
+renewal: rinnovo rinnovi rinnovare scadenza scadenze scade scadono contratto contratti
+supplier: fornitore fornitori concorrente concorrenti alternativa alternative
+decide: decisione decisioni decidere decidono sceglie scelgono scelta
+sign: firma firmare firmato approva approvare approvazione
+procurement: acquisti gara gare legale
+upgrade: aggiornamento aggiornamenti aggiornare aggiornato aggiornati aggiornata aggiornate versione versioni
+attack: attacco attacchi attaccante attaccanti violazione violazioni compromesso compromessa compromessi
+encrypt: cifrerebbe cifra cifrare criptare cripta cifratura crittografia cifrato cifrati cifrata cifrate criptato criptati crittografato crittografati
+admin: amministratore amministratori amministrativo privilegiato privilegiati privilegiata privilegiate
+delete: cancellare cancella cancellato cancellati cancellata eliminare elimina eliminato eliminati
+test: prova prove testato testata testati testare collaudo esercitazione esercitazioni pilota
+target: obiettivo obiettivi
+data: dati
+storage: archiviazione disco dischi
+old: vecchio vecchi vecchia vecchie obsoleto obsoleti obsoleta datato datati
+user: utente utenti
+access: accesso accessi accedere accede accedono
+leave: dimissioni dimesso dimessi uscita lascia lasciano lasciato
+contractor: consulente consulenti appaltatore appaltatori collaboratori
+log: registro registri
+alert: allarme allarmi avviso avvisi segnalazioni
+night: notte notti notturno notturni notturna
+regulator: regolatore autorita garante
+regulation: normativa normative regolamento regolamenti conformita
+auditor: revisore revisori ispettori
+insurer: assicurazione assicuratore assicurazioni polizza
+meeting: riunione riunioni incontro
+day: giorno giorni giornata
+week: settimana settimane
+month: mese mesi
+year: anno anni
+hour: ore
+minute: minuto minuti
+board: consiglio cda
+team: squadra reparto
+operations: operazioni operativo
+security: sicurezza
+application: applicazione applicazioni applicativo applicativi gestionale
+nobody: nessuno
+monitor: monitoraggio monitorare monitorato monitorati
+see: vede vedere vediamo visibilita
+inventory: inventario
+label: etichetta etichette
+policy: politica politiche
+rule: regola regole
+isolate: isolare isolamento isolato
+production: produzione
+development: sviluppo
+migration: migrazione migrazioni
+move: spostare spostato spostati spostamento
+platform: piattaforma piattaforme virtualizzazione
+training: formazione addestramento addestrare
+skill: competenze competenza
+risk: rischio rischi
+plan: piano piani
+maintenance: manutenzione
+capacity: capacita
+memory: memoria
+full: pieno pieni piena piene
+performance: prestazioni
+laptop: portatile portatili
+desktop: postazione postazioni
+phone: telefono telefoni cellulare cellulari smartphone
+mail: posta
+agent: agente agenti
+exclusion: esclusione esclusioni
+assistant: assistente
+model: modello
+country: paese nazione territorio italia europa ue
+customer: cliente clienti
+outage: interruzione interruzioni disservizio disservizi
+stop: ferma fermano bloccato bloccata bloccati
+lost: perdita perdite perso persi perdiamo
+order: ordini
+till: cassa casse
+region: regione regioni
+container: contenitori
+key: chiave chiavi
+rotate: rotazione ruotare ruotate ruotato
+share: condiviso condivisi condivisa condivise condividere condivisione
+public: pubblico pubblica pubblici pubbliche
+internal: interno interni interna
+review: revisione revisioni riesame
+session: sessione sessioni
+record: registrata registrate registrare registrato registrati
+integration: integrazione integrazioni
+index: indice indicizzato indicizzati indicizzare
+answer: risposta risposte
+wrong: sbagliata sbagliate sbagliato sbagliati errata errate errato
+report: segnalare segnalazione segnala
+vulnerability: vulnerabilita
+critical: critico critica critici critiche
+open: aperto aperti aperta aperte
+close: chiuso chiusi chiusa chiuse chiudere
+owner: proprietario proprietari responsabile responsabili
+configuration: configurazione configurazioni
+certification: certificazione certificazioni
+margin: margine margini
+already: gia
+without: senza
+poweredoff: spento spenti spenta spente spegnere spegne
+detect: rilevare rilevamento rilevazione
+slow: lento lenta lenti lente lentezza rallentamento rallentamenti
+second: secondo seconda
+expensive: costoso costosa costosi costose
+disrupt: disturba disturberebbe disturbare interrompe interromperebbe
+tool: strumento strumenti
+automation: automazione
+break: rompe rompera rompere rompa rompono
+poor: scarso scarsa scarsi scarse scadenti
+small: piccolo piccola piccoli piccole
+fail: fallisce falliscono fallito fallita fallimento
+cutover: passaggio
+migrate: migrare migrato migrati migrata migrate
+instance: istanza istanze
+lab: laboratorio
+broken: rotto rotti rotta rotte
+change: cambia cambiano cambiato cambiare modifica modificano modificare modificato modifiche
+send: invia inviano inviare
+look: guarda guardano guardare guardi
+read: legge leggono leggere letto
+carry: porta portare portera
+protect: protetto protetti protetta protette proteggere protezione
+keep: conservare conserviamo teniamo tenere conservati mantiene mantengono
+take: richiede richiesto richiedono impiega impiegato impiegano
+last: scorso scorsa ultimo ultima ultimi ultime
+local: locale locali
+work: funziona funzionano funzionare
+track: traccia tracciare tracciano tracciato
+bought: comprato comprati comprata acquistato acquistati acquistata comprare
+need: servono servirebbe servirebbero bisogno necessario necessari
+advocate: sostiene sosterra sostenere sostenitore
+idle: fermi ferme inattivo inattivi inattive inutilizzato inutilizzati inutilizzate`.split("\n").flatMap((line) => {
+  const [en, words] = line.split(":");
+  return words.trim().split(/\s+/).map((w) => [w, en.trim()]);
+}));
+// the few things said in more than one word, as one: a data centre, the end of support, two-factor
+const PHRASES_IT = [
+  [/centr[oi] (?:elaborazione )?dati/g, "datacentre"],
+  [/(?:fuori|fine(?: del)?) supporto|fine vita|non (?:piu )?supportat[oiae]/g, "unsupported"],
+  [/sistem[ai] operativ[oi]/g, "os"],
+  [/macchin[ae] virtual[ei]/g, "vm"],
+  [/(?:autenticazione )?a (?:due|piu) fattori|doppio fattore|multi ?fattore/g, "multifactor"],
+  [/punt[oi] di ripristino/g, "rpo"],
+  [/temp[oi] di ripristino/g, "rto"],
+  [/fine settimana/g, "weekend"],
+  [/punt[oi] vendita/g, "store"],
+  [/ex dipendenti|se ne vanno|se ne va\b/g, "leaver"],
+  [/consiglio di amministrazione/g, "board"],
+];
+
 /** A word as it is compared: lower case, without its common endings, folded into its group. */
 export function stem(word) {
   const w = bare(word);
@@ -83,7 +259,10 @@ export function stem(word) {
 
 /** The words that carry meaning, compared as `stem` makes them. */
 export function tokens(text) {
-  const t = String(text == null ? "" : text).toLowerCase()
+  let t = String(text == null ? "" : text).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/\b[a-z]{1,5}['\u2019](?=[aeiouh])/g, " ");     // l'accesso, dell'ambiente: the article goes, the word stays
+  for (const [re, to] of PHRASES_IT) t = t.replace(re, to);
+  t = t
     .replace(/data\s+cent(re|er)s?/g, "datacentre")
     .replace(/round[\s-]+trips?/g, "roundtrip")
     .replace(/(?:out|end)\s+of\s+(?:[a-z']+\s+){0,2}(?:support|life)|\beol\b|support\s+ends?/g, "unsupported")
@@ -98,7 +277,9 @@ export function tokens(text) {
     .replace(/recovery[\s-]+times?(\s+objectives?)?/g, "rto")
     .replace(/(\d)\s*ms\b/g, "$1 ms");
   const out = [];
-  for (const w of t.split(/[^a-z0-9]+/)) {
+  for (const raw of t.split(/[^a-z0-9]+/)) {
+    if (STOP_IT.has(raw)) continue;
+    const w = IT.get(raw) || raw;
     if (!w || /^\d+$/.test(w) || (w.length < 3 && !SHORT.has(w)) || STOP.has(w)) continue;
     out.push(stem(w));
   }
@@ -142,15 +323,16 @@ export function joinNote(before, heard) {
 }
 
 // a figure in what was said: "about 2 million a day", "€40,000 per hour", "500k each outage"
-const MULT = { k: 1e3, thousand: 1e3, thousands: 1e3, m: 1e6, mn: 1e6, mio: 1e6, million: 1e6, millions: 1e6, bn: 1e9, billion: 1e9, billions: 1e9 };
-const AMOUNT = /([€$£])?\s?(\d{1,3}(?:[.,]\d{3})+|\d+(?:[.,]\d+)?)\s?(k|thousands?|m|mn|mio|millions?|bn|billions?)?(?![a-z0-9])(?!\s?(?:ms|milliseconds?|km|%|percent|years?|months?|weeks?|days?|hours?|minutes?|tb|gb|vms?|servers?|sites?|hosts?|people|users?)\b)/g;
+const MULT = { k: 1e3, thousand: 1e3, thousands: 1e3, m: 1e6, mn: 1e6, mio: 1e6, million: 1e6, millions: 1e6, bn: 1e9, billion: 1e9, billions: 1e9,
+  mila: 1e3, milione: 1e6, milioni: 1e6, miliardo: 1e9, miliardi: 1e9 };
+const AMOUNT = /([€$£])?\s?(\d{1,3}(?:[.,]\d{3})+|\d+(?:[.,]\d+)?)\s?(k|thousands?|m|mn|mio|millions?|bn|billions?|mila|milion[ei]|miliard[oi])?(?![a-z0-9])(?!\s?(?:ms|milliseconds?|km|%|percent|years?|months?|weeks?|days?|hours?|minutes?|tb|gb|vms?|servers?|sites?|hosts?|people|users?|anni|mesi|settimane|giorni|ore|minuti|utenti|persone|sedi|siti|macchine|dipendenti|per ?cento)\b)/g;
 const PERIODS = [
-  ["hour", /\b(?:per|an|a|each|every)\s+hour\b|\bhourly\b|\/\s?(?:h|hr|hour)\b/],
-  ["day", /\b(?:per|a|each|every)\s+day\b|\bdaily\b|\/\s?day\b/],
-  ["week", /\b(?:per|a|each|every)\s+week\b|\bweekly\b/],
-  ["month", /\b(?:per|a|each|every)\s+month\b|\bmonthly\b/],
-  ["year", /\b(?:per|a|each|every)\s+year\b|\byearly\b|\bannual(?:ly)?\b|\bper annum\b/],
-  ["incident", /\b(?:per|an|each|every)\s+(?:incident|outage|breach|attack|event)\b/],
+  ["hour", /\b(?:per|an|a|each|every)\s+hour\b|\bhourly\b|\/\s?(?:h|hr|hour)\b|\b(?:all['\u2019]|ogni )ora\b|\borari[oe]?\b/],
+  ["day", /\b(?:per|a|each|every)\s+day\b|\bdaily\b|\/\s?day\b|\b(?:al|ogni|per|a) giorno\b|\bgiornalier[oia]\b/],
+  ["week", /\b(?:per|a|each|every)\s+week\b|\bweekly\b|\b(?:alla|a|ogni|per) settimana\b|\bsettimanal[ei]\b/],
+  ["month", /\b(?:per|a|each|every)\s+month\b|\bmonthly\b|\b(?:al|ogni|per|a) mese\b|\bmensil[ei]\b/],
+  ["year", /\b(?:per|a|each|every)\s+year\b|\byearly\b|\bannual(?:ly)?\b|\bper annum\b|\b(?:all['\u2019]|l['\u2019]|ogni |per |a )anno\b|\bannu[oia]\b|\bannual[ei]\b/],
+  ["incident", /\b(?:per|an|each|every)\s+(?:incident|outage|breach|attack|event)\b|\b(?:per|ogni|a) (?:ogni )?(?:incidente|fermo|interruzione|disservizio|attacco|evento)\b/],
 ];
 
 /**
