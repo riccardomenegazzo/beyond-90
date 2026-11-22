@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.237.0
+
+- **The note sent ahead asks for the VM inventory export.** With hyperconverged infrastructure or platform migration in scope and no inventory read yet, **Copy the questions to send ahead** now ends with the one file the sizing and the plan in waves start from: an export of the virtual machine inventory, one row per machine (CPUs, memory, disk, power state, operating system, cluster), with the promise that only the totals are kept, never the machines' names. Once the inventory is read, it is no longer asked for.
+
 ## 0.236.0
 
 - **The sizing sketch counts the physical cores.** A subscription priced per core counts every physical core of every server, the spare ones included: the sketch now says how many (13 servers x 64 cores = 832 physical cores), beside the server count and as its last step, with a reminder that some products count a minimum per processor. The customer readout's line for the platform carries it too. It is the number the licence conversation starts from, never a price.

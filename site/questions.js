@@ -23,6 +23,9 @@ export const AHEAD_MAX = 12;
  * then spent on what hurts and what it is worth. No answer or note is in it. Empty when there is nothing left to ask.
  * @returns {{text:string, count:number}}
  */
+// the lines whose first sketches start from the virtual machines' inventory: the sizing and the plan in waves
+const FROM_INVENTORY = ["hci", "platform-migration"];
+
 export function aheadText(catalog, w, when = "") {
   const picked = [];
   for (const p of w.scope || []) {
@@ -31,7 +34,8 @@ export function aheadText(catalog, w, when = "") {
     for (const { q, index } of displayOrder(line)) if (q.ahead && !(w.answers || {})[`${p}#${index}`]) picked.push(q);
   }
   const ask = picked.slice(0, AHEAD_MAX);
-  if (!ask.length) return { text: "", count: 0 };
+  const inv = !w.inventory && (w.scope || []).some((p) => FROM_INVENTORY.includes(p) && catalog.lines[p]);
+  if (!ask.length && !inv) return { text: "", count: 0 };
   const roles = Object.keys(ROLE_WORDS);
   const by = [...roles, ""].map((r) => [r, ask.filter((q) => (q.role || "") === r)]).filter(([, qs]) => qs.length);
   const out = [`Before our meeting${when ? ` on ${when}` : ""}: a few facts your team could send us in advance, so the time together goes to what matters most to you.`,
@@ -41,7 +45,11 @@ export function aheadText(catalog, w, when = "") {
     for (const q of qs) out.push(`- ${q.q}`);
     out.push("");
   }
-  return { text: out.join("\n").trimEnd(), count: ask.length };
+  if (inv) {
+    out.push("If you can share one:", "- An export of your virtual machine inventory, one row per machine: CPUs, memory, disk, power state, operating system and cluster. "
+      + "Most inventory tools export it as a spreadsheet. We read it in our browser and keep only the totals, never the machines' names.", "");
+  }
+  return { text: out.join("\n").trimEnd(), count: ask.length + (inv ? 1 : 0) };
 }
 
 /** Does a question belong in this meeting: only the essential ones, or only those for the people in the room? */
