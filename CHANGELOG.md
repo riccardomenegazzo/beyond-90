@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.202.0
+
+- **The sketches can go in the customer readout.** Under Sketches from their numbers, a tick adds **First orders of magnitude** to the customer readout: one line for each sketch worked out with the customer's figures, on a line in scope, in their terms (your platform, AI, recovery, backups, shops and plants, virtual desktops, the container platform, databases, file shares), with what it is and is not: the order of magnitude, not a quote and not a final sizing. A sketch left at its defaults was not discussed and stays out; nothing is shown until the tick is set.
+
 ## 0.201.0
 
 - **The workshop guide shows the four new sketches:** pictures of the desktop sizing, container platform, database licence and file storage sketches, taken from the app with the invented example like the others, so the guide shows each as it is.

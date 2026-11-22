@@ -1422,6 +1422,15 @@ def main(site: str) -> int:
         dbcard.get_by_label("The agreement asks for the spare host to be licensed too").uncheck()
         page.wait_for_timeout(300)
         check(dbcard.locator(".szhead > b").inner_text() == "224" and "not licensed, as the agreement allows" in dbcard.inner_text(), "and a spare host the agreement does not count is left out")
+        # the sketches worked out with their figures can go in the customer readout, one line each
+        page.get_by_label("Show the sketches worked out with their figures in the customer readout").check()
+        page.wait_for_timeout(300)
+        page.click("[data-tab=readout]")
+        sized = page.frame_locator("#report").locator("body")
+        check("First orders of magnitude" in sized.inner_text() and "processor cores to license" in sized.inner_text() and "not a quote" in sized.inner_text(),
+              "the sketches worked out with their figures go in the customer readout when asked, one line each")
+        page.click("#tabs [data-tab=workshop]")
+        page.wait_for_selector("#view .wssketchhead")
         # running it like a cloud: what one machine costs, all in
         page.get_by_role("button", name="Running it like a cloud").click()
         page.wait_for_selector("#ws-cloud-operations")

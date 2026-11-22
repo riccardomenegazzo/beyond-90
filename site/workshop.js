@@ -99,6 +99,7 @@ export function validWorkshop(w) {
   if (w.k8s != null && !validK8s(w.k8s)) return false;
   if (w.db != null && !validDb(w.db)) return false;
   if (w.files != null && !validFiles(w.files)) return false;
+  if (w.readout_sketches != null && w.readout_sketches !== true) return false;
   if (w.unit != null && !validUnit(w.unit)) return false;
   if (w.rfp != null && !validRfp(w.rfp)) return false;
   if (w.deal != null && !validDeal(w.deal)) return false;
@@ -248,6 +249,50 @@ export function setDr(w, settings, today) {
     next.dr = settings;
   }
   return changed(next, {}, today);
+}
+
+/** Show the first sketches in the customer readout, one line each, or keep them for the account team. */
+export function setReadoutSketches(w, on, today) {
+  const next = { ...w };
+  delete next.readout_sketches;
+  if (on) next.readout_sketches = true;
+  return changed(next, {}, today);
+}
+
+const plural = (k, one, many = `${one}s`) => `${k} ${k === 1 ? one : many}`;
+
+/**
+ * The first sketches worked out with the customer's figures, one line each in their terms: only those whose settings
+ * were saved (a sketch left at its defaults was not discussed) and on lines in scope. For the readout: the order of
+ * magnitude, never a quote.
+ * @returns {{what:string, text:string}[]}
+ */
+export function sketchLines(w) {
+  const out = [];
+  const on = (p) => (w.scope || []).includes(p);
+  const add = (what, text) => out.push({ what, text });
+  if (w.inventory && w.sizing) {
+    const sk = sketch(w.inventory, w.sizing);
+    const sp = sk.ok ? sk.assumptions.spare_nodes : 0;
+    if (sk.ok) add("Your platform", `About ${plural(sk.nodes, "server")}${sp ? `, ${sp} of them kept free for a failure` : ""}, for the machines you run today.`);
+  }
+  const gs = w.gpu && on("private-ai") ? gpuSketch(w.gpu) : null;
+  if (gs && gs.ok) add("AI on your own infrastructure", `About ${plural(gs.gpus, "GPU")} in ${plural(gs.servers, "server")}, serving ${plural(gs.copies, "copy", "copies")} of the model.`);
+  const ds = w.dr && on("dr-backup") ? drSketch(w.dr, w.inventory) : null;
+  if (ds && ds.ok) add("Recovery", `${ds.tiers.map((t) => `Tier ${t.n}: ${t.mode.toLowerCase()}`).join("; ")}; about ${Math.round(ds.mbps)} Mbit/s between the sites.`);
+  const os = w.obj && on("object-storage") ? objSketch(w.obj, w.inventory) : null;
+  if (os && os.ok) add("Backups", `About ${os.usable} TiB usable for the backups you keep, and ${os.gbps} Gbit/s in the nightly window.`);
+  const es = w.edge && on("edge-sites") ? edgeSketch(w.edge) : null;
+  if (es && es.ok) add("Shops, plants and branches", `${plural(es.servers, "server")} at ${plural(es.sites, "site")}, in ${plural(es.kinds.length, "standard design")}.`);
+  const vs = w.vdi && on("euc") ? vdiSketch(w.vdi) : null;
+  if (vs && vs.ok) add("Virtual desktops", `About ${plural(vs.hosts, "host")} for ${vs.concurrent} desktops at once${vs.assumptions.spare_hosts ? `, ${vs.assumptions.spare_hosts} of them kept free` : ""}, and ${vs.usable_tib} TiB of storage.`);
+  const ks = w.k8s && on("kubernetes-platform") ? k8sSketch(w.k8s) : null;
+  if (ks && ks.ok) add("Container platform", `About ${plural(ks.workers, "worker")} in ${plural(ks.clusters.length, "cluster")} (${ks.nodes} nodes with the control plane), and ${ks.pv_tib} TiB of persistent volumes.`);
+  const dbs = w.db && on("dbaas") ? dbSketch(w.db) : null;
+  if (dbs && dbs.ok) add("Databases", `About ${dbs.licensed} processor cores to license, on ${plural(dbs.hosts, "host")} kept for the databases${dbs.freed == null || dbs.freed === 0 ? "" : dbs.freed > 0 ? `: ${dbs.freed} fewer than today` : `: ${-dbs.freed} more than today`}.`);
+  const fs = w.files && on("file-storage") ? fileSketch(w.files) : null;
+  if (fs && fs.ok) add("File shares", `About ${fs.usable} TiB on the fast tier and ${fs.cold_tib} TiB on a cheaper one.`);
+  return out;
 }
 
 /** The settings of the file storage sketch, or null to go back to the defaults. */
@@ -1014,6 +1059,12 @@ export function readoutHtml(catalog, w, res, { preparedBy = "", today = "" } = {
     out.push(`<table><thead><tr><th>Date</th><th>Wave</th><th>Cluster</th><th>Machines</th></tr></thead><tbody>`);
     for (const wv of pw.waves) out.push(`<tr><td class="st">${esc(wv.date)}</td><td>${wv.test ? "Test wave" : `Wave ${wv.n}`}</td><td>${esc(wv.cluster)}</td><td>${wv.machines}</td></tr>`);
     out.push(`</tbody></table><div class="proof"><b>Every wave, the same steps</b><ul>${RUNBOOK.map((r) => `<li><b>${esc(r.when)}:</b> ${esc(r.steps.join("; "))}.</li>`).join("")}</ul></div>`);
+  }
+  const sizes = w.readout_sketches ? sketchLines(w) : [];
+  if (sizes.length) {
+    out.push(`<h2>First orders of magnitude</h2><table><thead><tr><th>For</th><th>What it would take</th></tr></thead><tbody>`);
+    for (const x of sizes) out.push(`<tr><td>${esc(x.what)}</td><td>${esc(x.text)}</td></tr>`);
+    out.push(`</tbody></table><p class="why">From the figures you gave us, to settle the order of magnitude: not a quote, and not a final sizing. Each will be confirmed on your own data.</p>`);
   }
   const cs = w.case && w.case.in_readout ? buildCase(w.case) : null;
   if (cs && cs.ok) {

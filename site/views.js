@@ -2153,7 +2153,7 @@ function openDeck({ clock, onClose, aside = null, asideTitle = "", ...rest }) {
 
 const wsFilter = { core: false, roles: [], tender: false, open: false, best: false };
 
-export function workshopView({ workshop: w, catalog, list, answer, worth, setDeal, raise, rename, preparedBy, setScope, inventory, sizing, waves, gpu, dr, obj, edge, vdi, k8s, db, files, unit, today, newWorkshop, openWorkshop, removeWorkshop, presets = [], go, focus }) {
+export function workshopView({ workshop: w, catalog, list, answer, worth, setDeal, raise, rename, preparedBy, setScope, inventory, sizing, waves, gpu, dr, obj, edge, vdi, k8s, db, files, unit, setReadoutSketches, today, newWorkshop, openWorkshop, removeWorkshop, presets = [], go, focus }) {
   const say = h("p", { class: "note", role: "status" });
   const act = (fn) => async (...a) => { try { await fn(...a); say.textContent = ""; } catch (e) { say.textContent = e.message; } };
   let cur = w;
@@ -2438,8 +2438,15 @@ export function workshopView({ workshop: w, catalog, list, answer, worth, setDea
     ? [h("div", { class: "card deckpanel" }, deckBox, h("div", { class: "deckside" }, clockBox, heardBox, prog, strip,
       h("p", { class: "note", text: "Swipe the card or tap an answer, and write what they said on it: it is kept with the answer. Something said out of turn goes in Heard something: it finds the question it answers, and Ctrl+Enter files it under the first one as suggested. Every question is also in the list below, with the same answers; the filters there shape the deck." }))), meeting]
     : [meeting, h("div", { class: "card wsprogcard" }, prog, strip)];
+  const inReadout = sketches.length && setReadoutSketches ? (() => {
+    const box = h("input", { type: "checkbox" });
+    box.checked = !!w.readout_sketches;
+    box.addEventListener("change", act(() => setReadoutSketches(box.checked)));
+    return h("p", { class: "wssketchopt" }, h("label", { class: "vcopt", "data-tip": "The customer readout then lists, one line each, the sketches worked out with their figures (a sketch left at its defaults is not), as the order of magnitude: not a quote." },
+      box, h("span", { text: "Show the sketches worked out with their figures in the customer readout" })));
+  })() : null;
   return h("div", {}, top, narrow, lines,
-    sketches.length ? h("h2", { class: "wssketchhead", text: "Sketches from their numbers" }) : null, sketches);
+    sketches.length ? h("h2", { class: "wssketchhead", text: "Sketches from their numbers" }) : null, inReadout, sketches);
 }
 
 /** The customer's VM inventory: read in the page, kept as totals, shown as the numbers a sizing starts from. */
