@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.235.0
+
+- **The help answers how long a migration would take, and whether their link keeps up.** A new answer under Presales in Help points to the plan in waves: the dates, the data each wave copies ahead and the copy time over the link they name, the warning when a copy does not fit between waves, and the pace said in the meeting going in from Heard something. The presales guide says the same in its discovery step.
+
 ## 0.234.0
 
 - **Tables shown as cards on a phone keep being read as tables.** A table restyled as one card a row (the account tables, and since 0.226 the recovery tiers, the edge sites, the clusters, the waves, the partners and the team) can lose its table semantics in some browsers, and a screen reader then reads loose text. Their roles are now written out (table, row groups, rows, cells, column and row headers), so each value is still read with the column it belongs to.
