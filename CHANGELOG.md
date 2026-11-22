@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.240.0
+
+- **The sizing sketch compares the physical cores with today's.** A new assumption, the cores in each of today's hosts (0 when not known), counts the physical cores the inventory's hosts have today (33 hosts x 32 cores = 1,056) and says how many fewer or more the sketch has. A renewal priced per core turns on that number; the sketch shows it beside the server count and as its last step.
+
 ## 0.239.0
 
 - **The sizing sketch compares the servers as assumed with another server model.** **Compare with another server** takes a second server's cores, memory and raw storage and sizes the same estate on it with the same assumptions: a table puts the two side by side (what one server holds, servers, what decides, physical cores, how full each runs with the spare servers out). It is the "fewer larger servers or more smaller ones" conversation in the customer's own numbers, with the cores a per-core subscription would count each way. The comparison is kept with the sketch and goes into the meeting summary; clearing its figures takes it away.

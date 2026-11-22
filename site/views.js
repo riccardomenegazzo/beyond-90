@@ -2532,7 +2532,7 @@ function sizingCard(w, sizing) {
     ["growth_pct", "Growth over the platform's life", "%"], ["vcpu_per_core", "vCPU per physical core", ":1"], ["reduction", "Data reduction counted", ":1"],
     ["cold_pct", "Data no longer written to (for erasure coding)", "%"], ["fill_pct", "Keep storage below, after a failure", "%"], ["spare_nodes", "Spare servers for failures", ""], ["node_cores", "Cores per server", ""],
     ["node_mem_gib", "Memory per server", "GiB"], ["node_raw_tib", "Raw storage per server", "TiB"], ["overhead_cores", "Cores kept for the platform, per server", ""],
-    ["overhead_mem_gib", "Memory kept for the platform, per server", "GiB"],
+    ["overhead_mem_gib", "Memory kept for the platform, per server", "GiB"], ["today_cores_per_host", "Cores in each host today (0: not known)", ""],
   ];
   const inputs = {};
   const prot = h("select", { "aria-label": "How data is protected" }, Object.entries(SZ.PROTECTION).map(([k, v]) => h("option", { value: k, text: v.label })));
@@ -2552,7 +2552,7 @@ function sizingCard(w, sizing) {
     const bar = (label, v) => h("li", {}, h("span", { text: label }), h("span", { class: "ebar wsbar" }, h("i", { class: "er" + (v > 90 ? " weak" : ""), style: `width:${Math.min(100, v)}%` })), h("b", { text: `${v}%` }));
     const name = { compute: "compute", memory: "memory", storage: "storage", minimum: "the minimum for the copies" }[sk.decided];
     put(out,
-      h("div", { class: "szhead" }, h("b", { text: String(sk.nodes) }), h("span", {}, h("strong", { text: "servers" }), h("small", { text: `decided by ${name}; compute ${sk.by.compute}, memory ${sk.by.memory}, storage ${sk.by.storage}; ${INV.fmt(sk.cores)} physical cores` }))),
+      h("div", { class: "szhead" }, h("b", { text: String(sk.nodes) }), h("span", {}, h("strong", { text: "servers" }), h("small", { text: `decided by ${name}; compute ${sk.by.compute}, memory ${sk.by.memory}, storage ${sk.by.storage}; ${INV.fmt(sk.cores)} physical cores${sk.today_cores ? ` (${INV.fmt(sk.today_cores)} today)` : ""}` }))),
       h("ul", { class: "szuse" }, h("li", { class: "szlabel", text: "With the spare servers out" }), bar("CPU", sk.use.cpu), bar("Memory", sk.use.mem), bar("Storage", sk.use.storage)),
       h("ol", { class: "szsteps" }, sk.steps.map((t) => h("li", { text: t }))),
       sk.other ? h("div", { class: "tablewrap szcompare" }, h("table", { class: "wvtable", stack: true },

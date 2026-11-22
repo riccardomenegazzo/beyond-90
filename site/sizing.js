@@ -32,11 +32,12 @@ export const DEFAULTS = {
   spare_nodes: 1,          // whole servers kept free to absorb a failure (N+1)
   node_cores: 64, node_mem_gib: 1024, node_raw_tib: 30,
   overhead_cores: 8, overhead_mem_gib: 48,     // per server, for the platform's own storage and control services
+  today_cores_per_host: 0,  // physical cores in each of today's hosts, when known: what a per-core licence counts today
 };
 
 const LIMITS = {
   growth_pct: [0, 500], vcpu_per_core: [1, 16], mem_overcommit: [1, 2], reduction: [1, 5], cold_pct: [0, 100], fill_pct: [50, 95], spare_nodes: [0, 4],
-  node_cores: [4, 512], node_mem_gib: [32, 16384], node_raw_tib: [1, 2000], overhead_cores: [0, 64], overhead_mem_gib: [0, 512],
+  node_cores: [4, 512], node_mem_gib: [32, 16384], node_raw_tib: [1, 2000], overhead_cores: [0, 64], overhead_mem_gib: [0, 512], today_cores_per_host: [0, 512],
 };
 
 /** Assumptions as given, each kept inside a sensible range; unknown keys are dropped. */
@@ -107,6 +108,8 @@ export function sketch(inv, a) {
   const use = { cpu: need.vcpu / (live * per.cores * s.vcpu_per_core), mem: need.mem / (live * per.mem), storage: rawTib * (s.fill_pct / 100) / (live * per.tib) };
   // what a subscription priced per core counts: every physical core of every server, the spare ones included
   const cores = nodes * s.node_cores;
+  // and what it counts on today's hosts, when their cores are known
+  const today = s.today_cores_per_host && inv.hosts ? inv.hosts * s.today_cores_per_host : null;
   // the same estate on the other server: fewer larger servers, or more smaller ones, and the cores each way
   let other = null;
   if (s.alt) {
@@ -115,7 +118,7 @@ export function sketch(inv, a) {
     if (o.ok) other = { ...alt, nodes: o.nodes, cores: o.cores, decided: o.decided, use: o.use };
   }
   return {
-    ok: true, assumptions: s, nodes, cores, other, decided: base > Math.max(by.compute, by.memory, by.storage) ? "minimum" : decided, by, minimum,
+    ok: true, assumptions: s, nodes, cores, today_cores: today, other, decided: base > Math.max(by.compute, by.memory, by.storage) ? "minimum" : decided, by, minimum,
     need: { vcpu: Math.round(need.vcpu), mem_gib: Math.round(need.mem), tib: r1(need.tib), raw_tib: r1(rawTib) },
     use: { cpu: r1(use.cpu * 100), mem: r1(use.mem * 100), storage: r1(use.storage * 100) },
     steps: [
@@ -126,6 +129,7 @@ export function sketch(inv, a) {
       `Storage: ${n(r1(need.tib))} TiB${s.reduction > 1 ? ` reduced ${s.reduction}:1` : ""}, x${prot} for ${s.protection.startsWith("ec") ? `${s.cold_pct}% cold data erasure coded, the rest in copies` : PROTECTION[s.protection].label.split(":")[0].toLowerCase()}, kept below ${s.fill_pct}% = ${n(r1(rawTib))} TiB raw over ${n(per.tib)} TiB per server = ${by.storage} servers.`,
       `Plus ${s.spare_nodes} spare server${s.spare_nodes === 1 ? "" : "s"} to absorb a failure and rebuild, and at least ${minimum} for this protection: ${nodes} servers.`,
       `Counted per core, for a subscription priced that way: ${nodes} servers x ${s.node_cores} cores = ${n(cores)} physical cores, the spare servers included. Some count a minimum per processor; check the product's own rules.`,
+      ...(today ? [`Today: ${n(inv.hosts)} hosts x ${s.today_cores_per_host} cores = ${n(today)} physical cores; the sketch counts ${today === cores ? "as many" : `${n(Math.abs(today - cores))} ${cores < today ? "fewer" : "more"}`}.`] : []),
     ],
   };
 }

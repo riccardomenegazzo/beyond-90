@@ -101,6 +101,18 @@ test("only the table's own names are accepted, never inherited ones", () => {
   assert.deepEqual(clean(null), DEFAULTS);
 });
 
+test("the physical cores are compared with those of the hosts today, when their cores are known", () => {
+  const unknown = sketch({ ...INV, hosts: 33 }, {});
+  assert.equal(unknown.today_cores, null);
+  assert.equal(unknown.steps.length, 7);
+  const sk = sketch({ ...INV, hosts: 33 }, { today_cores_per_host: 32 });
+  assert.equal(sk.today_cores, 33 * 32);
+  const diff = Math.abs(sk.cores - 1056);
+  assert.equal(sk.steps.at(-1), `Today: 33 hosts x 32 cores = 1,056 physical cores; the sketch counts ${diff.toLocaleString("en")} ${sk.cores < 1056 ? "fewer" : "more"}.`);
+  assert.equal(clean({ today_cores_per_host: 9999 }).today_cores_per_host, 512);
+  assert.ok(validAssumptions({ today_cores_per_host: 24 }) && !validAssumptions({ today_cores_per_host: -1 }));
+});
+
 test("the same estate on another server: fewer larger servers or more smaller ones, and the physical cores each way", async () => {
   const { otherLine } = await import("../sizing.js");
   const base = sketch(INV, {});
