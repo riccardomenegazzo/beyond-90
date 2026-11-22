@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.225.0
+
+- **Concerns said in Italian are recognised on every line.** "Una migrazione è un rischio che quest'anno non possiamo correre", "il team non ha tempo per gestire una migrazione", "gli utenti odiano i desktop virtuali: sono lenti", "raccogliamo già tutti i nostri log" are now heard as the concerns they voice, with what to ask first, the answer and the proof. The glossary learns the words those concerns turn on (non possiamo, tempo, gestire, restare, odiano, fermo, percorsi, raccogliere, per tutti); a test holds seventeen of them across platform migration, AI, hybrid cloud, desktops, Kubernetes, files, microsegmentation and the security lines.
+
 ## 0.224.0
 
 - **Italian notes on the infrastructure lines' newest questions.** The glossary learns a few more words (connessione, vietata, tentativo, provato), and a test holds fourteen Italian sentences on desktops, the container platform, file and object storage, the sites, microsegmentation and a provider's cloud, each finding its question ("Nessuno riceve un allarme quando una macchina tenta una connessione vietata", "Il ripristino dall'object storage non è mai stato provato").

@@ -467,6 +467,35 @@ test("Italian notes on the infrastructure lines' newest questions find them too"
   assert.ok(first >= 13, `first ${first} of ${cases.length}`);
 });
 
+test("a concern said in Italian is recognised on every line, platform migration, AI and the security lines included", () => {
+  // the concerns of each line, read from its story as the page's catalogue carries them
+  const lines = {};
+  for (const p of ["platform-migration", "private-ai", "hybrid-cloud", "euc", "kubernetes-platform", "file-storage", "microsegmentation", "siem", "identity", "endpoint", "saas"]) {
+    lines[p] = { label: p, story: JSON.parse(readFileSync(new URL(`../../src/beyond90/data/profiles/${p}/story.json`, import.meta.url), "utf8")) };
+  }
+  lines.cnapp = { label: "cnapp", story: JSON.parse(readFileSync(new URL("../../src/beyond90/data/story.json", import.meta.url), "utf8")) };
+  const cards = concernCards({ lines }, Object.keys(lines));
+  for (const [want, said] of [
+    ["platform-migration#0", "una migrazione è un rischio che quest'anno non possiamo correre"],
+    ["platform-migration#1", "per il business non cambia niente: le stesse macchine su un'altra piattaforma"],
+    ["platform-migration#2", "non possiamo cambiare gli indirizzi IP né i nostri strumenti"],
+    ["platform-migration#3", "il team non ha tempo per gestire una migrazione"],
+    ["private-ai#1", "non abbiamo GPU e sono difficili da trovare"],
+    ["private-ai#2", "i nostri progetti di AI non superano mai il pilota"],
+    ["hybrid-cloud#3", "i nostri dati devono restare nel paese"],
+    ["euc#0", "gli utenti odiano i desktop virtuali: sono lenti"],
+    ["kubernetes-platform#0", "usiamo già Kubernetes open source per conto nostro"],
+    ["file-storage#1", "spostare le share significa fermo e percorsi rotti"],
+    ["microsegmentation#1", "applicare le regole romperà le applicazioni"],
+    ["microsegmentation#2", "i nostri firewall lo fanno già"],
+    ["cnapp#0", "abbiamo già uno strumento di sicurezza cloud"],
+    ["siem#0", "raccogliamo già tutti i nostri log"],
+    ["identity#0", "abbiamo già l'autenticazione a più fattori per tutti"],
+    ["endpoint#0", "abbiamo già l'antivirus su ogni macchina"],
+    ["saas#0", "la sicurezza nel cloud è responsabilità del fornitore"],
+  ]) assert.equal((concernsHeard(cards, said)[0] || {}).card?.key, `obj:${want}`, said);
+});
+
 test("an English note is read exactly as before: Italian is read only in words that are not English", () => {
   assert.deepEqual(tokens("Il rinnovo della licenza scade a marzo"), [stem("renewal"), stem("licence"), stem("renewal"), "marzo"]);
   assert.deepEqual(tokens("l'accesso degli ex dipendenti"), [stem("access"), stem("leave")]);

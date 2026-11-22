@@ -117,6 +117,19 @@ test: prova prove testato testata testati testare collaudo esercitazione esercit
 connection: connessione connessioni
 forbidden: vietata vietato vietate vietati proibita proibito
 attempt: tenta tentano tentativo tentativi
+take: correre corriamo
+time: tempo
+run: gestire gestisce gestiamo gestiscono
+hard: difficile difficili
+project: progetto progetti
+past: superano supera superare
+stay: restare restano rimanere rimangono restino
+hate: odiano odia odiare
+virtual: virtuale virtuali
+mean: significa significano
+downtime: fermo
+path: percorso percorsi
+collect: raccogliamo raccogliere raccoglie raccolti
 target: obiettivo obiettivi
 data: dati
 storage: archiviazione disco dischi
@@ -258,6 +271,8 @@ const PHRASES_IT = [
   [/punt[oi] vendita/g, "store"],
   [/ex dipendenti|se ne vanno|se ne va\b/g, "leaver"],
   [/\b(?:prend\w*|pres[oai]) (?:il )?controllo\b/g, "taken"],
+  [/\bnon (?:possiamo|possono|posso|puo)\b/g, "cannot"],
+  [/\b(?:per|a) tutti\b/g, "everyone"],
   [/consiglio di amministrazione/g, "board"],
 ];
 
