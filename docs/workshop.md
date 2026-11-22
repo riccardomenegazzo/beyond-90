@@ -489,6 +489,8 @@ It counts the hosts twice, by processor and by memory, says which one decides, a
 
 Notes that hold whatever the product: measure a week of real use on a pilot group of each kind before fixing the ratios, plan for the busiest half hour of logons, give graphics users hosts with GPUs sized from their applications, and ask which users truly need a desktop that keeps its changes. The sketch goes in the journey and in the handover; a week of real use on a pilot group has the last word.
 
+![A first desktop sizing sketch: hosts by processor and by memory, the one kept free, the storage, and the users and hosts to agree](img/app-desktops.png)
+
 ## A first container platform sizing sketch
 
 With the Kubernetes platform in scope, **A first container platform sizing sketch** works out the nodes the applications call for. Typed in from the conversation with the teams:
@@ -500,6 +502,8 @@ For production and for test and development apart, it counts the workers three w
 
 Notes that hold whatever the platform: read the requests the teams actually set from a running cluster, keep production apart with its own control plane, three or five control nodes, and room on each node for a rolling update. The sketch goes in the journey and in the handover.
 
+![A first container platform sizing sketch: workers per cluster by processor, memory and pods per node, with the control plane and the volumes](img/app-containers.png)
+
 ## A first database licence sketch
 
 With databases in scope, **A first database licence sketch** works out the processor cores databases licensed per core would need on hosts kept for them. Typed in from the conversation:
@@ -509,11 +513,15 @@ With databases in scope, **A first database licence sketch** works out the proce
 
 It turns the busy processors at the planned peak into whole hosts, counts the cores to license, and compares them with today's. Notes that hold whatever the engine: the licence agreement decides what must be licensed (check it with the customer's licensing specialist), take the busy share from a week of data at the busiest hour database by database, and sketch each engine and edition as its own pool. The sketch goes in the journey and in the handover.
 
+![A first database licence sketch: the cores to license on hosts kept for the databases, against the cores licensed today](img/app-dblicence.png)
+
 ## A first file storage sketch
 
 With file storage in scope, **A first file storage sketch** works out the capacity of the file shares. Typed in from the conversation: the file data today, its growth a year and the years the storage is sized for; the share nobody has opened in a year, moved to a cheaper tier; how much changes each day and the daily and weekly snapshots kept; the data reduction, the protection and the fill level; and how many file servers there are today.
 
 It gives the usable and raw capacity of the fast tier and what the cheaper one holds, each step written out. Notes that hold whatever the product: measure the cold share with a scan of last-access times, snapshots are not a backup, ask who would see a ransomware attack on a share and how fast it can be rolled back, and map every share and its permissions before bringing file servers together. The sketch goes in the journey and in the handover.
+
+![A first file storage sketch: usable and raw capacity, the share nobody opens on a cheaper tier, and each step](img/app-files.png)
 
 ## What one machine costs
 

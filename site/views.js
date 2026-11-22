@@ -2743,9 +2743,10 @@ function dbCard(w, db) {
     inputs[k] = h("input", { type: "number", step: "any", min: "0", value: String(a[k]), "aria-label": label });
     inputs[k].addEventListener("change", save);
     return h("label", { class: "szf" }, h("span", { text: label }), inputs[k]);
-  }), h("label", { class: "vcopt" }, spare, h("span", { text: "The agreement asks for the spare host to be licensed too" })));
+  }));
   draw(a);
   return card("A first database licence sketch", h("div", { class: "sz" }, out, h("details", { class: "szassume" }, h("summary", { text: "The databases, their busiest hour and the hosts, to agree with the customer" }), grid,
+    h("div", { class: "btnrow" }, h("label", { class: "vcopt" }, spare, h("span", { text: "The agreement asks for the spare host to be licensed too" }))),
     h("div", { class: "btnrow" }, h("button", { class: "btn small", type: "button", text: "Back to the defaults", onclick: async () => {
       for (const [k] of fields) inputs[k].value = String(DBS.DB_DEFAULTS[k]);
       spare.checked = !!DBS.DB_DEFAULTS.spare_licensed;

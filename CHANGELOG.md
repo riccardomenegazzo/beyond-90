@@ -2,6 +2,11 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.201.0
+
+- **The workshop guide shows the four new sketches:** pictures of the desktop sizing, container platform, database licence and file storage sketches, taken from the app with the invented example like the others, so the guide shows each as it is.
+- A checkbox beside its words reads on one line again: "Show it in the customer readout" under the case for change, and the spare host's licence in the database licence sketch, which now sits on its own line below the figures.
+
 ## 0.200.0
 
 - **The help answers the newest presales questions:** can I send a few questions before the meeting (the questions to send ahead), can I take my notes in Italian (Heard something reads them), and can I size it before the customer sends any data (the first sketches of each line, from what was said). A test keeps every answer short enough to read in the panel, and each question asked once.

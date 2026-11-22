@@ -247,6 +247,20 @@ def shoot(site: Path, out: Path) -> None:
             pg.evaluate("(() => { const c = document.querySelector('#view .edgetable').closest('.card'); window.scrollTo({ top: c.getBoundingClientRect().top + window.scrollY - 76, behavior: 'instant' }); })()")
             pg.wait_for_timeout(300)
             pg.screenshot(path=str(out / "app-edge.png"))
+
+            def sketch_shot(preset: str, title: str, name: str) -> None:
+                if preset:
+                    pg.get_by_role("button", name=preset).click()
+                c = pg.locator("#view .card").filter(has_text=title)
+                c.locator(".szhead").wait_for()
+                c.locator("details.szassume summary").first.click()
+                c.evaluate("(c) => window.scrollTo({ top: c.getBoundingClientRect().top + window.scrollY - 76, behavior: 'instant' })")
+                pg.wait_for_timeout(300)
+                pg.screenshot(path=str(out / name))
+            sketch_shot("The digital workplace", "A first desktop sizing sketch", "app-desktops.png")
+            sketch_shot("", "A first file storage sketch", "app-files.png")
+            sketch_shot("Modernising applications", "A first container platform sizing sketch", "app-containers.png")
+            sketch_shot("", "A first database licence sketch", "app-dblicence.png")
             pg.get_by_role("button", name="Running it like a cloud").click()
             pg.wait_for_selector("#ws-cloud-operations")
             unit = pg.locator("#view .card").filter(has_text="What one machine costs")

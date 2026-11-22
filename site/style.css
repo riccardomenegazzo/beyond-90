@@ -1146,7 +1146,7 @@ ol.deskfunnel{list-style:none;margin:0;padding:0;display:grid;grid-template-colu
 .vcgroup{border:1px solid var(--line);border-radius:12px;padding:10px 14px 14px;display:grid;gap:10px;margin:0}
 .vcgroup legend{font-weight:700;padding:0 6px}
 .vcheard{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
-.vcopt{display:inline-flex;gap:8px;align-items:center;font-size:14px}
+.vcopt{display:inline-flex;flex-direction:row;gap:8px;align-items:center;font-size:14px}
 .vcyears select{max-width:160px}
 .vctable thead th:nth-child(n+2){text-align:right}
 
