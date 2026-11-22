@@ -1503,6 +1503,8 @@ def main(site: str) -> int:
         page.get_by_role("button", name="Try it with an invented export").click()
         page.wait_for_selector("#view .invkpis")
         check("620" in page.inner_text("#view .invkpis") and "CL-TEST" in page.inner_text("#view .inv"), "an inventory export is read in the page into totals and a first wave")
+        check("Data TiB" in page.inner_text("#view .invtable thead") and "TiB" not in page.locator("#view .invtable tbody tr").first.inner_text(),
+              "the largest clusters show the data on each, as a number under its heading")
         check("From their inventory: 620 virtual machines on 5 clusters" in page.inner_text("#ws-platform-migration"), "and answers part of the migration questions")
         # a filled-in example, for showing the method in thirty seconds, and deleting it again
         page.click(".rail [data-place=start]")

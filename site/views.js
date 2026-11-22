@@ -2487,12 +2487,14 @@ function inventoryCard(w, inventory) {
   if (!s) return card("Their inventory", h("div", {}, intro, h("div", { class: "btnrow" }, h("label", { class: "btn small filebtn" }, "Read an inventory export", file), tryExample), say));
   const k = (v, l) => h("div", { class: "invk" }, h("b", { text: v }), h("small", { text: l }));
   const top = s.clusters.slice(0, 8);
+  const data = top.some((c) => c.tib != null);          // kept per cluster since 0.227: a summary read before has none
   return card("Their inventory", h("div", { class: "inv" },
     h("div", { class: "invkpis" }, k(INV.fmt(s.vms), `virtual machines, ${INV.fmt(s.on)} running`), k(INV.fmt(s.vcpu_on), "vCPU in use"), k(`${INV.fmt(s.mem_on_gib)} GiB`, "memory in use"),
       k(`${INV.fmt(s.used_tib != null ? s.used_tib : s.prov_tib)} TiB`, s.used_tib != null ? "storage used" : "storage provisioned"), k(INV.fmt(s.hosts), `hosts, ${INV.fmt(s.clusters.length)} clusters`)),
     h("div", { class: "col2" },
-      h("div", {}, h("h3", { text: "Largest clusters" }), h("table", { class: "invtable", stack: true }, h("thead", {}, h("tr", {}, ["Cluster", "Machines", "Running", "vCPU", "Memory GiB", "Past support"].map((t) => h("th", { scope: "col", text: t })))),
-        h("tbody", {}, top.map((c) => h("tr", {}, h("td", { text: c.name }), ...[c.vms, c.on, c.vcpu, c.mem_gib, c.past].map((v) => h("td", { class: "num", text: INV.fmt(v) }))))))),
+      h("div", {}, h("h3", { text: "Largest clusters" }), h("table", { class: "invtable", stack: true }, h("thead", {}, h("tr", {}, ["Cluster", "Machines", "Running", "vCPU", "Memory GiB", ...(data ? ["Data TiB"] : []), "Past support"].map((t) => h("th", { scope: "col", text: t })))),
+        h("tbody", {}, top.map((c) => h("tr", {}, h("td", { text: c.name }), ...[c.vms, c.on, c.vcpu, c.mem_gib].map((v) => h("td", { class: "num", text: INV.fmt(v) })),
+          data ? h("td", { class: "num", text: c.tib == null ? "—" : INV.fmt(c.tib) }) : null, h("td", { class: "num", text: INV.fmt(c.past) })))))),
       h("div", {}, h("h3", { text: "Worth knowing before a move" }), h("ul", { class: "growwhy" },
         s.off ? h("li", { text: `${INV.fmt(s.off)} machines are powered off: candidates to retire rather than move.` }) : null,
         s.past_total ? h("li", { text: `${INV.fmt(s.past_total)} run operating systems past general support: ${Object.entries(s.past).map(([k2, v]) => `${k2} (${INV.fmt(v)})`).join(", ")}.` }) : null,

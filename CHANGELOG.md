@@ -2,6 +2,11 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.233.0
+
+- **The inventory's largest clusters show the data on each.** Beside machines, running, vCPU and memory, the clusters table now has the data on each cluster (used, or provisioned when the export has no used column): what the plan in waves copies ahead, cluster by cluster. A summary read before 0.227 keeps its table as it was.
+- The README and the workshop guide say what the plan in waves now carries: the data each wave copies ahead and how long it takes over the customer's link.
+
 ## 0.232.0
 
 - **The servers and the move count as first sketches on the desk.** A deal at the proof or the decision with hyperconverged infrastructure or platform migration in scope, and no sizing or plan in waves worked out with the customer's figures, is now flagged like the other lines ("No first sketch worked out with their figures for the servers and the move"); once worked out, they are in the weekly update's "first sketches for", in the team's snapshot and in the "Sized at the proof" column.
