@@ -397,6 +397,45 @@ test("in Italian too: the deal's questions, the concerns a line expects, and the
   assert.equal(figureIn("2 milioni, per ora", open), null);     // "per ora" is "for now", not per hour
 });
 
+test("Italian notes on the security lines' newest questions find them too", () => {
+  const cards = [];
+  for (const [name, dir] of [["cnapp", ""], ["siem", "profiles/siem/"], ["identity", "profiles/identity/"], ["endpoint", "profiles/endpoint/"], ["saas", "profiles/saas/"], ["ai", "profiles/ai/"]]) {
+    const file = new URL(`../../src/beyond90/data/${dir}discovery.json`, import.meta.url);
+    JSON.parse(readFileSync(file, "utf8")).questions.forEach((q, i) => cards.push({ key: `${name}#${i}`, q }));
+  }
+  let first = 0, all = 0;
+  for (const [said, want] of [
+    ["Controlliamo solo la configurazione del cloud, non sappiamo cosa gira nei container", "cnapp#8"],
+    ["I template Terraform vanno in produzione senza nessun controllo", "cnapp#9"],
+    ["Le vulnerabilità critiche restano aperte per mesi", "cnapp#10"],
+    ["Gli auditor vogliono le evidenze sui controlli del cloud entro giugno", "cnapp#11"],
+    ["Nessuno guarda gli alert di notte o nel fine settimana", "siem#8"],
+    ["È cambiato il formato dei log e una regola di detection ha smesso di funzionare", "siem#9"],
+    ["Paghiamo un feed di threat intelligence ma nessuno lo legge", "siem#10"],
+    ["Dopo un incidente dobbiamo avvisare il garante entro 72 ore", "siem#11"],
+    ["Tre amministratori usano la stessa password di domain admin", "identity#8"],
+    ["I consulenti e i fornitori tengono gli account anche dopo la fine del contratto", "identity#9"],
+    ["Non vediamo cosa fa un amministratore in una sessione privilegiata", "identity#10"],
+    ["Una patch critica impiega un mese ad arrivare su tutti i portatili", "endpoint#8"],
+    ["Gli admin locali possono spegnere l'agente antivirus", "endpoint#9"],
+    ["I telefoni personali leggono la posta aziendale senza alcun controllo", "endpoint#10"],
+    ["L'ultimo ransomware ci è costato due settimane a ricostruire le macchine", "endpoint#11"],
+    ["Non ci accorgeremmo se qualcuno prendesse il controllo di un account Office", "saas#8"],
+    ["Quando le persone se ne vanno, i loro link condivisi continuano a funzionare", "saas#9"],
+    ["Qualsiasi utente può collegare un'integrazione di terze parti al tenant", "saas#11"],
+    ["Il team di data science costruisce i suoi agenti e pipeline RAG", "ai#8"],
+    ["Le persone modificano i prompt direttamente in produzione", "ai#9"],
+    ["Abbiamo indicizzato tutto il drive condiviso nell'assistente senza chiedere a nessuno", "ai#10"],
+    ["Quando il chatbot dà una risposta sbagliata nessuno lo viene a sapere", "ai#11"],
+  ]) {
+    const got = match(cards, said).map((h) => h.card.key);
+    assert.ok(got.includes(want), `${said}: ${got.join(" ")}`);
+    if (got[0] === want) first += 1;
+    all += 1;
+  }
+  assert.ok(first >= 18, `first ${first} of ${all}`);
+});
+
 test("an English note is read exactly as before: Italian is read only in words that are not English", () => {
   assert.deepEqual(tokens("Il rinnovo della licenza scade a marzo"), [stem("renewal"), stem("licence"), stem("renewal"), "marzo"]);
   assert.deepEqual(tokens("l'accesso degli ex dipendenti"), [stem("access"), stem("leave")]);

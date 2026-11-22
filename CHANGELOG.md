@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.223.0
+
+- **Italian notes on the security lines' newest questions.** The glossary Heard something reads Italian notes through learns the words those questions turn on (evidenze, verifica, costato, ricostruire, avvisare, notificare, "prendere il controllo" of an account), so "Gli auditor vogliono le evidenze sui controlli del cloud" or "Non ci accorgeremmo se qualcuno prendesse il controllo di un account" finds its question; "audit" and "auditor" now count as the same word, in English too. A test holds twenty-two Italian sentences across the six security lines.
+
 ## 0.222.0
 
 - **Each first sketch becomes a test of the proof of value.** A sizing nobody tested is a guess the customer pays for later: for each sketch worked out with the customer's figures, the proof of value now offers a criterion that checks it on their own data, with the figure it would confirm as its target ("A test failover of one tier over the real link meets its recovery point and recovery time", target "Recovery design: about 551 Mbit/s between the sites"). Up to three join the line's own criteria when the proof is started; all of them are among the suggestions after.

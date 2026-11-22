@@ -44,6 +44,7 @@ const SAME = [
   ["database", "db", "instance", "schema"],
   ["production", "prod"],
   ["take", "took", "taken", "takes"],
+  ["audit", "auditor", "auditors", "auditing"],
   ["jurisdiction", "sovereignty", "sovereign", "gdpr", "residency", "country"],
   ["test", "drill", "exercise", "rehearsal", "lab", "pilot", "poc"],
   ["branch", "office", "warehouse", "store", "shop", "depot", "plant"],
@@ -99,7 +100,7 @@ machine: macchina macchine
 network: rete reti
 link: collegamento collegamenti connettivita collegato collegati collegata collegate linea linee
 bandwidth: banda
-cost: costo costi costa costano costerebbe spesa spese prezzo prezzi pagare paghiamo pagato paga pagano
+cost: costo costi costa costano costerebbe costato costata costati spesa spese prezzo prezzi pagare paghiamo pagato paga pagano
 bill: fattura fatture fatturazione fatturare bolletta bollette
 licence: licenza licenze
 renewal: rinnovo rinnovi rinnovare scadenza scadenze scade scadono contratto contratti
@@ -127,6 +128,9 @@ night: notte notti notturno notturni notturna
 regulator: regolatore autorita garante
 regulation: normativa normative regolamento regolamenti conformita
 auditor: revisore revisori ispettori
+audit: verifica verifiche
+evidence: evidenza evidenze
+rebuilt: ricostruire ricostruito ricostruite ricostruiti ricostruzione
 insurer: assicurazione assicuratore assicurazioni polizza
 meeting: riunione riunioni incontro
 day: giorno giorni giornata
@@ -191,7 +195,7 @@ integration: integrazione integrazioni
 index: indice indicizzato indicizzati indicizzare
 answer: risposta risposte
 wrong: sbagliata sbagliate sbagliato sbagliati errata errate errato
-report: segnalare segnalazione segnala
+report: segnalare segnalazione segnala avvisare avvisa notificare notifica notifiche comunicare
 vulnerability: vulnerabilita
 critical: critico critica critici critiche
 open: aperto aperti aperta aperte
@@ -250,6 +254,7 @@ const PHRASES_IT = [
   [/fine settimana/g, "weekend"],
   [/punt[oi] vendita/g, "store"],
   [/ex dipendenti|se ne vanno|se ne va\b/g, "leaver"],
+  [/\b(?:prend\w*|pres[oai]) (?:il )?controllo\b/g, "taken"],
   [/consiglio di amministrazione/g, "board"],
 ];
 
