@@ -2004,8 +2004,10 @@ function deckPane({ cards, state, answerOf, answer, go, pfx, inline, set = DISCO
  * the questions and the qualification. `get`/`set` read and keep the workshop; `onFiled(key)` lets the view follow.
  */
 // the sketches a figure heard can go in: how each is cleaned, and what it is called
-const SKETCH_CLEAN = { vdi: (x) => VDI.cleanVdi(x), db: (x) => DBS.cleanDb(x), k8s: (x) => K8S.cleanK8s(x), files: (x) => FILES.cleanFiles(x) };
-const SKETCH_NAME = { vdi: "desktop sizing sketch", db: "database licence sketch", k8s: "container platform sizing sketch", files: "file storage sketch" };
+const SKETCH_CLEAN = { vdi: (x) => VDI.cleanVdi(x), db: (x) => DBS.cleanDb(x), k8s: (x) => K8S.cleanK8s(x), files: (x) => FILES.cleanFiles(x),
+  obj: (x) => OBJ.cleanObj(x), dr: (x) => DRS.cleanDr(x) };
+const SKETCH_NAME = { vdi: "desktop sizing sketch", db: "database licence sketch", k8s: "container platform sizing sketch", files: "file storage sketch",
+  obj: "backup capacity sketch", dr: "recovery design" };
 /** A sketch's card on the page, if it is there, shows the settings just changed. */
 const refreshSketch = (name, settings) => { const el = document.querySelector(`[data-sketch="${name}"]`); if (el) el.dispatchEvent(new CustomEvent("sketch-settings", { detail: settings })); };
 
@@ -2455,7 +2457,7 @@ export function workshopView({ workshop: w, catalog, list, answer, worth, setDea
   }
   function syncDeck() { if (deckInline) deckInline.sync(); paceNow(); }
   if (inScope.length) rebuildDeck();
-  const heardBox = heardPanel({ catalog, get: () => cur, set: (x) => { cur = x; }, answer, worth, setDeal, raise, sketches: { vdi, db, k8s, files },
+  const heardBox = heardPanel({ catalog, get: () => cur, set: (x) => { cur = x; }, answer, worth, setDeal, raise, sketches: { vdi, db, k8s, files, obj, dr },
     onFiled: (key) => { if (key) afterDeck(key); syncDeck(); if (fullDeck) fullDeck.sync(); } }).el;
   // the conversation first: where it stands on every line, what to show, the questions; then the sketches from their numbers
   const sketches = [inventory ? inventoryCard(w, inventory) : null, w.inventory && sizing ? sizingCard(w, sizing) : null,
@@ -2709,13 +2711,13 @@ function objCard(w, obj) {
     return h("label", { class: "szf" }, h("span", { text: label }), inputs[k]);
   }));
   draw(a);
-  return card("A first backup capacity sketch", h("div", { class: "sz" }, out, h("details", { class: "szassume" }, h("summary", { text: "The retention and the assumptions, to agree with the customer" }), grid,
+  return sketchCard("obj", inputs, draw, card("A first backup capacity sketch", h("div", { class: "sz" }, out, h("details", { class: "szassume" }, h("summary", { text: "The retention and the assumptions, to agree with the customer" }), grid,
     h("div", { class: "btnrow" }, h("button", { class: "btn small", type: "button", text: "Back to the defaults", onclick: async () => {
       for (const [k] of fields) inputs[k].value = String(OBJ.OBJ_DEFAULTS[k]);
       draw(OBJ.OBJ_DEFAULTS);
       try { await obj(null); } catch (e) { say.textContent = e.message; }
     } }))), say),
-  { sub: "For backups kept on object storage: what the retention holds after reduction, with protection and room to grow, and what the nightly window needs. The backup product's own calculator, on the customer's data, has the last word." });
+  { sub: "For backups kept on object storage: what the retention holds after reduction, with protection and room to grow, and what the nightly window needs. The backup product's own calculator, on the customer's data, has the last word." }));
 }
 
 /** A sketch's card, named so a figure heard in the meeting can be shown in it: its fields and its result follow. */
@@ -2924,14 +2926,14 @@ function drCard(w, dr) {
     return [field(row.share_pct, `Tier ${i + 1}: share of the data (%)`), field(row.rpo_min, `Tier ${i + 1}: recovery point (minutes)`), field(row.rto_min, `Tier ${i + 1}: recovery time (minutes)`)];
   }));
   draw(a);
-  return card("A first recovery design", h("div", { class: "sz" }, out, h("details", { class: "szassume" }, h("summary", { text: "The data, the distance and the tiers, to agree with the customer" }), grid, tiers,
+  return sketchCard("dr", inputs, draw, card("A first recovery design", h("div", { class: "sz" }, out, h("details", { class: "szassume" }, h("summary", { text: "The data, the distance and the tiers, to agree with the customer" }), grid, tiers,
     h("div", { class: "btnrow" }, h("button", { class: "btn small", type: "button", text: "Back to the defaults", onclick: async () => {
       for (const [k] of top) inputs[k].value = String(DRS.DR_DEFAULTS[k]);
       tierIn.forEach((row, i) => { for (const k of Object.keys(row)) row[k].value = String(DRS.DR_DEFAULTS.tiers[i][k]); });
       draw(DRS.DR_DEFAULTS);
       try { await dr(null); } catch (e) { say.textContent = e.message; }
     } }))), say),
-  { sub: "For each tier of applications: the replication its recovery point calls for, whether the distance allows it, the bandwidth its data needs, and a retention to agree. The replication product's own calculator has the last word." });
+  { sub: "For each tier of applications: the replication its recovery point calls for, whether the distance allows it, the bandwidth its data needs, and a retention to agree. The replication product's own calculator has the last word." }));
 }
 
 /** A first design for edge and branch sites: servers per kind of site, the witness, copies over each link, upgrade waves. */

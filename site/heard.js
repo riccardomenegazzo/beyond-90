@@ -410,6 +410,12 @@ const SKETCH_FIGURES = [
     re: new RegExp(String.raw`\b${NUM}\s+(?:containeri[sz]ed\s+)?(?:applications|apps|microservices|applicazioni|microservizi)\b`) },
   { sketch: "files", field: "data_tib", line: "file-storage", what: "TiB of file data", label: "file data of the file storage sketch",
     re: new RegExp(String.raw`\b${NUM}\s*(tb|tib|pb|pib)\b(?=[^.;]*\b(?:files?|shares?|nas|condivis[a-z]*|cartelle)\b)`), size: true },
+  { sketch: "obj", field: "data_tib", line: "object-storage", what: "TiB of protected data", label: "protected data of the backup capacity sketch",
+    re: new RegExp(String.raw`\b${NUM}\s*(tb|tib|pb|pib)\b(?=[^.;]*\b(?:backups?|backed up|protected|copie|da proteggere|protetti)\b)`), size: true },
+  { sketch: "dr", field: "data_tib", line: "dr-backup", what: "TiB of protected data", label: "protected data of the recovery design",
+    re: new RegExp(String.raw`\b${NUM}\s*(tb|tib|pb|pib)\b(?=[^.;]*\b(?:backups?|backed up|protect(?:ed)?|replicat(?:e|ed)|da proteggere|protetti|replica(?:re|ti)?)\b)`), size: true },
+  { sketch: "dr", field: "latency_ms", line: "dr-backup", what: "ms round trip between the sites", label: "round trip between the sites, in the recovery design", decimal: true,
+    re: /\b(\d+(?:[.,]\d+)?)()\s?(?:ms|milliseconds?|millisecondi)\b(?=[^.;]*\b(?:sites?|siti|sit[oi]|apart|away|round|latency|latenza|between|tra)\b)|\b(?:sites?|siti|apart|away|round[- ]trip|latency|latenza|between|tra)\b[^.;]*?\b(\d+(?:[.,]\d+)?)()\s?(?:ms|milliseconds?|millisecondi)\b/ },
 ];
 const FMT = new Intl.NumberFormat("en");
 const TIB = { tb: 1e12 / 2 ** 40, tib: 1, pb: 1e15 / 2 ** 40, pib: 1024 };
@@ -433,7 +439,7 @@ export function sketchFigures(said, scope, current = {}) {
     let value = num(raw, f.size ? "" : mult);
     if (f.size) value *= TIB[m[3]] || 1;
     if (!Number.isFinite(value) || value <= 0) continue;
-    out.push({ sketch: f.sketch, field: f.field, value: f.size ? Math.round(value * 10) / 10 : Math.round(value), what: f.what, label: f.label });
+    out.push({ sketch: f.sketch, field: f.field, value: f.size || f.decimal ? Math.round(value * 10) / 10 : Math.round(value), what: f.what, label: f.label });
   }
   const users = (out.find((x) => x.field === "users") || {}).value || (current.vdi && current.vdi.users) || 0;
   const at = (scope || []).includes("euc") && t.match(new RegExp(String.raw`\b${NUM}\s+(?:of them\s+)?(?:concurrent|connected at once|at once|at the same time|contemporane[ia]|in contemporanea)\b`));

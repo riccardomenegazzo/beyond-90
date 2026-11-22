@@ -863,6 +863,11 @@ def main(site: str) -> int:
         check(0 < hits.count() <= 3 and any("administrator account delete" in hits.nth(i).inner_text() for i in range(hits.count()))
               and page.locator("#view .heardhit .heardopt.o-gap.sug").count() >= 1,
               "what was heard finds the question it answers, with the answer the words suggest")
+        # a figure a first sketch starts from is offered for it: the backups and the distance, here
+        page.fill("#wsheard", "We keep 200 TB of backups, the second site is 3 ms away")
+        check(page.get_by_role("button", name="Use 181.9 as the protected data of the recovery design").count() == 1
+              and page.get_by_role("button", name="Use 3 as the round trip between the sites, in the recovery design").count() == 1,
+              "the protected data and the distance between the sites are offered for the recovery design")
         page.fill("#wsheard", "One day without the main site would cost about 2 million euros")
         check(any("Figure heard: 2,000,000 per day" in page.locator("#view .heardhit").nth(i).inner_text() for i in range(page.locator("#view .heardhit").count())),
               "a figure in what was heard is read, with what it is counted per, on the value question it answers")

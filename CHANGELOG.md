@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.205.0
+
+- **Figures for the recovery design and the backup capacity sketch too.** "We keep 200 TB of backups" is offered as the protected data of the backup capacity sketch and of the recovery design; "the second site is 3 ms away" (or "la latenza tra i siti è di 1,5 ms") as the round trip between the sites. Their cards follow at once, as the others do, and Undo puts them back. A time that is not between sites ("logons take 300 ms") is left alone.
+
 ## 0.204.0
 
 - **A figure said in the meeting goes into its sketch.** Written in Heard something, "about 1,500 users, 1,200 at the same time", "45 databases, licensed on 256 cores", "300 TB of file shares" or "30 applications" is now offered for the first sketch it belongs to, on the lines in scope: the users and the share connected at once for the desktop sizing, the databases and the cores licensed today for the licence sketch, the file data (terabytes turned into TiB) for the file storage sketch, the applications for the container platform. **Use it in the sketch** puts it there, the sketch's card shows it at once, and **Undo** puts the sketch back. In Italian too ("1.200 utenti, 800 in contemporanea"); a figure said per site ("40 users each") is left alone.

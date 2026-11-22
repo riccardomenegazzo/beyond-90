@@ -492,4 +492,10 @@ test("a figure a first sketch starts from is read from what was said, for the li
   assert.deepEqual(got("600 connected at once", ["euc"]), [], "a share needs the number of users");
   assert.deepEqual(got("1,200 users and 45 databases", ["hci"]), []);
   assert.equal(sketchFigures("1,200 users", ["euc"])[0].label, "users of the desktop sizing sketch");
+  // backups and recovery: the protected data, and the round trip between the sites
+  const dr = ["dr-backup", "object-storage"];
+  assert.deepEqual(got("We keep 200 TB of backups", dr), ["obj.data_tib=181.9", "dr.data_tib=181.9"]);
+  assert.deepEqual(got("About 80 TB to protect, the second site is 3 ms away", ["dr-backup"]), ["dr.data_tib=72.8", "dr.latency_ms=3"]);
+  assert.deepEqual(got("La latenza tra i siti è di 1,5 ms", ["dr-backup"]), ["dr.latency_ms=1.5"]);
+  assert.deepEqual(got("Logons take 300 ms on a good day", ["dr-backup"]), [], "a time that is not between the sites");
 });
