@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.208.0
+
+- **The README and the presales guide follow the newest features:** the questions sent ahead of the first meeting, notes read in English or Italian, the first sketches of every line and the figures heard in the meeting that go into them, the sketches as orders of magnitude in the customer readout, and the desk's risk when a line at the proof has no sketch worked out.
+
 ## 0.207.0
 
 - **The desk asks for the first sketches before a proof's results go to finance.** At the proof and the decision, a prospect with a line whose first sketch was never worked out with the customer's figures (virtual desktops, the container platform, database licences, file shares, backup capacity, recovery, GPUs, the sites) gets a risk on the presales desk that names them: "No first sketch worked out with their figures for virtual desktops and database licences".
