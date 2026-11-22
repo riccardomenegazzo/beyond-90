@@ -67,6 +67,11 @@ export function demoOf(w) {
     missed: seen.filter((x) => x.a === "missed").length, questions: seen.filter((x) => x.a === "questions").length };
 }
 
+// the first sketch each line has, and what it is called in a sentence
+const SKETCH_OF = { euc: ["vdi", "virtual desktops"], "kubernetes-platform": ["k8s", "the container platform"], dbaas: ["db", "database licences"],
+  "file-storage": ["files", "file shares"], "object-storage": ["obj", "backup capacity"], "dr-backup": ["dr", "recovery"], "private-ai": ["gpu", "GPUs"], "edge-sites": ["edge", "the sites"] };
+const andList = (xs) => (xs.length < 2 ? xs.join("") : `${xs.slice(0, -1).join(", ")} and ${xs[xs.length - 1]}`);
+
 export function risksOf({ w, p, res, pr, stage, overdue, today }) {
   const out = [];
   const add = (level, text) => out.push({ level, text });
@@ -94,6 +99,8 @@ export function risksOf({ w, p, res, pr, stage, overdue, today }) {
     if ((stage === "journey" || later) && !Object.values(w.answers).some((a) => a.amount != null)) add("watch", "Nothing is at stake in the customer's words yet: ask what a day without it would cost.");
     if (later && !(w.case && hasCase(w.case))) add("watch", "Finance has no case for change yet: ask for the cost of staying and of moving.");
     if (later && w.inventory && !w.sizing) add("watch", "The sizing sketch still uses the defaults: agree the assumptions with the customer.");
+    const unsized = later ? (w.scope || []).filter((x) => SKETCH_OF[x] && !w[SKETCH_OF[x][0]]).map((x) => SKETCH_OF[x][1]) : [];
+    if (unsized.length) add("watch", `No first sketch worked out with their figures for ${andList(unsized)}: do it before the results go to finance.`);
     if (res.unknowns.length >= 3) add("watch", `${res.unknowns.length} questions nobody could answer: book the people who can.`);
     // the partner's protection: a registration that lapses leaves the deal open to anyone
     const reg = registrationOf(w.channel, today);

@@ -2,6 +2,11 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.207.0
+
+- **The desk asks for the first sketches before a proof's results go to finance.** At the proof and the decision, a prospect with a line whose first sketch was never worked out with the customer's figures (virtual desktops, the container platform, database licences, file shares, backup capacity, recovery, GPUs, the sites) gets a risk on the presales desk that names them: "No first sketch worked out with their figures for virtual desktops and database licences".
+- The help says a figure said in the meeting is offered for its sketch in Heard something.
+
 ## 0.206.0
 
 - **Figures for the GPU sketch.** On AI on their own infrastructure, what is said about the model is offered for the GPU sketch: its size ("a 70B model", "8 miliardi di parametri"), its precision ("4-bit", "FP8"), the context ("32k tokens", "a context of 128k") and the requests at once ("200 requests at once", "50 utenti in contemporanea"). A tap puts each in, the card follows, and Undo puts it back.

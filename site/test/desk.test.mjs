@@ -125,6 +125,13 @@ test("what could stop a deal is read from what is recorded, the risks that can l
     pr: { ...pr, ready_total: 0 }, stage: "proof", overdue: 0, today });
   assert.deepEqual(calm, []);
   assert.match(risksOf({ w: { answers: {}, updated_on: "2026-10-01" }, p: null, res: { raised: [], unknowns: [] }, pr: null, stage: "discovery", overdue: 0, today }).map((x) => x.text).join(), /Not touched for 50 days/);
+  // at the proof, a line with a first sketch that was never worked out with their figures
+  const sized = (scope, more = {}, stage = "proof") => risksOf({ w: { answers: {}, updated_on: today, scope, ...more }, p: null, res: { raised: [], unknowns: [] }, pr: null, stage, overdue: 0, today })
+    .map((x) => x.text).filter((t) => t.startsWith("No first sketch"));
+  assert.deepEqual(sized(["euc", "dbaas", "hci"]), ["No first sketch worked out with their figures for virtual desktops and database licences: do it before the results go to finance."]);
+  assert.deepEqual(sized(["euc", "dbaas"], { vdi: { users: 900 } }), ["No first sketch worked out with their figures for database licences: do it before the results go to finance."]);
+  assert.deepEqual(sized(["euc"], {}, "discovery"), [], "in discovery it is too early to ask");
+  assert.deepEqual(sized(["hci", "platform-migration"]), [], "lines without a sketch of their own");
 });
 
 import { evidenceOf } from "../desk.js";
