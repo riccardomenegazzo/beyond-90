@@ -867,6 +867,11 @@ def main(site: str) -> int:
         page.fill("#wsheard", "About 5% of the data changes every day")
         check(page.get_by_role("button", name="Use 5 as the data written each day, in the recovery design").count() == 1,
               "how much data changes a day is offered for the recovery design")
+        page.fill("#wsheard", "Tier 2 is 30% of the data, RPO 15 minutes, RTO 4 hours")
+        check(page.get_by_role("button", name="Use 30 as the share of the data of tier 2, in the recovery design").count() == 1
+              and page.get_by_role("button", name="Use 240 as the recovery time of tier 2, in the recovery design").count() == 1
+              and page.get_by_role("button", name="Use all 3 figures in the recovery design").count() == 1,
+              "a named tier's share of the data, recovery point and recovery time are offered for the recovery design, all three in one tap")
         page.fill("#wsheard", "We keep 200 TB of backups, the second site is 3 ms away")
         check(page.get_by_role("button", name="Use 181.9 as the protected data of the recovery design").count() == 1
               and page.get_by_role("button", name="Use 3 as the round trip between the sites, in the recovery design").count() == 1,

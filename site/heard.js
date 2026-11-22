@@ -8,6 +8,7 @@
 // words these meetings use, so it finds the same questions. No DOM, so Node can test it. Nothing leaves the browser.
 
 import { EDGE_DEFAULTS } from "./edgesketch.js";
+import { DR_DEFAULTS } from "./drsketch.js";
 
 export const NOTE_MAX = 300;      // as long as a note on an answer can be
 
@@ -809,4 +810,46 @@ export function changeFigures(said, scope) {
   const on = (p) => (scope || []).includes(p);
   if (FILE_TALK.test(t)) return on("file-storage") ? [{ sketch: "files", field: "change_pct", value: v, what: "percent of the file data changed each day", label: "file data changed each day, in the file storage sketch" }] : [];
   return CHANGE_FOR.filter((c) => on(c.line)).map((c) => ({ sketch: c.sketch, field: "change_pct", value: v, what: c.what, label: c.label }));
+}
+
+// a tier of the recovery design, named as such: its recovery point, its recovery time and its share of the data
+const TIER_WORD = /\b(?:tier|livello|classe)\s+([123]|one|two|three|uno|due|tre)\b/g;
+const TIER_N = { one: 1, two: 2, three: 3, uno: 1, due: 2, tre: 3 };
+const TIME = String.raw`(zero|0|\d+(?:[.,]\d+)?)\s*(minutes?|mins?|hours?|hrs?|h|days?|minut[oi]|or[ae]|giorn[oi])?`;
+const toMinutes = (v, unit) => {
+  const n = v === "zero" ? 0 : Number(v.replace(",", "."));
+  if (!Number.isFinite(n)) return NaN;
+  if (!unit || /^min/.test(unit)) return n;
+  if (/^(?:h|hour|hr|or)/.test(unit)) return n * 60;
+  return n * 1440;
+};
+
+/**
+ * The recovery design's tiers in what was said, when a tier is named ("tier 1: zero data loss, back in 15 minutes";
+ * "tier 2 is 30% of the data, RPO 15 minutes, RTO 4 hours"; "livello 2: RPO 15 minuti"). Each figure goes in its tier.
+ * @returns {{sketch:string, field:string, value:number, what:string, label:string, apply:Function, has:Function}[]}
+ */
+export function drTierFigures(said, scope) {
+  if (!(scope || []).includes("dr-backup")) return [];
+  const t = ` ${String(said == null ? "" : said).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "")} `;
+  const marks = [...t.matchAll(TIER_WORD)].map((m) => ({ at: m.index, tier: /^\d$/.test(m[1]) ? Number(m[1]) : TIER_N[m[1]] }));
+  const out = [];
+  marks.forEach((mk, k) => {
+    const part = t.slice(mk.at, k + 1 < marks.length ? marks[k + 1].at : t.length);
+    const i = mk.tier - 1;
+    const put = (field, value, what, label) => out.push({ sketch: "dr", field: `tiers.${i}.${field}`, value, what: `${what}, tier ${mk.tier}`, label: `${label} of tier ${mk.tier}, in the recovery design`,
+      apply: (b) => ({ ...b, tiers: (b.tiers && b.tiers.length ? b.tiers : DR_DEFAULTS.tiers).map((x, j) => (j === i ? { ...x, [field]: value } : x)) }),
+      // a saved design without tiers of its own shows the default tiers: a figure equal to one of those is already in it
+      has: (b) => !!(b && ((b.tiers && b.tiers.length ? b.tiers : DR_DEFAULTS.tiers)[i] || {})[field] === value) });
+    const rpo = /\b(?:no|zero|nessuna)\s+(?:data loss|perdita)\b/.test(part) ? 0
+      : (() => { const m = part.match(new RegExp(String.raw`\b(?:rpo|recovery point|data loss|perdita di dati|perdita)\b[^.;]*?\b${TIME}\b`)); return m ? toMinutes(m[1], m[2]) : NaN; })();
+    if (rpo >= 0 && rpo <= 10080) put("rpo_min", Math.round(rpo), "minutes of data that can be lost", "recovery point");
+    const rto = part.match(new RegExp(String.raw`\b(?:rto|recovery time|back (?:up )?(?:in|within)|recover(?:ed)? (?:in|within)|running again (?:in|within)|ripart\w*|ripristin\w*)\b[^.;]*?\b${TIME}\b`));
+    const rtoMin = rto ? toMinutes(rto[1], rto[2]) : NaN;
+    if (rtoMin > 0 && rtoMin <= 43200) put("rto_min", Math.round(rtoMin), "minutes to be running again", "recovery time");
+    const share = part.match(/\b(\d+(?:[.,]\d+)?)\s?(?:%|percent\b|per cento\b)\s+(?:of\s+(?:the\s+)?data|dei dati|of the estate|of the machines|delle macchine)\b/);
+    const sh = share ? Number(share[1].replace(",", ".")) : NaN;
+    if (sh > 0 && sh <= 100) put("share_pct", sh, "percent of the data", "share of the data");
+  });
+  return out;
 }

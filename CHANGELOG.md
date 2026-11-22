@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.246.0
+
+- **A tier's recovery point, recovery time and share of the data, said in the meeting, go into the recovery design.** When a tier is named ("Tier 1: zero data loss, back up within 15 minutes", "tier 2 is 30% of the data, RPO 15 minutes, RTO 4 hours; tier 3 RPO 1 day", "livello 2: RPO 15 minuti, ripartenza entro 2 ore"), each figure is offered for that tier of the recovery design, in minutes; **Use all** puts a whole tier in with one tap. A recovery point said without a tier is not placed: which applications it belongs to is the question to ask.
+
 ## 0.245.0
 
 - **How much data changes a day, said in the meeting, goes into the sketches that turn on it.** "About 5% of the data changes every day", "a daily change rate of 4%", "cambia circa il 3% dei dati al giorno" are offered under Heard something for the recovery design (the data written each day, which sets the bandwidth) and the backup capacity sketch (the data changed each day, which sets the incrementals), for the lines in scope. Said of file shares, the figure goes to the file storage sketch only. Growth over a year is not taken for change.

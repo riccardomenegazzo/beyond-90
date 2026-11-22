@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
-import { stem, tokens, match, joinNote, NOTE_MAX, concernCards, concernsHeard, sketchFigures, caseFigures, unitFigures, edgeFigures, retentionFigures, wavesFigures, sizingFigures, changeFigures } from "../heard.js";
+import { stem, tokens, match, joinNote, NOTE_MAX, concernCards, concernsHeard, sketchFigures, caseFigures, unitFigures, edgeFigures, retentionFigures, wavesFigures, sizingFigures, changeFigures, drTierFigures } from "../heard.js";
 
 const card = (key, q, listen = "", why = "", probe = "") => ({ key, label: "Disaster recovery", q: { q, listen, why, probe } });
 const DR = [
@@ -741,4 +741,23 @@ test("how much data changes a day is offered for the recovery design, the backup
   assert.deepEqual(got("the data grows 5% a year"), [], "growth is not change");
   assert.deepEqual(got("80% changes every day"), [], "out of range");
   assert.equal(changeFigures("5% changes every day", ["dr-backup"])[0].label, "data written each day, in the recovery design");
+});
+
+test("a named tier's recovery point, recovery time and share of the data are offered for the recovery design", () => {
+  const got = (said, scope = ["dr-backup"]) => drTierFigures(said, scope).map((x) => `${x.field}=${x.value}`);
+  assert.deepEqual(got("Tier 1: zero data loss, back up within 15 minutes"), ["tiers.0.rpo_min=0", "tiers.0.rto_min=15"]);
+  assert.deepEqual(got("tier 2 is 30% of the data, RPO 15 minutes, RTO 4 hours; tier 3 RPO 1 day"),
+    ["tiers.1.rpo_min=15", "tiers.1.rto_min=240", "tiers.1.share_pct=30", "tiers.2.rpo_min=1440"]);
+  assert.deepEqual(got("livello 2: RPO 15 minuti, ripartenza entro 2 ore"), ["tiers.1.rpo_min=15", "tiers.1.rto_min=120"]);
+  assert.deepEqual(got("RPO 15 minutes for everything"), [], "no tier named: not placed");
+  assert.deepEqual(got("Tier 1: zero data loss", ["hci"]), [], "the line not in scope");
+  const [f] = drTierFigures("tier 2 RPO 30 minutes", ["dr-backup"]);
+  assert.equal(f.label, "recovery point of tier 2, in the recovery design");
+  assert.equal(f.what, "minutes of data that can be lost, tier 2");
+  const next = f.apply({});
+  assert.equal(next.tiers.length, 3);
+  assert.deepEqual(next.tiers[1], { share_pct: 35, rpo_min: 30, rto_min: 240 });
+  assert.equal(f.has(next), true);
+  assert.equal(f.has(null), false, "no design saved yet");
+  assert.equal(drTierFigures("tier 2 RPO 15 minutes", ["dr-backup"])[0].has({ data_tib: 60 }), true, "a saved design at the default tiers has it");
 });
