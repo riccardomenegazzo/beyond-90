@@ -12,6 +12,13 @@ import { qualify as povReady, progress as povProgress } from "./pov.js";
 import { hasCase } from "./valuecase.js";
 import { registrationOf, channelState } from "./partners.js";
 import { rfpState, notBidding } from "./rfp.js";
+import { INVITE } from "./deck.js";
+
+/** Who should be at the demo: the people each part is for, as one would invite them; the executive sponsor always. */
+export function demoAudience(plan) {
+  const roles = ["executive", ...(plan.roles || []).filter((r) => r !== "executive")];
+  return roles.map((r) => INVITE[r] || (ROLE_WORDS[r] || r).toLowerCase());
+}
 
 export const PHASES = [
   { id: "discover", label: "Discovery", goal: "Know where it hurts, what it is worth to them, and who decides.",
@@ -101,7 +108,8 @@ export function demoMarkdown(plan, w, length = 45) {
   if (!plan.ready) return "";
   const t = demoTime(plan, length);
   const out = [`# Demo plan: ${clean(w.customer)}`, "", `Built from the discovery workshop. Start with ${plan.line.toLowerCase()}.`,
-    `A ${length}-minute meeting${t.spare ? `, with about ${t.spare} minutes left for their questions` : ""}.`, ""];
+    `A ${length}-minute meeting${t.spare ? `, with about ${t.spare} minutes left for their questions` : ""}.`,
+    `Who should be there: ${demoAudience(plan).join(", ")}.`, ""];
   let i = 0;
   out.push(`## ${++i}. Their situation, in their words (2 minutes)`, "");
   if (plan.situation.length) out.push(...plan.situation.map((s) => `- ${s}`), "", "Ask: is this still right? What has changed since we spoke?", "");

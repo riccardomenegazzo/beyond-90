@@ -44,7 +44,7 @@ Leading a presales team? [docs/leaders.md](docs/leaders.md) shows what the team 
 
 - **Ranks the next actions** by points, by hours, or by how many accounts each one finishes; mark them done and newer data checks that the work landed.
 - **Prepares the call:** agenda, what you owe, discovery questions starting from the customer's weakest stage, and a recap afterwards.
-- **Runs a proof of value:** success criteria a sponsor can sign (suggested per kind of product), sessions, evidence, and a dated mutual plan to signature.
+- **Runs a proof of value:** success criteria a sponsor can sign (suggested per kind of product), sessions, evidence, a dated mutual plan to signature, and the readout with the sponsor, criterion by criterion.
 - **Shows what waiting costs:** every drop already dated in the data (secrets, accepted risks, deadlines), and what the work of a quarter was worth.
 - **Writes for the customer:** a CISO one-pager, an executive QBR and slides, a status page, all through a preview that can swap names for aliases.
 - **Works across a book of customers:** this week's priorities, shared patterns, and one budget of hours where it gains most.
@@ -67,7 +67,7 @@ Leading a presales team? [docs/leaders.md](docs/leaders.md) shows what the team 
 | ![The journey, from a discovery workshop](docs/img/app-journey.png) | ![One customer across every product line](docs/img/app-estate.png) |
 | ![Prep a call](docs/img/app-prep.png) | ![Accounts](docs/img/app-accounts.png) |
 | ![The questions, one card at a time](docs/img/app-nextcard.png) | ![The card on a phone, swiped for a real gap](docs/img/app-deck.png) |
-| ![Proof of value](docs/img/app-pov.png) | ![On a phone](docs/img/app-phone.png) |
+| ![The demo, built from what they said, timed for the meeting](docs/img/app-demo.png) | ![On a phone](docs/img/app-phone.png) |
 
 ## Security and privacy, in short
 

@@ -1205,6 +1205,7 @@ def main(site: str) -> int:
         check("Demo built for them" in now and "How to run it" in page.inner_text("#view .fwhero") and page.locator("#view details.fwphase").count() == 4,
               "the way forward puts a prospect ready for a demo at the demo, with how to run it, and the other phases a click away")
         demo = page.inner_text("#view")
+        check("Who should be there: the executive sponsor" in demo, "the demo plan says who should be there")
         check("Their situation, in their words" in demo and "2M in lost orders" in demo and "Only what closes their gaps" in demo and "Close: agree what a proof would have to show" in demo,
               "the demo is planned from what they said: their words first, then only their gaps, then the proof to agree")
         def each_part() -> int:

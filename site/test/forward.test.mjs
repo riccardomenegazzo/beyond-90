@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { PHASES, forward, demoPlan, demoMarkdown, demoTime, DEMO_LENGTHS } from "../forward.js";
+import { PHASES, forward, demoPlan, demoMarkdown, demoTime, DEMO_LENGTHS, demoAudience } from "../forward.js";
 import { makeWorkshop, exampleWorkshop, setDemo, setDeal, setAnswer, setChannel, validWorkshop, assess } from "../workshop.js";
 import { makePov, edit as editPov, setOutcome, setCriterion } from "../pov.js";
 
@@ -112,4 +112,14 @@ test("the demo, timed: the minutes of each part from the length of the meeting, 
   assert.match(md, /Only what closes their gaps \(about \d+ minutes each\)/);
   assert.match(md, /Not in 20 minutes: keep for the next meeting\n\n- /);
   assert.match(md, /The concerns they raised \(3 minutes each\)/);
+});
+
+test("the demo plan says who should be there: the executive sponsor, then the people each part is for", () => {
+  const p = demoPlan(CAT, exampleWorkshop(D));
+  const who = demoAudience(p);
+  assert.equal(who[0], "the executive sponsor");
+  assert.ok(who.includes("the architect") && who.includes("the security team"), who.join("; "));
+  assert.equal(new Set(who).size, who.length);
+  assert.match(demoMarkdown(p, exampleWorkshop(D)), /\nWho should be there: the executive sponsor, the architect, /);
+  assert.deepEqual(demoAudience({ roles: [] }), ["the executive sponsor"]);
 });

@@ -2,6 +2,12 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.173.0
+
+- **The demo plan says who should be there:** the executive sponsor, then the people each part of it is for (the architect, the security team, operations), as one would invite them; in the plan on screen and in the plan as text.
+- The README shows the demo plan in its pictures, and names the readout of a proof of value among what it runs.
+- New: `demoAudience` in `forward.js`, with a test; a browser check.
+
 ## 0.172.0
 
 - **What leaves from a workshop is logged under the prospect.** A copy, a file or a mail drafted from a discovery workshop now goes in the log of what left the page under the prospect's name, as one from a customer's analysis does; Saved lists it, and erasing the prospect names it on the receipt.

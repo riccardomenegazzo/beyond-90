@@ -1786,3 +1786,5 @@ body[data-role=se] .choose>.wsstart{order:-1;margin:0 0 26px;border:2px solid va
 .decknote{margin:0 18px 10px;padding:7px 12px;border-radius:10px;font-size:14px;line-height:1.4;background:color-mix(in srgb,var(--ink2) 8%,var(--surface));color:var(--ink)}
 .decknote.p-behind{background:color-mix(in srgb,var(--warn) 14%,var(--surface))}
 .decknote.p-ahead,.decknote.p-on{background:color-mix(in srgb,var(--pos) 10%,var(--surface))}
+
+.fwwho{margin:2px 0 10px;font-size:14.5px}

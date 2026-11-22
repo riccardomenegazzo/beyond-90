@@ -3117,8 +3117,9 @@ export function forwardView({ workshop: w, catalog, povs, today, go, setDemo, se
     h("p", { class: "note", text: dt.fit < dp.segments.length
       ? `${dt.fit ? `${nOf(dt.fit, "gap")} fit${dt.fit === 1 ? "s" : ""}, about ${dt.each} minutes each` : "No gap fits"} after the situation, the result, the concerns and the close; ${dt.later.length} ${dt.later.length === 1 ? "waits" : "wait"} for the next meeting.`
       : `About ${dt.each} minutes for each gap${dt.spare ? `, and ${dt.spare} left for their questions` : ""}.` }));
+  const audience = dp.ready ? h("p", { class: "fwwho" }, h("b", { text: "Who should be there: " }), FW.demoAudience(dp).join(", ") + ".") : null;
   const demo = card("The demo, built from what they said", dp.ready ? h("div", {},
-    timing,
+    timing, audience,
     sec("1. Their situation, in their words (2 minutes)", dp.situation.length ? h("ul", { class: "growwhy" }, dp.situation.map((t) => h("li", { text: t }))) : h("p", { class: "note", text: "Nothing in their words yet: note what they say to the value questions." })),
     sec("2. The result first (3 minutes)", h("p", { text: dp.result })),
     dp.segments.length ? sec(dt.fit ? `3. Only what closes their gaps (about ${dt.each} minutes each)` : "3. Only what closes their gaps", h("ol", { class: "fwsegs" }, dp.segments.map((x, i) => h("li", { class: i < dt.fit ? "" : "fwlater" }, h("span", { text: x.show }),
