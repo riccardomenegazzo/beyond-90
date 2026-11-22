@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.184.0
+
+- **The cards say their keys on a computer.** With a mouse and a keyboard, the line under every deck (the questions, the qualification, the demo, the readout, the rehearsal) now reads its keys, "Keys: → solved, ↑ partly, ← a real gap, ↓ nobody knows; or 1 to 4", instead of asking for a swipe; on a phone it still says to swipe or tap.
+
 ## 0.183.0
 
 - **The example prospect explains itself.** Opened from "See a filled-in example", the invented prospect's journey starts with **Your first minute with a prospect**: the meetings it goes through, each a tap away (the questions, qualifying the deal, the demo planned and run card by card, and rehearsing the objections before any of them). **Got it, hide this** puts it away for good; it never shows on a real prospect.

@@ -1771,6 +1771,14 @@ function deckPane({ cards, state, answerOf, answer, go, pfx, inline, set = DISCO
   const root = h("div", { class: "deckpane" + (inline ? " inpage" : "") },
     h("div", { class: "deckhead" }, h("div", { class: "decktop" }, inline ? h("span", { class: "deckkicker", text: kicker }) : null, title, pos, clock ? clock() : null, action), marks), main, status);
 
+  // with a mouse and a keyboard, a swipe is not the way in: say the keys instead (each answer's arrow, and 1 to n)
+  const keyHint = () => {
+    let fine = false;
+    try { fine = matchMedia("(hover: hover) and (pointer: fine)").matches; } catch { /* no media queries: keep the words */ }
+    if (!fine) return "";
+    const ARROW = { right: "→", up: "↑", left: "←", down: "↓" };
+    return `Keys: ${set.order.map((k) => `${ARROW[set.dir(k).arrow]} ${set.label(k).toLowerCase()}`).join(", ")}; or 1 to ${set.order.length}`;
+  };
   const drawMarks = () => {
     put(marks, cards.map((c, j) => { const a = answerOf(c); return h("i", { class: a ? `t-${set.tone(a.a)}` : j === state.at ? "now" : "" }); }));
   };
@@ -1909,7 +1917,7 @@ function deckPane({ cards, state, answerOf, answer, go, pfx, inline, set = DISCO
     state.after = "";
     put(main, h("div", { class: "deckstage" }, card), after, pace,
       h("div", { class: `deckans n${set.order.length}`, role: "group", "aria-label": `Answer to: ${q.q}` }, opts),
-      h("div", { class: "deckbar" }, prev, h("span", { class: "deckhint", text: set.hint }), skip));
+      h("div", { class: "deckbar" }, prev, h("span", { class: "deckhint", text: keyHint() || set.hint }), skip));
     paintSug();
     drag(card, stamp);
     if (focus) requestAnimationFrame(() => ask.focus({ preventScroll: true }));
