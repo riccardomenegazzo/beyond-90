@@ -3076,8 +3076,8 @@ export function forwardView({ workshop: w, catalog, povs, today, go, setDemo, se
   lengthPick.value = String(demoLength);
   const day = h("input", { type: "date", value: (w.demo && w.demo.on) || today, min: w.created_on, "aria-label": "Day the demo was given" });
   const given = w.demo && w.demo.on
-    ? h("div", { class: "btnrow" }, h("span", { text: `Given on ${w.demo.on}.` }), h("button", { class: "btn small quiet", type: "button", text: "Not given yet", onclick: async () => { try { await setDemo(""); } catch (e) { say.textContent = e.message; } } }))
-    : h("div", { class: "btnrow" }, day, h("button", { class: "btn small", type: "button", text: "Mark the demo as given", onclick: async () => { try { await setDemo(day.value); } catch (e) { say.textContent = e.message; } } }));
+    ? h("div", { class: "btnrow" }, h("span", { class: "fwgl", text: "After the demo" }), h("span", { text: `Given on ${w.demo.on}.` }), h("button", { class: "btn small quiet", type: "button", text: "Not given yet", onclick: async () => { try { await setDemo(""); } catch (e) { say.textContent = e.message; } } }))
+    : h("div", { class: "btnrow" }, h("span", { class: "fwgl", text: "After the demo" }), day, h("button", { class: "btn small", type: "button", text: "Mark the demo as given", onclick: async () => { try { await setDemo(day.value); } catch (e) { say.textContent = e.message; } } }));
   const sec = (title, kids) => h("div", { class: "fwsec" }, h("h3", { text: title }), kids);
   // running it: one card per part, swiped as it landed, with what they said; the meeting clock follows
   let cur = w;
@@ -3121,13 +3121,13 @@ export function forwardView({ workshop: w, catalog, povs, today, go, setDemo, se
   // the agenda for the customer, and an invitation that carries it
   const inWeek = new Date(Date.parse(today + "T00:00:00Z") + 7 * 86400000).toISOString().slice(0, 10);
   const demoDay = h("input", { type: "date", value: inWeek, min: today, "aria-label": "Day of the demo" });
-  const invite = dp.ready ? h("div", { class: "btnrow fwinvite" }, h("label", { class: "fwlen" }, h("span", { text: "Invite for" }), demoDay),
+  const invite = dp.ready ? h("div", { class: "btnrow fwinvite" }, h("span", { class: "fwgl", text: "Before the demo" }), h("label", { class: "fwlen" }, h("span", { text: "Invite for" }), demoDay),
     h("button", { class: "btn small", type: "button", text: "Copy the agenda for the customer",
       "data-tip": "What will be shown and for how long, in their order, and who should be there. Nothing from the discovery notes is in it.",
       onclick: (ev) => copyText(FW.demoAgenda(dp, cur, demoLength)).then((ok) => { ev.target.textContent = ok ? "Copied" : "Not copied"; }) }),
     h("button", { class: "btn small", type: "button", text: "Demo invitation (.ics)", onclick: () => { if (demoDay.value) saveBlob(FW.demoIcs(cur, dp, demoDay.value, demoLength, new Date().toISOString().replace(/[-:]/g, "").slice(0, 15) + "Z"), `${slug}-demo.ics`, "text/calendar"); } })) : null;
   const demo = card("The demo, built from what they said", dp.ready ? h("div", {},
-    timing, audience,
+    timing, audience, run ? h("div", { class: "btnrow fwrun" }, run) : null,
     sec("1. Their situation, in their words (2 minutes)", dp.situation.length ? h("ul", { class: "growwhy" }, dp.situation.map((t) => h("li", { text: t }))) : h("p", { class: "note", text: "Nothing in their words yet: note what they say to the value questions." })),
     sec("2. The result first (3 minutes)", h("p", { text: dp.result })),
     dp.segments.length ? sec(dt.fit ? `3. Only what closes their gaps (about ${dt.each} minutes each)` : "3. Only what closes their gaps", h("ol", { class: "fwsegs" }, dp.segments.map((x, i) => h("li", { class: i < dt.fit ? "" : "fwlater" }, h("span", { text: x.show }),
@@ -3139,7 +3139,7 @@ export function forwardView({ workshop: w, catalog, povs, today, go, setDemo, se
     h("p", { class: "note", text: "For the executive, keep to the situation, the result, the first two gaps and the proof: fifteen minutes." }),
     invite,
     landedSec,
-    h("div", { class: "btnrow" }, run,
+    h("div", { class: "btnrow" }, h("span", { class: "fwgl", text: "The plan" }),
       h("button", { class: "btn small", type: "button", text: "Copy the demo plan", onclick: (ev) => copyText(md).then((ok) => { ev.target.textContent = ok ? "Copied" : "Not copied"; }) }),
       h("button", { class: "btn small", type: "button", text: "Demo plan (.md)", onclick: () => saveBlob(md, `${slug}-demo-plan.md`, "text/markdown") })),
     given, say)

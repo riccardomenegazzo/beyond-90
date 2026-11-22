@@ -2,6 +2,11 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.175.0
+
+- **The demo card, tidied.** **Run the demo** now sits at the top of the plan, under its length and who should be there, where it is found in the meeting; the other buttons are grouped by when they are used: before the demo (the invitation and the agenda for the customer), the plan (copy or download it), and after (mark it given).
+- The length of the meeting and the invitation's day sit on one line with their labels, instead of under them.
+
 ## 0.174.0
 
 - **The demo's agenda, for the customer, and its invitation.** Under the demo plan, **Copy the agenda for the customer** and **Demo invitation (.ics)** (on the day chosen) give what will be shown and for how long, in their order (their situation, the result first, each gap that fits, their concerns, what a proof would have to show), and who should be there. It speaks to them: no quote from the discovery notes, nothing left out because they have it, no advice to the seller. Both leave the page through the same check as every copy and file.
