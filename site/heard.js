@@ -703,3 +703,62 @@ export function wavesFigures(said, scope, current = {}) {
   }
   return out;
 }
+
+// the sizing sketch's figures: growth, the vCPU per core, the servers that can be down, what one server holds, the copies
+const NODE_WORD = String.raw`(?:servers?|nodes?|hosts?|nod[oi])`;
+const PER_NODE = String.raw`(?:per|a|each|in each|on each|ogni|per ogni|for each)\s+${NODE_WORD}`;
+const FILE_TALK = /\b(?:files?|shares?|nas|condivis\w*|cartelle)\b/;
+const SMALL = { one: 1, two: 2, three: 3, four: 4, un: 1, uno: 1, una: 1, due: 2, tre: 3, quattro: 4 };
+const small = (x) => (/^\d$/.test(x) ? Number(x) : SMALL[x]);
+
+/**
+ * The sizing sketch's figures in what was said, once an inventory is read and the servers are in scope: the growth to
+ * plan for, the vCPU per physical core, the servers that can be down at once ("N+2", "two servers down"), the cores and
+ * memory of one server, and two or three copies of the data. Growth said about file shares is the file sketch's.
+ * @returns {{sketch:string, field:string, value:number, what:string, label:string, apply?:Function, has?:Function}[]}
+ */
+export function sizingFigures(said, scope, current = {}) {
+  if (!(scope || []).includes("hci") || !current.inventory) return [];
+  const t = ` ${String(said == null ? "" : said).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "")} `;
+  const out = [];
+  const push = (field, value, what, label, extra = {}) => out.push({ sketch: "sizing", field, value, what, label: `${label}, in the sizing sketch`, ...extra });
+  const grow = FILE_TALK.test(t) ? null : t.match(/\b(?:grow\w*|growth|cresc\w*)\b[^.;]*?\b(\d+(?:[.,]\d+)?)\s?(?:%|percent\b|per cento\b)/)
+    || t.match(/\b(\d+(?:[.,]\d+)?)\s?(?:%|percent\b|per cento\b)\s+(?:of\s+|di\s+)?(?:growth|crescita|more machines|more vms|more workloads)\b/);
+  if (grow) {
+    const v = Number(grow[1].replace(",", "."));
+    if (v > 0 && v <= 500) push("growth_pct", v, "percent growth over the platform's life", "growth over the platform's life");
+  }
+  const cpu = /\b(?:v?cpus?|cores?|processor\w*|processori)\b/.test(t);
+  const ratio = t.match(/\b(\d+(?:[.,]\d+)?)\s*(?:vcpus?|virtual cpus?)\s+(?:per|a|for each|to a|to one|on each|ogni|per ogni|su ogni|per)\s+(?:physical\s+)?core\b/)
+    || (cpu ? t.match(/\b(\d+(?:[.,]\d+)?)\s?(?::|to)\s?1\b(?=[^.;]*\b(?:overcommit\w*|ratio|consolidation|rapporto)\b)|\b(?:overcommit\w*|ratio|consolidation|rapporto)\b[^.;]*?\b(\d+(?:[.,]\d+)?)\s?(?::|to)\s?1\b/) : null);
+  if (ratio) {
+    const v = Number((ratio[1] || ratio[2]).replace(",", "."));
+    if (v >= 1 && v <= 16) push("vcpu_per_core", v, "vCPU per physical core", "vCPU per physical core");
+  }
+  const spare = t.match(/\bn\s?\+\s?([0-4])\b/)
+    || t.match(new RegExp(String.raw`\b(\d|one|two|three|four|un|uno|due|tre|quattro)\s+${NODE_WORD}\s+(?:down|failed|at once|lost|out|guast[oi]|fermi|gi[u])\b`))
+    || t.match(new RegExp(String.raw`\b(?:lose|losing|survive|tolerate|perdere|reggere)\s+(\d|one|two|three|four|un|uno|due|tre|quattro)\s+${NODE_WORD}\b`));
+  if (spare) {
+    const v = small(spare[1]);
+    if (v != null && v >= 0 && v <= 4) push("spare_nodes", v, `spare server${v === 1 ? "" : "s"} for failures`, "spare servers for failures");
+  }
+  const cores = t.match(new RegExp(String.raw`\b(\d+)\s+(?:physical\s+)?(?:cores?|core fisici)\s+${PER_NODE}\b`))
+    || t.match(new RegExp(String.raw`\b${NODE_WORD}\s+(?:with|of|da|con)\s+(\d+)\s+(?:physical\s+)?(?:cores?|core)\b`));
+  if (cores) {
+    const v = Number(cores[1]);
+    if (v >= 4 && v <= 512) push("node_cores", v, "cores per server", "cores per server");
+  }
+  const MEM = String.raw`(\d+(?:[.,]\d+)?)\s?(gb|gib|tb|tib)\s+(?:of\s+|di\s+)?(?:ram|memory|memoria)`;
+  const mem = t.match(new RegExp(String.raw`\b${MEM}\s+${PER_NODE}\b`)) || t.match(new RegExp(String.raw`\b${NODE_WORD}\s+(?:with|of|da|con)\b[^.;]*?\b${MEM}\b`));
+  if (mem) {
+    const v = Math.round(Number(mem[1].replace(",", ".")) * (/^t/.test(mem[2]) ? 1024 : 1));
+    if (v >= 32 && v <= 16384) push("node_mem_gib", v, "GiB of memory per server", "memory per server");
+  }
+  const copies = t.match(/\b(two|three|2|3|due|tre)\s+(?:copies|copie|replicas|repliche)\b|\b(?:rf|replication factor(?: of)?|fattore di replica)\s?([23])\b/);
+  if (copies) {
+    const n = small(copies[1] || copies[2]);
+    const key = `copies${n}`;
+    if (n === 2 || n === 3) push("protection", n, "copies of the data", "copies of the data", { apply: (b) => ({ ...b, protection: key }), has: (b) => !!(b && b.protection === key) });
+  }
+  return out;
+}

@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
-import { stem, tokens, match, joinNote, NOTE_MAX, concernCards, concernsHeard, sketchFigures, caseFigures, unitFigures, edgeFigures, retentionFigures, wavesFigures } from "../heard.js";
+import { stem, tokens, match, joinNote, NOTE_MAX, concernCards, concernsHeard, sketchFigures, caseFigures, unitFigures, edgeFigures, retentionFigures, wavesFigures, sizingFigures } from "../heard.js";
 
 const card = (key, q, listen = "", why = "", probe = "") => ({ key, label: "Disaster recovery", q: { q, listen, why, probe } });
 const DR = [
@@ -689,4 +689,29 @@ test("the pace of a migration, said in the meeting, is offered for the plan in w
   const f = wavesFigures("30 machines a weekend", ["platform-migration"], inv)[0];
   assert.equal(f.sketch, "waves");
   assert.equal(f.label, "machines a wave, in the plan in waves");
+});
+
+test("what is said about the servers is offered for the sizing sketch once an inventory is read", () => {
+  const inv = { inventory: { vms: 620 } };
+  const got = (said, current = inv, scope = ["hci"]) => sizingFigures(said, scope, current).map((x) => `${x.field}=${x.value}`).sort();
+  assert.deepEqual(got("We plan for 30% growth over five years, on servers with 64 cores and 1.5 TB of memory, N+2."),
+    ["growth_pct=30", "node_cores=64", "node_mem_gib=1536", "spare_nodes=2"]);
+  assert.deepEqual(got("they run 6 vCPU per physical core today"), ["vcpu_per_core=6"]);
+  assert.deepEqual(got("the CPU overcommit ratio is 5:1"), ["vcpu_per_core=5"]);
+  assert.deepEqual(got("the platform must survive two servers down at once"), ["spare_nodes=2"]);
+  assert.deepEqual(got("we want three copies of the data"), ["protection=3"]);
+  assert.deepEqual(got("48 cores per node and 768 GB of RAM per node"), ["node_cores=48", "node_mem_gib=768"]);
+  // in Italian
+  assert.deepEqual(got("prevediamo una crescita del 25 per cento, server da 32 core, e devono reggere due nodi guasti"), ["growth_pct=25", "node_cores=32", "spare_nodes=2"]);
+  assert.deepEqual(got("vogliamo tre copie dei dati"), ["protection=3"]);
+  // not the sizing's: file shares growing, no inventory, the line not in scope, figures out of range
+  assert.deepEqual(got("the file shares grow 30% a year"), []);
+  assert.deepEqual(got("30% growth", {}), []);
+  assert.deepEqual(got("30% growth", inv, ["dr-backup"]), []);
+  assert.deepEqual(got("servers with 2 cores"), []);
+  const copies = sizingFigures("three copies of the data", ["hci"], inv)[0];
+  assert.deepEqual(copies.apply({ growth_pct: 10 }), { growth_pct: 10, protection: "copies3" });
+  assert.equal(copies.has({ protection: "copies3" }), true);
+  assert.equal(copies.has({}), false);
+  assert.equal(copies.label, "copies of the data, in the sizing sketch");
 });

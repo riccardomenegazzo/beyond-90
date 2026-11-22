@@ -1556,6 +1556,19 @@ def main(site: str) -> int:
         page.locator("#view .heardsay button", has_text="Undo").click()
         page.locator("#view .heardsay", has_text="Undone: the plan in waves is back as it was").wait_for()
         check(page.locator("#view input[aria-label='Link for the copy ahead, Mbit/s']").input_value() == "1000", "Undo puts the plan back as it was")
+        # what is said about the servers goes into the sizing sketch
+        servers_before = page.inner_text("#view .szhead > b")
+        page.fill("#wsheard", "We plan for 30% growth, on servers with 64 cores and 1.5 TB of memory, N+2.")
+        page.get_by_role("button", name="Use 2 as the spare servers for failures, in the sizing sketch").click()
+        page.locator("#view .heardsay", has_text="Put in the sizing sketch: 2 spare servers for failures").wait_for()
+        check(page.locator("#view input[aria-label='Spare servers for failures']").input_value() == "2" and int(page.inner_text("#view .szhead > b")) == int(servers_before) + 1
+              and page.get_by_role("button", name="Use 1,536 as the memory per server, in the sizing sketch").count() == 1
+              and "already in it" in page.locator("#view .heardsketch", has_text="64 cores per server").inner_text()
+              and page.locator("#view input[aria-label='vCPU per physical core']").input_value() == "8",
+              "what is said about the servers is offered for the sizing sketch, one more spare server adds a server, and what was set in the card stays")
+        page.locator("#view .heardsay button", has_text="Undo").click()
+        page.locator("#view .heardsay", has_text="Undone: the sizing sketch is back as it was").wait_for()
+        check(page.inner_text("#view .szhead > b") == servers_before, "Undo puts the sizing back as it was")
         page.fill("#wsheard", "")
         with page.expect_download() as dl:
             page.get_by_role("button", name="Add the waves to a calendar (.ics)").click()

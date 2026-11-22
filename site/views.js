@@ -2098,7 +2098,7 @@ function heardPanel({ catalog, get, set, answer, worth, setDeal, raise = null, s
     if (said.length < 6) { put(heardOut); return; }
     const hits = HEARD.match([...DECK.deckFrom(catalog, get().scope), ...dealCards], said, 3);
     const concern = HEARD.concernsHeard(HEARD.concernCards(catalog, get().scope), said)[0];
-    const figs = sketches ? [...HEARD.sketchFigures(said, get().scope, get()), ...HEARD.unitFigures(said, get().scope), ...HEARD.edgeFigures(said, get().scope, get()), ...HEARD.retentionFigures(said, get().scope), ...HEARD.wavesFigures(said, get().scope, get()), ...HEARD.caseFigures(said)].filter((f) => sketches[f.sketch]) : [];
+    const figs = sketches ? [...HEARD.sketchFigures(said, get().scope, get()), ...HEARD.unitFigures(said, get().scope), ...HEARD.edgeFigures(said, get().scope, get()), ...HEARD.retentionFigures(said, get().scope), ...HEARD.wavesFigures(said, get().scope, get()), ...HEARD.sizingFigures(said, get().scope, get()), ...HEARD.caseFigures(said)].filter((f) => sketches[f.sketch]) : [];
     if (!hits.length && !concern && !figs.length) { put(heardOut, h("p", { class: "note", text: "No question in scope uses these words. Try the words of the question, or write it on the card." })); return; }
     put(heardOut, concern ? concernHit(concern.card) : null, figs.map(figureHit), hits.map(({ card }) => {
       if (card.deal) return dealHit(card, said);
@@ -2441,7 +2441,7 @@ export function workshopView({ workshop: w, catalog, list, answer, worth, setDea
   }
   function syncDeck() { if (deckInline) deckInline.sync(); paceNow(); }
   if (inScope.length) rebuildDeck();
-  const heardBox = heardPanel({ catalog, get: () => cur, set: (x) => { cur = x; }, answer, worth, setDeal, raise, sketches: { vdi, db, k8s, files, obj, dr, gpu, unit, edge, waves, case: setCase },
+  const heardBox = heardPanel({ catalog, get: () => cur, set: (x) => { cur = x; }, answer, worth, setDeal, raise, sketches: { vdi, db, k8s, files, obj, dr, gpu, unit, edge, waves, sizing, case: setCase },
     onFiled: (key) => { if (key) afterDeck(key); syncDeck(); if (fullDeck) fullDeck.sync(); } }).el;
   // the conversation first: where it stands on every line, what to show, the questions; then the sketches from their numbers
   const sketches = [inventory ? inventoryCard(w, inventory) : null, w.inventory && sizing ? sizingCard(w, sizing) : null,
@@ -2543,7 +2543,7 @@ function sizingCard(w, sizing) {
     }));
   prot.addEventListener("change", save);
   draw(a);
-  return card("A first sizing sketch", h("div", { class: "sz" }, out, h("details", { class: "szassume" }, h("summary", { text: "The assumptions, to agree with the customer" }), grid,
+  const el = card("A first sizing sketch", h("div", { class: "sz" }, out, h("details", { class: "szassume" }, h("summary", { text: "The assumptions, to agree with the customer" }), grid,
     h("div", { class: "btnrow" }, h("button", { class: "btn small", type: "button", text: "Back to the defaults", onclick: async () => {
       for (const [k] of fields) inputs[k].value = String(SZ.DEFAULTS[k]);
       prot.value = SZ.DEFAULTS.protection;
@@ -2551,6 +2551,15 @@ function sizingCard(w, sizing) {
       try { await sizing(null); } catch (e) { say.textContent = e.message; }
     } }))), say),
   { sub: "The arithmetic before the sizing tool: how many servers the inventory needs, which resource decides, and what it runs at with a server down. Every assumption is open; it is not a sizing." });
+  // a figure put in from what was heard: the assumptions show it, and the sketch follows
+  el.dataset.sketch = "sizing";
+  el.addEventListener("sketch-settings", (e) => {
+    const v = SZ.clean(e.detail.settings);
+    prot.value = v.protection;
+    for (const [k] of fields) inputs[k].value = String(v[k]);
+    draw(v);
+  });
+  return el;
 }
 
 /** The handover to the team that delivers and runs it, with the promises they inherit. */
@@ -2897,7 +2906,7 @@ export function partnersView({ workshop: w, catalog, today, setChannel }) {
 const FW_STATE = { done: "Done", open: "Passed, with something left open", now: "Now", later: "Later" };
 const DEMO_LENGTH = new Map();     // per workshop, the length of the demo meeting chosen on the way forward, while the page is open
 
-export function forwardView({ workshop: w, catalog, povs, today, go, setDemo, setDemoSeen, answer, worth, setDeal, raise, vdi, db, k8s, files, obj, dr, gpu, unit, edge, waves, setCase }) {
+export function forwardView({ workshop: w, catalog, povs, today, go, setDemo, setDemoSeen, answer, worth, setDeal, raise, vdi, db, k8s, files, obj, dr, gpu, unit, edge, waves, sizing, setCase }) {
   const pov = DL.povFor(povs, w.customer);
   const f = FW.forward(catalog, w, pov, today);
   const say = h("p", { class: "note", role: "status" });
@@ -2961,7 +2970,7 @@ export function forwardView({ workshop: w, catalog, povs, today, go, setDemo, se
   // what the customer says during the demo answers discovery questions and voices concerns too: the same box, under the cards
   const runDemo = () => openDeck({ cards: dcards, state: { at: Math.max(0, dcards.findIndex((c) => !seenOf(c))), drafts: new Map() }, set: demoSet, go,
     answerOf: seenOf, answer: async (c, a, note) => { cur = await setDemoSeen(c.key, a, note); return cur; }, clock: () => miniClock(w.id), onClose: () => go("wsforward"),
-    ...(answer ? { aside: heardPanel({ catalog, get: () => cur, set: (x) => { cur = x; }, answer, worth, setDeal, raise, id: "fwheard", sketches: { vdi, db, k8s, files, obj, dr, gpu, unit, edge, waves, case: setCase } }).el, asideTitle: "Heard something else?" } : {}) });
+    ...(answer ? { aside: heardPanel({ catalog, get: () => cur, set: (x) => { cur = x; }, answer, worth, setDeal, raise, id: "fwheard", sketches: { vdi, db, k8s, files, obj, dr, gpu, unit, edge, waves, sizing, case: setCase } }).el, asideTitle: "Heard something else?" } : {}) });
   const landed = dcards.some(seenOf) ? DEMO.demoSummary(dcards, seenOf) : null;
   const landedSec = landed ? sec("How it landed", h("div", { class: "fwlanded" }, h("p", { text: landed.head }),
     landed.lists.filter(([, rows]) => rows.length).map(([heading, rows]) => h("div", { class: "growproof" }, h("small", { text: heading }),
@@ -3007,7 +3016,7 @@ export function forwardView({ workshop: w, catalog, povs, today, go, setDemo, se
 }
 
 // ------------------------------------------------------------------ qualify the deal: the same ten questions on every line
-export function qualifyView({ workshop: w, catalog, setDeal, setAlt, answer, worth, raise, go, vdi, db, k8s, files, obj, dr, gpu, unit, edge, waves, setCase }) {
+export function qualifyView({ workshop: w, catalog, setDeal, setAlt, answer, worth, raise, go, vdi, db, k8s, files, obj, dr, gpu, unit, edge, waves, sizing, setCase }) {
   let cur = w;
   const say = h("p", { class: "note", role: "status" });
   const hero = h("section", { class: "card qdhero" });
@@ -3113,7 +3122,7 @@ export function qualifyView({ workshop: w, catalog, setDeal, setAlt, answer, wor
   qdDeck.draw(false);
   return h("div", {}, hero,
     h("div", { class: "card deckpanel" }, h("div", { class: "deckslot" }, qdDeck.el),
-      h("div", { class: "deckside" }, heardPanel({ catalog, get: () => cur, set: (x) => { cur = x; }, answer, worth, setDeal, raise, id: "qdheard", sketches: { vdi, db, k8s, files, obj, dr, gpu, unit, edge, waves, case: setCase },
+      h("div", { class: "deckside" }, heardPanel({ catalog, get: () => cur, set: (x) => { cur = x; }, answer, worth, setDeal, raise, id: "qdheard", sketches: { vdi, db, k8s, files, obj, dr, gpu, unit, edge, waves, sizing, case: setCase },
         onFiled: () => { qdList.draw(); drawHero(); qdDeck.sync(); } }).el,
         h("h2", { class: "decksidehead", text: "The ten questions" }),
         h("p", { class: "note", text: "The same on every line, asked alongside the technical ones: known, partly or not yet, with what you heard. Named as most sales methods name them, so the seller reads the same list; never in the customer readout." }),

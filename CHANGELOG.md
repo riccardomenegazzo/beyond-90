@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.230.0
+
+- **What is said about the servers goes into the sizing sketch with a tap.** Once an inventory is read and hyperconverged infrastructure is in scope, Heard something reads the growth to plan for ("30% growth over five years"), the vCPU per physical core ("6 vCPU per core", "an overcommit ratio of 5:1"), the servers that can be down at once ("N+2", "two servers down at once"), what one server holds ("servers with 64 cores and 1.5 TB of memory") and two or three copies of the data, in English or Italian ("una crescita del 25 per cento, server da 32 core, due nodi guasti"). **Use it in the sketch** puts the figure in the sketch's assumptions, the number of servers follows, and **Undo** puts it back. Growth said about file shares stays with the file storage sketch.
+
 ## 0.229.0
 
 - **The next meeting asks for the figures of the sizing and the move too.** With hyperconverged infrastructure in scope and no sizing worked out yet, **The figures for a first sizing** in the next meeting's agenda asks for the export of their virtual machines first, then, once it is read, the growth to plan for, how many servers can be down at once and the vCPU per core they accept. With platform migration in scope, it asks for the link the data would be copied over, how many machines a weekend the application owners accept and the days between waves. Once the sketch or the plan is worked out with their figures, the line leaves the agenda.

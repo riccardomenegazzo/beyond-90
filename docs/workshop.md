@@ -424,6 +424,8 @@ Design notes follow the assumptions: keep the servers alike (the capacity left a
 
 It is a sketch, to agree the order of magnitude and the assumptions with the customer, not a sizing: the vendor's sizing tool, with the measured workload, has the last word. The assumptions are kept with the workshop and shown in the meeting summary.
 
+What the customer says about the servers in the meeting ("we plan for 30% growth, on servers with 64 cores and 1.5 TB of memory, N+2", "three copies of the data", or in Italian "una crescita del 25 per cento, server da 32 core") is offered under Heard something for the sizing sketch: **Use it in the sketch** puts it in the assumptions, the count follows, and **Undo** puts it back.
+
 ## A first recovery design
 
 With disaster recovery in scope, **A first recovery design** takes the protected data (from the inventory, or typed in), how much of it is written each day, how much busier the busiest hour is, and the round trip between the sites. For three tiers of applications, each with its share of the data, recovery point and recovery time, it gives:
