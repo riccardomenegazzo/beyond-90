@@ -16,6 +16,11 @@ const SKETCH_NEEDS = {
   "dr-backup": ["dr", "Recovery", "how much data to protect, the distance between the sites, and the recovery point each tier needs"],
   "private-ai": ["gpu", "GPUs", "the model and its precision, the context of a request, and how many requests at once"],
   "edge-sites": ["edge", "The sites", "how many sites of each kind, what runs at each, and their links"],
+  // the two sketches from an inventory: before it is read, the export comes first
+  hci: ["sizing", "The servers", (w) => (w.inventory ? "the growth to plan for, how many servers can be down at once, and the vCPU per physical core they accept"
+    : "the export of their virtual machines from their own tools, the growth to plan for, and how many servers can be down at once")],
+  "platform-migration": ["waves", "The move", (w) => (w.inventory ? "the link the data would be copied over, how many machines a weekend the application owners accept, and the days between waves"
+    : "the export of their virtual machines, the link the data would be copied over, and how many machines a weekend the application owners accept")],
 };
 
 const clean = (t) => String(t == null ? "" : t).replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim();
@@ -44,7 +49,7 @@ export function nextMeeting(catalog, w, today) {
   const fu = w.demo && w.demo.seen ? demoFollowUps(cardsFor(catalog, w, res), w.demo) : { answer: [], again: [] };
   const demo = { answer: fu.answer.slice(0, 5).map((x) => ({ text: clean(x.part), note: clean(x.note) })), again: fu.again.slice(0, 5).map((x) => ({ text: clean(x.part), note: clean(x.note) })) };
   // the figures a first sketch still needs, on the lines in scope whose sketch was not worked out with their figures yet
-  const figures = w.scope.filter((p) => catalog.lines[p] && SKETCH_NEEDS[p] && !w[SKETCH_NEEDS[p][0]]).slice(0, 5).map((p) => ({ line: SKETCH_NEEDS[p][1], need: SKETCH_NEEDS[p][2] }));
+  const figures = w.scope.filter((p) => catalog.lines[p] && SKETCH_NEEDS[p] && !w[SKETCH_NEEDS[p][0]]).slice(0, 5).map((p) => ({ line: SKETCH_NEEDS[p][1], need: typeof SKETCH_NEEDS[p][2] === "function" ? SKETCH_NEEDS[p][2](w) : SKETCH_NEEDS[p][2] }));
   return { customer: w.customer, land: res.land ? res.land.label : "", settle, ask, prove, due, late, people, roles, tender, demo, figures,
     empty: !settle.length && !ask.length && !prove.length && !due.length && !late.length && !tender.length && !demo.answer.length && !demo.again.length };
 }

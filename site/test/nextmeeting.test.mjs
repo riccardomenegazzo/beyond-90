@@ -51,6 +51,15 @@ test("a new workshop starts from the essential questions, and who can answer the
   assert.deepEqual(nextMeeting(CAT, { ...w, dr: { data_tib: 40 } }, D).figures, []);
 });
 
+test("for the servers, the next meeting asks for the inventory first, then the figures a sizing turns on", () => {
+  const w = makeWorkshop({ customer: "Acme (mock)", scope: ["hci"], createdOn: D, nonce: "abcdef" });
+  const need = (x) => (nextMeeting(CAT, x, D).figures.find((f) => f.line === "The servers") || {}).need;
+  assert.match(need(w), /^the export of their virtual machines from their own tools, the growth to plan for/);
+  assert.match(need({ ...w, inventory: { vms: 620 } }), /^the growth to plan for, how many servers can be down at once, and the vCPU per physical core they accept$/);
+  assert.equal(need({ ...w, inventory: { vms: 620 }, sizing: { growth_pct: 30 } }), undefined, "worked out with their figures, the line leaves the agenda");
+  assert.match(agendaText(nextMeeting(CAT, w, D)), /The figures for a first sizing\n {3}- The servers: the export of their virtual machines/);
+});
+
 test("once the essential questions are answered and nothing is open, the agenda says so", () => {
   let w = makeWorkshop({ customer: "Acme (mock)", scope: ["dr-backup"], createdOn: D, nonce: "abcdef" });
   CAT.lines["dr-backup"].questions.forEach((q, i) => { if (q.core) w = setAnswer(w, "dr-backup", i, "solved", "", D); });

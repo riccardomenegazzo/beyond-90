@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.229.0
+
+- **The next meeting asks for the figures of the sizing and the move too.** With hyperconverged infrastructure in scope and no sizing worked out yet, **The figures for a first sizing** in the next meeting's agenda asks for the export of their virtual machines first, then, once it is read, the growth to plan for, how many servers can be down at once and the vCPU per core they accept. With platform migration in scope, it asks for the link the data would be copied over, how many machines a weekend the application owners accept and the days between waves. Once the sketch or the plan is worked out with their figures, the line leaves the agenda.
+
 ## 0.228.0
 
 - **The pace of a migration, said in the meeting, goes into the plan in waves with a tap.** Once an inventory is read and platform migration is in scope, Heard something reads the machines a wave ("30 machines a weekend", "no more than 40 VMs per wave"), the days between waves ("a wave every two weeks", "every other weekend", "one wave a month") and the link the data is copied over ("a 10 Gbit link between the data centres", "500 Mbps"), in English or Italian ("25 macchine per ondata, un'ondata ogni 15 giorni, su un collegamento da 1 Gbit"). **Use it in the sketch** puts the figure in the plan's settings, the plan and the copy ahead follow, and **Undo** puts it back. Backups every day, the shops' own lines and figures out of range are left alone.
