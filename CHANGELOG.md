@@ -2,6 +2,11 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.199.0
+
+- **A first file storage sketch.** With file storage in scope, a workshop now sizes the file shares from the conversation: the data after its growth over the years the storage is sized for, the share nobody has opened in a year moved to a cheaper tier, the daily and weekly snapshots kept on the rest, then data reduction, protection and the fill level. It gives the usable and raw capacity and what the cheaper tier holds, every step shown, with the notes that hold whatever the product (scan the last-access times, snapshots are not a backup, ransomware on a share, mapping the shares of the file servers brought together).
+- The sketch is kept with the workshop, goes in the journey (.md) and in the handover to delivery.
+
 ## 0.198.0
 
 - **A first database licence sketch.** Databases licensed per processor core usually run on hosts sized for a peak they rarely reach. With databases in scope, a workshop now works out, from the conversation, the cores their busiest hour needs when they are placed on hosts kept for them at a planned peak: whole hosts, a host kept free for a failure (licensed or not, as the agreement says), and the difference with the cores licensed today, priced when a core's yearly cost is known. Every step is shown; the notes say first that the licence agreement and the customer's licensing specialist decide what must be licensed.

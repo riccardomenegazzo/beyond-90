@@ -509,6 +509,12 @@ With databases in scope, **A first database licence sketch** works out the proce
 
 It turns the busy processors at the planned peak into whole hosts, counts the cores to license, and compares them with today's. Notes that hold whatever the engine: the licence agreement decides what must be licensed (check it with the customer's licensing specialist), take the busy share from a week of data at the busiest hour database by database, and sketch each engine and edition as its own pool. The sketch goes in the journey and in the handover.
 
+## A first file storage sketch
+
+With file storage in scope, **A first file storage sketch** works out the capacity of the file shares. Typed in from the conversation: the file data today, its growth a year and the years the storage is sized for; the share nobody has opened in a year, moved to a cheaper tier; how much changes each day and the daily and weekly snapshots kept; the data reduction, the protection and the fill level; and how many file servers there are today.
+
+It gives the usable and raw capacity of the fast tier and what the cheaper one holds, each step written out. Notes that hold whatever the product: measure the cold share with a scan of last-access times, snapshots are not a backup, ask who would see a ransomware attack on a share and how fast it can be rolled back, and map every share and its permissions before bringing file servers together. The sketch goes in the journey and in the handover.
+
 ## What one machine costs
 
 With cloud operations, a service provider's cloud or hybrid cloud in scope, **What one machine costs** works out the number behind "the cloud is cheaper", in the customer's own figures. It adds up a year of the estate:

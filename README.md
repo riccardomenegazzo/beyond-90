@@ -53,7 +53,7 @@ Leading a presales team? [docs/leaders.md](docs/leaders.md) shows what the team 
 - **Prepares the conversation and does the presales arithmetic:**
   - the message for the executive, the technical team and finance, who to bring, and the objections to expect with the question to ask first and how to prove the answer;
   - from a VM inventory, a sizing sketch and a plan in waves;
-  - a GPU sketch for AI, a recovery design for disaster recovery, a backup capacity sketch for object storage, an edge design for shops, plants and branches, a desktop sizing sketch for virtual desktops, a container platform sizing sketch, and a database licence sketch;
+  - a GPU sketch for AI, a recovery design for disaster recovery, a backup capacity sketch for object storage, an edge design for shops, plants and branches, a desktop sizing sketch for virtual desktops, a container platform sizing sketch, a database licence sketch, and a file storage sketch;
   - a case for change in the customer's own figures.
 
   Every step is written out, and none of it is a quote or a sizing.
@@ -223,7 +223,7 @@ beyond90 explain acme --store history.db   # what changed since the last stored 
 - The book planner needs effort figures that fit you; the defaults are estimates.
 - Trust ratings (credibility, reliability, intimacy, self-orientation) are your own judgement; the index is a prompt for reflection, not a measurement.
 - Input confidence says how far to trust the files, not how healthy the customer is.
-- The sizing sketch, the GPU sketch, the recovery design, the backup capacity sketch, the edge design, the desktop and container platform sizing sketches, the database licence sketch and the case for change are arithmetic on assumptions agreed with the customer, to settle the order of magnitude. The vendor's sizing tool, a benchmark on the customer's own workload and the product's own calculators have the last word.
+- The sizing sketch, the GPU sketch, the recovery design, the backup capacity sketch, the edge design, the desktop and container platform sizing sketches, the database licence and file storage sketches and the case for change are arithmetic on assumptions agreed with the customer, to settle the order of magnitude. The vendor's sizing tool, a benchmark on the customer's own workload and the product's own calculators have the last word.
 - In the browser app, deleting a saved snapshot is local: merging by union brings it back if another device still has it. A 500-account estate takes about 10 seconds there.
 
 ## Documents

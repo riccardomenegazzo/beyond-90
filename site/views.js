@@ -24,6 +24,7 @@ import * as EDGE from "./edgesketch.js";
 import * as VDI from "./vdisketch.js";
 import * as K8S from "./k8ssketch.js";
 import * as DBS from "./dbsketch.js";
+import * as FILES from "./filesketch.js";
 import * as UNIT from "./unitcost.js";
 import * as RFP from "./rfp.js";
 import * as AWD from "./award.js";
@@ -2152,7 +2153,7 @@ function openDeck({ clock, onClose, aside = null, asideTitle = "", ...rest }) {
 
 const wsFilter = { core: false, roles: [], tender: false, open: false, best: false };
 
-export function workshopView({ workshop: w, catalog, list, answer, worth, setDeal, raise, rename, preparedBy, setScope, inventory, sizing, waves, gpu, dr, obj, edge, vdi, k8s, db, unit, today, newWorkshop, openWorkshop, removeWorkshop, presets = [], go, focus }) {
+export function workshopView({ workshop: w, catalog, list, answer, worth, setDeal, raise, rename, preparedBy, setScope, inventory, sizing, waves, gpu, dr, obj, edge, vdi, k8s, db, files, unit, today, newWorkshop, openWorkshop, removeWorkshop, presets = [], go, focus }) {
   const say = h("p", { class: "note", role: "status" });
   const act = (fn) => async (...a) => { try { await fn(...a); say.textContent = ""; } catch (e) { say.textContent = e.message; } };
   let cur = w;
@@ -2430,7 +2431,8 @@ export function workshopView({ workshop: w, catalog, list, answer, worth, setDea
     w.inventory && waves ? wavesCard(w, waves, today) : null, w.scope.includes("private-ai") && gpu ? gpuCard(w, gpu) : null,
     w.scope.includes("dr-backup") && dr ? drCard(w, dr) : null, w.scope.includes("object-storage") && obj ? objCard(w, obj) : null,
     w.scope.includes("edge-sites") && edge ? edgeCard(w, edge) : null, w.scope.includes("euc") && vdi ? vdiCard(w, vdi) : null,
-    w.scope.includes("kubernetes-platform") && k8s ? k8sCard(w, k8s) : null, w.scope.includes("dbaas") && db ? dbCard(w, db) : null, w.scope.some((p) => WS.UNIT_LINES.includes(p)) && unit ? unitCard(w, unit) : null].filter(Boolean);
+    w.scope.includes("kubernetes-platform") && k8s ? k8sCard(w, k8s) : null, w.scope.includes("dbaas") && db ? dbCard(w, db) : null,
+    w.scope.includes("file-storage") && files ? filesCard(w, files) : null, w.scope.some((p) => WS.UNIT_LINES.includes(p)) && unit ? unitCard(w, unit) : null].filter(Boolean);
   // with lines chosen, the next question comes first, beside where every line stands; the meeting's settings follow
   const top = inScope.length
     ? [h("div", { class: "card deckpanel" }, deckBox, h("div", { class: "deckside" }, clockBox, heardBox, prog, strip,
@@ -2676,6 +2678,42 @@ function objCard(w, obj) {
       try { await obj(null); } catch (e) { say.textContent = e.message; }
     } }))), say),
   { sub: "For backups kept on object storage: what the retention holds after reduction, with protection and room to grow, and what the nightly window needs. The backup product's own calculator, on the customer's data, has the last word." });
+}
+
+/** A first file storage sketch: growth, the cold share to a cheaper tier, snapshots, reduction, protection. */
+function filesCard(w, files) {
+  const a = FILES.cleanFiles(w.files || {});
+  const say = h("p", { class: "note", role: "status" });
+  const out = h("div", { class: "szout" });
+  const fields = [["data_tib", "File data today (TiB)"], ["growth_pct", "Growth a year (%)"], ["years", "Years the storage is sized for"],
+    ["cold_pct", "Not opened in a year, to a cheaper tier (%)"], ["change_pct", "Changed each day (%)"], ["daily_days", "Daily snapshots kept"],
+    ["weekly_weeks", "Weekly snapshots kept"], ["reduction", "Data reduction counted (ratio)"], ["protection", "Raw over usable for protection (x)"],
+    ["fill_pct", "Keep the storage below (%)"], ["servers_today", "File servers today (0: not known)"]];
+  const inputs = {};
+  const current = () => { const v = {}; for (const [k] of fields) v[k] = Number(inputs[k].value); return FILES.cleanFiles(v); };
+  const draw = (settings) => {
+    const sk = FILES.fileSketch(settings);
+    if (!sk.ok) { put(out, h("p", { class: "note", text: sk.error })); return; }
+    put(out,
+      h("div", { class: "szhead" }, h("b", { text: INV.fmt(sk.usable) }), h("span", {}, h("strong", { text: "TiB usable" }),
+        h("small", { text: `${INV.fmt(sk.raw)} TiB raw; ${INV.fmt(sk.cold_tib)} TiB on a cheaper tier` }))),
+      h("ol", { class: "szsteps" }, sk.steps.map((t) => h("li", { text: t }))),
+      h("div", { class: "growproof" }, h("small", { text: "Whatever the product" }), h("ul", {}, FILES.fileNotes(sk).map((t) => h("li", { text: t })))));
+  };
+  const save = async () => { const v = current(); draw(v); try { await files(v); say.textContent = ""; } catch (e) { say.textContent = e.message; } };
+  const grid = h("div", { class: "szgrid" }, fields.map(([k, label]) => {
+    inputs[k] = h("input", { type: "number", step: "any", min: "0", value: String(a[k]), "aria-label": label });
+    inputs[k].addEventListener("change", save);
+    return h("label", { class: "szf" }, h("span", { text: label }), inputs[k]);
+  }));
+  draw(a);
+  return card("A first file storage sketch", h("div", { class: "sz" }, out, h("details", { class: "szassume" }, h("summary", { text: "The data, its growth, the snapshots and the assumptions, to agree with the customer" }), grid,
+    h("div", { class: "btnrow" }, h("button", { class: "btn small", type: "button", text: "Back to the defaults", onclick: async () => {
+      for (const [k] of fields) inputs[k].value = String(FILES.FILE_DEFAULTS[k]);
+      draw(FILES.FILE_DEFAULTS);
+      try { await files(null); } catch (e) { say.textContent = e.message; }
+    } }))), say),
+  { sub: "For file shares: the data after growth, the share nobody opens moved to a cheaper tier, the snapshots kept on the rest, with reduction, protection and room to fill. A scan of last-access times and the product's own sizing have the last word." });
 }
 
 /** A first database licence sketch: the busy cores at the planned peak, on whole hosts kept for the databases. */

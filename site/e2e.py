@@ -1391,6 +1391,16 @@ def main(site: str) -> int:
         users.dispatch_event("change")
         page.wait_for_timeout(300)
         check(int(vdicard.locator(".szhead > b").inner_text()) > 8, "and follows the users given")
+        # the digital workplace has file shares too: a first file storage sketch, the cold share on a cheaper tier
+        filecard = page.locator("#view .card").filter(has_text="A first file storage sketch")
+        check(filecard.locator(".szhead > b").inner_text() == "111.5" and "46.1 TiB on a cheaper tier" in filecard.inner_text() and "Snapshots are not a backup" in filecard.inner_text(),
+              "with file storage in scope, a first file storage sketch: growth, the cold share on a cheaper tier, snapshots, protection")
+        filecard.locator("details.szassume summary").click()
+        cold = page.locator("#view input[aria-label='Not opened in a year, to a cheaper tier (%)']")
+        cold.fill("0")
+        cold.dispatch_event("change")
+        page.wait_for_timeout(300)
+        check(float(filecard.locator(".szhead > b").inner_text()) > 111.5, "and with nothing moved to a cheaper tier, more stays on the fast one")
         # modernising applications: a first container platform sizing sketch, production and test apart
         page.get_by_role("button", name="Modernising applications").click()
         page.wait_for_selector("#ws-kubernetes-platform")
