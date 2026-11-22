@@ -31,6 +31,14 @@ A page for the hour with the customer: what to set up before, what to do while t
 - **The meeting summary**, for the account team, and the **customer readout**, for the customer: what we heard, what would need to be true, the first steps, and how each is proven, with no internal scores. Both download as a file.
 - **The way forward** says what the next meeting is for: a demo built from what they said, a proof of value, or a decision.
 
+## The second meeting: the demo
+
+<img src="img/app-demo-run.png" width="300" align="right" alt="On a phone, the end of the demo deck: one of three parts shown landed, one with questions, one did not land, with the questions to answer in writing, what did not land and what landed, each with what the customer said">
+
+**The way forward** plans the demo from what they said. **Run the demo** gives it the same cards: one per part of the plan, swiped as it landed (right landed, up questions, left did not land, down not shown), with what they said written on it. Keep it on a phone beside you while the screen is shared. At the end: the questions to answer in writing, what did not land, what landed for the proof to confirm, and a recap for the account team. What landed becomes criteria of the proof of value; the next meeting's agenda opens with their questions.
+
+<br clear="right">
+
 ## What it is not
 
 It does not record the meeting, listen to it or transcribe it: you write what matters, in a few words. The suggestions are a few word patterns read in the browser, never a model in the cloud. The meeting clock stays in the browser tab, never in the workshop or in a file.

@@ -2,6 +2,19 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.160.0
+
+- **Run the demo.** The demo planned from what they said, under The way forward, now runs as a deck, full screen, like the questions: one card per gap it closes ("Show that no administrator account can delete the backups", for the security team, with what they said in discovery on the back), then one per concern they raised. Swipe each as it landed: right landed, up questions, left did not land, down not shown; or tap, or press an arrow or 1 to 4. What they said is written on the card, and suggests a reaction ("how long does a restore take?" sounds like questions); you decide. The meeting clock follows.
+- At the end, where it stands: how many parts landed out of those shown, the questions to answer in writing, what did not land (ask what they expected before planning a proof), what landed for the proof to confirm, and what was not shown. **Copy the recap** and **Email the recap** for the account team; **Mark the demo as given today** closes it.
+- What follows from it:
+  - under the plan, **How it landed**;
+  - the way forward asks for it before the demo phase is done;
+  - what landed goes into the proof of value as criteria, after the line's own, to confirm on their own systems;
+  - the next meeting's agenda opens with **Back from the demo**: their questions, and what to show again, closer to their case. What they said where it did not land is not in the agenda.
+- The reactions are kept in the workshop beside the day the demo was given (`demo.seen`), at most 16, each with what was said; giving or taking back the demo keeps them. Workshops exported before read as before.
+- New: `site/demo.js`, with tests; browser checks for the whole run, the agenda and the proof.
+- On a phone, the sharing menu in the header shows its whole label ("Names: shown") instead of cutting it.
+
 ## 0.159.0
 
 - **Who to invite next.** At the end of the deck, where it stands now closes with **For the next meeting**: the people who can answer the essential questions still open (not answered, or nobody in the room knew), most first, each with one of their questions to say why. For example: "Invite the security team: 3 essential questions still open". The recap for the account team carries the same lines.

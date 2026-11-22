@@ -338,7 +338,7 @@ The requirements are kept with the workshop in this browser, sealed with it and 
 **The way forward** places the prospect on the path from the first meeting to the handover: **Discovery**, **Demo built for them**, **Proof of value**, **Decision**, **Handover to delivery**. Each phase says what it is for, what must be true to move on (read from what is recorded, each with what to do and a link to where to do it), how to run it and what to avoid:
 
 - **Discovery:** the line to start with is known, the essential questions are answered, something is at stake in their words, and the deal is ready for a demo.
-- **Demo:** the demo was given, and the deal is ready for a proof of value.
+- **Demo:** the demo was given, how each part landed is noted, and the deal is ready for a proof of value.
 - **Proof of value:** it is planned, ready to start (criteria signed off, sponsor and champion, a realistic window, scope), every concern raised is a criterion, and every criterion has been tried.
 - **Decision:** the readout is done, the decider is known and has heard from us, finance has the case for change, and the outcome is recorded.
 - **Handover:** won.
@@ -354,6 +354,20 @@ The phase now is the furthest one started. A phase passed with something still o
 5. the proof to agree at the end, from the line's own criteria and their concerns.
 
 What they already have is listed under **Leave out**. A note says what to keep for a fifteen-minute version for the executive. Copy the plan or download it (.md) for the seller and the champion, and **Mark the demo as given** to move on.
+
+**Run the demo** opens the plan as a deck, full screen, the same as the questions: one card per gap it closes ("Show that no administrator account can delete the backups", for the security team, with what they said in discovery on the back), then one per concern they raised. Swipe each as it landed: right **landed**, up **questions**, left **did not land**, down **not shown**; or tap, or press an arrow or 1 to 4. Write what they said on the card: "how long does a restore take?" suggests questions, "we already have that" suggests it did not land; you decide. It is meant for a phone beside you while your screen is shared, or for a colleague taking notes.
+
+At the end, **Where it stands** says how many parts landed out of those shown, and lists:
+
+- the questions to answer, in writing;
+- what did not land, to ask what they expected before planning a proof;
+- what landed, for the proof to confirm;
+- what was not shown, for the next meeting.
+
+**Copy the recap** and **Email the recap** give the account team the same in plain text. **Mark the demo as given today** closes the deck and ticks the phase. Afterwards:
+
+- what landed goes into the proof of value as criteria, after the line's own: "Landed in the demo. Now on their own systems";
+- the next meeting's agenda opens with **Back from the demo**: their questions, and what to show again, closer to their case. What they said where it did not land stays with the account team.
 
 ![The way forward: the phase now, what moves it on, and how to run it](img/app-forward.png)
 

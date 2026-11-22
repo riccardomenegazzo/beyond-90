@@ -70,9 +70,9 @@ export function demoPlan(catalog, w, res = assess(catalog, w)) {
     const order = new Map(displayOrder(catalog.lines[land.profile]).map((x, i) => [x.index, i]));
     const open = [...land.gaps.map((q) => ({ ...q, status: "gap" })), ...land.partly.map((q) => ({ ...q, status: "partly" }))]
       .filter((q) => q.stage !== "value").sort((a, b) => (a.status === b.status ? 0 : a.status === "gap" ? -1 : 1) || order.get(a.index) - order.get(b.index));
-    for (const q of open.slice(0, 4)) segments.push({ show: clean(q.need || q.q), heard: clean(q.note), role: q.role || "", status: q.status });
+    for (const q of open.slice(0, 4)) segments.push({ key: `${land.profile}#${q.index}`, show: clean(q.need || q.q), need: clean(q.need), heard: clean(q.note), role: q.role || "", status: q.status });
   }
-  const concerns = (res.raised || []).slice(0, 2).map((o) => ({ says: clean(o.says), prove: clean(o.prove) }));
+  const concerns = (res.raised || []).slice(0, 2).map((o) => ({ key: `c:${o.profile}#${o.index}`, says: clean(o.says), prove: clean(o.prove) }));
   const skip = land ? land.solved.filter((q) => q.stage !== "value").slice(0, 4).map((q) => clean(q.need || q.q)) : [];
   const close = [...(res.proof || []).slice(0, 3).map((c) => clean(c.text)), ...concerns.map((c) => c.prove)];
   const roles = [...new Set(segments.map((s) => s.role).filter((r) => ROLE_WORDS[r]))];
@@ -140,6 +140,7 @@ export function forward(catalog, w, pov, today = "") {
     ],
     demo: [
       { text: "The demo was given", ok: !!(w.demo && w.demo.on), fix: "Plan it from what they said, under The way forward, and mark it given once it is.", go: "" },
+      { text: "How each part landed is noted", ok: !!(w.demo && w.demo.seen), fix: "Run the demo from its cards: swipe each part as it landed, with what they said.", go: "" },
       { text: "Ready to propose a proof of value", ok: gate("proof"), fix: "Settle what the proof gate still needs.", go: "wsqualify" },
     ],
     proof: [

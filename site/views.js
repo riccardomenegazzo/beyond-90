@@ -33,6 +33,7 @@ import * as LS from "./lessons.js";
 import * as TEAM from "./team.js";
 import * as QD from "./qualify.js";
 import * as FW from "./forward.js";
+import * as DEMO from "./demo.js";
 import * as PT from "./partners.js";
 import { connections } from "./graph.js";
 import { headline, firstMinute, rankActions, chainText, doneSummary, funnelSegments, preview } from "./today.js";
@@ -1824,7 +1825,7 @@ function deckPane({ cards, state, answerOf, answer, go, pfx, inline, set = DISCO
     const guide = q.why || q.listen || q.probe;
     const front = h("div", { class: "deckfront" });
     const back = h("div", { class: "deckguide", hidden: true });
-    const howBtn = guide ? h("button", { type: "button", class: "linkbtn", "aria-expanded": "false", text: "How to ask it" }) : null;
+    const howBtn = guide ? h("button", { type: "button", class: "linkbtn", "aria-expanded": "false", text: set.how || "How to ask it" }) : null;
     const backBtn = h("button", { type: "button", class: "linkbtn", text: "Back to the question" });
     const flip = (on) => {
       front.hidden = on; back.hidden = !on;
@@ -1880,7 +1881,7 @@ function deckPane({ cards, state, answerOf, answer, go, pfx, inline, set = DISCO
     wasOpen = false;
     const s = set.summary(cards, answerOf);
     title.textContent = "Where it stands";
-    pos.textContent = `${s.total - s.open} of ${s.total} answered`;
+    pos.textContent = `${s.total - s.open} of ${s.total} ${set.doneWord || "answered"}`;
     drawMarks();
     const said = ([heading, rows]) => (rows.length ? [h("h3", { class: "decksub", text: heading }),
       h("ul", { class: "deckgaps" }, rows.map((r) => h("li", {}, h("span", { text: r.q }), h("small", { class: "muted", text: r.label }),
@@ -1896,9 +1897,12 @@ function deckPane({ cards, state, answerOf, answer, go, pfx, inline, set = DISCO
         h("a", { class: "btn", href: DECK.recapMailto(set.recapSubject || "Discovery recap", set.recap(cards, answerOf)), text: "Email the recap",
           "data-tip": "Opens your own mail app with the recap written in, for the account team. It names the gaps: it is not for the customer." })) : null,
       h("div", { class: "btnrow deckendrow" },
-        set.end ? h("button", { class: "btn primary", type: "button", text: set.end.text, onclick: () => { onDone(); go(set.end.view); } }) : null,
+        set.end ? h("button", { class: "btn primary", type: "button", text: set.end.text, onclick: async (ev) => {
+          if (set.end.act) { try { await set.end.act(); } catch (e) { ev.target.textContent = e.message; return; } }
+          onDone(); go(set.end.view);
+        } }) : null,
         set.more ? h("button", { class: "btn", type: "button", text: set.more.text, onclick: () => { onDone(); go(set.more.view); } }) : null,
-        open >= 0 ? h("button", { class: "btn", type: "button", text: "Ask what is still open", onclick: () => { state.at = open; draw(true); } }) : null,
+        open >= 0 ? h("button", { class: "btn", type: "button", text: set.openText || "Ask what is still open", onclick: () => { state.at = open; draw(true); } }) : null,
         inline ? null : h("button", { class: "btn", type: "button", text: "Back to the list", onclick: () => onDone() })),
       h("button", { class: "linkbtn", type: "button", text: "Go back to the last question", onclick: () => { state.at = cards.length - 1; draw(true); } })));
     if (focus) requestAnimationFrame(() => headline.focus({ preventScroll: true }));
@@ -2965,7 +2969,7 @@ export function partnersView({ workshop: w, catalog, today, setChannel }) {
 
 // ------------------------------------------------------------------ the way forward: from discovery to handover
 const FW_STATE = { done: "Done", open: "Passed, with something left open", now: "Now", later: "Later" };
-export function forwardView({ workshop: w, catalog, povs, today, go, setDemo }) {
+export function forwardView({ workshop: w, catalog, povs, today, go, setDemo, setDemoSeen }) {
   const pov = DL.povFor(povs, w.customer);
   const f = FW.forward(catalog, w, pov, today);
   const say = h("p", { class: "note", role: "status" });
@@ -2996,6 +3000,33 @@ export function forwardView({ workshop: w, catalog, povs, today, go, setDemo }) 
     ? h("div", { class: "btnrow" }, h("span", { text: `Given on ${w.demo.on}.` }), h("button", { class: "btn small quiet", type: "button", text: "Not given yet", onclick: async () => { try { await setDemo(""); } catch (e) { say.textContent = e.message; } } }))
     : h("div", { class: "btnrow" }, day, h("button", { class: "btn small", type: "button", text: "Mark the demo as given", onclick: async () => { try { await setDemo(day.value); } catch (e) { say.textContent = e.message; } } }));
   const sec = (title, kids) => h("div", { class: "fwsec" }, h("h3", { text: title }), kids);
+  // running it: one card per part, swiped as it landed, with what they said; the meeting clock follows
+  let cur = w;
+  const dcards = DEMO.demoCards(dp);
+  const seenOf = (c) => (cur.demo && cur.demo.seen && cur.demo.seen[c.key]) || null;
+  const demoSet = {
+    ...DEMO.DEMO,
+    label: (k) => DEMO.REACTIONS[k].label,
+    tone: (k) => DEMO.REACTIONS[k].tone,
+    suggest: (q, said) => DEMO.demoSuggest(said),
+    tag: (c) => c.tag,
+    hint: "Swipe it as it landed, or tap",
+    how: "What to watch for",
+    openText: "Back to what is not noted",
+    doneWord: "noted",
+    summary: (cards, answerOf) => DEMO.demoSummary(cards, answerOf),
+    recap: (cards, answerOf) => DEMO.demoRecapText(cur.customer, cards, answerOf),
+    recapSubject: `Demo recap: ${w.customer}`,
+    get end() { return cur.demo && cur.demo.on ? { text: "See the way forward", view: "wsforward" } : { text: "Mark the demo as given today", view: "wsforward", act: () => setDemo(today) }; },
+  };
+  const runDemo = () => openDeck({ cards: dcards, state: { at: Math.max(0, dcards.findIndex((c) => !seenOf(c))), drafts: new Map() }, set: demoSet, go,
+    answerOf: seenOf, answer: async (c, a, note) => { cur = await setDemoSeen(c.key, a, note); return cur; }, clock: () => miniClock(w.id), onClose: () => go("wsforward") });
+  const landed = dcards.some(seenOf) ? DEMO.demoSummary(dcards, seenOf) : null;
+  const landedSec = landed ? sec("How it landed", h("div", { class: "fwlanded" }, h("p", { text: landed.head }),
+    landed.lists.filter(([, rows]) => rows.length).map(([heading, rows]) => h("div", { class: "growproof" }, h("small", { text: heading }),
+      h("ul", {}, rows.map((r) => h("li", {}, h("span", { text: r.q }), r.note ? h("span", { class: "muted", text: ` “${r.note}”` }) : null))))))) : null;
+  const run = dcards.length ? h("button", { class: "btn small primary", type: "button", text: landed ? "Run the demo again" : "Run the demo",
+    "data-tip": "One card per part of the plan, full screen: swipe each as it landed, with what they said. On a phone beside you while the screen is shared.", onclick: runDemo }) : null;
   const demo = card("The demo, built from what they said", dp.ready ? h("div", {},
     sec("1. Their situation, in their words", dp.situation.length ? h("ul", { class: "growwhy" }, dp.situation.map((t) => h("li", { text: t }))) : h("p", { class: "note", text: "Nothing in their words yet: note what they say to the value questions." })),
     sec("2. The result first", h("p", { text: dp.result })),
@@ -3005,7 +3036,8 @@ export function forwardView({ workshop: w, catalog, povs, today, go, setDemo }) 
     dp.skip.length ? sec("Leave out: they have it already", h("ul", { class: "growwhy" }, dp.skip.map((t) => h("li", { text: t })))) : null,
     sec("Close: agree what a proof would have to show", h("ul", { class: "growwhy" }, (dp.close.length ? dp.close : ["The criteria they would sign off, and who signs."]).map((t) => h("li", { text: t })))),
     h("p", { class: "note", text: "For the executive, keep to the situation, the result, the first two gaps and the proof: fifteen minutes." }),
-    h("div", { class: "btnrow" },
+    landedSec,
+    h("div", { class: "btnrow" }, run,
       h("button", { class: "btn small", type: "button", text: "Copy the demo plan", onclick: (ev) => copyText(md).then((ok) => { ev.target.textContent = ok ? "Copied" : "Not copied"; }) }),
       h("button", { class: "btn small", type: "button", text: "Demo plan (.md)", onclick: () => saveBlob(md, `${slug}-demo-plan.md`, "text/markdown") })),
     given, say)

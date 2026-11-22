@@ -11,6 +11,7 @@ import * as K from "./commitments.js";
 import * as ASK from "./asks.js";
 import * as DONE from "./done.js";
 import * as POV from "./pov.js";
+import * as DEMO from "./demo.js";
 import * as WSHOP from "./workshop.js";
 import * as INV from "./inventory.js";
 import * as DESKX from "./desk.js";
@@ -972,6 +973,7 @@ function workshopContext() {
     // a tender's workbook, read by the engine into rows; the file never leaves the page
     readRows: state.engine ? async (file) => { await state.engine.ready; return JSON.parse(await state.engine.call("rows", { name: file.name, data: toBase64(new Uint8Array(await file.arrayBuffer())) })); } : null,
     setDemo: async (on) => { await edit((x) => WSHOP.setDemo(x, on, today)); selectTab("wsforward"); },
+    setDemoSeen: async (key, a, note) => edit((x) => WSHOP.setDemoSeen(x, key, a, note, today)),
     waves: async (settings) => edit((x) => WSHOP.setWaves(x, settings, today)),
     setCase: async (figures) => edit((x) => WSHOP.setCase(x, figures, today)),
     gpu: async (assumptions) => edit((x) => WSHOP.setGpu(x, assumptions, today)),
@@ -991,9 +993,13 @@ function workshopContext() {
     setScope: async (scope) => { await edit((x) => WSHOP.setScope(x, scope, today)); showWorkshop("workshop"); },
     newWorkshop, openWorkshop, removeWorkshop, presets: WSHOP.PRESETS.map((p) => ({ ...p, scope: p.scope.filter((x) => cat.lines[x]) })).filter((p) => p.scope.length),
     startPov: async (r) => {
+      const now = currentWorkshop();
+      // the line's own tests, then what landed in the demo, then what the customer asked us to prove; none twice
+      const fromDemo = now.demo && now.demo.seen ? DEMO.proofFromDemo(DEMO.cardsFor(cat, now, r), now.demo) : [];
+      const all = [...r.proof.slice(0, 4).map((c) => ({ text: c.text, target: c.how })), ...fromDemo, ...(r.raised || []).slice(0, 4).map((o) => ({ text: o.prove, target: `Raised by the customer: "${o.says}"` }))];
+      const criteria = all.filter((c, i) => all.findIndex((d) => d.text.toLowerCase() === c.text.toLowerCase()) === i);
       const p = POV.makePov({ customer: w.customer, createdOn: today, problem: `Heard in discovery on ${r.land.label.toLowerCase()}: ${r.land.gaps.map((q) => q.q).join(" ")}`.slice(0, 300),
-        // the line's own tests, then what the customer asked us to prove
-        criteria: [...r.proof.slice(0, 4).map((c) => ({ text: c.text, target: c.how })), ...(r.raised || []).slice(0, 4).map((o) => ({ text: o.prove, target: `Raised by the customer: "${o.says}"` }))], readiness: r.readiness });
+        criteria, readiness: r.readiness });
       await store.povPut([p], true); await refreshPovs(); selectTab("wspov");
     },
     // the proof-of-value view, for this prospect, with the first line's own criteria as suggestions

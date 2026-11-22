@@ -423,7 +423,7 @@ li.promise .pmain{flex:1 1 260px}
 .demo{transition:transform .15s ease,box-shadow .15s ease}
 .demo:not(:disabled):hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(20,30,60,.12)}
 .share-pick select{max-width:160px}
-@media (max-width:900px){.share-pick select{max-width:104px;font-size:12px;padding:5px 4px}.context-empty{display:none}.hero-cta{flex-direction:column;align-items:stretch}}
+@media (max-width:900px){.share-pick select{max-width:124px;font-size:12px;padding:5px 4px}.context-empty{display:none}.hero-cta{flex-direction:column;align-items:stretch}}
 
 .bd-flow{display:grid;gap:6px}
 .bd-row{display:grid;grid-template-columns:70px 1fr 90px 50px;gap:10px;align-items:center;font-size:14px}
@@ -1754,3 +1754,7 @@ body[data-role=se] .choose>.wsstart{order:-1;margin:0 0 26px;border:2px solid va
 @keyframes decknudge{0%{transform:none}30%{transform:translateX(34px) rotate(2deg)}65%{transform:translateX(-34px) rotate(-2deg)}100%{transform:none}}
 .deckcard.nudge{animation:decknudge 1.05s cubic-bezier(.4,0,.2,1)}
 @media (prefers-reduced-motion:reduce){.deckcard.nudge{animation:none}}
+
+/* running the demo (0.160): how it landed, under the plan */
+.fwlanded>p{margin:0 0 10px;font-weight:600}
+.fwlanded .growproof{margin-top:8px}

@@ -43,6 +43,9 @@ const KEY = /^[a-z0-9-]{1,40}#\d{1,2}$/;
 const RAISED = /^[a-z0-9-]{1,40}#\d$/, MAX_RAISED = 40;
 const ALT = /^[a-z][a-z_]{1,29}$/, MAX_ALTS = 8;          // an alternative the customer weighs, by its id in the family's list     // an objection the customer raised: its line and its place in the line's story
 const PROFILE = /^[a-z0-9-]{1,40}$/;
+// the demo: the day it was given, and how each part landed (a gap shown, by its question; a concern, by "c:" and its key)
+export const DEMO_SEEN = { landed: "Landed", questions: "Questions", missed: "Did not land", skipped: "Not shown" };
+const SEEN = /^(?:c:)?[a-z0-9-]{1,40}#\d{1,2}$/, MAX_SEEN = 16;
 const cmp = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
 const text = (v, max) => String(v == null ? "" : v).replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim().slice(0, max);
 const isDate = (v) => typeof v === "string" && DATE.test(v) && !Number.isNaN(Date.parse(v));
@@ -92,11 +95,25 @@ export function validWorkshop(w) {
   if (w.rfp != null && !validRfp(w.rfp)) return false;
   if (w.deal != null && !validDeal(w.deal)) return false;
   if (w.channel != null && !validChannel(w.channel)) return false;
-  if (w.demo != null && !(w.demo && typeof w.demo === "object" && !Array.isArray(w.demo) && Object.keys(w.demo).length === 1 && isDate(w.demo.on) && w.demo.on >= w.created_on)) return false;
+  if (w.demo != null && !validDemo(w.demo, w.created_on)) return false;
   if (w.alts != null && !(Array.isArray(w.alts) && w.alts.length && w.alts.length <= MAX_ALTS && w.alts.every((k) => typeof k === "string" && ALT.test(k)) && new Set(w.alts).size === w.alts.length)) return false;
   if (w.raised != null && !(Array.isArray(w.raised) && w.raised.length && w.raised.length <= MAX_RAISED && w.raised.every((k) => typeof k === "string" && RAISED.test(k)) && new Set(w.raised).size === w.raised.length)) return false;
   const m = /^ws\|(\d{4}-\d{2}-\d{2})\|([a-z0-9]+)$/.exec(w.id || "");
   return !!m && m[1] === w.created_on && NONCE.test(m[2]);
+}
+
+function validDemo(d, createdOn) {
+  if (!d || typeof d !== "object" || Array.isArray(d)) return false;
+  const keys = Object.keys(d);
+  if (!keys.length || !keys.every((k) => k === "on" || k === "seen")) return false;
+  if (d.on != null && !(isDate(d.on) && d.on >= createdOn)) return false;
+  if (d.seen != null) {
+    if (typeof d.seen !== "object" || Array.isArray(d.seen)) return false;
+    const seen = Object.entries(d.seen);
+    if (!seen.length || seen.length > MAX_SEEN) return false;
+    if (!seen.every(([k, v]) => SEEN.test(k) && v && typeof v === "object" && !Array.isArray(v) && Object.keys(v).length === 2 && (v.a in DEMO_SEEN) && typeof v.note === "string" && v.note.length <= 300)) return false;
+  }
+  return true;
 }
 
 export function acceptWorkshops(list) {
@@ -459,12 +476,29 @@ export function setChannel(w, given, today) {
 
 /** The day the demo built for this customer was given, or "" to clear it: the way forward moves on from there. */
 export function setDemo(w, on, today) {
+  if (on && (!isDate(on) || on < w.created_on)) throw new Error("The demo cannot come before the workshop.");
+  const seen = w.demo && w.demo.seen;                 // how each part landed stays, given or not
+  return withDemo(w, { ...(on ? { on } : {}), ...(seen ? { seen } : {}) }, today);
+}
+
+/** How one part of the demo landed, with what they said; no reaction clears it. `key` is the part's, from the demo plan. */
+export function setDemoSeen(w, key, a, note, today) {
+  if (!SEEN.test(key || "")) throw new Error("Unknown part of the demo.");
+  if (a && !(a in DEMO_SEEN)) throw new Error("Unknown reaction.");
+  const seen = { ...((w.demo && w.demo.seen) || {}) };
+  if (!a) delete seen[key];
+  else {
+    if (!seen[key] && Object.keys(seen).length >= MAX_SEEN) throw new Error(`At most ${MAX_SEEN} parts of a demo are noted.`);
+    seen[key] = { a, note: text(note, 300) };
+  }
+  const on = w.demo && w.demo.on;
+  return withDemo(w, { ...(on ? { on } : {}), ...(Object.keys(seen).length ? { seen } : {}) }, today);
+}
+
+function withDemo(w, demo, today) {
   const next = { ...w };
   delete next.demo;
-  if (on) {
-    if (!isDate(on) || on < w.created_on) throw new Error("The demo cannot come before the workshop.");
-    next.demo = { on };
-  }
+  if (Object.keys(demo).length) next.demo = demo;
   return changed(next, {}, today);
 }
 

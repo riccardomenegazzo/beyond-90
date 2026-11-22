@@ -4,6 +4,7 @@
  */
 import { assess, journey, datedPlan, stories, WHO, ROLE_WORDS, displayOrder } from "./workshop.js";
 import { calendar } from "./ics.js";
+import { cardsFor, demoFollowUps } from "./demo.js";
 
 const clean = (t) => String(t == null ? "" : t).replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim();
 
@@ -27,8 +28,11 @@ export function nextMeeting(catalog, w, today) {
   // a company's request for proposal: the requirements to check are understood best by asking, in the meeting.
   // A public body takes questions only through the tender's formal channel, so nothing of its tender goes here.
   const tender = w.rfp && w.rfp.issuer === "company" && !(w.rfp.decision && w.rfp.decision.call === "no_bid") ? w.rfp.reqs.filter((r) => r.a === "check").slice(0, 5).map((r) => ({ text: clean(r.text), ref: clean(r.ref) })) : [];
-  return { customer: w.customer, land: res.land ? res.land.label : "", settle, ask, prove, due, late, people, roles, tender,
-    empty: !settle.length && !ask.length && !prove.length && !due.length && !late.length && !tender.length };
+  // back from the demo: what they asked about, to answer, and what did not land, to show again differently
+  const fu = w.demo && w.demo.seen ? demoFollowUps(cardsFor(catalog, w, res), w.demo) : { answer: [], again: [] };
+  const demo = { answer: fu.answer.slice(0, 5).map((x) => ({ text: clean(x.part), note: clean(x.note) })), again: fu.again.slice(0, 5).map((x) => ({ text: clean(x.part), note: clean(x.note) })) };
+  return { customer: w.customer, land: res.land ? res.land.label : "", settle, ask, prove, due, late, people, roles, tender, demo,
+    empty: !settle.length && !ask.length && !prove.length && !due.length && !late.length && !tender.length && !demo.answer.length && !demo.again.length };
 }
 
 /** The agenda as text: for an invitation, an email or the meeting notes. */
@@ -37,6 +41,13 @@ export function agendaText(m, when = "") {
   if (m.land) out.push(`Focus: ${m.land.toLowerCase()}.`, "");
   let i = 0;
   if (m.late.length) { out.push(`${++i}. What has slipped`); for (const c of m.late) out.push(`   - ${c.text} (was due ${c.by}${c.who ? `, ${c.who}` : ""})`); out.push(""); }
+  const back = m.demo || { answer: [], again: [] };
+  if (back.answer.length || back.again.length) {
+    out.push(`${++i}. Back from the demo`);
+    for (const x of back.answer) out.push(`   - Your questions on: ${x.text}${x.note ? ` ("${x.note}")` : ""}`);
+    for (const x of back.again) out.push(`   - To show again, closer to your case: ${x.text}`);
+    out.push("");
+  }
   if (m.settle.length) { out.push(`${++i}. Questions to answer together`); for (const q of m.settle) out.push(`   - ${q.text}`); out.push(""); }
   if ((m.ask || []).length) { out.push(`${++i}. Questions we have not asked yet`); for (const q of m.ask) out.push(`   - ${q.text}`); out.push(""); }
   if ((m.tender || []).length) { out.push(`${++i}. Your requirements we want to understand well`); for (const r of m.tender) out.push(`   - ${r.ref ? `${r.ref}: ` : ""}${r.text}`); out.push(""); }

@@ -1133,14 +1133,50 @@ def main(site: str) -> int:
         with page.expect_download() as dl:
             page.get_by_role("button", name="Demo plan (.md)").click()
         check(Path(dl.value.path()).read_text(encoding="utf-8").startswith("# Demo plan: Kestrel Logistics"), "and downloads as a plan to share with the seller")
-        page.get_by_role("button", name="Mark the demo as given").click()
-        page.wait_for_selector("#view .fwhero .fwchecks li.ok")
-        check("✓" in page.inner_text("#view .fwhero .fwchecks") and "Given on " in page.inner_text("#view"), "marking the demo as given ticks it off the way forward")
+        # running it: one card per part of the plan, swiped as it landed, with what they said
+        page.get_by_role("button", name="Run the demo", exact=True).click()
+        page.wait_for_selector("dialog.deck[open] .deckcard")
+        DD = "dialog.deck"
+        total = int(page.inner_text(f"{DD} .deckpos").split(" of ")[1])
+        check(page.inner_text(f"{DD} .deckq").startswith("Show that ") and page.locator(f"{DD} .deckopt").count() == 4 and total >= 4
+              and "For the architect" in page.inner_text(f"{DD} .decktags"),
+              "running the demo opens on its first part, to swipe as it landed, with who it is for")
+        page.fill(f"{DD} .decksaid", "How long does a restore take?")
+        check(page.inner_text(f"{DD} .decksug") == "Sounds like questions" and page.locator(f"{DD} .deckopt.o-questions.sug").count() == 1,
+              "and what they said suggests how it landed")
+
+        def react(k: str, n: int) -> None:
+            page.locator(f"{DD} .deckopt.o-{k}").click()
+            if n < total:
+                page.locator(f"{DD} .deckpos", has_text=f"{n + 1} of {total}").wait_for()
+            else:
+                page.wait_for_selector(f"{DD} .decksum")
+        react("questions", 1)
+        page.fill(f"{DD} .decksaid", "That's exactly what we need")
+        react("landed", 2)
+        react("missed", 3)
+        for n in range(4, total + 1):
+            react("skipped", n)
+        sm = page.inner_text(f"{DD} .decksum")
+        check(sm.startswith("1 of 3 parts shown landed, 1 with questions, 1 did not land.") and "Questions to answer, in writing" in sm and "How long does a restore take?" in sm
+              and "Landed: what the proof should confirm" in sm and page.locator(f"{DD} .decktally").count() == 4,
+              "where the demo stands: what landed, the questions to answer in writing, and what did not land")
+        mail = page.locator(f"{DD} .deckrecap a", has_text="Email the recap")
+        check(mail.count() == 1 and mail.get_attribute("href").startswith("mailto:?subject=Demo%20recap"), "and a recap of the demo for the account team")
+        page.locator(f"{DD} .deckendrow .btn", has_text="Mark the demo as given today").click()
+        page.wait_for_selector(f"{DD}", state="detached")
+        page.wait_for_selector("#view .fwlanded")
+        check(page.locator("#view .fwhero .fwchecks li.ok").count() >= 2 and "Given on " in page.inner_text("#view") and "How it landed" in page.inner_text("#view"),
+              "marking the demo as given from the end of it ticks it off the way forward, with how it landed under the plan")
         page.click("[data-tab=hurt]")
         page.wait_for_selector("#view .painmap")
+        agenda = page.inner_text("#view pre[aria-label='Agenda of the next meeting']")
+        check("Back from the demo" in agenda and "How long does a restore take?" in agenda and "To show again, closer to your case" in agenda,
+              "the next meeting picks up what the demo left: their questions, and what to show again")
         page.get_by_role("button", name="Start the proof of value").click()
         page.wait_for_selector("#view .promise")
         check("Recovery point and time agreed for the workloads in the test" in page.inner_text("#view"), "the proof of value starts with the first line's own checklist")
+        check('Landed in the demo: "That\'s exactly what we need"' in page.inner_text("#view"), "and with what landed in the demo, to confirm on their own systems")
         check(state_tab(page) == "wspov" and "immutable copy" in page.inner_text("#view"), "starting the proof of value carries the first line's own criteria")
         check("Try to delete a locked copy with an administrator account, then recover from it" in page.inner_text("#view"), "and what the customer asked us to prove")
         check(page.locator("#view select[aria-label='Outcome'] option").count() == 4 and page.locator("#view select[aria-label='Main reason'] option").count() == 8,

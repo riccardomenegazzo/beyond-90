@@ -265,7 +265,8 @@ export function whoNext(cards, answers) {
   return [...by.values()].sort((x, y) => y.n - x.n);
 }
 
-const INVITE = { executive: "the executive sponsor", architect: "the architect", operations: "operations", security: "the security team",
+/** Who a role is, said as one would invite them. */
+export const INVITE = { executive: "the executive sponsor", architect: "the architect", operations: "operations", security: "the security team",
   application: "the application owner", data: "the data team", finance: "finance" };
 
 /** One line per role to invite: "Invite the security team: 3 essential questions still open". */

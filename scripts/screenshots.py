@@ -359,6 +359,25 @@ def shoot(site: Path, out: Path) -> None:
             mp.screenshot(path=str(out / "app-deck.png"))
             mp.mouse.up()
 
+            # running the demo on a phone: how each part landed, and where it stands at the end
+            mp.wait_for_timeout(300)
+            mp.locator("dialog.deck .deckclose").click()
+            mp.wait_for_selector("dialog.deck", state="detached")
+            mp.evaluate("document.querySelector('[data-tab=wsforward]').click()")
+            mp.wait_for_selector("#view .fwhero")
+            mp.get_by_role("button", name="Run the demo", exact=True).click()
+            mp.wait_for_selector("dialog.deck[open] .deckcard")
+            for said, k in (("How long does a restore take?", "questions"), ("That's exactly what we need", "landed"), ("We have runbooks already", "missed")):
+                mp.fill("#deck-said", said)
+                mp.locator(f"dialog.deck .deckopt.o-{k}").click()
+                mp.wait_for_timeout(400)
+            while not mp.locator("dialog.deck .decksum").count():
+                mp.locator("dialog.deck .deckopt.o-skipped").click()
+                mp.wait_for_timeout(400)
+            mp.wait_for_timeout(300)
+            mp.screenshot(path=str(out / "app-demo-run.png"))
+            mp.locator("dialog.deck .deckclose").click()
+
             card = b.new_page(viewport={"width": 1280, "height": 640})
             card.goto(url)
             card.wait_for_selector(".hero-preview")
