@@ -1206,6 +1206,11 @@ def main(site: str) -> int:
               "the way forward puts a prospect ready for a demo at the demo, with how to run it, and the other phases a click away")
         demo = page.inner_text("#view")
         check("Who should be there: the executive sponsor" in demo, "the demo plan says who should be there")
+        with page.expect_download() as dl:
+            page.get_by_role("button", name="Demo invitation (.ics)").click()
+        demo_ics = Path(dl.value.path()).read_text(encoding="utf-8").replace("\r\n ", "")
+        check("SUMMARY:Kestrel Logistics (mock): demo" in demo_ics and "Who should be there: the executive sponsor" in demo_ics and "They said" not in demo_ics,
+              "and an invitation carries the agenda for the customer, with nothing from the discovery notes")
         check("Their situation, in their words" in demo and "2M in lost orders" in demo and "Only what closes their gaps" in demo and "Close: agree what a proof would have to show" in demo,
               "the demo is planned from what they said: their words first, then only their gaps, then the proof to agree")
         def each_part() -> int:

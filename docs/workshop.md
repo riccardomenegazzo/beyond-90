@@ -355,6 +355,8 @@ The phase now is the furthest one started. A phase passed with something still o
 
 The plan opens with **who should be there**: the executive sponsor, then the people each part is for (the architect, the security team, operations), as one would invite them.
 
+**Copy the agenda for the customer** and **Demo invitation (.ics)**, on the day chosen, give them what will be shown and for how long, in their order, and who should be there; nothing from the discovery notes is in it.
+
 **The meeting** sets its length (30, 45 or 60 minutes; the meeting clock's when it runs). The plan is timed for it: two minutes for their situation, three for the result, three for each concern, five to close, and the rest shared among the gaps, three to ten minutes each. What does not fit waits for the next meeting, the last gaps first, and is struck through; what is left over is time for their questions. The plan as text and the cards of **Run the demo** carry the same minutes.
 
 What they already have is listed under **Leave out**. A note says what to keep for a fifteen-minute version for the executive. Copy the plan or download it (.md) for the seller and the champion, and **Mark the demo as given** to move on.

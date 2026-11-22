@@ -2,6 +2,11 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.174.0
+
+- **The demo's agenda, for the customer, and its invitation.** Under the demo plan, **Copy the agenda for the customer** and **Demo invitation (.ics)** (on the day chosen) give what will be shown and for how long, in their order (their situation, the result first, each gap that fits, their concerns, what a proof would have to show), and who should be there. It speaks to them: no quote from the discovery notes, nothing left out because they have it, no advice to the seller. Both leave the page through the same check as every copy and file.
+- New: `demoAgenda` and `demoIcs` in `forward.js`, with a test; a browser check on the invitation.
+
 ## 0.173.0
 
 - **The demo plan says who should be there:** the executive sponsor, then the people each part of it is for (the architect, the security team, operations), as one would invite them; in the plan on screen and in the plan as text.

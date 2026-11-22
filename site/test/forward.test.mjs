@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { PHASES, forward, demoPlan, demoMarkdown, demoTime, DEMO_LENGTHS, demoAudience } from "../forward.js";
+import { PHASES, forward, demoPlan, demoMarkdown, demoTime, DEMO_LENGTHS, demoAudience, demoAgenda, demoIcs } from "../forward.js";
 import { makeWorkshop, exampleWorkshop, setDemo, setDeal, setAnswer, setChannel, validWorkshop, assess } from "../workshop.js";
 import { makePov, edit as editPov, setOutcome, setCriterion } from "../pov.js";
 
@@ -122,4 +122,21 @@ test("the demo plan says who should be there: the executive sponsor, then the pe
   assert.equal(new Set(who).size, who.length);
   assert.match(demoMarkdown(p, exampleWorkshop(D)), /\nWho should be there: the executive sponsor, the architect, /);
   assert.deepEqual(demoAudience({ roles: [] }), ["the executive sponsor"]);
+});
+
+test("the demo's agenda for the customer: what is shown and for how long, who should be there, nothing internal", () => {
+  const w = exampleWorkshop(D);
+  const p = demoPlan(CAT, w);
+  const a = demoAgenda(p, w, 45, "Thursday 3 December");
+  assert.match(a, /^Demo for Kestrel Logistics \(mock\), Thursday 3 December: disaster recovery and backup, 45 minutes\n\n1\. Your situation/);
+  assert.match(a, /\n3\. Every site and branch has a copy of its workloads \(7 minutes\)/);
+  assert.match(a, /Your concern: "Ransomware would encrypt the backups too\." \(3 minutes\)/);
+  assert.match(a, /What a proof on your own systems would have to show, and who would sign it off \(5 minutes\)\n\nWho should be there: the executive sponsor/);
+  for (const internal of ["They said", "Leave out", "For the executive", "The backup admin account"]) assert.ok(!a.includes(internal), internal);
+  assert.equal(demoAgenda(p, w, 20).split("\n").filter((l) => /^\d+\. /.test(l)).length, 2 + 1 + p.concerns.length + 1, "only the gaps that fit");
+  const ics = demoIcs(w, p, "2026-12-03", 45, "20261119T000000Z");
+  assert.match(ics, /DTSTART;VALUE=DATE:20261203/);
+  assert.match(ics, /SUMMARY:Kestrel Logistics \(mock\): demo/);
+  assert.match(ics.replace(/\r\n /g, ""), /Who should be there: the executive sponsor/);
+  assert.equal(demoAgenda({ ready: false }, w), "");
 });

@@ -13,6 +13,7 @@ import { hasCase } from "./valuecase.js";
 import { registrationOf, channelState } from "./partners.js";
 import { rfpState, notBidding } from "./rfp.js";
 import { INVITE } from "./deck.js";
+import { calendar } from "./ics.js";
 
 /** Who should be at the demo: the people each part is for, as one would invite them; the executive sponsor always. */
 export function demoAudience(plan) {
@@ -205,4 +206,27 @@ export function forward(catalog, w, pov, today = "") {
   const phases = PHASES.map((ph, i) => ({ ...ph, checks: checks[ph.id],
     state: i < at ? (done(ph.id) ? "done" : "open") : i === at ? (done(ph.id) ? "done" : "now") : "later" }));
   return { phases, now: PHASES[at].id, closed: !!outcome && outcome !== "won", outcome, deal: ds.verdict, demo: demoPlan(catalog, w, res), today };
+}
+
+/**
+ * The demo's agenda, for the customer: what will be shown and for how long, in their order, and who should be there.
+ * It speaks to them: no quote from the discovery, nothing left out because they have it, no advice to the seller.
+ */
+export function demoAgenda(plan, w, length = 45, when = "") {
+  if (!plan.ready) return "";
+  const t = demoTime(plan, length);
+  const out = [`Demo for ${clean(w.customer)}${when ? `, ${when}` : ""}: ${plan.line.toLowerCase()}, ${length} minutes`, ""];
+  let i = 0;
+  out.push(`${++i}. Your situation, as we understood it, and what has changed since (${t.situation} minutes)`);
+  out.push(`${++i}. The result you want, shown first (${t.result} minutes)`);
+  for (const s of plan.segments.slice(0, t.fit)) out.push(`${++i}. ${s.show} (${t.each} minutes)`);
+  for (const c of plan.concerns) out.push(`${++i}. Your concern: "${c.says}" (${t.concern} minutes)`);
+  out.push(`${++i}. What a proof on your own systems would have to show, and who would sign it off (${t.close} minutes)`, "");
+  out.push(`Who should be there: ${demoAudience(plan).join(", ")}.`);
+  return out.join("\n");
+}
+
+/** One calendar event on the chosen day, carrying the demo's agenda: for the invitation. */
+export function demoIcs(w, plan, date, length, stamp) {
+  return calendar("Demo", [{ uid: `${w.id.replace(/\|/g, "-")}-demo-${date}`, date, summary: `${clean(w.customer)}: demo`, description: demoAgenda(plan, w, length) }], stamp);
 }

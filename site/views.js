@@ -3118,6 +3118,14 @@ export function forwardView({ workshop: w, catalog, povs, today, go, setDemo, se
       ? `${dt.fit ? `${nOf(dt.fit, "gap")} fit${dt.fit === 1 ? "s" : ""}, about ${dt.each} minutes each` : "No gap fits"} after the situation, the result, the concerns and the close; ${dt.later.length} ${dt.later.length === 1 ? "waits" : "wait"} for the next meeting.`
       : `About ${dt.each} minutes for each gap${dt.spare ? `, and ${dt.spare} left for their questions` : ""}.` }));
   const audience = dp.ready ? h("p", { class: "fwwho" }, h("b", { text: "Who should be there: " }), FW.demoAudience(dp).join(", ") + ".") : null;
+  // the agenda for the customer, and an invitation that carries it
+  const inWeek = new Date(Date.parse(today + "T00:00:00Z") + 7 * 86400000).toISOString().slice(0, 10);
+  const demoDay = h("input", { type: "date", value: inWeek, min: today, "aria-label": "Day of the demo" });
+  const invite = dp.ready ? h("div", { class: "btnrow fwinvite" }, h("label", { class: "fwlen" }, h("span", { text: "Invite for" }), demoDay),
+    h("button", { class: "btn small", type: "button", text: "Copy the agenda for the customer",
+      "data-tip": "What will be shown and for how long, in their order, and who should be there. Nothing from the discovery notes is in it.",
+      onclick: (ev) => copyText(FW.demoAgenda(dp, cur, demoLength)).then((ok) => { ev.target.textContent = ok ? "Copied" : "Not copied"; }) }),
+    h("button", { class: "btn small", type: "button", text: "Demo invitation (.ics)", onclick: () => { if (demoDay.value) saveBlob(FW.demoIcs(cur, dp, demoDay.value, demoLength, new Date().toISOString().replace(/[-:]/g, "").slice(0, 15) + "Z"), `${slug}-demo.ics`, "text/calendar"); } })) : null;
   const demo = card("The demo, built from what they said", dp.ready ? h("div", {},
     timing, audience,
     sec("1. Their situation, in their words (2 minutes)", dp.situation.length ? h("ul", { class: "growwhy" }, dp.situation.map((t) => h("li", { text: t }))) : h("p", { class: "note", text: "Nothing in their words yet: note what they say to the value questions." })),
@@ -3129,6 +3137,7 @@ export function forwardView({ workshop: w, catalog, povs, today, go, setDemo, se
     dp.skip.length ? sec("Leave out: they have it already", h("ul", { class: "growwhy" }, dp.skip.map((t) => h("li", { text: t })))) : null,
     sec("Close: agree what a proof would have to show (5 minutes)", h("ul", { class: "growwhy" }, (dp.close.length ? dp.close : ["The criteria they would sign off, and who signs."]).map((t) => h("li", { text: t })))),
     h("p", { class: "note", text: "For the executive, keep to the situation, the result, the first two gaps and the proof: fifteen minutes." }),
+    invite,
     landedSec,
     h("div", { class: "btnrow" }, run,
       h("button", { class: "btn small", type: "button", text: "Copy the demo plan", onclick: (ev) => copyText(md).then((ok) => { ev.target.textContent = ok ? "Copied" : "Not copied"; }) }),
