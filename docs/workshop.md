@@ -477,6 +477,18 @@ Notes that hold whatever the product: keep a few standard designs, ship servers 
 
 ![A first edge design: servers per kind of site, the witness, the daily copy against the night and the upgrade waves](img/app-edge.png)
 
+## A first desktop sizing sketch
+
+With virtual desktops in scope, **A first desktop sizing sketch** works out the hosts a desktop pool needs at the busiest hour. Typed in from the conversation:
+- how many users will have a desktop, and how many connect at once at the busiest hour;
+- the mix of workers: task workers, knowledge workers, power users and graphics users, and how many desktops keep their changes;
+- what each kind of desktop is given (virtual processors, memory) and how many virtual processors share a physical core;
+- the hosts: cores, memory, what the platform keeps for itself, and how many are kept free for a failure or maintenance.
+
+It counts the hosts twice, by processor and by memory, says which one decides, and adds the hosts kept free. Storage: the full disks of the desktops that keep their changes, what fresh desktops write while they run, the golden images and a copy of each being prepared, and every user's profile, kept below a fill level.
+
+Notes that hold whatever the product: measure a week of real use on a pilot group of each kind before fixing the ratios, plan for the busiest half hour of logons, give graphics users hosts with GPUs sized from their applications, and ask which users truly need a desktop that keeps its changes. The sketch goes in the journey and in the handover; a week of real use on a pilot group has the last word.
+
 ## What one machine costs
 
 With cloud operations, a service provider's cloud or hybrid cloud in scope, **What one machine costs** works out the number behind "the cloud is cheaper", in the customer's own figures. It adds up a year of the estate:

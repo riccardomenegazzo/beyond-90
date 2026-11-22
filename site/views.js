@@ -21,6 +21,7 @@ import * as DRS from "./drsketch.js";
 import * as NM from "./nextmeeting.js";
 import * as OBJ from "./objsketch.js";
 import * as EDGE from "./edgesketch.js";
+import * as VDI from "./vdisketch.js";
 import * as UNIT from "./unitcost.js";
 import * as RFP from "./rfp.js";
 import * as AWD from "./award.js";
@@ -2149,7 +2150,7 @@ function openDeck({ clock, onClose, aside = null, asideTitle = "", ...rest }) {
 
 const wsFilter = { core: false, roles: [], tender: false, open: false, best: false };
 
-export function workshopView({ workshop: w, catalog, list, answer, worth, setDeal, raise, rename, preparedBy, setScope, inventory, sizing, waves, gpu, dr, obj, edge, unit, today, newWorkshop, openWorkshop, removeWorkshop, presets = [], go, focus }) {
+export function workshopView({ workshop: w, catalog, list, answer, worth, setDeal, raise, rename, preparedBy, setScope, inventory, sizing, waves, gpu, dr, obj, edge, vdi, unit, today, newWorkshop, openWorkshop, removeWorkshop, presets = [], go, focus }) {
   const say = h("p", { class: "note", role: "status" });
   const act = (fn) => async (...a) => { try { await fn(...a); say.textContent = ""; } catch (e) { say.textContent = e.message; } };
   let cur = w;
@@ -2426,7 +2427,7 @@ export function workshopView({ workshop: w, catalog, list, answer, worth, setDea
   const sketches = [inventory ? inventoryCard(w, inventory) : null, w.inventory && sizing ? sizingCard(w, sizing) : null,
     w.inventory && waves ? wavesCard(w, waves, today) : null, w.scope.includes("private-ai") && gpu ? gpuCard(w, gpu) : null,
     w.scope.includes("dr-backup") && dr ? drCard(w, dr) : null, w.scope.includes("object-storage") && obj ? objCard(w, obj) : null,
-    w.scope.includes("edge-sites") && edge ? edgeCard(w, edge) : null, w.scope.some((p) => WS.UNIT_LINES.includes(p)) && unit ? unitCard(w, unit) : null].filter(Boolean);
+    w.scope.includes("edge-sites") && edge ? edgeCard(w, edge) : null, w.scope.includes("euc") && vdi ? vdiCard(w, vdi) : null, w.scope.some((p) => WS.UNIT_LINES.includes(p)) && unit ? unitCard(w, unit) : null].filter(Boolean);
   // with lines chosen, the next question comes first, beside where every line stands; the meeting's settings follow
   const top = inScope.length
     ? [h("div", { class: "card deckpanel" }, deckBox, h("div", { class: "deckside" }, clockBox, heardBox, prog, strip,
@@ -2672,6 +2673,47 @@ function objCard(w, obj) {
       try { await obj(null); } catch (e) { say.textContent = e.message; }
     } }))), say),
   { sub: "For backups kept on object storage: what the retention holds after reduction, with protection and room to grow, and what the nightly window needs. The backup product's own calculator, on the customer's data, has the last word." });
+}
+
+/** A first desktop sizing sketch: hosts by processor and by memory, a host kept free, and the storage. */
+function vdiCard(w, vdi) {
+  const a = VDI.cleanVdi(w.vdi || {});
+  const say = h("p", { class: "note", role: "status" });
+  const out = h("div", { class: "szout" });
+  const people = [["users", "Users who will have a desktop"], ["concurrency_pct", "Connected at the busiest hour (%)"],
+    ...VDI.KINDS.map((k) => [`${k.id}_pct`, `${k.label} (% of users)`]), ["persistent_pct", "Desktops that keep their changes (%)"],
+    ["host_cores", "Physical cores per host"], ["host_ram", "Memory per host (GiB)"], ["overhead_ram", "Memory the platform keeps per host (GiB)"], ["spare_hosts", "Hosts kept free for a failure"]];
+  const given = [...VDI.KINDS.flatMap((k) => [[`${k.id}_vcpu`, `${k.label}: virtual processors`], [`${k.id}_ram`, `${k.label}: memory (GiB)`], [`${k.id}_ratio`, `${k.label}: virtual processors per core`]]),
+    ["disk_gib", "Disk of a desktop that keeps its changes (GiB)"], ["delta_gib", "Written by a fresh desktop while it runs (GiB)"], ["images", "Golden images"], ["image_gib", "Size of an image (GiB)"],
+    ["profile_gib", "Profile and data per user (GiB)"], ["fill_pct", "Keep the storage below (%)"]];
+  const fields = [...people, ...given];
+  const inputs = {};
+  const current = () => { const v = {}; for (const [k] of fields) v[k] = Number(inputs[k].value); return VDI.cleanVdi(v); };
+  const draw = (settings) => {
+    const sk = VDI.vdiSketch(settings);
+    if (!sk.ok) { put(out, h("p", { class: "note", text: sk.error })); return; }
+    put(out,
+      h("div", { class: "szhead" }, h("b", { text: String(sk.hosts) }), h("span", {}, h("strong", { text: "hosts" }),
+        h("small", { text: `for ${INV.fmt(sk.concurrent)} desktops at once, the ${sk.binding} decides; ${INV.fmt(sk.usable_tib)} TiB of usable storage` }))),
+      h("ol", { class: "szsteps" }, sk.steps.map((t) => h("li", { text: t }))),
+      h("div", { class: "growproof" }, h("small", { text: "Whatever the product" }), h("ul", {}, VDI.vdiNotes(sk).map((t) => h("li", { text: t })))));
+  };
+  const save = async () => { const v = current(); draw(v); try { await vdi(v); say.textContent = ""; } catch (e) { say.textContent = e.message; } };
+  const grid = (list) => h("div", { class: "szgrid" }, list.map(([k, label]) => {
+    inputs[k] = h("input", { type: "number", step: "any", min: "0", value: String(a[k]), "aria-label": label });
+    inputs[k].addEventListener("change", save);
+    return h("label", { class: "szf" }, h("span", { text: label }), inputs[k]);
+  }));
+  draw(a);
+  return card("A first desktop sizing sketch", h("div", { class: "sz" }, out,
+    h("details", { class: "szassume" }, h("summary", { text: "The users, the mix and the hosts, to agree with the customer" }), grid(people)),
+    h("details", { class: "szassume" }, h("summary", { text: "What each kind of desktop is given, and the storage" }), grid(given),
+      h("div", { class: "btnrow" }, h("button", { class: "btn small", type: "button", text: "Back to the defaults", onclick: async () => {
+        for (const [k] of fields) inputs[k].value = String(VDI.VDI_DEFAULTS[k]);
+        draw(VDI.VDI_DEFAULTS);
+        try { await vdi(null); } catch (e) { say.textContent = e.message; }
+      } }))), say),
+  { sub: "For virtual desktops: the hosts the busiest hour needs, counted by processor and by memory, with a host kept free for a failure, and the storage the desktops, their images and the profiles take. A week of real use on a pilot group has the last word." });
 }
 
 /** A first recovery design: per tier, the replication its recovery point calls for, the bandwidth, a retention. */

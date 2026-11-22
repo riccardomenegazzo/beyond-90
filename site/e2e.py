@@ -1378,6 +1378,18 @@ def main(site: str) -> int:
         page.wait_for_timeout(300)
         check("Does not fit the night." in edgecard.locator(".edgetable").inner_text() and "does not fit the night over its link" in edgecard.inner_text(),
               "and says when the daily copy no longer fits the night over a thin link")
+        # the digital workplace: a first desktop sizing sketch, hosts by processor and by memory
+        page.get_by_role("button", name="The digital workplace").click()
+        page.wait_for_selector("#ws-euc")
+        vdicard = page.locator("#view .card").filter(has_text="A first desktop sizing sketch")
+        check(vdicard.locator(".szhead > b").inner_text() == "8" and "the memory decides" in vdicard.inner_text() and "need hosts with GPUs" in vdicard.inner_text(),
+              "with virtual desktops in scope, a first desktop sizing sketch: hosts by processor and by memory, one kept free, GPUs for graphics")
+        vdicard.locator("details.szassume summary").first.click()
+        users = page.locator("#view input[aria-label='Users who will have a desktop']")
+        users.fill("3000")
+        users.dispatch_event("change")
+        page.wait_for_timeout(300)
+        check(int(vdicard.locator(".szhead > b").inner_text()) > 8, "and follows the users given")
         # running it like a cloud: what one machine costs, all in
         page.get_by_role("button", name="Running it like a cloud").click()
         page.wait_for_selector("#ws-cloud-operations")
