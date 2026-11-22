@@ -1845,7 +1845,7 @@ function deckPane({ cards, state, answerOf, answer, go, pfx, inline, set = DISCO
     drawMarks();
     const stamp = h("div", { class: "deckstamp", "aria-hidden": "true" });
     const ask = h("p", { class: "deckq", id: `${pfx}-q`, tabindex: "-1", text: q.q });
-    const said = h("textarea", { id: `${pfx}-said`, class: "decksaid", maxlength: 300, rows: 3, placeholder: "Their words, a number, a name" });
+    const said = h("textarea", { id: `${pfx}-said`, class: "decksaid", maxlength: 300, rows: 3, placeholder: set.saidHint || "Their words, a number, a name" });
     said.value = state.drafts.has(c.key) ? state.drafts.get(c.key) : ans ? ans.note : "";
     const sug = h("span", { class: "decksug", "aria-live": "polite" });
     const opts = set.order.map((k, i) => h("button", { type: "button", class: `deckopt o-${k} t-${set.tone(k)}`, "data-a": k, "aria-pressed": String(!!ans && ans.a === k),
@@ -1883,12 +1883,13 @@ function deckPane({ cards, state, answerOf, answer, go, pfx, inline, set = DISCO
         ans ? null : (c.why || []).map((w) => h("span", { class: "decktag why", text: w })),
         ans ? h("span", { class: `decktag t-${set.tone(ans.a)}`, text: `Answered: ${set.label(ans.a).toLowerCase()}` }) : null),
       ask,
-      h("label", { for: `${pfx}-said`, class: "decklabel", text: "What they said" }), said,
+      h("label", { for: `${pfx}-said`, class: "decklabel", text: set.saidLabel || "What they said" }), said,
       h("div", { class: "deckfoot" }, howBtn, sug));
+    const L = { why: "Why it matters", listen: "Listen for", probe: "Then ask", ...(set.backLabels || {}) };
     put(back,
-      h("dl", { class: "deckdl" }, q.why ? [h("dt", { text: "Why it matters" }), h("dd", { text: q.why })] : null,
-        q.listen ? [h("dt", { text: "Listen for" }), h("dd", { text: q.listen })] : null,
-        q.probe ? [h("dt", { text: "Then ask" }), h("dd", { class: "deckprobe", text: q.probe })] : null,
+      h("dl", { class: "deckdl" }, q.why ? [h("dt", { text: L.why }), h("dd", { text: q.why })] : null,
+        q.listen ? [h("dt", { text: L.listen }), h("dd", { text: q.listen })] : null,
+        q.probe ? [h("dt", { text: L.probe }), h("dd", { class: "deckprobe", text: q.probe })] : null,
         q.need ? [h("dt", { text: "What would need to be true" }), h("dd", { text: q.need })] : null,
         q.how ? [h("dt", { text: "A first step" }), h("dd", { text: q.how })] : null),
       backBtn);
@@ -3740,6 +3741,8 @@ export function rfpView({ workshop: w, catalog, today, addReqs, setReq, removeRe
     { sub: "The technical response, section by section as the tender numbers it, with every answer and its attachments; the matrix for the bid team; the summary for the seller; the questions, drafted to put in the tender's language. Unfinished text is highlighted in the response. The requirements stay in this browser." }));
 }
 
+const REHEARSED = new Map();          // per workshop, while the page is open: how a rehearsal went; never kept
+
 export function wsPrepView({ workshop: w, catalog, raise, go }) {
   const res = WS.assess(catalog, w);
   const told = WS.stories(catalog, w, res);
@@ -3747,9 +3750,27 @@ export function wsPrepView({ workshop: w, catalog, raise, go }) {
   const count = h("b", { text: String((w.raised || []).length) });
   const summary = h("p", { class: "tline" }, count, " raised so far. Each one raised goes to the customer readout as something to prove, and into the proof of value when it starts.");
   const say = h("p", { class: "note", role: "status" });
+  // rehearsing: each objection as a card, said aloud and swiped by whether the answer was there
+  if (!REHEARSED.has(w.id)) REHEARSED.set(w.id, new Map());
+  const rehearsal = REHEARSED.get(w.id);
+  let cur = w;                       // what is marked raised here changes the order: the cards are dealt when the deck opens
+  const rCards = DECK.rehearseCards(told);
+  const rSet = { ...DECK.REHEARSE, label: (k) => (k === "ready" ? "I had it" : "Practise again"), tone: (k) => (k === "ready" ? "good" : "bad"),
+    tag: (c) => c.tag, hint: "Say your answer aloud, then swipe", how: "What to say", backLabels: { why: "Ask first", listen: "Answer", probe: "Prove it" },
+    saidLabel: "Your answer, in a few words", saidHint: "What you would say", doneWord: "rehearsed", openText: "Back to what is not rehearsed",
+    summary: (cs, answerOf) => DECK.rehearseSummary(cs, answerOf), end: { text: "Back to Prepare", view: "" } };
+  const rDone = [...rehearsal.values()];
+  const rLine = rDone.length ? h("p", { class: "note", text: `Rehearsed on this visit: ${rDone.filter((x) => x.a === "ready").length} ready, ${rDone.filter((x) => x.a === "again").length} to practise again. Nothing of it is kept.` }) : null;
+  const rehearse = rCards.length ? h("div", { class: "btnrow" }, h("button", { class: "btn small primary", type: "button", text: "Rehearse the objections",
+    "data-tip": "Before the meeting, full screen: what the customer would say, one card each; say your answer aloud, turn the card to check it, and swipe right if you had it, left to practise it again. Nothing is kept.",
+    onclick: () => {
+      const cards = DECK.rehearseCards(WS.stories(catalog, cur, WS.assess(catalog, cur)));
+      openDeck({ cards, state: { at: Math.max(0, cards.findIndex((c) => !rehearsal.has(c.key))), drafts: new Map() }, set: rSet, go: (v) => { if (v) go(v); },
+        answerOf: (c) => rehearsal.get(c.key) || null, answer: async (c, a, note) => { rehearsal.set(c.key, { a, note }); }, onClose: () => go("wsprep") });
+    } })) : null;
   const hero = h("section", { class: "card" }, h("h2", { text: "Prepare the conversation" }),
     h("p", { class: "note first", text: res.land ? `Starting with ${res.land.label.toLowerCase()}, from what the customer said. Mark an objection when the customer raises it: ask the question first, then answer.` : "For every line in scope. Mark an objection when the customer raises it: ask the question first, then answer." }),
-    summary, say);
+    summary, rehearse, rLine, say);
   const block = (t) => {
     const text = [...Object.entries(t.audiences).map(([k, v]) => `${WS.AUDIENCE_WORDS[k]}: ${v}`), t.people.length ? `Who to involve: ${t.people.join("; ")}.` : ""].filter(Boolean).join("\n");
     const objs = h("ol", { class: "objs" }, t.objections.map((o) => {
@@ -3759,6 +3780,7 @@ export function wsPrepView({ workshop: w, catalog, raise, go }) {
           const on = btn.getAttribute("aria-pressed") !== "true";
           try {
             const next = await raise(t.profile, o.index, on);
+            if (next) cur = next;
             btn.setAttribute("aria-pressed", String(on)); btn.textContent = on ? "Raised" : "They raised it";
             btn.setAttribute("aria-label", `${on ? "Raised" : "Mark as raised"}: ${o.says}`);
             btn.closest("li").classList.toggle("on", on);

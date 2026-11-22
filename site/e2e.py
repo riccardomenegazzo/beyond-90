@@ -951,6 +951,29 @@ def main(site: str) -> int:
         raised.click()
         page.wait_for_selector("#view .obj.on")
         check(raised.get_attribute("aria-pressed") == "true" and "1 raised so far" in page.inner_text("#view"), "an objection the customer raises is marked, with the question to ask first")
+        # rehearsing them before the meeting: the same cards, the one raised first, and nothing kept
+        page.get_by_role("button", name="Rehearse the objections").click()
+        page.wait_for_selector("dialog.deck[open] .deckcard")
+        RH = "dialog.deck"
+        check(page.inner_text(f"{RH} .deckq") == "“Ransomware would encrypt the backups too.”" and "They raised it" in page.inner_text(f"{RH} .decktags")
+              and page.locator(f"{RH} .deckopt").count() == 2 and page.inner_text(f"{RH} .decklabel") == "Your answer, in a few words",
+              "rehearsing the objections starts with the one they raised, on the line to start with")
+        page.locator(f"{RH} .deckfoot .linkbtn", has_text="What to say").click()
+        guide = page.inner_text(f"{RH} .deckguide")
+        check("Ask first" in guide and "Answer" in guide and "Prove it" in guide, "the other side of the card says what to ask first, the answer and how to prove it")
+        page.locator(f"{RH} .deckguide .linkbtn", has_text="Back to the question").click()
+        page.locator(f"{RH} .deckopt.o-ready").click()
+        page.locator(f"{RH} .deckpos", has_text="2 of ").wait_for()
+        page.locator(f"{RH} .deckopt.o-again").click()
+        page.locator(f"{RH} .deckpos", has_text="3 of ").wait_for()
+        while not page.locator(f"{RH} .decksum").count():
+            page.locator(f"{RH} .deckbar .linkbtn", has_text="Skip").click()
+        check(page.inner_text(f"{RH} .deckheadline").startswith("1 of ") and "1 to practise again" in page.inner_text(f"{RH} .deckheadline")
+              and "Practise these again" in page.inner_text(f"{RH} .decksum"), "the end of the rehearsal says what to practise again")
+        page.locator(f"{RH} .deckclose").click()
+        page.wait_for_selector(f"{RH}", state="detached")
+        page.locator("#view p.note", has_text="Rehearsed on this visit").wait_for()
+        check("1 ready, 1 to practise again" in page.inner_text("#view"), "and Prepare says how it went, for this visit only")
         # qualify the deal: the same ten questions on every line, and the gate they open
         page.click("[data-tab=wsqualify]")
         page.wait_for_selector("#view .qdhero")

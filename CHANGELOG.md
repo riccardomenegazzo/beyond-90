@@ -2,6 +2,13 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.165.0
+
+- **The README says what the cards carry now:** the discovery questions, the deal's qualification, the demo built from what they said, and the readout of a proof of value, each ending with where it stands and a recap; and a concern recognised as it is said.
+- **Rehearse the objections.** On Prepare, before the meeting: what the customer would say, one card each, the line to start with first and the ones they already raised first. Say your answer aloud, turn the card to check it (the question to ask first, the answer, how to prove it), and swipe right if you had it, left to practise it again. At the end, the ones to practise again; Prepare then says how it went. Nothing of it is kept: it lasts as long as the page is open.
+- New: `REHEARSE`, `rehearseCards` and `rehearseSummary` in `deck.js`, with a test; a set of cards can now name the parts of the card's other side and its box. A browser check for a rehearsal from start to end.
+- **The meeting guide shows the readout on a phone,** at its end: what was met, partly met and not met, with the evidence. `scripts/screenshots.py` takes it with the others.
+
 ## 0.164.0
 
 - **The distance to the target, drawn on Today.** Under the number and its sentence, a bar shows what really works against the target's mark ("target 90%"), so the gap the name is about is seen before it is read. Pointing at an action shows, on the same bar, where it would take Yield, as it already did on the number and the stages. On a wide screen, the hero no longer leaves an empty middle beside Where it leaks.

@@ -11,6 +11,8 @@ A page for the hour with the customer: what to set up before, what to do while t
 3. **Turn on Most useful first.** The card then asks the essential questions first, on the lines you know least or have not touched, and says why ("Nothing asked on this line yet").
 4. **Read the first cards over.** **How to ask it** turns a card over: why it matters, what to listen for, what to ask next, what would need to be true and a first step towards it.
 
+5. **Rehearse the objections** (on Prepare): what the customer would say, one card each, the ones they already raised first. Say your answer aloud, turn the card to check it (the question to ask first, the answer, how to prove it), and swipe right if you had it, left to practise it again. Nothing of it is kept.
+
 ## During: the card, the box, the clock
 
 <img src="img/heard.gif" width="300" align="right" alt="On a phone, full screen: Heard something opened under the card, a sentence written as the customer said it, the questions it answers offered with A real gap suggested, and a tap that files it">
@@ -42,7 +44,11 @@ A page for the hour with the customer: what to set up before, what to do while t
 
 ## The readout: criterion by criterion
 
+<img src="img/app-readout.png" width="300" align="right" alt="On a phone, the end of the readout deck: one of the criteria met, one partly, one not met, with what was not met and what it means for the decision, and the evidence written for each">
+
 At the end of a proof of value, **Go criterion by criterion** (under Success criteria) gives the readout the same cards: one per criterion, swiped by what was seen (right met, up partly met, left not met, down dropped with the sponsor), with the evidence written on it. It ends with what was not met and what it means for the decision, what is only partly there, and what was met, with the evidence; **Mark the readout as held** closes the proof, and the way forward moves to the decision.
+
+<br clear="right">
 
 ## What it is not
 

@@ -377,6 +377,26 @@ def shoot(site: Path, out: Path) -> None:
             mp.wait_for_timeout(300)
             mp.screenshot(path=str(out / "app-demo-run.png"))
             mp.locator("dialog.deck .deckclose").click()
+            mp.wait_for_selector("dialog.deck", state="detached")
+
+            # the readout of the proof of value on a phone: criterion by criterion, and where it stands at the end
+            mp.evaluate("document.querySelector('[data-tab=hurt]').click()")
+            mp.wait_for_selector("#view .painmap")
+            mp.get_by_role("button", name="Start the proof of value").click()
+            mp.wait_for_selector("#view .promise")
+            mp.get_by_role("button", name="Go criterion by criterion").click()
+            mp.wait_for_selector("dialog.deck[open] .deckcard")
+            for said, k in (("Restored in 3h40, under the 4h target", "met"), ("Restored, but only from the second copy", "partly"),
+                            ("Failed: the alert reached nobody for two hours", "not_met")):
+                mp.fill("#deck-said", said)
+                mp.locator(f"dialog.deck .deckopt.o-{k}").click()
+                mp.wait_for_timeout(500)
+            while not mp.locator("dialog.deck .decksum").count():
+                mp.locator("dialog.deck .deckbar .linkbtn", has_text="Skip").click()
+                mp.wait_for_timeout(300)
+            mp.wait_for_timeout(300)
+            mp.screenshot(path=str(out / "app-readout.png"))
+            mp.locator("dialog.deck .deckclose").click()
 
             card = b.new_page(viewport={"width": 1280, "height": 640})
             card.goto(url)

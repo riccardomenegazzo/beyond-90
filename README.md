@@ -25,8 +25,9 @@ The discovery questions come as cards, on a phone or a laptop. Write what the cu
 - The words suggest the answer ("Sounds like a real gap"); you decide.
 - **Most useful first** puts the essential questions of the lines you know least ahead, and says why.
 - A **meeting clock** says whether the essential questions still fit in the time left.
-- Something said out of turn goes in **Heard something?**: it finds the question it answers, and a figure in it ("about 2 million a day") goes with the answer.
-- The qualification questions work the same way. All of it runs in the browser: see [running a discovery meeting](docs/meeting.md), before, during and after.
+- Something said out of turn goes in **Heard something?**: it finds the question it answers, and a figure in it ("about 2 million a day") goes with the answer. A concern the line expects ("we already have backups") shows first, with the question to ask before answering and how to prove it.
+- The same cards carry the meetings after it: the deal's qualification questions; **the demo**, one card per part of the plan built from what they said, swiped as it landed; and **the readout** of a proof of value, criterion by criterion, with the evidence. Each ends with where it stands and a recap for the account team. Before a meeting, the objections to expect can be rehearsed the same way.
+- All of it runs in the browser: see [running a discovery meeting](docs/meeting.md), before, during and after.
 
 <br clear="right">
 

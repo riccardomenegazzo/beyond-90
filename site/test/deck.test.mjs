@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { heading, released, hintStrength, forKey, deckFrom, firstOpen, nextOpen, suggest, deckSummary, ORDER, THRESHOLD } from "../deck.js";
+import { heading, released, hintStrength, forKey, deckFrom, firstOpen, nextOpen, suggest, deckSummary, ORDER, THRESHOLD, REHEARSE, rehearseCards, rehearseSummary } from "../deck.js";
 
 const catalog = {
   lines: {
@@ -167,4 +167,25 @@ test("the invitations read as sentences, and go into the recap", async () => {
     { key: "c", label: "DR", q: { q: "C?", core: true, role: "application" } }];
   assert.deepEqual(inviteLines(cards, {}).map((x) => x.text), ["Invite the security team: 2 essential questions still open", "Invite the application owner: 1 essential question still open"]);
   assert.match(recapText("K", cards, { c: { a: "unknown" } }), /For the next meeting\n- Invite the security team: 2 essential questions still open\n- Invite the application owner: 1 essential question still open$/);
+});
+
+test("rehearsing the objections: the line to start with first, the ones raised first, and what to practise again", () => {
+  const told = [
+    { label: "Disaster recovery", objections: [
+      { says: "We already have backups.", clarify: "When did you last restore?", answer: "Backups are copies.", prove: "Restore one.", key: "dr#0", index: 0, raised: false },
+      { says: "Ransomware would encrypt the backups too.", clarify: "Who can delete them?", answer: "Locked copies.", prove: "Try to delete one.", key: "dr#1", index: 1, raised: true }] },
+    { label: "Platform", objections: [{ says: "We have just bought new arrays.", clarify: "Until when?", answer: "Keep them.", prove: "Run on them.", key: "hci#0", index: 0, raised: false }] }];
+  const cards = rehearseCards(told);
+  assert.deepEqual(cards.map((c) => c.key), ["dr#1", "dr#0", "hci#0"]);
+  assert.equal(cards[0].q.q, "“Ransomware would encrypt the backups too.”");
+  assert.equal(cards[0].tag, "They raised it");
+  assert.equal(cards[0].q.why, "Who can delete them?");
+  assert.equal(REHEARSE.fromKey("ArrowRight"), "ready");
+  assert.equal(REHEARSE.fromKey("2"), "again");
+  assert.equal(REHEARSE.released(0, -200), null, "up and down mean nothing here");
+  const seen = { "dr#1": { a: "ready", note: "" }, "dr#0": { a: "again", note: "forgot the restore question" } };
+  const s = rehearseSummary(cards, (c) => seen[c.key] || null);
+  assert.equal(s.head, "1 of 3 objections ready, 1 to practise again; 1 not rehearsed yet.");
+  assert.deepEqual(s.lists[0][1].map((r) => r.key), ["dr#0"]);
+  assert.equal(rehearseSummary(cards, () => null).head, "Nothing rehearsed yet.");
 });

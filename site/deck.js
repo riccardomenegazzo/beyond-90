@@ -172,6 +172,9 @@ export function answerSet(dirs) {
   };
 }
 
+/** Rehearsing the objections before a meeting: right, I had the answer; left, practise it again. */
+export const REHEARSE = answerSet({ ready: "right", again: "left" });
+
 /** The discovery answers: right solved, up partly, left a real gap, down nobody knows. */
 export const DISCOVERY = answerSet({ solved: "right", partly: "up", gap: "left", unknown: "down" });
 /** The qualification answers: right known, up partly, left not yet. */
@@ -275,4 +278,26 @@ export function inviteLines(cards, answers) {
     text: `Invite ${INVITE[r.role] || (ROLE_WORDS[r.role] || r.role).toLowerCase()}: ${plural(r.n, "essential question", "essential questions")} still open`,
     first: r.first,
   }));
+}
+
+/**
+ * One card per objection to expect, line by line as Prepare tells them (the line to start with first), those the
+ * customer already raised first within each: what the customer says on the front; on the back, the question to ask
+ * first, the answer and how to prove it.
+ * @param {{label:string, objections:{says:string, clarify:string, answer:string, prove:string, key:string, index:number, raised:boolean}[]}[]} told
+ */
+export function rehearseCards(told) {
+  return told.flatMap((t) => [...t.objections].sort((a, b) => Number(b.raised) - Number(a.raised) || a.index - b.index).map((o) => ({
+    key: o.key, label: t.label, tag: o.raised ? "They raised it" : "To expect",
+    q: { q: `“${o.says}”`, why: o.clarify, listen: o.answer, probe: o.prove },
+  })));
+}
+
+/** Where a rehearsal stands: how many answers were ready, and the ones to practise again. */
+export function rehearseSummary(cards, answerOf) {
+  const t = tally(cards, answerOf, ["ready", "again"]);
+  const head = t.counts.ready + t.counts.again === 0 ? "Nothing rehearsed yet."
+    : `${t.counts.ready} of ${plural(t.total, "objection", "objections")} ready${t.counts.again ? `, ${t.counts.again} to practise again` : ""}${t.counts.open ? `; ${t.counts.open} not rehearsed yet` : ""}.`;
+  return { head, total: t.total, open: t.counts.open, counts: t.counts, tallies: [["again", "to practise again"], ["ready", "ready"]],
+    lists: [["Practise these again", t.under.again]] };
 }
