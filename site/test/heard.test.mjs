@@ -709,6 +709,11 @@ test("what is said about the servers is offered for the sizing sketch once an in
   assert.deepEqual(got("30% growth", {}), []);
   assert.deepEqual(got("30% growth", inv, ["dr-backup"]), []);
   assert.deepEqual(got("servers with 2 cores"), []);
+  // the hosts running today: what a per-core licence counts now, not the new servers
+  assert.deepEqual(got("today our hosts have 32 cores each"), ["today_cores_per_host=32"]);
+  assert.deepEqual(got("the current hosts are 2 x 16 cores"), ["today_cores_per_host=32"]);
+  assert.deepEqual(got("new servers with two sockets of 24 cores"), ["node_cores=48"]);
+  assert.deepEqual(got("gli host attuali hanno 24 core"), ["today_cores_per_host=24"]);
   const copies = sizingFigures("three copies of the data", ["hci"], inv)[0];
   assert.deepEqual(copies.apply({ growth_pct: 10 }), { growth_pct: 10, protection: "copies3" });
   assert.equal(copies.has({ protection: "copies3" }), true);

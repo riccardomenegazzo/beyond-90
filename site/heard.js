@@ -742,11 +742,16 @@ export function sizingFigures(said, scope, current = {}) {
     const v = small(spare[1]);
     if (v != null && v >= 0 && v <= 4) push("spare_nodes", v, `spare server${v === 1 ? "" : "s"} for failures`, "spare servers for failures");
   }
+  // "2 x 16 cores", "two sockets of 16 cores": the cores of one server, socket by socket
+  const sockets = t.match(/\b(\d|one|two|four|un|uno|due|quattro)\s*(?:x|sockets? of|processors? of|cpus? of|socket da|processori da)\s*(\d+)\s+(?:physical\s+)?(?:cores?|core)\b/);
   const cores = t.match(new RegExp(String.raw`\b(\d+)\s+(?:physical\s+)?(?:cores?|core fisici)\s+${PER_NODE}\b`))
-    || t.match(new RegExp(String.raw`\b${NODE_WORD}\s+(?:with|of|da|con)\s+(\d+)\s+(?:physical\s+)?(?:cores?|core)\b`));
-  if (cores) {
-    const v = Number(cores[1]);
-    if (v >= 4 && v <= 512) push("node_cores", v, "cores per server", "cores per server");
+    || t.match(new RegExp(String.raw`\b${NODE_WORD}(?:\s+[a-z]+)?\s+(?:with|of|da|con|have|hanno)\s+(\d+)\s+(?:physical\s+)?(?:cores?|core)\b`));
+  const perServer = sockets ? small(sockets[1]) * Number(sockets[2]) : cores ? Number(cores[1]) : NaN;
+  // said of the hosts running today, it is what a per-core licence counts now, not the new servers
+  const today = /\b(?:today|currently|now|existing|current|old|oggi|attual\w*|esistent\w*|vecch\w*)\b/.test(t);
+  if (perServer >= 4 && perServer <= 512) {
+    if (today) push("today_cores_per_host", perServer, "cores in each host today", "cores in each host today");
+    else push("node_cores", perServer, "cores per server", "cores per server");
   }
   const MEM = String.raw`(\d+(?:[.,]\d+)?)\s?(gb|gib|tb|tib)\s+(?:of\s+|di\s+)?(?:ram|memory|memoria)`;
   const mem = t.match(new RegExp(String.raw`\b${MEM}\s+${PER_NODE}\b`)) || t.match(new RegExp(String.raw`\b${NODE_WORD}\s+(?:with|of|da|con)\b[^.;]*?\b${MEM}\b`));

@@ -2,6 +2,11 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.241.0
+
+- **Today's cores, said in the meeting, go into the sizing sketch.** "Today our hosts have 32 cores each", "the current hosts are 2 x 16 cores", "gli host attuali hanno 24 core" are offered under Heard something as the cores in each host today; said without "today" or "current", the same figure is the new servers' cores. "Two sockets of 24 cores" counts 48.
+- **The readout counts the difference.** With today's cores known, the customer readout's line for the platform says how many physical cores fewer or more than today the sketch has.
+
 ## 0.240.0
 
 - **The sizing sketch compares the physical cores with today's.** A new assumption, the cores in each of today's hosts (0 when not known), counts the physical cores the inventory's hosts have today (33 hosts x 32 cores = 1,056) and says how many fewer or more the sketch has. A renewal priced per core turns on that number; the sketch shows it beside the server count and as its last step.

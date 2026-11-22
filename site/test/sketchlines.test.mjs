@@ -81,6 +81,8 @@ test("the sizing and the plan in waves, once worked out with their figures, are 
   const lines = sketchLines(w);
   assert.deepEqual(lines.map((x) => x.what), ["Your platform", "The move"]);
   assert.match(lines[0].text, /^About \d+ servers \([\d,]+ physical cores\), 1 of them kept free for a failure, for the machines you run today\.$/);
+  const withToday = sketchLines(setSizing(w, { growth_pct: 30, today_cores_per_host: 40 }, D))[0].text;
+  assert.match(withToday, /^About \d+ servers \([\d,]+ physical cores, [\d,]+ (fewer|more) than today\), 1 of them kept free/);
   assert.match(lines[1].text, /^\d+ waves from 2027-01-11 to \d{4}-\d{2}-\d{2}, 537 machines; about [\d.]+ TiB copied ahead of the cutovers, the largest wave in about \d+ hours\.$/);
   const proofs = sketchProofs(w);
   assert.equal(proofs.length, 2);
