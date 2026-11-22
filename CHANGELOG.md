@@ -2,6 +2,12 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.172.0
+
+- **What leaves from a workshop is logged under the prospect.** A copy, a file or a mail drafted from a discovery workshop now goes in the log of what left the page under the prospect's name, as one from a customer's analysis does; Saved lists it, and erasing the prospect names it on the receipt.
+- **The meeting's cards from the search.** With a workshop open, Search or jump to (Ctrl K) offers **Run the demo, card by card**, **Rehearse the objections** and **Go through the proof of value, criterion by criterion**: it opens the view and starts the deck.
+- A browser check that the search starts a rehearsal.
+
 ## 0.171.0
 
 - **Pseudonyms cover prospects too.** At the pseudonym level, the page replaced the names of the customer it had analysed, but not those of the prospects in discovery: a readout, a recap, a demo plan or a note from a workshop left with the prospect's real name. It now knows every prospect kept in this browser: the customer of each discovery workshop and each proof of value, and a proof's sponsor and champion as people (hidden at the people level too). The preview shows the alias before anything leaves.

@@ -1572,6 +1572,13 @@ $("theme").addEventListener("click", () => {
 
 // ---------- command palette and keys
 const hasResult = () => !!state.result;
+const inWorkshop = () => !!state.workshop && !state.result && !state.book && !state.estate;
+// open a view, then press the button that starts what was asked for; where there is none (no plan yet), the view says why
+const press = (tab, text) => async () => {
+  await Promise.resolve(selectTab(tab));
+  const b = [...document.querySelectorAll("#view button")].find((x) => x.textContent.startsWith(text));
+  if (b) b.click();
+};
 function commands() {
   const go = (id, label) => ({ label: "Go to " + label, hint: "view", run: () => selectTab(id) });
   return [
@@ -1593,6 +1600,10 @@ function commands() {
     { label: "Print this view", hint: "action", run: () => window.print() },
     { label: "Switch colour theme", hint: "action", run: () => $("theme").click() },
     { label: "Check that nothing leaves this page", hint: "privacy", run: () => { showPlace("help"); selfCheck(); } },
+    // the meeting's cards, straight from the search, with a workshop open
+    { label: "Run the demo, card by card", hint: "meeting", when: inWorkshop, run: press("wsforward", "Run the demo") },
+    { label: "Rehearse the objections", hint: "meeting", when: inWorkshop, run: press("wsprep", "Rehearse the objections") },
+    { label: "Go through the proof of value, criterion by criterion", hint: "meeting", when: inWorkshop, run: press("wspov", "Go criterion by criterion") },
     ...FAQ.flatMap((g) => g.items.map((it) => ({ label: it.q, hint: "answer", run: () => openAnswer(it.q) }))),
     ...GLOSSARY.map((g) => ({ label: `What is ${g.term}?`, hint: "term", run: () => openTerm(g.id) })),
   ].filter((c) => !c.when || c.when());

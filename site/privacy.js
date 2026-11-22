@@ -50,7 +50,12 @@ export function createPrivacy({ state, store, $, say, unlockVaultUi, today, save
     render();
   }
 
-  const customerNow = () => (state.result ? state.result.customer : "");
+  // whose text it is: the customer analysed, or the prospect of the workshop open
+  const customerNow = () => {
+    if (state.result) return state.result.customer;
+    const w = state.workshop && (state.workshops || []).find((x) => x.id === state.workshop);
+    return w ? w.customer : "";
+  };
 
   async function logExit(how, name, level) {
     const customer = customerNow();
