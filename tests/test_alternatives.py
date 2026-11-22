@@ -37,7 +37,8 @@ def test_no_vendor_is_named() -> None:
 
 def test_the_page_gets_them_for_the_families_it_has() -> None:
     c = estate.workshop_catalog()
-    assert "infrastructure" in c["alternatives"] and "edge-sites" in c["alternatives"] and "security" not in c["alternatives"]
+    assert "infrastructure" in c["alternatives"] and "edge-sites" in c["alternatives"] and "security" in c["alternatives"]
+    assert [a["id"] for a in c["alternatives"]["security"]] == ["keep_tools", "suite_included", "managed_service", "own_stack", "wait_audit"]
     assert c["alternatives"]["infrastructure"][0]["name"] == "Renew the current platform"
 
 
@@ -77,4 +78,5 @@ def test_the_command_prints_them_for_the_line_in_the_conversation(capsys: pytest
     assert json.loads((tmp_path / "alts.json").read_text(encoding="utf-8"))[0]["id"] == "renew"
     assert main(["alternatives", "--profile", "nope"]) == 2
     assert main(["alternatives", "--family", "nope"]) == 2
-    assert main(["alternatives", "--family", "security"]) == 1, "no alternatives ship for that family yet"
+    assert main(["alternatives", "--family", "security", "--out", str(tmp_path / "sec.md")]) == 0
+    assert "## Keep the security tools they have" in (tmp_path / "sec.md").read_text(encoding="utf-8")

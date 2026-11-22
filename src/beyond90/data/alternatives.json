@@ -73,6 +73,68 @@
       "prove": "The cost of waiting, month by month, and a first step small enough to fit this year's budget."
     }
   ],
+  "security": [
+    {
+      "id": "keep_tools",
+      "name": "Keep the security tools they have",
+      "why": "They run, the team knows them, and the contracts are paid.",
+      "ask": [
+        "Which risks did the current tools miss in the last year, and who found them instead?",
+        "How much of what you bought is switched on and watched today?"
+      ],
+      "fits_us": "The tools leave environments unseen, capabilities paid for are off, or the team spends its days closing alerts nobody reads.",
+      "fits_them": "The tools cover the estate, are switched on and watched, and the gaps are small: tune them, and come back at renewal.",
+      "prove": "The estate the current tools see, compared with the estate that exists, and one risk they miss shown live."
+    },
+    {
+      "id": "suite_included",
+      "name": "Use what comes with a suite they already pay for",
+      "why": "It is already licensed, already signed in, and costs nothing more this year.",
+      "ask": [
+        "Which of those included features are switched on today, and who watches them?",
+        "What does the suite not cover: other clouds, other systems, the applications you run yourselves?"
+      ],
+      "fits_us": "The estate spans more than the suite covers, the included features need a higher licence to be useful, or nobody has the time to run them.",
+      "fits_them": "Most of the estate sits in that suite and the included features cover the risks that matter: switch them on first, and fill the gaps later.",
+      "prove": "The share of the estate the included features see, against the share that matters, on the customer's own systems."
+    },
+    {
+      "id": "managed_service",
+      "name": "Hand it to a managed security service",
+      "why": "Someone watches around the clock without hiring a team.",
+      "ask": [
+        "Who answers an alert at night today, and how fast?",
+        "What would the service need to see, and who would act on what it finds inside your company?"
+      ],
+      "fits_us": "The service would still need the tool and its data, the customer wants to keep the knowledge in house, or it cannot act on the systems itself.",
+      "fits_them": "The team is small and night-time cover is the real gap: a service on top of the right tool is often the answer, and the two go together.",
+      "prove": "A test alert at night, followed from the first signal to the action taken, with who did what."
+    },
+    {
+      "id": "own_stack",
+      "name": "Build it with open-source tools and their own team",
+      "why": "No licence fee, and full control over what is collected and how.",
+      "ask": [
+        "Who keeps the rules, the parsers and the integrations up to date, and what happens when they leave?",
+        "How long did the last tool the team built take to reach the whole estate?"
+      ],
+      "fits_us": "The team is stretched already, the estate changes faster than the rules, or an auditor asks for evidence the home-grown stack cannot give.",
+      "fits_them": "A strong team with time to run it and a narrow estate: a home-grown stack can work, and the proof should show where it stops.",
+      "prove": "The hours a month the home-grown stack takes to keep up, against the same coverage from a product, over the same estate."
+    },
+    {
+      "id": "wait_audit",
+      "name": "Wait for the next audit or incident",
+      "why": "Nothing has gone wrong yet, and budgets are set for the year.",
+      "ask": [
+        "What would the next audit, or a customer's security questionnaire, ask that you cannot answer today?",
+        "What would a breach of the data you named first cost, and who would have to explain it?"
+      ],
+      "fits_us": "An audit, a regulation or a customer questionnaire has a date, or the risk named first is exposed today.",
+      "fits_them": "No date forces it and the exposure is low: agree what would change that, and keep the conversation open.",
+      "prove": "The questions the next audit will ask, answered from the tool in a test, before and after."
+    }
+  ],
   "dr-backup": [
     {
       "id": "keep_backup",

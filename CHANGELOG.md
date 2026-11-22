@@ -2,6 +2,11 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.189.0
+
+- **What else a security customer weighs.** A workshop on the security lines now shows **What else they weigh**, as the infrastructure ones do: keeping the tools they have, using what comes with a suite they already pay for, handing it to a managed security service, building it with open-source tools and their own team, or waiting for the next audit or incident. Each with why they consider it, what to ask, when it fits the proposal, when the other choice is the better one, and how to prove it. Written to be fair: a managed service on top of the right tool is often the answer, and the two go together.
+- The CLI's `beyond90 alternatives --family security` prints them too.
+
 ## 0.188.0
 
 - **The security lines' questions say how to ask them.** Cloud security, SIEM, identity, endpoint, SaaS and AI security had their questions, but not who to ask, which few are essential, what a strong or a worrying answer sounds like, or the follow-up: now each of their 48 questions does, as on the infrastructure lines. So on those lines too, **Essential questions only** keeps four or five, the role chips narrow the questions to the people in the room, the card says who to ask and turns over to how to ask it, and the end of the deck says who to invite next.
