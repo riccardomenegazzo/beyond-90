@@ -405,6 +405,32 @@ def main(site: str) -> int:
         page.wait_for_selector("#view li:has-text('Yes: The problem is stated')")
         check("Yes: The problem is stated" in page.inner_text("#view"), "a qualification answer is saved and shown")
         check("Set the start and end of the window" in page.inner_text("#view"), "a proof of value without a window says how to get the mutual plan")
+        # the readout, criterion by criterion: it opens on the first not tried, the evidence written on the card
+        page.get_by_role("button", name="Go criterion by criterion").click()
+        page.wait_for_selector("dialog.deck[open] .deckcard")
+        RD = "dialog.deck"
+        check(page.inner_text(f"{RD} .deckline") == "Criterion 2 of 4" and page.locator(f"{RD} .deckopt").count() == 4,
+              "the readout opens on the first criterion not tried yet, one card each")
+        page.fill(f"{RD} .decksaid", "Two of three clouds, the third next week")
+        check(page.inner_text(f"{RD} .decksug") == "Sounds like partly met", "and the evidence written on it suggests the result")
+        page.locator(f"{RD} .deckopt.o-partly").click()
+        page.locator(f"{RD} .deckline", has_text="Criterion 3 of 4").wait_for()
+        page.fill(f"{RD} .decksaid", "Failed: alerts arrived after two hours")
+        page.locator(f"{RD} .deckopt.o-not_met").click()
+        page.locator(f"{RD} .deckline", has_text="Criterion 4 of 4").wait_for()
+        page.locator(f"{RD} .deckbar .linkbtn", has_text="Skip").click()
+        page.wait_for_selector(f"{RD} .decksum")
+        rs = page.inner_text(f"{RD} .decksum")
+        check(rs.startswith("1 of 4 criteria met, 1 partly, 1 not met; 1 not tried yet.") and "Not met: what it means for the decision" in rs and "alerts arrived after two hours" in rs,
+              "the end of the readout says what was not met, with the evidence, and what is still to try")
+        check(page.locator(f"{RD} .deckrecap a", has_text="Email the recap").get_attribute("href").startswith("mailto:?subject=Proof%20of%20value%20readout"),
+              "and gives the account team the readout as text")
+        page.locator(f"{RD} .deckendrow .btn", has_text="Mark the readout as held").click()
+        page.wait_for_selector(f"{RD}", state="detached")
+        page.wait_for_selector("#view .kpiline")
+        check(page.locator("#view select[aria-label='Stage']").input_value() == "done" and "1/4" in page.inner_text("#view .kpiline")
+              and page.locator("#view select[aria-label^='Result for'] >> nth=2").input_value() == "not_met",
+              "marking the readout as held closes the proof, with every result kept on its criterion")
         page.click("#role-pick button[data-role=se]")
         page.click("#role-pick button[data-role=core]")
         check(page.locator("#tabs details.navmore").count() == 1 and page.locator("#tabs > .navgroup button[data-tab]").count() <= 12, "the essentials show about ten views and keep the rest under More views")

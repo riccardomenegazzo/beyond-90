@@ -34,6 +34,7 @@ import * as TEAM from "./team.js";
 import * as QD from "./qualify.js";
 import * as FW from "./forward.js";
 import * as DEMO from "./demo.js";
+import * as RO from "./readout.js";
 import * as PT from "./partners.js";
 import { connections } from "./graph.js";
 import { headline, firstMinute, rankActions, chainText, doneSummary, funnelSegments, preview } from "./today.js";
@@ -1423,12 +1424,42 @@ export function povView({ result, book, povs, today, savePov, removePov, dash })
     const summ = h("textarea", { rows: 3, maxlength: 1000, "aria-label": "Summary in your words", placeholder: "Summary in your words" }); summ.value = p.summary;
     const stage = h("select", { "aria-label": "Stage" }, P.STAGES.map((s) => h("option", { value: s, text: s }))); stage.value = p.stage;
     const ql = P.qualify(p), ttv = P.timeToFirstValue(p);
+    // the readout, criterion by criterion: the same cards as the questions, with the evidence written on each
+    const runReadout = () => {
+      let cur = p;
+      const cards = RO.readoutCards(cur);
+      const roSet = {
+        ...RO.READOUT,
+        label: (k) => RO.RESULTS[k].label,
+        tone: (k) => RO.RESULTS[k].tone,
+        suggest: (q, said) => RO.readoutSuggest(said),
+        tag: (c) => c.tag,
+        hint: "Swipe it by what was seen, or tap",
+        how: "What counts as evidence",
+        openText: "Back to what is not tried",
+        doneWord: "tried",
+        summary: (cs, answerOf) => RO.readoutSummary(cs, answerOf),
+        recap: (cs, answerOf) => RO.readoutText(cur, cs, answerOf),
+        recapSubject: `Proof of value readout: ${p.customer}`,
+        get end() {
+          return cur.stage === "done" ? { text: "Back to the proof", view: "" }
+            : { text: "Mark the readout as held", view: "", act: async () => { cur = P.edit(cur, { stage: "done" }, today); await savePov(cur); } };
+        },
+      };
+      openDeck({ cards, state: { at: Math.max(0, cards.findIndex((c) => !RO.resultOf(cur)(c))), drafts: new Map() }, set: roSet, go: () => {},
+        answerOf: (c) => RO.resultOf(cur)(c),
+        answer: async (c, a, note) => { cur = P.setCriterion(cur, c.key, { status: a, evidence: note }, today); await savePov(cur); return cur; },
+        onClose: () => {} });
+    };
+    const readoutBtn = pr.total ? h("button", { class: "btn small primary", type: "button", text: "Go criterion by criterion",
+      "data-tip": "The readout with the sponsor, full screen: one card per criterion, swiped by what was seen, with the evidence written on it. Ends with what was not met and what it means." , onclick: runReadout }) : null;
     put(body, 
       h("section", { class: "card bdhero" },
         h("p", { class: "bdlead", role: "status", text: `${p.customer}: ${pr.met} of ${pr.total} criteria met.` }),
         h("p", { class: "bdnoise" }, h("b", { text: ql.verdict }), ttv == null ? "" : ` · first value after ${ttv} day${ttv === 1 ? "" : "s"}`)),
       h("div", { class: "kpiline" }, stat(pr.verdict, "result so far"), stat(`${pr.met}/${pr.total}`, "criteria met"), stat(`${pr.ready}/${pr.ready_total}`, "ready"), stat(String(p.sessions.length), "sessions"), stat(P.timeToFirstValue(p) == null ? "not set" : `${P.timeToFirstValue(p)} d`, "to first value")),
-      card("Success criteria", h("ul", { class: "promises" }, crit), { sub: "Agree these with the sponsor before you start. Mark each one when you have seen it, and write what you saw." }),
+      card("Success criteria", h("div", {}, readoutBtn ? h("div", { class: "btnrow" }, readoutBtn) : null, h("ul", { class: "promises" }, crit)),
+        { sub: "Agree these with the sponsor before you start. Mark each one when you have seen it, and write what you saw; at the readout, go through them one by one." }),
       card("Add a criterion", h("div", { class: "formgrid" }, h("label", { class: "wide2" }, "Criterion", nc), h("label", { class: "wide2" }, "How we will know", nt),
         h("button", { class: "btn small", type: "button", text: "Add criterion", onclick: edit((q) => P.addCriterion(q, { text: nc.value, target: nt.value }, today)) }))),
       (() => {

@@ -39,6 +39,10 @@ A page for the hour with the customer: what to set up before, what to do while t
 
 <br clear="right">
 
+## The readout: criterion by criterion
+
+At the end of a proof of value, **Go criterion by criterion** (under Success criteria) gives the readout the same cards: one per criterion, swiped by what was seen (right met, up partly met, left not met, down dropped with the sponsor), with the evidence written on it. It ends with what was not met and what it means for the decision, what is only partly there, and what was met, with the evidence; **Mark the readout as held** closes the proof, and the way forward moves to the decision.
+
 ## What it is not
 
 It does not record the meeting, listen to it or transcribe it: you write what matters, in a few words. The suggestions are a few word patterns read in the browser, never a model in the cloud. The meeting clock stays in the browser tab, never in the workshop or in a file.

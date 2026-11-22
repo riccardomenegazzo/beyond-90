@@ -2,6 +2,13 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.161.0
+
+- **The readout, criterion by criterion.** A proof of value's success criteria now open as cards, full screen, the same as the discovery questions and the demo: **Go criterion by criterion**, under Success criteria. One card per criterion still counted, starting at the first not tried, with how we will know on the back; swipe it by what was seen: right met, up partly met, left not met, down dropped (with the sponsor). The evidence is written on the card and suggests a result ("failed" sounds like not met, "two of three, the third next week" like partly); you decide.
+- At the end: how many were met out of those counted, what was not met and what it means for the decision, what is only partly there, what was met with its evidence, and what is still to try. **Copy the recap** and **Email the recap** for the account team; **Mark the readout as held** closes the proof, so the way forward moves to the decision.
+- Every result is kept on its criterion, as when it is set in the list: the result report, the mutual plan and the handover read the same.
+- New: `site/readout.js`, with tests; browser checks for the readout from start to end.
+
 ## 0.160.0
 
 - **Run the demo.** The demo planned from what they said, under The way forward, now runs as a deck, full screen, like the questions: one card per gap it closes ("Show that no administrator account can delete the backups", for the security team, with what they said in discovery on the back), then one per concern they raised. Swipe each as it landed: right landed, up questions, left did not land, down not shown; or tap, or press an arrow or 1 to 4. What they said is written on the card, and suggests a reaction ("how long does a restore take?" sounds like questions); you decide. The meeting clock follows.
