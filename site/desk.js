@@ -183,6 +183,8 @@ export function pipeline(workshops, povs, catalog, today) {
       pov_verdict: pr ? pr.verdict : "", pov_met: pr ? pr.met : 0, pov_total: pr ? pr.total : 0,
       pov_end: p ? p.end || "" : "", pov_days_left: p && p.end ? days(today, p.end) : null,
       overdue: overdue.length, next, example: isExampleId(w && w.id) || isExampleId(p && p.id), demo: demoOf(w),
+      // the first sketches worked out with the customer's figures, on the lines in scope
+      sketched: w ? (w.scope || []).filter((x) => SKETCH_OF[x] && w[SKETCH_OF[x][0]]).map((x) => SKETCH_OF[x][1]) : [],
       risks: stopped ? [] : risksOf({ w, p, res, pr, stage, overdue: overdue.length, today }),
       evidence: evidenceOf({ w, p, res, plan, pr, overdue: overdue.length }),
     });
@@ -261,6 +263,7 @@ export function weeklyMarkdown(opps, items, today) {
     for (const o of list) {
       const bits = [o.land ? `start with ${o.land.toLowerCase()}` : "", o.stakes.length ? `at stake ${o.stakes.join(", ")}` : "",
         o.demo && (o.demo.on || o.demo.shown) ? `demo ${o.demo.on ? `given ${o.demo.on}` : "run"}${o.demo.shown ? `, ${o.demo.landed} of ${o.demo.shown} parts landed${o.demo.missed ? `, ${o.demo.missed} did not` : ""}` : ""}` : "",
+        o.sketched && o.sketched.length ? `first sketches for ${andList(o.sketched)}` : "",
         o.pov_total ? `proof ${o.pov_met} of ${o.pov_total} criteria met` : "", o.unknowns ? `${o.unknowns} question${o.unknowns === 1 ? "" : "s"} nobody could answer` : "",
         o.evidence ? `evidence of a technical win ${o.evidence.score}/100` : "", o.partner ? `with ${o.partner}` : "", o.qualified ? o.qualified.toLowerCase() : ""].filter(Boolean);
       out.push(`- **${o.customer}**${bits.length ? `: ${bits.join("; ")}` : ""}. Next: ${o.next || "nothing planned"}.`);

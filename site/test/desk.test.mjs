@@ -64,6 +64,10 @@ test("the weekly update and the pipeline sheet say where each stands, and a shee
   assert.match(md, /Discovery: 0\. Journey agreed: 1\./);
   assert.match(md, /## Late/);
   assert.match(md, /at stake 2,000,000 per day/);
+  assert.doesNotMatch(md, /first sketches/, "no sketch worked out yet");
+  const withSketches = pipeline([{ ...w, dr: { data_tib: 40 }, obj: { data_tib: 40 } }], [], CAT, D);
+  assert.deepEqual(withSketches[0].sketched, ["recovery"], "only the lines in scope count");
+  assert.match(weeklyMarkdown(withSketches, [], D), /first sketches for recovery/);
   const csv = pipelineCsv(opps);
   assert.ok(csv.startsWith("customer,stage,start_with,"));
   assert.ok(csv.includes(`"'=HYPERLINK(""http://x"") (mock)"`), "a leading = is defused and quotes are doubled");

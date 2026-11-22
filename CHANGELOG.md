@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.213.0
+
+- **The Monday note says which first sketches each prospect has.** Beside what is at stake, the demo and the proof, each prospect's line in the presales update now says which sketches were worked out with the customer's figures ("first sketches for virtual desktops and database licences"), on the lines in scope, so the account team sees which deals have numbers behind them.
+
 ## 0.212.0
 
 - **Figures for the cost per machine.** With cloud operations, a service provider's cloud or hybrid cloud in scope, Heard something offers what is said about the estate for **What one machine costs**: the machines running ("500 VMs", "800 macchine virtuali"), the people running it and what one costs, licences and power a year, the share of idle or forgotten machines, a comparable machine in a public cloud a month. A tap puts each in and the card shows it; Undo leaves the field blank again.
