@@ -68,6 +68,8 @@ test("the weekly update and the pipeline sheet say where each stands, and a shee
   const withSketches = pipeline([{ ...w, dr: { data_tib: 40 }, obj: { data_tib: 40 } }], [], CAT, D);
   assert.deepEqual(withSketches[0].sketched, ["recovery"], "only the lines in scope count");
   assert.match(weeklyMarkdown(withSketches, [], D), /first sketches for recovery/);
+  const sized2 = pipeline([{ ...w, scope: [...w.scope, "hci"], sizing: { growth_pct: 30 } }], [], CAT, D);
+  assert.ok(sized2[0].sketched.includes("the servers"), "the sizing sketch counts once worked out with their figures");
   const csv = pipelineCsv(opps);
   assert.ok(csv.startsWith("customer,stage,start_with,"));
   assert.ok(csv.includes(`"'=HYPERLINK(""http://x"") (mock)"`), "a leading = is defused and quotes are doubled");
@@ -132,10 +134,13 @@ test("what could stop a deal is read from what is recorded, the risks that can l
   // at the proof, a line with a first sketch that was never worked out with their figures
   const sized = (scope, more = {}, stage = "proof") => risksOf({ w: { answers: {}, updated_on: today, scope, ...more }, p: null, res: { raised: [], unknowns: [] }, pr: null, stage, overdue: 0, today })
     .map((x) => x.text).filter((t) => t.startsWith("No first sketch"));
-  assert.deepEqual(sized(["euc", "dbaas", "hci"]), ["No first sketch worked out with their figures for virtual desktops and database licences: do it before the results go to finance."]);
+  assert.deepEqual(sized(["euc", "dbaas", "hci"]), ["No first sketch worked out with their figures for virtual desktops, database licences and the servers: do it before the results go to finance."]);
   assert.deepEqual(sized(["euc", "dbaas"], { vdi: { users: 900 } }), ["No first sketch worked out with their figures for database licences: do it before the results go to finance."]);
   assert.deepEqual(sized(["euc"], {}, "discovery"), [], "in discovery it is too early to ask");
-  assert.deepEqual(sized(["hci", "platform-migration"]), [], "lines without a sketch of their own");
+  // the servers and the move: the sizing and the plan in waves, from the inventory
+  assert.deepEqual(sized(["hci", "platform-migration"]), ["No first sketch worked out with their figures for the servers and the move: do it before the results go to finance."]);
+  assert.deepEqual(sized(["hci", "platform-migration"], { sizing: { growth_pct: 30 }, waves: { per_wave: 40 } }), []);
+  assert.deepEqual(sized(["cnapp"]), [], "lines without a sketch of their own");
 });
 
 import { evidenceOf } from "../desk.js";

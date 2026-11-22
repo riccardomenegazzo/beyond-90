@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.232.0
+
+- **The servers and the move count as first sketches on the desk.** A deal at the proof or the decision with hyperconverged infrastructure or platform migration in scope, and no sizing or plan in waves worked out with the customer's figures, is now flagged like the other lines ("No first sketch worked out with their figures for the servers and the move"); once worked out, they are in the weekly update's "first sketches for", in the team's snapshot and in the "Sized at the proof" column.
+
 ## 0.231.0
 
 - **The sizing and the plan in waves become tests of the proof of value.** A sizing sketch worked out with the customer's figures now proposes its own test: a week of the current platform's figures (processor ready time, memory in use, storage growth) confirming the vCPU per core and the growth it assumed, with the server count as the target. A plan in waves proposes the test wave: its data copied ahead over the real link and the cutover inside the agreed window, with the TiB and the copy time as the target. Both join the criteria a proof of value starts from, like the other sketches.

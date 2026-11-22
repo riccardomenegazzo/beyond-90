@@ -69,7 +69,8 @@ export function demoOf(w) {
 
 // the first sketch each line has, and what it is called in a sentence
 const SKETCH_OF = { euc: ["vdi", "virtual desktops"], "kubernetes-platform": ["k8s", "the container platform"], dbaas: ["db", "database licences"],
-  "file-storage": ["files", "file shares"], "object-storage": ["obj", "backup capacity"], "dr-backup": ["dr", "recovery"], "private-ai": ["gpu", "GPUs"], "edge-sites": ["edge", "the sites"] };
+  "file-storage": ["files", "file shares"], "object-storage": ["obj", "backup capacity"], "dr-backup": ["dr", "recovery"], "private-ai": ["gpu", "GPUs"], "edge-sites": ["edge", "the sites"],
+  hci: ["sizing", "the servers"], "platform-migration": ["waves", "the move"] };
 /** The words a snapshot may carry for the sketches a deal has: nothing else gets through. */
 export const SKETCH_WORDS = Object.values(SKETCH_OF).map((x) => x[1]);
 const andList = (xs) => (xs.length < 2 ? xs.join("") : `${xs.slice(0, -1).join(", ")} and ${xs[xs.length - 1]}`);
