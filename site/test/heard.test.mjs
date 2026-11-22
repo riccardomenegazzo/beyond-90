@@ -196,3 +196,40 @@ test("on platform migration, identity, logs and private AI, what was heard has i
   }
   assert.ok(first >= 13, `first ${first} of ${cases.length}`);
 });
+
+test("on AI, cloud operations, endpoints, SaaS, service provider clouds and the platform, what was heard has its question among the three, most first", () => {
+  const cards = [];
+  for (const p of ["ai", "cloud-operations", "endpoint", "saas", "service-provider-cloud", "hci"]) {
+    const file = new URL(`../../src/beyond90/data/profiles/${p}/discovery.json`, import.meta.url);
+    JSON.parse(readFileSync(file, "utf8")).questions.forEach((q, i) => cards.push({ key: `${p}#${i}`, q }));
+  }
+  const cases = [
+    ["People paste customer data into public chatbots", "ai#4"],
+    ["Nobody has tried to jailbreak our assistant", "ai#6"],
+    ["The API keys for the model provider were never rotated", "ai#5"],
+    ["A new VM takes two weeks and three tickets", "cloud-operations#1"],
+    ["Half the VMs are oversized and some nobody remembers", "cloud-operations#5"],
+    ["The main cluster runs out of memory by spring", "cloud-operations#3"],
+    ["Every change needs the CAB, which meets once a month", "cloud-operations#13"],
+    ["Contractor laptops have no agent at all", "endpoint#2"],
+    ["Some servers are still in detect-only mode", "endpoint#4"],
+    ["Anyone in IT can add an exclusion", "endpoint#5"],
+    ["Marketing bought their own tenant with a credit card", "saas#1"],
+    ["Plenty of files are shared with anyone who has the link", "saas#4"],
+    ["Some third-party apps can read everybody's mail", "saas#2"],
+    ["Onboarding a new tenant takes a month from contract to first machine", "service-provider-cloud#7"],
+    ["We cannot bill tenants for what they actually use", "service-provider-cloud#4"],
+    ["Our hosted services depend on a platform licence whose price just changed", "service-provider-cloud#0"],
+    ["The storage is 85 percent full and we keep nothing in reserve", "hci#9"],
+    ["Upgrades are always postponed, we are two years behind", "hci#6"],
+    ["The servers are seven years old and out of support next spring", "hci#12"],
+    ["Plenty of powered-off VMs still sit on expensive disks", "hci#14"],
+  ];
+  let first = 0;
+  for (const [said, want] of cases) {
+    const got = match(cards, said).map((h) => h.card.key);
+    assert.ok(got.includes(want), `${said}: ${got.join(" ")}`);
+    if (got[0] === want) first += 1;
+  }
+  assert.ok(first >= 18, `first ${first} of ${cases.length}`);
+});

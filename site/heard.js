@@ -50,7 +50,9 @@ const SAME = [
   ["upgrade", "patch", "update", "version"],
   ["ransomware", "malware", "cryptolocker"],
   ["attack", "attacker", "breach", "compromise", "intruder"],
-  ["machine", "server", "host"],
+  ["machine", "server", "host", "vm"],
+  ["request", "ticket"],
+  ["storage", "disk"],
   ["travel", "drive", "trip", "visit"],
   ["replace", "swap"],
   ["bandwidth", "mbps", "mb", "gbps", "link"],
@@ -86,6 +88,7 @@ export function tokens(text) {
     .replace(/round[\s-]+trips?/g, "roundtrip")
     .replace(/(?:out|end)\s+of\s+(?:[a-z']+\s+){0,2}(?:support|life)|\beol\b|support\s+ends?/g, "unsupported")
     .replace(/multi[\s-]+factor|two[\s-]+factor/g, "multifactor")
+    .replace(/(?:switch|power|turn)(?:s|ed|ing)?[\s-]+off/g, "poweredoff")
     .replace(/(?:sign|log)(?:s|ged|ging)?[\s-]+(?:in|on)\b/g, "signin")
     .replace(/operating\s+systems?/g, "os")
     .replace(/fail(?:s|ed|ing)?[\s-]+over/g, "failover")

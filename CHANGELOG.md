@@ -2,6 +2,14 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.156.0
+
+- **Heard something, on every line.** Twenty more sentences, on the real questions of AI, cloud operations, endpoints, SaaS, service provider clouds and the platform itself, all find their question among the three offered, eighteen first. Examples: "people paste customer data into public chatbots", "half the VMs are oversized", "contractor laptops have no agent at all", "marketing bought their own tenant with a credit card", "plenty of powered-off VMs still sit on expensive disks". The matching learned:
+  - a VM is a machine and a ticket a request;
+  - a disk is storage;
+  - switched off, powered off and turned off are one idea.
+- With this, every product line and the deal have sentences checked on every build: 85 in all. On each set the right question is among the three offered for every sentence, and first for most.
+
 ## 0.155.0
 
 - **Heard something, on platform migration, identity, logs and private AI.** Sixteen more things a customer might say, on the real questions of those four lines, now all have their question among the three offered, thirteen first. That was eight first and ten in the three before. Examples: "our hypervisor licence renewal is in March", "nobody has a rollback plan if the cutover goes wrong", "leavers keep their accounts for weeks", "some admins still log in without MFA", "we only keep logs for 30 days", "the GPU servers sit idle". The matching learned:
