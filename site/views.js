@@ -81,9 +81,18 @@ export function todayView({ result, dash, score, go, history = [], done = new Se
   })() : null;
   // the live preview: pointing at an action shows where Yield would land, and the stage it works on grows in place
   const tprev = h("span", { class: "tprev", "aria-hidden": "true" });
+  // the distance to the target, drawn: what really works, the target's mark, and where an action would take it
+  const goal = score.target && score.target.value;
+  const tghost = h("i", { class: "tm-ghost" });
+  const meter = goal > 0 && goal <= 1 ? h("div", { class: "tmeter", role: "img",
+    "aria-label": score.yield >= goal ? `${pct(score.yield)}, at or above the ${pct(goal, 0)} target` : `${pct(score.yield)}, ${((goal - score.yield) * 100).toFixed(1)} points below the ${pct(goal, 0)} target` },
+  h("div", { class: "tm-track" }, tghost, h("i", { class: "tm-fill", style: `width:${(Math.min(1, Math.max(0, score.yield)) * 100).toFixed(1)}%` }),
+    h("i", { class: "tm-goal", style: `left:${(goal * 100).toFixed(1)}%` })),
+  h("div", { class: "tm-key", "aria-hidden": "true" }, h("span", { class: "tm-lab", style: `left:${(goal * 100).toFixed(1)}%`, text: `target ${pct(goal, 0)}` }))) : null;
   const hero = h("section", { class: "card todayhero" },
     h("div", { class: "todayscore" }, h("span", { class: "tnum", text: pct(score.yield) }), tprev, h("span", { class: "tcap", text: "Yield" }), trend),
-    h("p", { class: "tline", text: headline({ customer: result.customer, yield: score.yield, target: score.target && score.target.value, stages: score.stages, openActions: dash.actions.length }) }));
+    h("p", { class: "tline", text: headline({ customer: result.customer, yield: score.yield, target: score.target && score.target.value, stages: score.stages, openActions: dash.actions.length }) }),
+    meter);
 
   // where it leaks: the four stages as bars, the weakest one marked, the multiplication written out
   const bars = stageBars(score);
@@ -119,6 +128,7 @@ export function todayView({ result, dash, score, go, history = [], done = new Se
     const root = list.closest(".today");
     if (!p || !root) return;
     tprev.textContent = `→ ${pct(p.yield)}`;
+    tghost.style.width = `${(Math.min(1, Math.max(0, p.yield)) * 100).toFixed(1)}%`;
     root.classList.add("previewing");
     for (const li of root.querySelectorAll(".stagebars li")) {
       const g = li.querySelector(".ghost"), v = li.querySelector(".sb-v"), on = li.dataset.stage === p.stage;
@@ -131,6 +141,7 @@ export function todayView({ result, dash, score, go, history = [], done = new Se
   const hide = () => {
     const root = list.closest(".today");
     tprev.textContent = "";
+    tghost.style.width = "0";
     if (!root) return;
     root.classList.remove("previewing");
     for (const li of root.querySelectorAll(".stagebars li")) {

@@ -1762,3 +1762,15 @@ body[data-role=se] .choose>.wsstart{order:-1;margin:0 0 26px;border:2px solid va
 /* a concern heard as it is said (0.163): first, with what to ask and answer */
 .heardconcern{border-color:var(--lv-ochre,#b7791f);border-left-width:4px}
 .heardconcern .objdl{font-size:13.5px}
+
+/* the distance to the target under the number on Today (0.164): the hero no longer leaves an empty middle */
+.todayhero{align-content:space-between}
+.tmeter{margin-top:8px;padding-bottom:22px;position:relative}
+.tm-track{position:relative;height:10px;border-radius:6px;background:rgba(255,255,255,.14);overflow:visible}
+.tm-fill,.tm-ghost{position:absolute;left:0;top:0;bottom:0;border-radius:6px}
+.tm-fill{background:#A9BCFF}
+.tm-ghost{width:0;background:#5eead4;transition:width .25s ease}
+.tm-goal{position:absolute;top:-5px;bottom:-5px;width:3px;margin-left:-1px;border-radius:2px;background:#fff}
+.tm-key{position:relative;height:0}
+.tm-lab{position:absolute;top:8px;transform:translateX(-50%);font-size:12.5px;color:#c5d2e1;white-space:nowrap}
+@media (prefers-reduced-motion:reduce){.tm-ghost{transition:none}}

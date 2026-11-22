@@ -171,6 +171,8 @@ def main(site: str) -> int:
         check(page.locator("#view .todocard .opp").count() == 3, "still three of them")
         page.hover("#view .todocard .opp >> nth=0")
         check(page.inner_text("#view .tprev").startswith("→ ") and page.locator("#view .stagebars li.moving").count() == 1, "pointing at an action previews where Yield would land and the stage it moves")
+        check(page.locator("#view .tm-ghost").evaluate("e => parseFloat(e.style.width) > 0") and "below the 90% target" in page.locator("#view .tmeter").get_attribute("aria-label"),
+              "and the distance to the target under the number moves with it")
         page.hover("#view .chain")
         check(page.inner_text("#view .tprev") == "" and page.locator("#view .stagebars li.moving").count() == 0, "and the preview goes when the pointer leaves")
         page.click("#view .seg [data-rank=finish]")

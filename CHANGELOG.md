@@ -2,6 +2,11 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.164.0
+
+- **The distance to the target, drawn on Today.** Under the number and its sentence, a bar shows what really works against the target's mark ("target 90%"), so the gap the name is about is seen before it is read. Pointing at an action shows, on the same bar, where it would take Yield, as it already did on the number and the stages. On a wide screen, the hero no longer leaves an empty middle beside Where it leaks.
+- Screen readers hear it as one figure: "72.6%, 17.4 points below the 90% target".
+
 ## 0.163.0
 
 - **A concern, recognised as it is said.** Written in **Heard something**, a sentence that voices one of the concerns the lines in scope expect ("we have backups already", "the DBAs will never give up control", "automation could break production") now shows that concern first, above the questions it answers: the question to ask before answering, the answer, and how to prove it. **Mark it raised** sends it, as on Prepare, to the customer readout, the demo plan and the proof of value; **Undo** takes it back.
