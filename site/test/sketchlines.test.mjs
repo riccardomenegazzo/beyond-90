@@ -80,6 +80,7 @@ test("the sizing and the plan in waves, once worked out with their figures, are 
   assert.equal(validWorkshop(w), true);
   const lines = sketchLines(w);
   assert.deepEqual(lines.map((x) => x.what), ["Your platform", "The move"]);
+  assert.match(lines[0].text, /^About \d+ servers \([\d,]+ physical cores\), 1 of them kept free for a failure, for the machines you run today\.$/);
   assert.match(lines[1].text, /^\d+ waves from 2027-01-11 to \d{4}-\d{2}-\d{2}, 537 machines; about [\d.]+ TiB copied ahead of the cutovers, the largest wave in about \d+ hours\.$/);
   const proofs = sketchProofs(w);
   assert.equal(proofs.length, 2);

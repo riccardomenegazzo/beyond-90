@@ -1523,6 +1523,8 @@ def main(site: str) -> int:
         page.wait_for_timeout(300)
         after = int(page.inner_text("#view .szhead > b"))
         check(before > 3 and after < before and "decided by" in page.inner_text("#view .szhead"), "a first sizing sketch follows the assumptions agreed with the customer")
+        check(f"{after * 64:,} physical cores" in page.inner_text("#view .szhead") and "Counted per core" in page.inner_text("#view .szsteps"),
+              "and counts the physical cores a per-core subscription would count, the spare servers included")
         rows = page.locator("#view .wvtable tbody tr")
         check(rows.count() > 5 and "Test wave" in rows.first.inner_text() and "CL-TEST" in rows.first.inner_text(), "a plan in waves starts with a test wave on the cluster that teaches the most for the least risk")
         n_waves = rows.count()

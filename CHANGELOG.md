@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.236.0
+
+- **The sizing sketch counts the physical cores.** A subscription priced per core counts every physical core of every server, the spare ones included: the sketch now says how many (13 servers x 64 cores = 832 physical cores), beside the server count and as its last step, with a reminder that some products count a minimum per processor. The customer readout's line for the platform carries it too. It is the number the licence conversation starts from, never a price.
+
 ## 0.235.0
 
 - **The help answers how long a migration would take, and whether their link keeps up.** A new answer under Presales in Help points to the plan in waves: the dates, the data each wave copies ahead and the copy time over the link they name, the warning when a copy does not fit between waves, and the pace said in the meeting going in from Heard something. The presales guide says the same in its discovery step.

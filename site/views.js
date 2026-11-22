@@ -2530,7 +2530,7 @@ function sizingCard(w, sizing) {
     const bar = (label, v) => h("li", {}, h("span", { text: label }), h("span", { class: "ebar wsbar" }, h("i", { class: "er" + (v > 90 ? " weak" : ""), style: `width:${Math.min(100, v)}%` })), h("b", { text: `${v}%` }));
     const name = { compute: "compute", memory: "memory", storage: "storage", minimum: "the minimum for the copies" }[sk.decided];
     put(out,
-      h("div", { class: "szhead" }, h("b", { text: String(sk.nodes) }), h("span", {}, h("strong", { text: "servers" }), h("small", { text: `decided by ${name}; compute ${sk.by.compute}, memory ${sk.by.memory}, storage ${sk.by.storage}` }))),
+      h("div", { class: "szhead" }, h("b", { text: String(sk.nodes) }), h("span", {}, h("strong", { text: "servers" }), h("small", { text: `decided by ${name}; compute ${sk.by.compute}, memory ${sk.by.memory}, storage ${sk.by.storage}; ${INV.fmt(sk.cores)} physical cores` }))),
       h("ul", { class: "szuse" }, h("li", { class: "szlabel", text: "With the spare servers out" }), bar("CPU", sk.use.cpu), bar("Memory", sk.use.mem), bar("Storage", sk.use.storage)),
       h("ol", { class: "szsteps" }, sk.steps.map((t) => h("li", { text: t }))),
       h("div", { class: "growproof" }, h("small", { text: "Design notes" }), h("ul", {}, SZ.designNotes(assumptions).map((t) => h("li", { text: t })))));

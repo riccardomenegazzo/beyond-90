@@ -91,8 +91,10 @@ export function sketch(inv, a) {
   // what the chosen size runs at once a server is down: the number a customer should look at
   const live = nodes - s.spare_nodes;
   const use = { cpu: need.vcpu / (live * per.cores * s.vcpu_per_core), mem: need.mem / (live * per.mem), storage: rawTib * (s.fill_pct / 100) / (live * per.tib) };
+  // what a subscription priced per core counts: every physical core of every server, the spare ones included
+  const cores = nodes * s.node_cores;
   return {
-    ok: true, assumptions: s, nodes, decided: base > Math.max(by.compute, by.memory, by.storage) ? "minimum" : decided, by, minimum,
+    ok: true, assumptions: s, nodes, cores, decided: base > Math.max(by.compute, by.memory, by.storage) ? "minimum" : decided, by, minimum,
     need: { vcpu: Math.round(need.vcpu), mem_gib: Math.round(need.mem), tib: r1(need.tib), raw_tib: r1(rawTib) },
     use: { cpu: r1(use.cpu * 100), mem: r1(use.mem * 100), storage: r1(use.storage * 100) },
     steps: [
@@ -102,6 +104,7 @@ export function sketch(inv, a) {
       `Memory: ${n(Math.round(need.mem))} GiB over ${n(per.mem)} usable GiB per server = ${by.memory} servers.`,
       `Storage: ${n(r1(need.tib))} TiB${s.reduction > 1 ? ` reduced ${s.reduction}:1` : ""}, x${prot} for ${s.protection.startsWith("ec") ? `${s.cold_pct}% cold data erasure coded, the rest in copies` : PROTECTION[s.protection].label.split(":")[0].toLowerCase()}, kept below ${s.fill_pct}% = ${n(r1(rawTib))} TiB raw over ${n(per.tib)} TiB per server = ${by.storage} servers.`,
       `Plus ${s.spare_nodes} spare server${s.spare_nodes === 1 ? "" : "s"} to absorb a failure and rebuild, and at least ${minimum} for this protection: ${nodes} servers.`,
+      `Counted per core, for a subscription priced that way: ${nodes} servers x ${s.node_cores} cores = ${n(cores)} physical cores, the spare servers included. Some count a minimum per processor; check the product's own rules.`,
     ],
   };
 }

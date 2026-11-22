@@ -405,7 +405,7 @@ It is a starting point for a sizing tool, not a sizing. The file is read in the 
 
 ## A first sizing sketch
 
-Once the inventory is read, **A first sizing sketch** turns it into a server count with assumptions agreed in the meeting: growth over the platform's life, vCPU per physical core, memory overcommit, how data is protected, the share of data no longer written to, data reduction counted, how full storage may get, spare servers, and what one server holds. Each step of the arithmetic is shown, with what decided the count (compute, memory or storage) and how full each would be with the spare servers out.
+Once the inventory is read, **A first sizing sketch** turns it into a server count with assumptions agreed in the meeting: growth over the platform's life, vCPU per physical core, memory overcommit, how data is protected, the share of data no longer written to, data reduction counted, how full storage may get, spare servers, and what one server holds. Each step of the arithmetic is shown, with what decided the count (compute, memory or storage) and how full each would be with the spare servers out. The last step counts the physical cores, spare servers included: what a subscription priced per core would count (some count a minimum per processor, so the product's own rules have the last word).
 
 How data is protected follows the rules of distributed storage:
 

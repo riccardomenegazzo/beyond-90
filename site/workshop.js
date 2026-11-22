@@ -274,7 +274,7 @@ export function sketchLines(w) {
   if (w.inventory && w.sizing) {
     const sk = sketch(w.inventory, w.sizing);
     const sp = sk.ok ? sk.assumptions.spare_nodes : 0;
-    if (sk.ok) add("Your platform", `About ${plural(sk.nodes, "server")}${sp ? `, ${sp} of them kept free for a failure` : ""}, for the machines you run today.`);
+    if (sk.ok) add("Your platform", `About ${plural(sk.nodes, "server")} (${fmt(sk.cores)} physical cores)${sp ? `, ${sp} of them kept free for a failure` : ""}, for the machines you run today.`);
   }
   const gs = w.gpu && on("private-ai") ? gpuSketch(w.gpu) : null;
   if (gs && gs.ok) add("AI on your own infrastructure", `About ${plural(gs.gpus, "GPU")} in ${plural(gs.servers, "server")}, serving ${plural(gs.copies, "copy", "copies")} of the model.`);

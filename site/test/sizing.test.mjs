@@ -15,7 +15,10 @@ test("the sketch does the whiteboard arithmetic and names what decides", () => {
   assert.equal(sk.nodes, 11, "plus one spare");
   assert.equal(sk.need.raw_tib, 250);
   assert.equal(sk.use.cpu, 100);
-  assert.equal(sk.steps.length, 6);
+  assert.equal(sk.steps.length, 7);
+  // what a per-core subscription counts: every physical core, the spare servers included
+  assert.equal(sk.cores, sk.nodes * sk.assumptions.node_cores);
+  assert.match(sk.steps[6], new RegExp(`^Counted per core, for a subscription priced that way: ${sk.nodes} servers x ${sk.assumptions.node_cores} cores = [\\d,]+ physical cores, the spare servers included\\.`));
 });
 
 test("three copies cost more raw storage and need five servers at least; data reduction counts only when given", () => {
