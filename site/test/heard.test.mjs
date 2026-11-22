@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
-import { stem, tokens, match, joinNote, NOTE_MAX, concernCards, concernsHeard, sketchFigures, caseFigures, unitFigures, edgeFigures, retentionFigures } from "../heard.js";
+import { stem, tokens, match, joinNote, NOTE_MAX, concernCards, concernsHeard, sketchFigures, caseFigures, unitFigures, edgeFigures, retentionFigures, wavesFigures } from "../heard.js";
 
 const card = (key, q, listen = "", why = "", probe = "") => ({ key, label: "Disaster recovery", q: { q, listen, why, probe } });
 const DR = [
@@ -664,4 +664,29 @@ test("how long backups are kept, and how fast file data grows, read from what wa
   assert.deepEqual(got("Revenue grew 10% last year"), [], "growth of something other than file data");
   assert.deepEqual(got("We restored a file 3 days ago"), []);
   assert.deepEqual(got("We keep 30 days of daily backups", ["hci"]), []);
+});
+
+test("the pace of a migration, said in the meeting, is offered for the plan in waves once an inventory is read", () => {
+  const inv = { inventory: { vms: 620 } };
+  const got = (said, current = inv, scope = ["platform-migration"]) => wavesFigures(said, scope, current).map((x) => `${x.field}=${x.value}`).sort();
+  assert.deepEqual(got("They can move 30 machines a weekend, a wave every two weeks, over a 10 Gbit link between the data centres."), ["every_days=14", "link_mbps=10000", "per_wave=30"]);
+  assert.deepEqual(got("no more than 40 VMs per wave"), ["per_wave=40"]);
+  assert.deepEqual(got("one wave a month, the change board meets monthly"), ["every_days=30"]);
+  assert.deepEqual(got("we migrate every other weekend"), ["every_days=14"]);
+  assert.deepEqual(got("the cutover window is every week"), ["every_days=7"]);
+  assert.deepEqual(got("the link between the sites is 500 Mbps"), ["link_mbps=500"]);
+  assert.deepEqual(got("a 2.5 gigabit line, shared with replication"), ["link_mbps=2500"]);
+  // in Italian
+  assert.deepEqual(got("possiamo spostare 25 macchine per ondata, un'ondata ogni 15 giorni, su un collegamento da 1 Gbit"), ["every_days=15", "link_mbps=1000", "per_wave=25"]);
+  assert.deepEqual(got("una migrazione ogni due settimane"), ["every_days=14"]);
+  // not the migration's: backups every day, the shops' lines, a figure out of range, no inventory, the line not in scope
+  assert.deepEqual(got("we back up every day to tape"), []);
+  assert.deepEqual(got("the stores have 100 Mbit lines to the core"), []);
+  assert.deepEqual(got("2 machines a weekend"), []);
+  assert.deepEqual(got("a wave every six months"), []);
+  assert.deepEqual(got("30 machines a weekend", {}), []);
+  assert.deepEqual(got("30 machines a weekend", inv, ["dr-backup"]), []);
+  const f = wavesFigures("30 machines a weekend", ["platform-migration"], inv)[0];
+  assert.equal(f.sketch, "waves");
+  assert.equal(f.label, "machines a wave, in the plan in waves");
 });

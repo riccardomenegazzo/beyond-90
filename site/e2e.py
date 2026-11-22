@@ -1542,6 +1542,21 @@ def main(site: str) -> int:
         link.fill("1000")
         link.dispatch_event("change")
         page.wait_for_timeout(300)
+        # the pace said in the meeting goes into the plan with a tap
+        page.fill("#wsheard", "They can move 30 machines a weekend, a wave every two weeks, over a 10 Gbit link between the data centres.")
+        page.wait_for_selector("#view .heardsketch")
+        pace = [x.inner_text() for x in page.locator("#view .heardsketch .heardq").all()]
+        check(any("30 machines a wave at most" in x for x in pace) and any("14 days between waves" in x for x in pace) and any("10,000 Mbit/s for the copy ahead" in x for x in pace),
+              f"the pace of the migration said in the meeting is offered for the plan in waves: {pace}")
+        page.get_by_role("button", name="Use 10,000 as the link for the copy ahead, in the plan in waves").click()
+        page.locator("#view .heardsay", has_text="Put in the plan in waves: 10,000 Mbit/s for the copy ahead").wait_for()
+        check(page.locator("#view input[aria-label='Link for the copy ahead, Mbit/s']").input_value() == "10000" and "at 10,000 Mbit/s" in page.inner_text("#view .wvcopy")
+              and page.locator("#view input[aria-label='Machines per wave at most']").input_value() == "150",
+              "and once used, the plan's settings and the copy ahead follow, with what was set in the card kept")
+        page.locator("#view .heardsay button", has_text="Undo").click()
+        page.locator("#view .heardsay", has_text="Undone: the plan in waves is back as it was").wait_for()
+        check(page.locator("#view input[aria-label='Link for the copy ahead, Mbit/s']").input_value() == "1000", "Undo puts the plan back as it was")
+        page.fill("#wsheard", "")
         with page.expect_download() as dl:
             page.get_by_role("button", name="Add the waves to a calendar (.ics)").click()
         ics = Path(dl.value.path()).read_text(encoding="utf-8")

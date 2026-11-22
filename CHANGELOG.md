@@ -2,6 +2,11 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.228.0
+
+- **The pace of a migration, said in the meeting, goes into the plan in waves with a tap.** Once an inventory is read and platform migration is in scope, Heard something reads the machines a wave ("30 machines a weekend", "no more than 40 VMs per wave"), the days between waves ("a wave every two weeks", "every other weekend", "one wave a month") and the link the data is copied over ("a 10 Gbit link between the data centres", "500 Mbps"), in English or Italian ("25 macchine per ondata, un'ondata ogni 15 giorni, su un collegamento da 1 Gbit"). **Use it in the sketch** puts the figure in the plan's settings, the plan and the copy ahead follow, and **Undo** puts it back. Backups every day, the shops' own lines and figures out of range are left alone.
+- **A figure heard builds on the sketch as it is now.** A figure put in from Heard something used to start from the sketch as the page opened, so a setting just changed in the sketch's own card could be put back to what it was; it now starts from the card's latest settings.
+
 ## 0.227.0
 
 - **Each migration wave says the data it copies ahead, and how long the copy takes.** The inventory now keeps the data on each cluster (the space used, or provisioned when the export has no used column), so the plan in waves shows, per wave, the TiB to copy before its cutover and the time it takes over the link the customer names (a new setting, 1,000 Mbit/s by default, counting on 70% of it beside the traffic already there). One line says the total, the largest wave and its copy time; when the copy of a wave takes longer than the days between waves, the line and the wave say so, with the three ways out: more bandwidth, more days between waves, smaller waves. The copy goes into the meeting summary, the calendar events, the customer readout and the hand-over to delivery. An inventory read before keeps planning as it did, without the copy.

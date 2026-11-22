@@ -664,3 +664,42 @@ export function retentionFigures(said, scope) {
   }
   return out;
 }
+
+// the pace of a migration: machines a wave, days between waves, and the link the data is copied over ahead of each
+const PACE_UNIT = { day: 1, days: 1, giorno: 1, giorni: 1, week: 7, weeks: 7, weekend: 7, weekends: 7, settimana: 7, settimane: 7, "fine settimana": 7,
+  fortnight: 14, fortnights: 14, month: 30, months: 30, mese: 30, mesi: 30 };
+const PACE_N = { ...WORD_NUM, other: 2, altro: 2, a: 1, one: 1 };
+const LINK_WORDS = /\b(?:links?|circuits?|lines?|connections?|connectivity|bandwidth|wan|fibre|fiber|pipe|between|collegament\w*|banda|line[ae]|connession\w*|fibra|tra)\b/;
+const SHOP_WORDS = /\b(?:stores?|shops?|branch\w*|plants?|negozi\w*|filial\w*|stabiliment\w*|punti vendita)\b/;
+
+/**
+ * The plan in waves' figures in what was said, once an inventory is read and a migration is in scope: the machines a
+ * wave ("30 machines a weekend"), the days between waves ("a wave every two weeks"), the link the data is copied over
+ * ("a 10 Gbit link between the data centres"). A link said about shops or branches is theirs, not the migration's.
+ * @returns {{sketch:string, field:string, value:number, what:string, label:string}[]}
+ */
+export function wavesFigures(said, scope, current = {}) {
+  if (!(scope || []).includes("platform-migration") || !current.inventory) return [];
+  const t = ` ${String(said == null ? "" : said).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "")} `;
+  const out = [];
+  const per = t.match(new RegExp(String.raw`\b${NUM}\s+(?:vms?|virtual machines|machines|servers|workloads|macchine(?: virtuali)?|server)\s+(?:per|a|an|each|every|at a|in a|in one|in each|ogni|alla|ad|in una|per ogni)\s+(?:wave|weekend|window|time|night|cutover|go|ondata|finestra|volta|fine settimana|notte)\b`));
+  if (per) {
+    const v = Math.round(num(per[1], per[2]));
+    if (v >= 5 && v <= 1000) out.push({ sketch: "waves", field: "per_wave", value: v, what: "machines a wave at most", label: "machines a wave, in the plan in waves" });
+  }
+  const pace = /\b(?:waves?|ondat[ae]|migrat\w*|migrazion\w*|cutovers?|windows?|finestr[ae]|moves?|moving|spost\w*|migr\w*)\b/.test(t);
+  const every = pace ? t.match(/\b(?:every|ogni)\s+(?:(\d+|[a-z]+)\s+)?(fine settimana|days?|weeks?|weekends?|fortnights?|months?|giorn[oi]|settiman[ae]|mes[ei])\b/)
+    || t.match(/\b(?:(?:one|a|una|un')\s*(?:wave|ondata)|once)\s+(?:a|per|each|al|alla|ogni)\s+(week|fortnight|month|settimana|mese)\b/) : null;
+  if (every) {
+    const unit = PACE_UNIT[every[2] || every[1]];
+    const n = every[2] === undefined ? 1 : every[1] === undefined ? 1 : /^\d+$/.test(every[1]) ? Number(every[1]) : PACE_N[every[1]];
+    const v = n && unit ? n * unit : NaN;
+    if (v >= 1 && v <= 60) out.push({ sketch: "waves", field: "every_days", value: v, what: "days between waves", label: "days between waves, in the plan in waves" });
+  }
+  const link = LINK_WORDS.test(t) && !SHOP_WORDS.test(t) ? t.match(/\b(\d+(?:[.,]\d+)?)\s?(gbit\/s|gbit|gbps|gb\/s|gigabit|gig|gb|mbit\/s|mbit|mbps|mb\/s|megabit)\b/) : null;
+  if (link) {
+    const v = Math.round(Number(link[1].replace(",", ".")) * (/^g/.test(link[2]) ? 1000 : 1));
+    if (v >= 10 && v <= 400000) out.push({ sketch: "waves", field: "link_mbps", value: v, what: "Mbit/s for the copy ahead", label: "link for the copy ahead, in the plan in waves" });
+  }
+  return out;
+}

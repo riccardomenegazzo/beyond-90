@@ -13,13 +13,14 @@ import * as K8S from "./k8ssketch.js";
 import * as DBS from "./dbsketch.js";
 import * as FILES from "./filesketch.js";
 import * as VC from "./valuecase.js";
+import { cleanWaves } from "./waves.js";
 
 // the sketches a figure heard can go in: how each is cleaned, and what it is called
 export const SKETCH_CLEAN = { vdi: (x) => VDI.cleanVdi(x), db: (x) => DBS.cleanDb(x), k8s: (x) => K8S.cleanK8s(x), files: (x) => FILES.cleanFiles(x),
   obj: (x) => OBJ.cleanObj(x), dr: (x) => DRS.cleanDr(x), gpu: (x) => GPU.cleanGpu(x), case: (x) => VC.cleanCase(x),
-  unit: (x) => UNIT.cleanUnit(x), edge: (x) => EDGE.cleanEdge(x) };
+  unit: (x) => UNIT.cleanUnit(x), edge: (x) => EDGE.cleanEdge(x), waves: (x) => cleanWaves(x) };
 export const SKETCH_NAME = { vdi: "desktop sizing sketch", db: "database licence sketch", k8s: "container platform sizing sketch", files: "file storage sketch",
-  obj: "backup capacity sketch", dr: "recovery design", gpu: "GPU sketch", case: "case for change", unit: "cost per machine", edge: "edge design" };
+  obj: "backup capacity sketch", dr: "recovery design", gpu: "GPU sketch", case: "case for change", unit: "cost per machine", edge: "edge design", waves: "plan in waves" };
 /** A sketch's card on the page, if it is there, shows the settings just changed. */
 export const refreshSketch = (name, settings, saved = true) => { const el = document.querySelector(`[data-sketch="${name}"]`); if (el) el.dispatchEvent(new CustomEvent("sketch-settings", { detail: { settings, saved } })); };
 
