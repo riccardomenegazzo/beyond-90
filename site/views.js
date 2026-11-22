@@ -1447,6 +1447,7 @@ export function povView({ result, book, povs, today, savePov, removePov, dash })
         tag: (c) => c.tag,
         hint: "Swipe it by what was seen, or tap",
         how: "What counts as evidence",
+        backLabels: { why: "How we will know", listen: "What counts", probe: "Then ask" },
         openText: "Back to what is not tried",
         doneWord: "tried",
         summary: (cs, answerOf) => RO.readoutSummary(cs, answerOf),

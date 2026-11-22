@@ -2,6 +2,11 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.180.0
+
+- **The meeting guide covers the three meetings:** "Running the meetings: discovery, demo, readout", linked so from the README and the workshop guide.
+- **The readout's card says how we will know, under its own name.** Turned over, a criterion's card now reads "How we will know", "What counts" and "Then ask", instead of the discovery card's words.
+
 ## 0.179.0
 
 - **The rehearsal starts with what customers raise most.** Rehearse the objections now deals, on each line, the ones this customer already raised first, then the ones your other prospects in this browser raised most ("Raised by 3 other prospects"), then the rest: the answers most likely to be needed are practised first.

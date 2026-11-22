@@ -25,7 +25,7 @@ test("one card per criterion still counted, with how we will know on the back", 
   const cards = readoutCards(p);
   assert.deepEqual(cards.map((c) => c.key), ["c1", "c2", "c3"]);
   assert.equal(cards[0].label, "Criterion 1 of 3");
-  assert.match(cards[0].q.why, /^How we will know: Timed/);
+  assert.match(cards[0].q.why, /^Timed, from the declaration$/);
   assert.equal(cards[2].tag, "No target yet");
   assert.match(cards[2].q.why, /agree with the sponsor what counts/);
   const of = resultOf(p);

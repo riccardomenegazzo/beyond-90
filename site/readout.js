@@ -26,7 +26,7 @@ export function readoutCards(p) {
   const counted = p.criteria.filter((c) => c.status !== "dropped");
   return counted.map((c, i) => ({
     key: c.id, label: `Criterion ${i + 1} of ${counted.length}`, tag: c.target ? "Signed-off target" : "No target yet",
-    q: { q: clean(c.text), why: c.target ? `How we will know: ${clean(c.target)}` : "No target was written: agree with the sponsor what counts before calling it.",
+    q: { q: clean(c.text), why: c.target ? clean(c.target) : "No target was written: agree with the sponsor what counts before calling it.",
       listen: "The evidence: a number against the target, a screen, a log, and who saw it.",
       probe: "Does the sponsor agree? If not met: what does it mean for the decision, and what would they need to see?" },
   }));

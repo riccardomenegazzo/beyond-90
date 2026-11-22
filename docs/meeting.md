@@ -1,6 +1,6 @@
-# Running a discovery meeting
+# Running the meetings: discovery, demo, readout
 
-A page for the hour with the customer: what to set up before, what to do while they talk, and what to send after. Everything here runs in the browser; nothing said in the meeting leaves it.
+A page for the hours with the customer: the discovery meeting first (what to set up before, what to do while they talk, what to send after), then the demo built from it, then the readout of the proof of value. Everything here runs in the browser; nothing said in the meeting leaves it.
 
 ![The questions open on the next one to ask, beside every line in scope](img/app-nextcard.png)
 

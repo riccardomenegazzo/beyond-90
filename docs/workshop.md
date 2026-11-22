@@ -4,7 +4,7 @@ The rest of Beyond 90 reads what a customer runs. The first meetings with a pros
 
 ![Recording what the customer says](img/app-workshop.png)
 
-For the hour with the customer itself, the short version is [Running a discovery meeting](meeting.md).
+For the hour with the customer itself, the short version is [Running the meetings](meeting.md): discovery, the demo and the readout.
 
 ## How it works
 

@@ -27,7 +27,7 @@ The discovery questions come as cards, on a phone or a laptop. Write what the cu
 - A **meeting clock** says whether the essential questions still fit in the time left.
 - Something said out of turn goes in **Heard something?**: it finds the question it answers, and a figure in it ("about 2 million a day") goes with the answer. A concern the line expects ("we already have backups") shows first, with the question to ask before answering and how to prove it.
 - The same cards carry the meetings after it: the deal's qualification questions; **the demo**, one card per part of the plan built from what they said, swiped as it landed; and **the readout** of a proof of value, criterion by criterion, with the evidence. Each ends with where it stands and a recap for the account team. Before a meeting, the objections to expect can be rehearsed the same way.
-- All of it runs in the browser: see [running a discovery meeting](docs/meeting.md), before, during and after.
+- All of it runs in the browser: see [running the meetings](docs/meeting.md): discovery, the demo and the readout, before, during and after.
 
 <br clear="right">
 
@@ -232,7 +232,7 @@ beyond90 explain acme --store history.db   # what changed since the last stored 
 - [docs/leaders.md](docs/leaders.md): for presales leaders: what the team gets, the team view, what the deals teach, a five-minute tour
 - [docs/presales.md](docs/presales.md): the presales desk and the path from discovery to handover
 - [docs/partners.md](docs/partners.md): working with partners: who leads, the deal registration, who does what, a brief and a discovery kit for them, the partner review
-- [docs/meeting.md](docs/meeting.md): running a discovery meeting, before, during and after
+- [docs/meeting.md](docs/meeting.md): running the meetings (discovery, the demo, the readout), before, during and after
 - [docs/workshop.md](docs/workshop.md): the discovery workshop, its sketches, the case for change and the handover
 - [SPEC.md](SPEC.md): formulas and rules; the contract for the code
 - [docs/data-format.md](docs/data-format.md): input files
