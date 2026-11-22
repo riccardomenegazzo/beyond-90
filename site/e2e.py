@@ -873,7 +873,7 @@ def main(site: str) -> int:
         page.get_by_role("button", name="Use 200 as the expected rise at the next renewal, in the case for change").click()
         page.locator("#view .heardsay", has_text="Put in the case for change: 200 percent more at the next renewal").wait_for()
         check(page.get_by_role("button", name="Use 1,400,000 as the yearly cost of the current platform, in the case for change").count() == 1
-              and "already in it" in page.inner_text("#view .heardsketch"),
+              and "already in it" in page.locator("#view .heardsketch", has_text="200 percent more at the next renewal").inner_text(),
               "the rise at the renewal and the yearly cost of staying are offered for the case for change, and one tap puts each in")
         page.locator("#view .heardsay button", has_text="Undo").click()
         page.locator("#view .heardsay", has_text="Undone: the case for change is back as it was").wait_for()
@@ -1477,6 +1477,15 @@ def main(site: str) -> int:
         page.wait_for_timeout(300)
         check(unitcard.locator(".szhead > b").inner_text() == "75" and "People" in unitcard.locator(".vctable").inner_text() and unitcard.get_by_role("button", name="Copy for finance").is_visible(),
               "and works out the cost per machine a month, with each part shown")
+        page.fill("#wsheard", "Around 25% of the VMs are idle or forgotten")
+        page.get_by_role("button", name="Use 25 as the share of machines idle, oversized or forgotten, in the cost per machine").click()
+        page.locator("#view .heardsay", has_text="Put in the cost per machine: 25 percent").wait_for()
+        idle = page.locator("#view input[aria-label='Machines idle, oversized past use or forgotten']")
+        check(idle.input_value() == "25", "a figure heard goes into the cost per machine, and its field shows it")
+        page.locator("#view .heardsay button", has_text="Undo").click()
+        page.locator("#view .heardsay", has_text="Undone: the cost per machine is back as it was").wait_for()
+        check(idle.input_value() == "", "and taken back, the field is blank again")
+        page.fill("#wsheard", "")
         page.get_by_role("button", name="Leaving a virtualisation platform").click()
         page.wait_for_selector("#ws-platform-migration")
         check(page.locator("#view details.wsline").count() == 4 and page.locator("#view .wsopt[aria-pressed=true]").count() >= 8,

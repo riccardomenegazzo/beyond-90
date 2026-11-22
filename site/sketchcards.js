@@ -16,9 +16,10 @@ import * as VC from "./valuecase.js";
 
 // the sketches a figure heard can go in: how each is cleaned, and what it is called
 export const SKETCH_CLEAN = { vdi: (x) => VDI.cleanVdi(x), db: (x) => DBS.cleanDb(x), k8s: (x) => K8S.cleanK8s(x), files: (x) => FILES.cleanFiles(x),
-  obj: (x) => OBJ.cleanObj(x), dr: (x) => DRS.cleanDr(x), gpu: (x) => GPU.cleanGpu(x), case: (x) => VC.cleanCase(x) };
+  obj: (x) => OBJ.cleanObj(x), dr: (x) => DRS.cleanDr(x), gpu: (x) => GPU.cleanGpu(x), case: (x) => VC.cleanCase(x),
+  unit: (x) => UNIT.cleanUnit(x) };
 export const SKETCH_NAME = { vdi: "desktop sizing sketch", db: "database licence sketch", k8s: "container platform sizing sketch", files: "file storage sketch",
-  obj: "backup capacity sketch", dr: "recovery design", gpu: "GPU sketch", case: "case for change" };
+  obj: "backup capacity sketch", dr: "recovery design", gpu: "GPU sketch", case: "case for change", unit: "cost per machine" };
 /** A sketch's card on the page, if it is there, shows the settings just changed. */
 export const refreshSketch = (name, settings) => { const el = document.querySelector(`[data-sketch="${name}"]`); if (el) el.dispatchEvent(new CustomEvent("sketch-settings", { detail: settings })); };
 
@@ -62,7 +63,7 @@ export function objCard(w, obj) {
 function sketchCard(name, inputs, draw, el, more = () => {}) {
   el.dataset.sketch = name;
   el.addEventListener("sketch-settings", (e) => {
-    for (const [k, input] of Object.entries(inputs)) if (e.detail[k] !== undefined) input.value = String(e.detail[k]);
+    for (const [k, input] of Object.entries(inputs)) input.value = e.detail[k] === undefined ? "" : String(e.detail[k]);     // a figure taken back leaves its field blank
     more(e.detail);
     draw(e.detail);
   });
@@ -357,9 +358,9 @@ export function unitCard(w, unit) {
       return h("label", { class: "szf" }, h("span", { text: `${label} (${u})` }), inputs[k]);
     })));
   draw(a);
-  return card("What one machine costs", h("div", { class: "sz" }, out, h("div", { class: "btnrow" }, copy),
+  return sketchCard("unit", inputs, draw, card("What one machine costs", h("div", { class: "sz" }, out, h("div", { class: "btnrow" }, copy),
     h("details", { class: "szassume" }, h("summary", { text: "The figures, as the customer and finance gave them" }), h("div", { class: "vcgroups" }, groups)), say),
-  { sub: "Hardware written off, licences, support, power, space and people, divided among the machines they run: the number behind \"the cloud is cheaper\", showback per team and a provider's price per tenant. In the customer's own figures; not a quote." });
+  { sub: "Hardware written off, licences, support, power, space and people, divided among the machines they run: the number behind \"the cloud is cheaper\", showback per team and a provider's price per tenant. In the customer's own figures; not a quote." }));
 }
 
 /** A first GPU sketch for serving a model: memory for the weights and the conversations, copies, servers. */

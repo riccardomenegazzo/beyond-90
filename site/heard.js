@@ -511,3 +511,54 @@ export function caseFigures(said) {
   }
   return out;
 }
+
+// what one machine costs, in the customer's words: the machines, the people, and what a year of each part costs
+const UNIT_SCOPE = ["cloud-operations", "service-provider-cloud", "hybrid-cloud"];
+const perYear = (t, words) => {
+  if (!words.test(t)) return null;
+  const f = figureIn(t, { q: "per year" });
+  return f && f.per === "year" ? f.amount : null;
+};
+const UNIT_FIGURES = [
+  { field: "machines", what: "machines running", label: "machines running, in the cost per machine",
+    read: (t) => { const m = t.match(new RegExp(String.raw`\b${NUM}\s+(?:running\s+)?(?:vms|virtual machines|machines|macchine(?: virtuali)?|virtual servers|server virtuali)\b`)); return m ? num(m[1], m[2]) : null; } },
+  { field: "people_fte", what: "people running the estate", label: "people running the estate, in the cost per machine",
+    read: (t) => {
+      const m = t.match(/\b(\d+(?:[.,]\d+)?)\s+(?:people|persons|ftes?|engineers|admins|administrators|sysadmins|persone|sistemisti|tecnici)\b(?=[^.;]*\b(?:run|runs|manage|manages|look after|operate|gestiscono|seguono|operations|estate|platform|infrastructure|infrastruttura|piattaforma)\b)/);
+      return m ? Number(m[1].replace(",", ".")) : null;
+    } },
+  { field: "fte_cost", what: "a year for one full-time person", label: "cost of one full-time person, in the cost per machine",
+    read: (t) => perYear(t, /\b(?:a person|one person|an engineer|an admin|per person|fte|salary|una persona|un sistemista|stipendio|per persona)\b/) },
+  { field: "licences_year", what: "a year in licences and subscriptions", label: "software licences and subscriptions, in the cost per machine",
+    read: (t) => (/\b(?:down|outage|fermo)\b/.test(t) ? null : perYear(t, /\b(?:licen[cs]\w*|subscriptions?|licenz\w*|abbonament\w*)\b/)) },
+  { field: "power_year", what: "a year in power and cooling", label: "power and cooling, in the cost per machine",
+    read: (t) => perYear(t, /\b(?:power|cooling|electricity|energia|corrente|elettricita|raffreddamento)\b/) },
+  { field: "idle_pct", what: "percent of the machines idle or forgotten", label: "share of machines idle, oversized or forgotten, in the cost per machine",
+    read: (t) => {
+      const m = t.match(/\b(\d+(?:[.,]\d+)?)\s?(?:%|percent\b|per cento\b)(?=[^.;]*\b(?:idle|oversized|forgotten|zombie|unused|inattiv\w*|inutilizzat\w*|dimenticat\w*|sovradimensionat\w*)\b)/);
+      return m ? Number(m[1].replace(",", ".")) : null;
+    } },
+  { field: "cloud_month", what: "a month for a comparable machine in a public cloud", label: "a comparable machine in a public cloud, in the cost per machine",
+    read: (t) => {
+      if (!/\b(?:cloud|aws|azure|gcp|hyperscaler)\b/.test(t)) return null;
+      const m = t.match(/(?:[€$£]\s?)?\b(\d{1,3}(?:[.,]\d{3})+|\d+(?:[.,]\d+)?)\s?(?:€|eur|euros?|dollars?|\$)?\s*(?:a|per|each|al|\/)\s?(?:month|mese)\b/);
+      const v = m ? num(m[1], "") : NaN;
+      return Number.isFinite(v) && v > 0 && v < 1e5 ? v : null;
+    } },
+];
+
+/**
+ * The figures of what one machine costs in what was said, when a line that counts it is in scope: the machines running,
+ * the people and what one costs, licences and power a year, the share of idle machines, a machine in a public cloud.
+ * @returns {{sketch:string, field:string, value:number, what:string, label:string}[]}
+ */
+export function unitFigures(said, scope) {
+  if (!(scope || []).some((p) => UNIT_SCOPE.includes(p))) return [];
+  const t = ` ${String(said == null ? "" : said).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "")} `;
+  const out = [];
+  for (const f of UNIT_FIGURES) {
+    const v = f.read(t);
+    if (v != null && Number.isFinite(v) && v > 0) out.push({ sketch: "unit", field: f.field, value: v, what: f.what, label: f.label });
+  }
+  return out;
+}

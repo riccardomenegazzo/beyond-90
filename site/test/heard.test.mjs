@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
-import { stem, tokens, match, joinNote, NOTE_MAX, concernCards, concernsHeard, sketchFigures, caseFigures } from "../heard.js";
+import { stem, tokens, match, joinNote, NOTE_MAX, concernCards, concernsHeard, sketchFigures, caseFigures, unitFigures } from "../heard.js";
 
 const card = (key, q, listen = "", why = "", probe = "") => ({ key, label: "Disaster recovery", q: { q, listen, why, probe } });
 const DR = [
@@ -520,4 +520,18 @@ test("the case for change is read from what was said: the renewal, when it comes
   assert.deepEqual(got("The team doubled last year"), []);
   assert.deepEqual(got("We spend 30 hours a month in meetings"), []);
   assert.equal(caseFigures("The renewal triples the price")[0].label, "expected rise at the next renewal, in the case for change");
+});
+
+test("what one machine costs is read from what was said, when a line that counts it is in scope", () => {
+  const sc = ["cloud-operations"];
+  const got = (said, scope = sc) => unitFigures(said, scope).map((x) => `${x.field}=${x.value}`);
+  assert.deepEqual(got("We run about 500 VMs, and 3 people run the platform"), ["machines=500", "people_fte=3"]);
+  assert.deepEqual(got("A person costs us 70,000 a year"), ["fte_cost=70000"]);
+  assert.deepEqual(got("Licences cost 240,000 a year"), ["licences_year=240000"]);
+  assert.deepEqual(got("Power and cooling is 45k a year"), ["power_year=45000"]);
+  assert.deepEqual(got("Around 20% of the VMs are idle or forgotten"), ["idle_pct=20"]);
+  assert.deepEqual(got("The same VM costs 175 a month in the cloud"), ["cloud_month=175"]);
+  assert.deepEqual(got("Gestiamo 800 macchine virtuali con 4 sistemisti che seguono la piattaforma", ["hybrid-cloud"]), ["machines=800", "people_fte=4"]);
+  assert.deepEqual(got("We have 3 people in marketing"), []);
+  assert.deepEqual(got("We run about 500 VMs", ["hci"]), [], "no line in scope counts it");
 });

@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.212.0
+
+- **Figures for the cost per machine.** With cloud operations, a service provider's cloud or hybrid cloud in scope, Heard something offers what is said about the estate for **What one machine costs**: the machines running ("500 VMs", "800 macchine virtuali"), the people running it and what one costs, licences and power a year, the share of idle or forgotten machines, a comparable machine in a public cloud a month. A tap puts each in and the card shows it; Undo leaves the field blank again.
+
 ## 0.211.0
 
 - **The sketch cards live in their own module.** The cards of the first sketches (GPUs, recovery, backup capacity, the sites, the cost per machine, virtual desktops, the container platform, database licences, file shares) and what lets a figure heard in the meeting reach them move from `views.js` to `sketchcards.js`; the card and redraw helpers every view uses move to `ui.js`. Nothing changes on the page: the same tests pass unchanged, and `views.js` is about 400 lines shorter.
