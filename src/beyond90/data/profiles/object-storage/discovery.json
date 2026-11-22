@@ -134,6 +134,16 @@
       "role": "executive",
       "listen": "Charging back per team needs usage per tenant from the first day.",
       "probe": "How is the cost of storage split between teams today?"
+    },
+    {
+      "stage": "L3",
+      "q": "How would you know if a bucket were open to the internet, and who checks?",
+      "why": "An open bucket is one of the most common ways data leaks.",
+      "need": "No bucket is open to the internet by mistake, and a change that opens one is caught",
+      "how": "List the buckets that are public on purpose, and alert on any other that becomes public",
+      "role": "security",
+      "listen": "A list of the public ones and an alert; \"nobody would do that\" is what every leak report starts with.",
+      "probe": "Which buckets are public on purpose today, and who decided?"
     }
   ]
 }

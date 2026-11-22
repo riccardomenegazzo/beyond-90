@@ -134,6 +134,16 @@
       "role": "security",
       "listen": "Scans running on every desktop at once can freeze a cluster: ask how they are scheduled.",
       "probe": "When do full scans run, and on how many desktops at once?"
+    },
+    {
+      "stage": "value",
+      "q": "What does a desktop cost per user per month today, counting licences, hardware, support and the help desk?",
+      "why": "The cost per user is what any new design is compared with.",
+      "need": "The cost per user of today's desktops is known, and agreed with finance",
+      "how": "Add up licences, hardware, data centre, support and help desk calls, and divide by users",
+      "role": "finance",
+      "listen": "A figure per user that finance recognises; \"it is in the IT budget\" means the comparison will be argued later.",
+      "probe": "Which part of that cost would finance most like to see go down?"
     }
   ]
 }

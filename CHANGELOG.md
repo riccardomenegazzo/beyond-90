@@ -2,6 +2,11 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.193.0
+
+- **More questions where the infrastructure lines were thinnest.** Every infrastructure line now asks at least fourteen questions, each saying who to ask, what to listen for and the follow-up. Microsegmentation gains three: what a breach that spread from machine to machine would cost, and whether an insurer has asked; which kinds of workload the separation must cover (virtual machines, containers, bare metal, desktops); who is alerted when a machine tries a connection its policy forbids. Edge sites ask what must keep working when a site's network link is down; virtual desktops, what a desktop costs per user per month; object storage, how an open bucket would be noticed; service provider clouds, how the provider's own staff reach tenant environments.
+- They are added after the existing ones, so answers already saved keep their place, and **Heard something** finds each of them first from a sentence a customer might say.
+
 ## 0.192.0
 
 - **Heard something knows the new security questions.** Written in **Heard something** during a meeting, what a customer says about the twenty-four questions added in 0.191 now finds its question first: "Nobody watches the alerts at night or at weekends", "Three admins share the same domain admin password", "Local admins can switch off the antivirus agent", "When people leave, their shared links keep working", "People edit the prompts directly in production". A test holds a sentence for each of them, across all six security lines at once, so a question on one line does not take what was said about another.

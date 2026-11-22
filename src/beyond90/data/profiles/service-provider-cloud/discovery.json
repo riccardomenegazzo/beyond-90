@@ -134,6 +134,16 @@
       "role": "security",
       "listen": "Each certification is evidence to produce every year; a platform that reports it continuously saves weeks.",
       "probe": "Which certification would open a new market for you?"
+    },
+    {
+      "stage": "L3",
+      "q": "How is your own staff's access to tenant environments controlled and recorded?",
+      "why": "Tenants and auditors ask who at the provider can reach their data.",
+      "need": "Staff reach tenant environments only when needed, and every access is recorded",
+      "how": "Give staff personal accounts with access granted per task, and keep a record tenants can be shown",
+      "role": "security",
+      "listen": "Access per task with a record; \"the operations team has admin everywhere\" is what auditors ask about first.",
+      "probe": "Could you show a tenant who from your side touched their environment last month?"
     }
   ]
 }

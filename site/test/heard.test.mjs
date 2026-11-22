@@ -275,6 +275,24 @@ test("on the security lines' newest questions, what was heard finds its question
   assert.ok(first >= 22, `first ${first} of ${cases.length}`);
 });
 
+test("on the infrastructure lines' newest questions, what was heard finds its question first", () => {
+  const cards = [];
+  for (const p of ["object-storage", "file-storage", "edge-sites", "microsegmentation", "kubernetes-platform", "euc", "service-provider-cloud"]) {
+    const file = new URL(`../../src/beyond90/data/profiles/${p}/discovery.json`, import.meta.url);
+    JSON.parse(readFileSync(file, "utf8")).questions.forEach((q, i) => cards.push({ key: `${p}#${i}`, q }));
+  }
+  const cases = [
+    ["Our cyber insurer asked how we would stop a breach spreading", "microsegmentation#11"],
+    ["The containers and the bare metal are not covered by any policy", "microsegmentation#12"],
+    ["Nobody is alerted when a machine tries a forbidden connection", "microsegmentation#13"],
+    ["When a site loses its network link, the applications stop working", "edge-sites#13"],
+    ["A desktop costs us about 90 euros per user per month with licences and support", "euc#13"],
+    ["We would not know if a bucket became public", "object-storage#13"],
+    ["Our operations team has admin access to every tenant environment and nothing is recorded", "service-provider-cloud#13"],
+  ];
+  for (const [said, want] of cases) assert.equal(match(cards, said)[0].card.key, want, said);
+});
+
 test("a concern the line expects is recognised as the customer says it, and an ordinary sentence is not one", () => {
   const cat = JSON.parse(readFileSync(new URL("./workshop-catalog.json", import.meta.url), "utf-8"));
   const cards = concernCards(cat, Object.keys(cat.lines));

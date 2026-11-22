@@ -56,6 +56,13 @@ NAMES = re.compile(r"\b(nutanix|vmware|broadcom|vsphere|esxi|vsan|ahv|prism|acro
 
 
 @pytest.mark.parametrize("profile", INFRA)
+def test_every_infrastructure_line_asks_enough_and_says_how_to_ask(profile):
+    cat = Catalogue.load(profile=profile)
+    assert len(cat.discovery) >= 14, "as deep as a discovery meeting needs"
+    assert all(q.get("role") and q.get("listen") and q.get("probe") for q in cat.discovery), profile
+
+
+@pytest.mark.parametrize("profile", INFRA)
 def test_infrastructure_profiles_name_no_vendor_or_product(profile):
     for f in sorted((PROFILES_DIR / profile).glob("*.json")):
         found = NAMES.findall(f.read_text(encoding="utf-8"))

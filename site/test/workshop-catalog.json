@@ -929,6 +929,16 @@
      "role": "executive",
      "listen": "Charging back per team needs usage per tenant from the first day.",
      "probe": "How is the cost of storage split between teams today?"
+    },
+    {
+     "stage": "L3",
+     "q": "How would you know if a bucket were open to the internet, and who checks?",
+     "why": "An open bucket is one of the most common ways data leaks.",
+     "need": "No bucket is open to the internet by mistake, and a change that opens one is caught",
+     "how": "List the buckets that are public on purpose, and alert on any other that becomes public",
+     "role": "security",
+     "listen": "A list of the public ones and an alert; \"nobody would do that\" is what every leak report starts with.",
+     "probe": "Which buckets are public on purpose today, and who decided?"
     }
    ],
    "proof": [
@@ -1137,6 +1147,16 @@
      "role": "executive",
      "listen": "Weeks to open a site point to manual builds; standard designs deployed remotely cut it to days.",
      "probe": "How many sites will open next year?"
+    },
+    {
+     "stage": "L3",
+     "q": "Which applications must keep working at a site when its network link is down, and for how long?",
+     "why": "A site that depends on the link stops when the link does, whatever runs locally.",
+     "need": "The applications that matter keep working at a site without its link, for as long as the business needs",
+     "how": "List per kind of site what must work offline and for how long, and test one site with its link cut",
+     "role": "architect",
+     "listen": "A clear list with hours; \"everything is in the cloud now\" means a link failure stops the site.",
+     "probe": "When did a site last lose its link, and what stopped while it was down?"
     }
    ],
    "proof": [

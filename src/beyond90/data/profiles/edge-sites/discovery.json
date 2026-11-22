@@ -134,6 +134,16 @@
       "role": "executive",
       "listen": "Weeks to open a site point to manual builds; standard designs deployed remotely cut it to days.",
       "probe": "How many sites will open next year?"
+    },
+    {
+      "stage": "L3",
+      "q": "Which applications must keep working at a site when its network link is down, and for how long?",
+      "why": "A site that depends on the link stops when the link does, whatever runs locally.",
+      "need": "The applications that matter keep working at a site without its link, for as long as the business needs",
+      "how": "List per kind of site what must work offline and for how long, and test one site with its link cut",
+      "role": "architect",
+      "listen": "A clear list with hours; \"everything is in the cloud now\" means a link failure stops the site.",
+      "probe": "When did a site last lose its link, and what stopped while it was down?"
     }
   ]
 }

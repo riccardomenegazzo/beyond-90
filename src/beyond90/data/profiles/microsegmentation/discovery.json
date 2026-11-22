@@ -114,6 +114,36 @@
       "role": "operations",
       "listen": "Fear of outages is the main brake; a watch period removes it.",
       "probe": "What happened the last time a firewall change broke an application?"
+    },
+    {
+      "stage": "value",
+      "q": "What would a breach that spread from machine to machine cost, and has an insurer asked how you contain one?",
+      "why": "Insurers and boards now ask how far one incident could spread, and the answer prices the risk.",
+      "need": "How far one incident could spread, and what it would cost, can be answered with evidence",
+      "how": "Put a figure on one spreading incident with finance, and list what the insurer asked",
+      "role": "finance",
+      "listen": "An insurer's questionnaire or a premium that rose makes this concrete; \"we have a firewall\" means nobody has priced it.",
+      "probe": "What did the insurer ask at the last renewal, and what did you answer?"
+    },
+    {
+      "stage": "L2",
+      "q": "Which kinds of workload must the separation cover: virtual machines, containers, bare metal, desktops?",
+      "why": "A policy that covers only one kind of workload leaves the others as a way round it.",
+      "need": "Every kind of workload that holds or handles sensitive data is covered by the same policies",
+      "how": "List the kinds of workload around the first applications to protect, and how each connects today",
+      "role": "architect",
+      "listen": "Several kinds named, with one owner for the policy; \"only the VMs\" leaves containers and bare metal open.",
+      "probe": "Which of those could be used to get around a policy on the virtual machines?"
+    },
+    {
+      "stage": "L4",
+      "q": "Who is alerted when a machine tries a connection its policy forbids, and what do they do next?",
+      "why": "A blocked attempt is often the first sign of someone moving inside who should not be there.",
+      "need": "Forbidden connection attempts go to someone who investigates them",
+      "how": "Send the blocked connections to the security monitoring, and name who looks at them",
+      "role": "security",
+      "listen": "Alerts sent to the security team with a named owner; \"it is in the logs\" means nobody looks.",
+      "probe": "When did a blocked connection last lead to an investigation?"
     }
   ]
 }
