@@ -23,6 +23,7 @@ import * as OBJ from "./objsketch.js";
 import * as EDGE from "./edgesketch.js";
 import * as VDI from "./vdisketch.js";
 import * as K8S from "./k8ssketch.js";
+import * as DBS from "./dbsketch.js";
 import * as UNIT from "./unitcost.js";
 import * as RFP from "./rfp.js";
 import * as AWD from "./award.js";
@@ -2151,7 +2152,7 @@ function openDeck({ clock, onClose, aside = null, asideTitle = "", ...rest }) {
 
 const wsFilter = { core: false, roles: [], tender: false, open: false, best: false };
 
-export function workshopView({ workshop: w, catalog, list, answer, worth, setDeal, raise, rename, preparedBy, setScope, inventory, sizing, waves, gpu, dr, obj, edge, vdi, k8s, unit, today, newWorkshop, openWorkshop, removeWorkshop, presets = [], go, focus }) {
+export function workshopView({ workshop: w, catalog, list, answer, worth, setDeal, raise, rename, preparedBy, setScope, inventory, sizing, waves, gpu, dr, obj, edge, vdi, k8s, db, unit, today, newWorkshop, openWorkshop, removeWorkshop, presets = [], go, focus }) {
   const say = h("p", { class: "note", role: "status" });
   const act = (fn) => async (...a) => { try { await fn(...a); say.textContent = ""; } catch (e) { say.textContent = e.message; } };
   let cur = w;
@@ -2429,7 +2430,7 @@ export function workshopView({ workshop: w, catalog, list, answer, worth, setDea
     w.inventory && waves ? wavesCard(w, waves, today) : null, w.scope.includes("private-ai") && gpu ? gpuCard(w, gpu) : null,
     w.scope.includes("dr-backup") && dr ? drCard(w, dr) : null, w.scope.includes("object-storage") && obj ? objCard(w, obj) : null,
     w.scope.includes("edge-sites") && edge ? edgeCard(w, edge) : null, w.scope.includes("euc") && vdi ? vdiCard(w, vdi) : null,
-    w.scope.includes("kubernetes-platform") && k8s ? k8sCard(w, k8s) : null, w.scope.some((p) => WS.UNIT_LINES.includes(p)) && unit ? unitCard(w, unit) : null].filter(Boolean);
+    w.scope.includes("kubernetes-platform") && k8s ? k8sCard(w, k8s) : null, w.scope.includes("dbaas") && db ? dbCard(w, db) : null, w.scope.some((p) => WS.UNIT_LINES.includes(p)) && unit ? unitCard(w, unit) : null].filter(Boolean);
   // with lines chosen, the next question comes first, beside where every line stands; the meeting's settings follow
   const top = inScope.length
     ? [h("div", { class: "card deckpanel" }, deckBox, h("div", { class: "deckside" }, clockBox, heardBox, prog, strip,
@@ -2675,6 +2676,45 @@ function objCard(w, obj) {
       try { await obj(null); } catch (e) { say.textContent = e.message; }
     } }))), say),
   { sub: "For backups kept on object storage: what the retention holds after reduction, with protection and room to grow, and what the nightly window needs. The backup product's own calculator, on the customer's data, has the last word." });
+}
+
+/** A first database licence sketch: the busy cores at the planned peak, on whole hosts kept for the databases. */
+function dbCard(w, db) {
+  const a = DBS.cleanDb(w.db || {});
+  const say = h("p", { class: "note", role: "status" });
+  const out = h("div", { class: "szout" });
+  const fields = [["databases", "Databases licensed per core"], ["vcpu_per_db", "Processors each is given today"], ["busy_pct", "Busy at the busiest hour (%)"],
+    ["target_pct", "Hosts may run at the busiest hour (%)"], ["cores_today", "Cores licensed today"], ["host_cores", "Cores per host kept for them"],
+    ["spare_hosts", "Hosts kept free for a failure"], ["core_year", "A licensed core a year, support included (0: not known)"]];
+  const inputs = {};
+  const spare = h("input", { type: "checkbox", checked: a.spare_licensed ? "" : null });
+  const current = () => { const v = { spare_licensed: spare.checked ? 1 : 0 }; for (const [k] of fields) v[k] = Number(inputs[k].value); return DBS.cleanDb(v); };
+  const draw = (settings) => {
+    const sk = DBS.dbSketch(settings);
+    if (!sk.ok) { put(out, h("p", { class: "note", text: sk.error })); return; }
+    const vs = sk.freed == null ? "" : sk.freed >= 0 ? `, ${INV.fmt(sk.freed)} fewer than today${sk.money != null && sk.freed > 0 ? ` (about ${INV.fmt(sk.money)} a year)` : ""}` : `, ${INV.fmt(-sk.freed)} more than today`;
+    put(out,
+      h("div", { class: "szhead" }, h("b", { text: INV.fmt(sk.licensed) }), h("span", {}, h("strong", { text: "cores to license" }),
+        h("small", { text: `on ${sk.hosts} host${sk.hosts === 1 ? "" : "s"} kept for the databases${vs}` }))),
+      h("ol", { class: "szsteps" }, sk.steps.map((t) => h("li", { text: t }))),
+      h("div", { class: "growproof" }, h("small", { text: "Whatever the engine" }), h("ul", {}, DBS.dbNotes(sk).map((t) => h("li", { text: t })))));
+  };
+  const save = async () => { const v = current(); draw(v); try { await db(v); say.textContent = ""; } catch (e) { say.textContent = e.message; } };
+  spare.addEventListener("change", save);
+  const grid = h("div", { class: "szgrid" }, fields.map(([k, label]) => {
+    inputs[k] = h("input", { type: "number", step: "any", min: "0", value: String(a[k]), "aria-label": label });
+    inputs[k].addEventListener("change", save);
+    return h("label", { class: "szf" }, h("span", { text: label }), inputs[k]);
+  }), h("label", { class: "vcopt" }, spare, h("span", { text: "The agreement asks for the spare host to be licensed too" })));
+  draw(a);
+  return card("A first database licence sketch", h("div", { class: "sz" }, out, h("details", { class: "szassume" }, h("summary", { text: "The databases, their busiest hour and the hosts, to agree with the customer" }), grid,
+    h("div", { class: "btnrow" }, h("button", { class: "btn small", type: "button", text: "Back to the defaults", onclick: async () => {
+      for (const [k] of fields) inputs[k].value = String(DBS.DB_DEFAULTS[k]);
+      spare.checked = !!DBS.DB_DEFAULTS.spare_licensed;
+      draw(DBS.DB_DEFAULTS);
+      try { await db(null); } catch (e) { say.textContent = e.message; }
+    } }))), say),
+  { sub: "For databases licensed per processor core: the cores their busiest hour needs, planned on whole hosts kept for them, against the cores licensed today. The licence agreement and the customer's licensing specialist have the last word." });
 }
 
 /** A first container platform sizing sketch: workers per cluster by processor, memory and pods, the control plane, the volumes. */

@@ -2,6 +2,11 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.198.0
+
+- **A first database licence sketch.** Databases licensed per processor core usually run on hosts sized for a peak they rarely reach. With databases in scope, a workshop now works out, from the conversation, the cores their busiest hour needs when they are placed on hosts kept for them at a planned peak: whole hosts, a host kept free for a failure (licensed or not, as the agreement says), and the difference with the cores licensed today, priced when a core's yearly cost is known. Every step is shown; the notes say first that the licence agreement and the customer's licensing specialist decide what must be licensed.
+- The sketch is kept with the workshop, goes in the journey (.md) and in the handover to delivery.
+
 ## 0.197.0
 
 - **A first container platform sizing sketch.** With the Kubernetes platform in scope, a workshop now sizes the clusters from what the teams say: the applications, their pods, what each pod asks for, test and development as a share of production. For each cluster it counts the workers by processor, by memory and by the pods a node may run, says which decides, keeps room for the platform's own pods and for rolling updates, adds a node to drain and the control plane, and gives what the platform must host and the persistent volumes. Every step is shown, with the notes that hold whatever the platform.

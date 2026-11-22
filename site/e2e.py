@@ -1353,14 +1353,15 @@ def main(site: str) -> int:
         check("Kestrel Logistics" in page.inner_text("#reshead") and page.locator("#view .wsopt[aria-pressed=true]").count() == 16, "a workshop is kept in the browser and comes back after a reload")
         # AI on the customer's own infrastructure: a first GPU sketch, open to the customer's assumptions
         page.get_by_role("button", name="AI on our own infrastructure").click()
-        page.wait_for_selector("#view .szhead")
-        gpus = int(page.inner_text("#view .szhead > b"))
-        page.locator("#view details.szassume summary").first.click()
+        gpucard = page.locator("#view .card").filter(has_text="A first GPU sketch")
+        gpucard.locator(".szhead").wait_for()
+        gpus = int(gpucard.locator(".szhead > b").inner_text())
+        gpucard.locator("details.szassume summary").first.click()
         bits = page.locator("#view input[aria-label='Bits per weight as served']")
         bits.fill("4")
         bits.dispatch_event("change")
         page.wait_for_timeout(300)
-        check(gpus == 8 and int(page.inner_text("#view .szhead > b")) < gpus and "copies of the model" in page.inner_text("#view .szhead"),
+        check(gpus == 8 and int(gpucard.locator(".szhead > b").inner_text()) < gpus and "copies of the model" in gpucard.locator(".szhead").inner_text(),
               "with the AI line in scope, a first GPU sketch follows the assumptions: fewer bits, fewer GPUs")
         # shops, plants and branches: a first edge design, kind of site by kind of site
         check(page.locator("#view details.wsscopebox").get_attribute("open") is None and "Lines in scope" in page.inner_text("#view .wsscopebox"),
@@ -1403,6 +1404,14 @@ def main(site: str) -> int:
         mem.dispatch_event("change")
         page.wait_for_timeout(300)
         check("the memory decides" in k8scard.inner_text() and int(k8scard.locator(".szhead > b").inner_text()) > 11, "and the memory decides when the pods ask for more of it")
+        # the databases line: a first licence sketch, cores at the planned peak on whole hosts
+        dbcard = page.locator("#view .card").filter(has_text="A first database licence sketch")
+        check(dbcard.locator(".szhead > b").inner_text() == "256" and "256 fewer than today" in dbcard.inner_text() and "licence agreement decides" in dbcard.inner_text(),
+              "with databases in scope, a first licence sketch: the busy cores at the planned peak, on whole hosts, against today")
+        dbcard.locator("details.szassume summary").click()
+        dbcard.get_by_label("The agreement asks for the spare host to be licensed too").uncheck()
+        page.wait_for_timeout(300)
+        check(dbcard.locator(".szhead > b").inner_text() == "224" and "not licensed, as the agreement allows" in dbcard.inner_text(), "and a spare host the agreement does not count is left out")
         # running it like a cloud: what one machine costs, all in
         page.get_by_role("button", name="Running it like a cloud").click()
         page.wait_for_selector("#ws-cloud-operations")

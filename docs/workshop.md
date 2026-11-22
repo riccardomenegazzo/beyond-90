@@ -500,6 +500,15 @@ For production and for test and development apart, it counts the workers three w
 
 Notes that hold whatever the platform: read the requests the teams actually set from a running cluster, keep production apart with its own control plane, three or five control nodes, and room on each node for a rolling update. The sketch goes in the journey and in the handover.
 
+## A first database licence sketch
+
+With databases in scope, **A first database licence sketch** works out the processor cores databases licensed per core would need on hosts kept for them. Typed in from the conversation:
+- how many databases, the processors each is given today, and how busy those are at the busiest hour;
+- how busy the hosts kept for them may run at the busiest hour, the cores per host and the hosts kept free for a failure, and whether the agreement asks for those to be licensed too;
+- the cores licensed today and, when known, what a licensed core costs a year.
+
+It turns the busy processors at the planned peak into whole hosts, counts the cores to license, and compares them with today's. Notes that hold whatever the engine: the licence agreement decides what must be licensed (check it with the customer's licensing specialist), take the busy share from a week of data at the busiest hour database by database, and sketch each engine and edition as its own pool. The sketch goes in the journey and in the handover.
+
 ## What one machine costs
 
 With cloud operations, a service provider's cloud or hybrid cloud in scope, **What one machine costs** works out the number behind "the cloud is cheaper", in the customer's own figures. It adds up a year of the estate:
