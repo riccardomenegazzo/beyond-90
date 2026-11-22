@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.227.0
+
+- **Each migration wave says the data it copies ahead, and how long the copy takes.** The inventory now keeps the data on each cluster (the space used, or provisioned when the export has no used column), so the plan in waves shows, per wave, the TiB to copy before its cutover and the time it takes over the link the customer names (a new setting, 1,000 Mbit/s by default, counting on 70% of it beside the traffic already there). One line says the total, the largest wave and its copy time; when the copy of a wave takes longer than the days between waves, the line and the wave say so, with the three ways out: more bandwidth, more days between waves, smaller waves. The copy goes into the meeting summary, the calendar events, the customer readout and the hand-over to delivery. An inventory read before keeps planning as it did, without the copy.
+
 ## 0.226.0
 
 - **On a phone, the wide tables read as one card a row.** The recovery design's tiers, the edge design's kinds of site, the inventory's largest clusters, the migration waves, the partners across your deals and the team's engineers no longer have to be scrolled sideways on a small screen: each row becomes a card, each value beside its column's name, as the account tables already did. On a wider screen nothing changes.

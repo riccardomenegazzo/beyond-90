@@ -1530,6 +1530,18 @@ def main(site: str) -> int:
         per.dispatch_event("change")
         page.wait_for_timeout(300)
         check(page.locator("#view .wvtable tbody tr").count() < n_waves, "and follows the settings agreed with the customer")
+        copy = page.inner_text("#view .wvcopy")
+        check(copy.startswith("Data copied ahead of the cutovers:") and "Mbit/s, counting on 70% of the link" in copy and "Copy ahead" in page.inner_text("#view .wvtable thead")
+              and "TiB" in page.locator("#view .wvtable tbody tr").first.inner_text(), f"each wave says the data it copies ahead, and how long the copy takes: {copy}")
+        link = page.locator("#view input[aria-label='Link for the copy ahead, Mbit/s']")
+        link.fill("20")
+        link.dispatch_event("change")
+        page.wait_for_timeout(300)
+        check("takes longer than the 7 days between waves" in page.inner_text("#view .wvcopy") and page.locator("#view .wvtable td.neg").count() > 0,
+              "over a thin link the copy no longer fits between the waves, and the plan says so")
+        link.fill("1000")
+        link.dispatch_event("change")
+        page.wait_for_timeout(300)
         with page.expect_download() as dl:
             page.get_by_role("button", name="Add the waves to a calendar (.ics)").click()
         ics = Path(dl.value.path()).read_text(encoding="utf-8")

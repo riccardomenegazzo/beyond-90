@@ -556,9 +556,11 @@ From the same inventory, **A plan in waves** proposes how the move would run: a 
 
 The settings are agreed with the customer: the date of the first wave (two weeks out by default), the most machines in one wave, the days between waves, how many machines the test wave takes, and whether powered-off machines move or are left to retire. Each wave shows its date, cluster, machines, vCPU, memory and how many run operating systems past support, so tools and agents can be checked for them first.
 
+Each wave also shows **the data it copies ahead** of its cutover and how long that copy takes over the link the customer names (a setting: 1,000 Mbit/s by default, counting on 70% of it, since the link also carries the traffic already on it). The data comes from the inventory, cluster by cluster: the space used, or what is provisioned when the export has no used column, shared over a cluster's waves by machines. One line gives the total, the largest wave and its copy time. When the copy of a wave takes longer than the days between waves, the copies would pile up: the line and the wave say so, with the three ways out (more bandwidth, more days between waves, smaller waves). It is an order of magnitude: compression, deduplication and the migration tool's own pace change it, and the change rate during the copy adds to it.
+
 Every wave goes through the same steps. Before: owners named and the change approved, a performance baseline, data copied ahead, the rollback written down, backup and monitoring ready. On the day: go or no-go, cutover inside the window, each owner testing against the baseline, sign-off or rollback by the agreed time. After: labels and policies checked on every moved machine, lessons into the next wave's runbook, old machines kept off for an agreed period, then removed.
 
-**Add the waves to a calendar** downloads one event per wave. The plan is in the meeting summary, and in the customer readout under "How the move would run". Only totals and cluster names are used.
+**Add the waves to a calendar** downloads one event per wave, each with the data to copy ahead. The plan is in the meeting summary, and in the customer readout under "How the move would run". Only totals and cluster names are used.
 
 ![A plan in waves: a test wave, then cluster by cluster, with dates and what each wave carries](img/app-waves.png)
 

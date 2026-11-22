@@ -6,7 +6,7 @@
 import { progress, STATUS_TEXT } from "./pov.js";
 import { assess, journey, inventoryLine, stories, WHO, worthText, figuresHeard } from "./workshop.js";
 import { sketch } from "./sizing.js";
-import { planWaves, wavesLine } from "./waves.js";
+import { planWaves, wavesLine, copyLine } from "./waves.js";
 import { buildCase, caseLine } from "./valuecase.js";
 import { gpuSketch } from "./gpu.js";
 import { drSketch } from "./drsketch.js";
@@ -98,7 +98,7 @@ export function handoverMarkdown(catalog, w, pov, today) {
     const sk = sketch(w.inventory, w.sizing || {});
     if (sk.ok) facts.push(`Sizing sketch: ${sk.nodes} servers, decided by ${sk.decided}; assumptions ${w.sizing ? "agreed with the customer" : "left at the defaults"}. Confirm with the sizing tool before ordering.`);
     const pw = planWaves(w.inventory, w.waves || {}, w.updated_on);
-    if (pw.ok) facts.push(`Plan in waves: ${wavesLine(pw)}`);
+    if (pw.ok) facts.push(`Plan in waves: ${wavesLine(pw)}${pw.has_data ? ` ${copyLine(pw)}` : ""}`);
   }
   const cs = w.case ? buildCase(w.case) : null;
   if (cs && cs.ok) facts.push(`Case for change: ${caseLine(cs)}`);

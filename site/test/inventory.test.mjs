@@ -51,6 +51,12 @@ test("the invented export reads into a plausible estate, with a small low-risk c
   assert.equal(s.templates, 1);
   assert.equal(s.clusters.length, 5);
   assert.equal(s.first_wave.name, "CL-TEST");
+  // the data on each cluster, for what each wave copies ahead: the running machines' share of it, and all of it
+  assert.ok(s.clusters.every((c) => c.tib_on <= c.tib && c.tib > 0));
+  assert.ok(Math.abs(s.clusters.reduce((n, c) => n + c.tib, 0) - (s.used_tib == null ? s.prov_tib : s.used_tib)) < 0.5);
+  assert.ok(!validSummary({ ...s, imported_on: "2026-11-18", clusters: [{ ...s.clusters[0], tib: -1 }] }));
+  const { tib, tib_on, ...older } = s.clusters[0];
+  assert.ok(tib >= tib_on && validSummary({ ...s, imported_on: "2026-11-18", clusters: [older] }), "a summary stored before keeps working");
   assert.ok(s.past_total > 0 && s.off > 0);
   assert.ok(validSummary({ ...s, imported_on: "2026-11-18" }));
 });

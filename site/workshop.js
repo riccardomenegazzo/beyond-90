@@ -9,7 +9,7 @@
 
 import { validSummary, notesFor, fmt } from "./inventory.js";
 import { validAssumptions, sketch, sketchMarkdown } from "./sizing.js";
-import { validWaves, planWaves, wavesMarkdown, wavesLine, RUNBOOK } from "./waves.js";
+import { validWaves, planWaves, wavesMarkdown, wavesLine, copyLine, RUNBOOK } from "./waves.js";
 import { calendar } from "./ics.js";
 import { validCase, buildCase, caseLine, caseMarkdown, money } from "./valuecase.js";
 import { validGpu, gpuSketch, gpuMarkdown } from "./gpu.js";
@@ -1090,7 +1090,7 @@ export function readoutHtml(catalog, w, res, { preparedBy = "", today = "" } = {
   }
   const pw = w.inventory ? planWaves(w.inventory, w.waves || {}, w.updated_on) : null;
   if (pw && pw.ok) {
-    out.push(`<h2>How the move would run</h2><p>${esc(wavesLine(pw))} A first plan from the inventory, to adjust with the application owners.</p>`);
+    out.push(`<h2>How the move would run</h2><p>${esc(wavesLine(pw))} A first plan from the inventory, to adjust with the application owners.</p>${pw.has_data ? `<p>${esc(copyLine(pw))}</p>` : ""}`);
     out.push(`<table><thead><tr><th>Date</th><th>Wave</th><th>Cluster</th><th>Machines</th></tr></thead><tbody>`);
     for (const wv of pw.waves) out.push(`<tr><td class="st">${esc(wv.date)}</td><td>${wv.test ? "Test wave" : `Wave ${wv.n}`}</td><td>${esc(wv.cluster)}</td><td>${wv.machines}</td></tr>`);
     out.push(`</tbody></table><div class="proof"><b>Every wave, the same steps</b><ul>${RUNBOOK.map((r) => `<li><b>${esc(r.when)}:</b> ${esc(r.steps.join("; "))}.</li>`).join("")}</ul></div>`);

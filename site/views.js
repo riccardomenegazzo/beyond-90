@@ -2672,7 +2672,8 @@ function wavesCard(w, waves, today) {
   const say = h("p", { class: "note", role: "status" });
   const out = h("div", { class: "wvout" });
   const start = h("input", { type: "date", value: a.start, "aria-label": "First wave on" });
-  const nums = [["per_wave", "Machines per wave at most"], ["every_days", "Days between waves"], ["pilot", "Machines in the test wave (0 for none)"]];
+  const nums = [["per_wave", "Machines per wave at most"], ["every_days", "Days between waves"], ["pilot", "Machines in the test wave (0 for none)"],
+    ["link_mbps", "Link for the copy ahead, Mbit/s"]];
   const inputs = {};
   const off = h("input", { type: "checkbox", "aria-label": "Move the powered-off machines too" });
   off.checked = a.include_off;
@@ -2687,12 +2688,15 @@ function wavesCard(w, waves, today) {
     const name = (wv) => (wv.test ? "Test wave" : `Wave ${wv.n}`);
     put(out,
       h("p", { class: "tline", text: WV.wavesLine(p) }),
+      p.has_data ? h("p", { class: p.slow ? "note neg wvcopy" : "note wvcopy", text: WV.copyLine(p) }) : null,
       p.past ? h("p", { class: "note", text: `${INV.fmt(p.past)} machines across the waves run operating systems past general support: check that backup, monitoring and security agents support them before their wave.` }) : null,
       h("div", { class: "tablewrap" }, h("table", { class: "wvtable", stack: true },
-        h("thead", {}, h("tr", {}, ["Date", "Wave", "Cluster", "Machines", "vCPU", "Memory GiB", "Past support"].map((t) => h("th", { scope: "col", text: t })))),
+        h("thead", {}, h("tr", {}, ["Date", "Wave", "Cluster", "Machines", "vCPU", "Memory GiB", "Past support", ...(p.has_data ? ["Data", "Copy ahead"] : [])].map((t) => h("th", { scope: "col", text: t })))),
         h("tbody", {}, p.waves.map((wv) => h("tr", { class: wv.test ? "wvtest" : "" },
           h("td", { text: wv.date }), h("td", { text: name(wv) }), h("td", { text: wv.cluster }), h("td", { class: "n", text: INV.fmt(wv.machines) }),
-          h("td", { class: "n", text: INV.fmt(wv.vcpu) }), h("td", { class: "n", text: INV.fmt(wv.mem_gib) }), h("td", { class: "n", text: INV.fmt(wv.past) })))))));
+          h("td", { class: "n", text: INV.fmt(wv.vcpu) }), h("td", { class: "n", text: INV.fmt(wv.mem_gib) }), h("td", { class: "n", text: INV.fmt(wv.past) }),
+          p.has_data ? h("td", { class: "n", text: wv.tib == null ? "—" : `${INV.fmt(wv.tib)} TiB` }) : null,
+          p.has_data ? h("td", { class: wv.copy_h > p.assumptions.every_days * 24 ? "n neg" : "n", text: WV.copyTime(wv.copy_h) }) : null))))));
     ics.hidden = false;
   };
   // outside what is redrawn: leaving a changed field redraws the plan, and must not take the button away mid-click

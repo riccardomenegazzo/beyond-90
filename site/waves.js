@@ -6,8 +6,10 @@
 import { fmt } from "./inventory.js";
 import { addDays, calendar } from "./ics.js";
 
-export const WAVE_DEFAULTS = { start: "", per_wave: 50, every_days: 7, pilot: 20, include_off: false };
-const LIMITS = { per_wave: [5, 1000], every_days: [1, 60], pilot: [0, 200] };
+export const WAVE_DEFAULTS = { start: "", per_wave: 50, every_days: 7, pilot: 20, include_off: false, link_mbps: 1000 };
+const LIMITS = { per_wave: [5, 1000], every_days: [1, 60], pilot: [0, 200], link_mbps: [10, 400000] };
+/** The share of the link a copy can count on, beside the traffic already on it. */
+export const LINK_USABLE = 0.7;
 const MAX_WAVES = 200;
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 const isDate = (v) => typeof v === "string" && DATE.test(v) && !Number.isNaN(Date.parse(v));
@@ -81,10 +83,12 @@ export function planWaves(inv, given, today) {
   const risk = (c) => (c.vms ? c.past / c.vms : 0) + 0.5 * (c.vms / biggest);
   const first = inv.first_wave ? clusters.find((c) => c.name === inv.first_wave.name) : null;
   const order = [...(first ? [first] : []), ...clusters.filter((c) => c !== first).sort((x, y) => risk(x) - risk(y) || x.vms - y.vms || (x.name < y.name ? -1 : 1))];
-  // a share of a cluster: its resources and its machines past support, in proportion (running machines carry the vCPU and memory)
+  // a share of a cluster: its resources, its data and its machines past support, in proportion (running machines carry the vCPU and memory)
+  const data = (c) => (a.include_off ? c.tib : c.tib_on);
   const part = (c, k) => ({ cluster: c.name, machines: k,
     vcpu: c.on ? Math.round((c.vcpu * Math.min(k, c.on)) / c.on) : 0, mem_gib: c.on ? Math.round((c.mem_gib * Math.min(k, c.on)) / c.on) : 0,
-    past: c.vms ? Math.round((c.past * k) / c.vms) : 0 });
+    past: c.vms ? Math.round((c.past * k) / c.vms) : 0,
+    tib: Number.isFinite(data(c)) && count(c) ? Math.round((data(c) * k * 10) / count(c)) / 10 : null });
   const waves = [];
   const left = new Map(order.map((c) => [c, count(c)]));
   if (a.pilot && order.length && left.get(order[0]) > 0) {
@@ -99,12 +103,37 @@ export function planWaves(inv, given, today) {
   }
   if (!waves.length) return { ok: false, error: "No machines to move with these settings: include the powered-off ones, or read another export." };
   if (waves.length > MAX_WAVES) return { ok: false, error: `That makes more than ${MAX_WAVES} waves: allow more machines per wave.` };
-  waves.forEach((wv, i) => { wv.n = i + 1; wv.date = addDays(start, i * a.every_days); });
+  waves.forEach((wv, i) => { wv.n = i + 1; wv.date = addDays(start, i * a.every_days); wv.copy_h = wv.tib == null ? null : copyHours(wv.tib, a.link_mbps); });
+  const known = waves.filter((wv) => wv.tib != null);
   const moved = waves.reduce((n, wv) => n + wv.machines, 0);
   const end = waves[waves.length - 1].date;
   const days = Math.round((Date.parse(end) - Date.parse(start)) / 86400000);
   return { ok: true, assumptions: a, start, end, waves, moved, retired: a.include_off ? 0 : inv.off,
-    clusters: new Set(waves.map((wv) => wv.cluster)).size, weeks: Math.max(1, Math.ceil((days + 1) / 7)), past: waves.reduce((n, wv) => n + wv.past, 0) };
+    clusters: new Set(waves.map((wv) => wv.cluster)).size, weeks: Math.max(1, Math.ceil((days + 1) / 7)), past: waves.reduce((n, wv) => n + wv.past, 0),
+    has_data: known.length > 0, data_tib: Math.round(known.reduce((n, wv) => n + wv.tib, 0) * 10) / 10, unknown_data: waves.length - known.length,
+    copy_max_h: known.length ? Math.max(...known.map((wv) => wv.copy_h)) : null,
+    slow: known.filter((wv) => wv.copy_h > a.every_days * 24).length };
+}
+
+/** Hours to copy so many TiB over a link of so many Mbit/s, with the share of it a copy can count on. */
+export const copyHours = (tib, mbps) => (tib * 2 ** 40 * 8) / (mbps * 1e6 * LINK_USABLE) / 3600;
+
+/** A copy time in the words a meeting uses: under an hour, hours up to two days, then days. */
+export function copyTime(hours) {
+  if (hours == null) return "not known";
+  if (hours < 1) return "under an hour";
+  if (hours < 48) { const n = Math.round(hours); return `about ${n} hour${n === 1 ? "" : "s"}`; }
+  return `about ${fmt(Math.round(hours / 2.4) / 10)} days`;
+}
+
+/** What the waves copy ahead of their day, and whether the link keeps up with the pace: "" when the inventory has no data per cluster. */
+export function copyLine(p) {
+  if (!p.has_data) return "";
+  const big = p.waves.filter((wv) => wv.copy_h != null).reduce((x, y) => (y.copy_h > x.copy_h ? y : x));
+  const name = big.test ? "the test wave" : `wave ${big.n}`;
+  return `Data copied ahead of the cutovers: ${fmt(p.data_tib)} TiB in all${p.unknown_data ? ` (not known for ${p.unknown_data} wave${p.unknown_data === 1 ? "" : "s"})` : ""}. `
+    + `The largest, ${name}, copies ${fmt(big.tib)} TiB: ${copyTime(big.copy_h)} at ${fmt(p.assumptions.link_mbps)} Mbit/s, counting on ${Math.round(LINK_USABLE * 100)}% of the link.`
+    + (p.slow ? ` The copy for ${p.slow === 1 ? "one wave" : `${fmt(p.slow)} waves`} takes longer than the ${fmt(p.assumptions.every_days)} day${p.assumptions.every_days === 1 ? "" : "s"} between waves: more bandwidth, more days between waves, or smaller waves.` : "");
 }
 
 /** The plan in one sentence. */
@@ -115,8 +144,13 @@ const waveName = (wv) => (wv.test ? "Test wave" : `Wave ${wv.n}`);
 
 /** The plan in Markdown, for the meeting summary. */
 export function wavesMarkdown(p) {
-  const out = ["### A plan in waves", "", wavesLine(p), "", "| Date | Wave | Cluster | Machines | vCPU | Memory GiB | Past support |", "|---|---|---|---|---|---|---|"];
-  for (const wv of p.waves) out.push(`| ${wv.date} | ${waveName(wv)} | ${wv.cluster.replace(/\|/g, "/")} | ${fmt(wv.machines)} | ${fmt(wv.vcpu)} | ${fmt(wv.mem_gib)} | ${fmt(wv.past)} |`);
+  const d = p.has_data;
+  const out = ["### A plan in waves", "", wavesLine(p), ...(d ? ["", copyLine(p)] : []), "",
+    `| Date | Wave | Cluster | Machines | vCPU | Memory GiB | Past support |${d ? " Data TiB | Copy ahead |" : ""}`, `|---|---|---|---|---|---|---|${d ? "---|---|" : ""}`];
+  for (const wv of p.waves) {
+    out.push(`| ${wv.date} | ${waveName(wv)} | ${wv.cluster.replace(/\|/g, "/")} | ${fmt(wv.machines)} | ${fmt(wv.vcpu)} | ${fmt(wv.mem_gib)} | ${fmt(wv.past)} |`
+      + (d ? ` ${wv.tib == null ? "—" : fmt(wv.tib)} | ${copyTime(wv.copy_h)} |` : ""));
+  }
   out.push("", "Every wave: " + RUNBOOK.map((r) => `${r.when.toLowerCase()}, ${r.steps.map((x) => x.charAt(0).toLowerCase() + x.slice(1)).join("; ")}`).join(". ") + ".");
   return out.join("\n");
 }
@@ -126,6 +160,6 @@ export function wavesIcs(w, p, stamp) {
   return calendar("Migration waves", p.waves.map((wv) => ({
     uid: `${w.id.replace(/\|/g, "-")}-wave-${wv.n}`, date: wv.date,
     summary: `${w.customer}: ${waveName(wv)}, ${wv.machines} machines from ${wv.cluster}`,
-    description: `${wv.past ? `${wv.past} on operating systems past support: check tools and agents first. ` : ""}${RUNBOOK.map((r) => `${r.when}: ${r.steps.join("; ")}.`).join(" ")}`,
+    description: `${wv.tib != null ? `Copy ahead: ${fmt(wv.tib)} TiB, ${copyTime(wv.copy_h)} before the day. ` : ""}${wv.past ? `${wv.past} on operating systems past support: check tools and agents first. ` : ""}${RUNBOOK.map((r) => `${r.when}: ${r.steps.join("; ")}.`).join(" ")}`,
   })), stamp);
 }

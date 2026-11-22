@@ -137,11 +137,13 @@ export function summarise(read) {
   const on = vms.filter((v) => v.power === "on");
   const sum = (list, k) => list.reduce((n, v) => n + (Number.isFinite(v[k]) ? v[k] : 0), 0);
   const hasUsed = vms.some((v) => Number.isFinite(v.used));
+  const disk = hasUsed ? "used" : "prov";      // what a move copies: the space used when the export has it, else what is provisioned
   const byCluster = new Map();
   for (const v of vms) {
     const k = v.cluster || "(no cluster)";
-    const c = byCluster.get(k) || { name: k, vms: 0, on: 0, vcpu: 0, mem: 0, past: 0, hosts: new Set() };
-    c.vms++; if (v.power === "on") { c.on++; c.vcpu += v.vcpu; c.mem += v.mem; }
+    const c = byCluster.get(k) || { name: k, vms: 0, on: 0, vcpu: 0, mem: 0, past: 0, data: 0, data_on: 0, hosts: new Set() };
+    const d = Number.isFinite(v[disk]) ? v[disk] : 0;
+    c.vms++; c.data += d; if (v.power === "on") { c.on++; c.vcpu += v.vcpu; c.mem += v.mem; c.data_on += d; }
     if (v.host) c.hosts.add(v.host);
     byCluster.set(k, c);
   }
@@ -152,7 +154,8 @@ export function summarise(read) {
     const p = PAST_SUPPORT.find(([re]) => re.test(v.os));
     if (p) { past[p[1]] = (past[p[1]] || 0) + 1; byCluster.get(v.cluster || "(no cluster)").past++; }
   }
-  const clusters = [...byCluster.values()].map((c) => ({ name: c.name.slice(0, 120), vms: c.vms, on: c.on, vcpu: round(c.vcpu), mem_gib: round(c.mem), hosts: c.hosts.size, past: c.past }))
+  const clusters = [...byCluster.values()].map((c) => ({ name: c.name.slice(0, 120), vms: c.vms, on: c.on, vcpu: round(c.vcpu), mem_gib: round(c.mem), hosts: c.hosts.size, past: c.past,
+    tib: round(c.data / 1024, 1), tib_on: round(c.data_on / 1024, 1) }))
     .sort((a, b) => b.vms - a.vms || (a.name < b.name ? -1 : 1)).slice(0, MAX_CLUSTERS);
   // a first wave: a small cluster, mostly running, with the least past support; it teaches the most for the least risk
   const candidates = clusters.filter((c) => c.on > 0 && c.name !== "(no cluster)");
@@ -179,7 +182,10 @@ export function validSummary(s) {
   for (const k of ["vms", "on", "off", "templates", "vcpu_on", "mem_on_gib", "prov_tib", "hosts", "datacenters", "past_total", "vcpu_per_vm", "mem_per_vm_gib"]) if (!n(s[k])) return false;
   if (s.used_tib !== null && !n(s.used_tib)) return false;
   if (!Array.isArray(s.clusters) || s.clusters.length > MAX_CLUSTERS) return false;
-  for (const c of s.clusters) if (!c || typeof c.name !== "string" || c.name.length > 120 || !["vms", "on", "vcpu", "mem_gib", "hosts", "past"].every((k) => n(c[k]))) return false;
+  for (const c of s.clusters) {
+    if (!c || typeof c.name !== "string" || c.name.length > 120 || !["vms", "on", "vcpu", "mem_gib", "hosts", "past"].every((k) => n(c[k]))) return false;
+    if (["tib", "tib_on"].some((k) => c[k] !== undefined && !n(c[k]))) return false;      // a summary read before the data per cluster was kept has none
+  }
   for (const m of [s.families, s.past]) {
     if (!m || typeof m !== "object" || Array.isArray(m) || Object.keys(m).length > 50) return false;
     for (const [k, v] of Object.entries(m)) if (k.length > 60 || !n(v)) return false;
