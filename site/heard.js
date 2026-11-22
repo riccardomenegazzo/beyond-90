@@ -105,10 +105,14 @@ export function tokens(text) {
   return out;
 }
 
+// a question's words are worked out once, not at every key pressed while something is written
+const KNOWN = new WeakMap();
 const weights = (q) => {
+  if (KNOWN.has(q)) return KNOWN.get(q);
   const m = new Map();
   const add = (text, wt) => { for (const t of new Set(tokens(text))) m.set(t, (m.get(t) || 0) + wt); };
   add(q.listen, 1); add(q.why, 1); add(q.probe, 1); add(q.q, 2);
+  KNOWN.set(q, m);
   return m;
 };
 

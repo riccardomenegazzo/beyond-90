@@ -2,6 +2,12 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.157.0
+
+- **The meeting clock follows to Qualify the deal.** In a meeting one moves between the technical questions and the deal's; started on the questions, the time left now shows in the header of the qualification card too, kept up to date, and goes when the clock is stopped.
+- **Lighter while writing what was heard.** Each question's words are worked out once and kept, instead of at every key pressed, so matching stays quick on a phone with many lines in scope.
+- A browser check that the clock shows on the qualification card.
+
 ## 0.156.0
 
 - **Heard something, on every line.** Twenty more sentences, on the real questions of AI, cloud operations, endpoints, SaaS, service provider clouds and the platform itself, all find their question among the three offered, eighteen first. Examples: "people paste customer data into public chatbots", "half the VMs are oversized", "contractor laptops have no agent at all", "marketing bought their own tenant with a credit card", "plenty of powered-off VMs still sit on expensive disks". The matching learned:

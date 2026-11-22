@@ -845,6 +845,12 @@ def main(site: str) -> int:
               and page.locator("#view .deckpane.inpage .decktag.core").count() == 1 and page.locator("#view .paceact .btn").count() == 0,
               "asking only the essentials narrows the list and the card")
         page.locator("#view .wsnarrow .kindchip", has_text="Essential questions only").click()
+        page.click("[data-tab=wsqualify]")
+        page.wait_for_selector("#view .deckpane.inpage .deckcard")
+        page.wait_for_timeout(1200)
+        check(page.locator("#view .deckpane.inpage .deckmini", has_text="left").count() == 1, "the meeting clock follows to the qualification card")
+        page.click("[data-tab=workshop]")
+        page.wait_for_selector("#view .clocktime")
         page.locator("#view .clockhead .linkbtn", has_text="Stop").click()
         check(page.locator("#view .clockstart .btn").count() == 3 and page.evaluate(f"sessionStorage.getItem({json.dumps(clock_key)})") is None,
               "stopped, the clock goes, from the tab too")

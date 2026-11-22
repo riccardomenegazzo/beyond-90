@@ -1926,6 +1926,25 @@ function deckPane({ cards, state, answerOf, answer, go, pfx, inline, set = DISCO
 }
 
 /** The deck on the whole screen. `aside`, when given, is lent to it under the cards (heard something) and given back on close. */
+/** The meeting clock of a workshop, as kept in this browser tab, or null. */
+function clockOf(id) {
+  try { const c = JSON.parse(sessionStorage.getItem(`beyond90.clock.${id}`) || "null"); return PACE.validClock(c) ? c : null; } catch { return null; }
+}
+
+/** A small clock for a deck's header: the time left on the meeting clock, kept up to date while it is on the page. */
+function miniClock(id) {
+  const m = h("span", { class: "deckmini" });
+  const tick = () => {
+    const c = clockOf(id);
+    if (!c) { m.textContent = ""; return; }
+    const r = PACE.reading(c, Date.now());
+    m.textContent = `${PACE.mmss(r.left)} ${r.left >= 0 ? "left" : "over"}`;
+  };
+  tick();
+  const t = setInterval(() => { if (!m.isConnected && m.dataset.seen) { clearInterval(t); return; } if (m.isConnected) m.dataset.seen = "1"; tick(); }, 1000);
+  return m;
+}
+
 function openDeck({ clock, onClose, aside = null, asideTitle = "", ...rest }) {
   const dlg = h("dialog", { class: "deck", "aria-labelledby": "deck-title" });
   const pane = deckPane({ ...rest, pfx: "deck", inline: false, clock, onDone: () => dlg.close() });
@@ -2141,7 +2160,7 @@ export function workshopView({ workshop: w, catalog, list, answer, worth, setDea
   // the meeting's clock: kept in this tab, not in the workshop; the pace is on the essential questions in scope
   const clockKey = `beyond90.clock.${cur.id}`;
   const keepClock = (c) => { try { if (c) sessionStorage.setItem(clockKey, JSON.stringify(c)); else sessionStorage.removeItem(clockKey); } catch { /* the clock just does not outlive the page */ } };
-  let meetingClock = (() => { try { const c = JSON.parse(sessionStorage.getItem(clockKey) || "null"); return PACE.validClock(c) ? c : null; } catch { return null; } })();
+  let meetingClock = clockOf(cur.id);
   const essentialCards = inScope.length ? DECK.deckFrom(catalog, cur.scope, (key, q) => !!q.core) : [];
   const miniClocks = new Set();
   const makeMini = () => { const m = h("span", { class: "deckmini" }); miniClocks.add(m); return m; };
@@ -3083,6 +3102,7 @@ export function qualifyView({ workshop: w, catalog, setDeal, setAlt, go }) {
     kicker: "Find out next", answerOf: (c) => cur.deal && cur.deal[c.key],
     answer: async (c, a, note) => { cur = await setDeal(c.key, a, note); return cur; },
     onAnswered: () => { qdList.draw(); drawHero(); } };
+  qdShared.clock = () => miniClock(cur.id);           // the meeting clock follows the meeting here too
   const qdDeck = deckPane({ ...qdShared, pfx: "qddeck", inline: true, onFull: () => openDeck({ ...qdShared, onClose: () => qdDeck.draw(false) }) });
   qdDeck.draw(false);
   return h("div", {}, hero,
