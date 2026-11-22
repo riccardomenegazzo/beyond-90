@@ -126,14 +126,14 @@ def main(site: str) -> int:
 
         def boot() -> None:
             page.goto(base)
-            page.wait_for_selector("#demo:not([disabled])", timeout=180_000)
+            page.wait_for_selector("#demo:not([disabled])", timeout=300_000)
 
         def state_tab(pg) -> str:
             return pg.evaluate("document.body.dataset.view")
 
         def run_and_wait() -> None:
             page.click("#run")
-            page.wait_for_selector("#run:not([disabled])", state="attached", timeout=180_000)    # the click disables it at once; enabled again means finished
+            page.wait_for_selector("#run:not([disabled])", state="attached", timeout=300_000)    # the click disables it at once; enabled again means finished
 
         def run_demo() -> None:
             page.click("#demo")
@@ -192,7 +192,7 @@ def main(site: str) -> int:
         page.click("#view .todocard .opprow .donebtn >> nth=0")
         page.wait_for_selector("#view .doneprog")
         page.reload()
-        page.wait_for_selector("#demo:not([disabled])", timeout=180_000)
+        page.wait_for_selector("#demo:not([disabled])", timeout=300_000)
         run_demo()
         page.click("#tabs [data-tab=today]")
         check(page.locator("#view .doneprog").count() == 1 and "1 marked done" in page.inner_text("#view .doneprog"), "a mark survives a reload: it is kept with the customer's saved data")
@@ -1369,7 +1369,7 @@ def main(site: str) -> int:
         check("Discovery: Kestrel Logistics" in page.inner_text("#doc") and "To find out before the next meeting" in page.inner_text("#doc"), "the meeting summary is ready to send")
         check("Concerns they raised" in page.inner_text("#doc") and "How to tell it" in page.inner_text("#doc"), "and says what the customer pushed back on, and how to tell the story to each audience")
         page.reload()
-        page.wait_for_selector("#demo:not([disabled])", timeout=180_000)
+        page.wait_for_selector("#demo:not([disabled])", timeout=300_000)
         page.click("#open-workshop")
         page.wait_for_selector("#view .wsq")
         check("Kestrel Logistics" in page.inner_text("#reshead") and page.locator("#view .wsopt[aria-pressed=true]").count() == 16, "a workshop is kept in the browser and comes back after a reload")
@@ -1622,8 +1622,8 @@ def main(site: str) -> int:
         check("Account plan: Halden Group" in page.inner_text("#doc") and "Questions for the next meeting" in page.inner_text("#doc"), "the account plan is ready to share")
         page.click("[data-tab=estate]")
         page.locator("#view tbody tr").first.get_by_role("button", name="Open").click()
-        page.wait_for_selector("#run:not([disabled])", state="attached", timeout=180_000)
-        page.wait_for_selector("#view .todayhero", timeout=180_000)
+        page.wait_for_selector("#run:not([disabled])", state="attached", timeout=300_000)
+        page.wait_for_selector("#view .todayhero", timeout=300_000)
         check("Halden Group" in page.inner_text("#reshead") and page.locator("[data-tab=estate]").count() == 0, "opening a line shows that line's own report")
 
         # working as a pre-sales engineer: a desk of one's own, from discovery to decision
@@ -1701,7 +1701,7 @@ def main(site: str) -> int:
               "the manager reads the team's snapshots, checked field by field: a forged one is refused")
         page.get_by_role("button", name="Try it with two invented engineers").click()
         page.wait_for_selector("#desk-body .teamtable tbody tr:nth-child(2)")
-        check("Engineer B (mock)" in page.inner_text("#desk-body .teamtable") and "What the team's deals teach" in page.inner_text("#desk-body .teambody"),
+        check("Engineer B (mock)" in page.inner_text("#desk-body .teamtable") and "Sized at the proof" in page.inner_text("#desk-body .teamtable") and "What the team's deals teach" in page.inner_text("#desk-body .teambody"),
               "and sees each engineer's pipeline, the deals at risk and what the team's deals teach")
         team_text = page.inner_text("#desk-body .teambody")
         check("Partners across the team" in team_text and "Verdi Sistemi (mock)" in team_text and "Qualified for a proof" in page.inner_text("#desk-body .teamtable"),
@@ -1715,7 +1715,7 @@ def main(site: str) -> int:
         page.wait_for_selector("#view .wsq, #view ol.journey, #view .promise")
         check("Kestrel Logistics" in page.inner_text("#reshead"), "an opportunity opens where it stands")
         page.reload()
-        page.wait_for_selector("#desk-body .deskfunnel", timeout=180_000)
+        page.wait_for_selector("#desk-body .deskfunnel", timeout=300_000)
         check(page.is_visible("#place-desk") and not page.is_visible("#place-start"), "a pre-sales engineer lands on the desk")
         page.click(".rail [data-place=start]")
         page.locator(f"#hero-roles [data-role={role_before}]").click()
@@ -1756,7 +1756,7 @@ def main(site: str) -> int:
         check("hours" in page.frame_locator("#report").locator("body").inner_text().lower(), "the book report renders")
         page.click("[data-tab=bookmap]")
         page.locator("#view tbody tr").first.get_by_role("button", name="Open").click()
-        page.wait_for_selector("#run:not([disabled])", state="attached", timeout=180_000)
+        page.wait_for_selector("#run:not([disabled])", state="attached", timeout=300_000)
         page.wait_for_selector("#book-table[hidden]", state="attached")
         check("Yield" in page.inner_text("#kpis") and page.locator("#tabs button[data-tab]").count() == 34, "opening a customer from the book shows its own report")
         examples = Path(__file__).resolve().parent.parent / "examples" / "portfolio"
@@ -1793,7 +1793,7 @@ def main(site: str) -> int:
             for (const n of names) { const q = tx.objectStore(n).getAll(); q.onsuccess = () => { out[n] = q.result; if (--left === 0) res(JSON.stringify(out)); }; } }; })""")
         check("Northwind" not in facts and "Acme" not in facts and "renewed" not in facts and "sealed" in facts, "sealed outcomes and promises carry no customer name, not even in their keys")
         page.reload()
-        page.wait_for_selector("#demo:not([disabled])", timeout=180_000)
+        page.wait_for_selector("#demo:not([disabled])", timeout=300_000)
         page.wait_for_selector("#vault-unlock:not([hidden])")
         check(page.locator("#hist-table tbody tr").count() == 0, "after a reload the saved data stays locked")
         page.click("#vault-unlock")
@@ -1900,7 +1900,7 @@ def main(site: str) -> int:
 
         # opened like an installed app: a shortcut on its icon, and files shared to it from another app
         page.goto(base + "?start=demo")
-        page.wait_for_selector("#results:not([hidden])", timeout=180_000)
+        page.wait_for_selector("#results:not([hidden])", timeout=300_000)
         check("start=" not in page.url, "the icon's Example shortcut opens the example, analysed, and leaves a clean address")
         # one link for a presales leader: the desk at work, at once, without waiting for the engine
         fresh = browser.new_context()
@@ -2007,15 +2007,15 @@ def main(site: str) -> int:
         text = rec_path.read_text()
         check("not independent proof" in text and re.search(r"saved snapshots: [1-9]", text) is not None and "recorded outcomes: 1" in text, "the erasure record is honest about what it proves and counts what it removed")
         page.reload()
-        page.wait_for_selector("#demo:not([disabled])", timeout=180_000)
+        page.wait_for_selector("#demo:not([disabled])", timeout=300_000)
         check("Northwind" not in page.inner_text("#privacy-body") if page.locator("#privacy-body").count() else True, "the erasure survives a reload")
 
         # the first look: one click on a fresh page goes from nothing to a result
         first = browser.new_page()
         first.goto(base)
-        first.wait_for_selector("#try-now:not([disabled])", timeout=180_000)
+        first.wait_for_selector("#try-now:not([disabled])", timeout=300_000)
         first.click("#try-now")
-        first.wait_for_selector("#view-overview, .kpis, [data-tab=overview]", timeout=180_000)
+        first.wait_for_selector("#view-overview, .kpis, [data-tab=overview]", timeout=300_000)
         first.wait_for_selector("text=Northwind (mock)", timeout=60_000)
         check(first.locator("#try-now").count() == 1, "one click on a fresh page opens the example customer's result")
         first.close()
@@ -2029,10 +2029,10 @@ def main(site: str) -> int:
         bctx.add_init_script("try { localStorage.setItem('beyond90.role', 'all'); } catch (e) {}")
         tp = bctx.new_page()
         tp.goto(base)
-        tp.wait_for_selector("#demo:not([disabled])", timeout=180_000)
+        tp.wait_for_selector("#demo:not([disabled])", timeout=300_000)
         tp.click("#demo")
         tp.click("#run")
-        tp.wait_for_selector("#results:not([hidden])", timeout=180_000)
+        tp.wait_for_selector("#results:not([hidden])", timeout=300_000)
         tp.click("[data-tab=burndown]")
         tp.wait_for_selector("#view .bd-flow")
         tp.get_by_label("Target age for critical findings, in days").fill("3")
@@ -2054,7 +2054,7 @@ def main(site: str) -> int:
         mctx.add_init_script("try { localStorage.setItem('beyond90.role', 'all'); } catch (e) {}")
         mp = mctx.new_page()
         mp.goto(base)
-        mp.wait_for_selector("#demo:not([disabled])", timeout=180_000)
+        mp.wait_for_selector("#demo:not([disabled])", timeout=300_000)
         places = mp.evaluate("""(() => { const b = document.querySelector('.place-btn[aria-current]'), cs = getComputedStyle(b), r = b.getBoundingClientRect();
           const shown = [...document.querySelectorAll('.place-btn')].filter((x) => !x.hidden);
           const own = shown.every((x) => { const q = x.getBoundingClientRect(); const e = document.elementFromPoint(q.left + q.width / 2, q.top + q.height / 2); return e && e.closest('.place-btn') === x; });
@@ -2063,7 +2063,7 @@ def main(site: str) -> int:
               f"on a phone with no customer open, the places are a solid bar at the bottom, each in its own place, nothing showing through: {places}")
         mp.click("#demo")
         mp.click("#run")
-        mp.wait_for_selector("#results:not([hidden])", timeout=180_000)
+        mp.wait_for_selector("#results:not([hidden])", timeout=300_000)
         bar = mp.evaluate("(() => { const b = document.getElementById('mobilebar').getBoundingClientRect(); return [getComputedStyle(document.getElementById('mobilebar')).position, Math.round(b.bottom) === innerHeight, b.height > 40]; })()")
         check(bar == ["fixed", True, True], f"on a phone a customer gets an app bar at the bottom: {bar}")
         check(not mp.locator("#rail").is_visible(), "and the full menu stays out of the way until asked for")
@@ -2093,7 +2093,7 @@ def main(site: str) -> int:
               "on a phone each table row reads as a card with its labels")
         # a workshop on a phone: its own views in the app bar, and nothing wider than the screen
         mp.goto(base)
-        mp.wait_for_selector("#demo-workshop:not([disabled])", state="attached", timeout=180_000)
+        mp.wait_for_selector("#demo-workshop:not([disabled])", state="attached", timeout=300_000)
         mp.locator("#demo-workshop").dispatch_event("click")
         mp.wait_for_selector("#view ol.journey")
         guide = mp.locator("#view .firstmin")
@@ -2173,7 +2173,7 @@ def main(site: str) -> int:
                 actx = browser.new_context(bypass_csp=True, color_scheme=scheme)       # the audit injects a script, which the page's policy rightly forbids
                 apage = actx.new_page()
                 apage.goto(base)
-                apage.wait_for_selector("#demo:not([disabled])", timeout=180_000)
+                apage.wait_for_selector("#demo:not([disabled])", timeout=300_000)
                 apage.add_script_tag(path=axe)
                 rules = "axe.run(document, {runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'best-practice']}).then(r => r.violations.map(v => v.id + ' x' + v.nodes.length))"
 
@@ -2186,7 +2186,7 @@ def main(site: str) -> int:
                 apage.click(".rail [data-place=start]")
                 apage.click("#demo")
                 apage.click("#run")
-                apage.wait_for_selector("#results:not([hidden])", timeout=180_000)
+                apage.wait_for_selector("#results:not([hidden])", timeout=300_000)
                 bad += [f"work: {v}" for v in audit()]
                 apage.click("[data-tab=connections]")
                 bad += [f"connections: {v}" for v in audit()]
@@ -2194,7 +2194,7 @@ def main(site: str) -> int:
                 apage.click("#demo-estate")
                 apage.wait_for_selector("#loaded li:nth-child(4)")
                 apage.click("#run")
-                apage.wait_for_selector("#view .estatemap", timeout=180_000)
+                apage.wait_for_selector("#view .estatemap", timeout=300_000)
                 bad += [f"estate: {v}" for v in audit()]
                 apage.click("[data-tab=estategrow]")
                 bad += [f"grow: {v}" for v in audit()]

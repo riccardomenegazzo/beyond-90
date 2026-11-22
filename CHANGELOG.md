@@ -2,6 +2,11 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.217.0
+
+- **The desk's table says which lines are sketched.** Under what is at stake, each prospect now shows the lines whose first sketch was worked out with the customer's figures ("sketched: recovery, database licences, backup capacity"), as the Monday note does.
+- The browser tests wait up to five minutes, not three, for the engine to start: on a busy shared runner it once took longer, and the run failed for that alone.
+
 ## 0.216.0
 
 - **The leaders' guide and the pictures follow.** The guide for presales leaders says what a snapshot carries about the sketches and what **Sized at the proof** counts; the pictures of the team's desk and of the invented example's recovery design are taken again from the app as it is.
