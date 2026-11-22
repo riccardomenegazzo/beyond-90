@@ -1,5 +1,5 @@
 // The dashboard views. Each takes a context {result, dash, score, engine, files, options, go} and returns a Node.
-import { h, s as svgEl, chip, pct, pts, num, cap, dataTable, chipFilter, searchBox, toCsv, saveBlob, copyText } from "./ui.js";
+import { h, s as svgEl, chip, pct, pts, num, cap, dataTable, chipFilter, searchBox, toCsv, saveBlob, copyText, mailText } from "./ui.js";
 import { recap } from "./recap.js";
 import { OUTCOMES } from "./outcomes.js";
 import { newCall, callOutput } from "./callmode.js";
@@ -1925,8 +1925,8 @@ function deckPane({ cards, state, answerOf, answer, go, pfx, inline, set = DISCO
       s.lists.map(said),
       set.recap ? h("div", { class: "btnrow deckrecap" },
         h("button", { class: "btn", type: "button", text: "Copy the recap", onclick: (ev) => copyText(set.recap(cards, answerOf)).then((ok) => { ev.target.textContent = ok ? "Copied" : "Not copied"; }) }),
-        h("a", { class: "btn", href: DECK.recapMailto(set.recapSubject || "Discovery recap", set.recap(cards, answerOf)), text: "Email the recap",
-          "data-tip": "Opens your own mail app with the recap written in, for the account team. It names the gaps: it is not for the customer." })) : null,
+        h("button", { class: "btn", type: "button", text: "Email the recap", onclick: () => mailText(set.recapSubject || "Discovery recap", set.recap(cards, answerOf), DECK.recapMailto),
+          "data-tip": "Opens your own mail app with the recap written in, for the account team, after the same check as a copy. It names the gaps: it is not for the customer." })) : null,
       h("div", { class: "btnrow deckendrow" },
         set.end ? h("button", { class: "btn primary", type: "button", text: set.end.text, onclick: async (ev) => {
           if (set.end.act) { try { await set.end.act(); } catch (e) { ev.target.textContent = e.message; return; } }

@@ -65,6 +65,20 @@ export async function saveBlob(text, name, type, { raw = false } = {}) {
   return true;
 }
 
+/**
+ * A mail drafted in the person's own mail app: the subject and the text pass the same gate as a copy (pseudonyms, the
+ * preview, the log of what left), and only what comes out of it opens as the mail. `link(subject, body)` makes the
+ * mailto address. Nothing is sent: the mail app opens with a draft.
+ */
+export async function mailText(subject, body, link) {
+  const out = await through(`${subject}\n\n${body}`, "", "mail", "text/plain", false);
+  if (!out) return false;
+  const cut = out.text.indexOf("\n\n");
+  const a = Object.assign(document.createElement("a"), { href: cut < 0 ? link(subject, out.text) : link(out.text.slice(0, cut), out.text.slice(cut + 2)) });
+  document.body.append(a); a.click(); a.remove();
+  return true;
+}
+
 export async function copyText(text, { raw = false } = {}) {
   const out = await through(text, "", "copy", "text/plain", raw);
   if (!out) return false;

@@ -4,7 +4,7 @@ Everything here happens in your browser. Nothing is sent anywhere.
 
 ## Sharing levels
 
-The **Share** control at the top chooses what leaves the page when you copy or download a text:
+The **Share** control at the top chooses what leaves the page when you copy or download a text, or draft a mail with it (**Email the recap**: the page opens your own mail app with a draft, and sends nothing):
 
 | Level | What is replaced |
 |---|---|

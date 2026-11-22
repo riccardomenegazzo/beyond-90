@@ -81,13 +81,13 @@ export function createPrivacy({ state, store, $, say, unlockVaultUi, today, save
 
   function preview({ text, replaced, left, level, how, warn }) {
     const d = $("exit-dialog");
-    $("exit-title").textContent = how === "copy" ? "Copy with pseudonyms" : "Download with pseudonyms";
+    $("exit-title").textContent = how === "copy" ? "Copy with pseudonyms" : how === "mail" ? "Email with pseudonyms" : "Download with pseudonyms";
     $("exit-sum").textContent = `${replaced} name${replaced === 1 ? "" : "s"} replaced. Level: ${LEVEL_TEXT[level].split(":")[0]}.`;
     $("exit-text").textContent = text.length > 6000 ? text.slice(0, 6000) + `\n… ${text.length - 6000} more characters` : text;
     const items = left.map((f) => h("li", { text: `${KIND_TEXT[f.kind] || f.kind} still visible: ${f.hits.slice(0, 4).map((x) => `${x.value} ×${x.count}`).join(", ")}${f.hits.length > 4 ? ` and ${f.hits.length - 4} more` : ""}` }));
     if (warn) items.unshift(h("li", { class: "bad-text", text: warn }));
     $("exit-left").replaceChildren(...(items.length ? items : [h("li", { text: "Nothing the page knows about is left. It cannot see a name it was never told: check the text for names typed in free notes." })]));
-    $("exit-go").textContent = how === "copy" ? "Copy as shown" : "Download as shown";
+    $("exit-go").textContent = how === "copy" ? "Copy as shown" : how === "mail" ? "Open the mail as shown" : "Download as shown";
     d.showModal();
     return new Promise((resolve) => {
       const go = $("exit-go"), no = $("exit-cancel");

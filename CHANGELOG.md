@@ -2,6 +2,12 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.162.0
+
+- **Email the recap passes the same check as a copy.** At the end of the questions, the demo and the readout, **Email the recap** was a link that opened the mail app with the text in it, around the check every other way out goes through. It is now a button: the subject and the text pass the sharing level first (names, people hidden or pseudonyms), with the same preview, and only what comes out of it opens as the draft. A mail drafted is kept in the log of what left the page, beside copies and files, and the erasure receipt names it.
+- Nothing is sent by the page: the mail app opens with a draft, as before.
+- A browser check that, with pseudonyms, the readout's mail shows the preview with the customer's alias and opens nothing until it is accepted; the mails of the questions and the demo are read where they would open.
+
 ## 0.161.0
 
 - **The readout, criterion by criterion.** A proof of value's success criteria now open as cards, full screen, the same as the discovery questions and the demo: **Go criterion by criterion**, under Success criteria. One card per criterion still counted, starting at the first not tried, with how we will know on the back; swipe it by what was seen: right met, up partly met, left not met, down dropped (with the sponsor). The evidence is written on the card and suggests a result ("failed" sounds like not met, "two of three, the third next week" like partly); you decide.

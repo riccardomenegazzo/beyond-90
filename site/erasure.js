@@ -33,7 +33,7 @@ export function soon(list, today, days = 30) {
 
 // ---- the log of what left the page
 
-export const HOW = ["file", "copy"];
+export const HOW = ["file", "copy", "mail"];
 
 export function makeExport({ customer, on, how, what = "", level = "full", nonce = "" }) {
   const n = nonce || Math.random().toString(36).slice(2, 10);
@@ -88,7 +88,7 @@ export function receipt({ customer, on, removed, remaining, outsideCopies, locke
   ];
   if (outsideCopies.items.length) {
     lines.push(`- ${nOf(outsideCopies.items.length, "time")} something left this page for this customer (${outsideCopies.withNames} with real names). Those copies are wherever you put them:`);
-    for (const e of outsideCopies.items.slice(0, 50)) lines.push(`  - ${e.on}: ${e.how === "file" ? "file" : "copied text"}${e.what ? ` (${e.what})` : ""}, level ${e.level}`);
+    for (const e of outsideCopies.items.slice(0, 50)) lines.push(`  - ${e.on}: ${e.how === "file" ? "file" : e.how === "mail" ? "mail drafted" : "copied text"}${e.what ? ` (${e.what})` : ""}, level ${e.level}`);
     if (outsideCopies.items.length > 50) lines.push(`  - and ${outsideCopies.items.length - 50} more`);
   } else {
     lines.push("- This page has no record of anything leaving it for this customer. That is only what it saw: copies made another way are not counted.");

@@ -423,8 +423,15 @@ def main(site: str) -> int:
         rs = page.inner_text(f"{RD} .decksum")
         check(rs.startswith("1 of 4 criteria met, 1 partly, 1 not met; 1 not tried yet.") and "Not met: what it means for the decision" in rs and "alerts arrived after two hours" in rs,
               "the end of the readout says what was not met, with the evidence, and what is still to try")
-        check(page.locator(f"{RD} .deckrecap a", has_text="Email the recap").get_attribute("href").startswith("mailto:?subject=Proof%20of%20value%20readout"),
-              "and gives the account team the readout as text")
+        # with pseudonyms, the mail is previewed like a copy, and nothing opens until it is accepted
+        page.select_option("#share-level", "pseudonym")
+        page.locator(f"{RD} .deckrecap button", has_text="Email the recap").click()
+        page.wait_for_selector("#exit-dialog[open]")
+        check(page.inner_text("#exit-title") == "Email with pseudonyms" and "Northwind" not in page.inner_text("#exit-text") and page.inner_text("#exit-go") == "Open the mail as shown",
+              "the readout emailed to the account team passes the same check as a copy: aliases, and a preview first")
+        page.click("#exit-cancel")
+        page.wait_for_selector("#exit-dialog", state="hidden")
+        page.select_option("#share-level", "full")
         page.locator(f"{RD} .deckendrow .btn", has_text="Mark the readout as held").click()
         page.wait_for_selector(f"{RD}", state="detached")
         page.wait_for_selector("#view .kpiline")
@@ -1187,8 +1194,15 @@ def main(site: str) -> int:
         check(sm.startswith("1 of 3 parts shown landed, 1 with questions, 1 did not land.") and "Questions to answer, in writing" in sm and "How long does a restore take?" in sm
               and "Landed: what the proof should confirm" in sm and page.locator(f"{DD} .decktally").count() == 4,
               "where the demo stands: what landed, the questions to answer in writing, and what did not land")
-        mail = page.locator(f"{DD} .deckrecap a", has_text="Email the recap")
-        check(mail.count() == 1 and mail.get_attribute("href").startswith("mailto:?subject=Demo%20recap"), "and a recap of the demo for the account team")
+        page.evaluate("(() => { window.__mail = ''; const c = HTMLAnchorElement.prototype.click; HTMLAnchorElement.prototype.click = function () { if (this.href.startsWith('mailto:')) { window.__mail = this.href; HTMLAnchorElement.prototype.click = c; } else c.call(this); }; })()")
+        page.locator(f"{DD} .deckrecap button", has_text="Email the recap").click()
+        mailed = ""
+        for _ in range(50):
+            mailed = page.evaluate("window.__mail")
+            if mailed:
+                break
+            page.wait_for_timeout(100)
+        check(mailed.startswith("mailto:?subject=Demo%20recap%3A%20Kestrel"), "and a recap of the demo for the account team, drafted in their own mail app")
         page.locator(f"{DD} .deckendrow .btn", has_text="Mark the demo as given today").click()
         page.wait_for_selector(f"{DD}", state="detached")
         page.wait_for_selector("#view .fwlanded")
@@ -1924,8 +1938,15 @@ def main(site: str) -> int:
               "skipped to the end, the deck says where the meeting stands")
         check("Invite " in mp.inner_text("dialog.deck .decksum") and "essential question" in mp.inner_text("dialog.deck .decksum"),
               "and says who to invite next, for the essential questions still open")
-        mail = mp.locator("dialog.deck .deckrecap a", has_text="Email the recap")
-        check(mail.count() == 1 and mail.get_attribute("href").startswith("mailto:?subject=Discovery%20recap") and mp.locator("dialog.deck .deckrecap button", has_text="Copy the recap").count() == 1,
+        mp.evaluate("(() => { window.__mail = ''; const c = HTMLAnchorElement.prototype.click; HTMLAnchorElement.prototype.click = function () { if (this.href.startsWith('mailto:')) { window.__mail = this.href; HTMLAnchorElement.prototype.click = c; } else c.call(this); }; })()")
+        mp.locator("dialog.deck .deckrecap button", has_text="Email the recap").click()
+        mailed = ""
+        for _ in range(50):
+            mailed = mp.evaluate("window.__mail")
+            if mailed:
+                break
+            mp.wait_for_timeout(100)
+        check(mailed.startswith("mailto:?subject=Discovery%20recap") and "Discovery%20recap%3A" in mailed and mp.locator("dialog.deck .deckrecap button", has_text="Copy the recap").count() == 1,
               "at the end, the recap can be copied or opened in the phone's own mail app, for the account team")
         mp.locator("dialog.deck .deckendrow .btn", has_text="Back to the list").click()
         mp.wait_for_selector("dialog.deck", state="detached")

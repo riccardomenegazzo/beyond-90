@@ -17,7 +17,8 @@ test("export log: validation, merge by id, cap, per-customer view", () => {
   const b = makeExport({ customer: "A", on: "2026-11-02", how: "copy", level: "pseudonym", nonce: "2" });
   const c = makeExport({ customer: "B", on: "2026-11-03", how: "copy", nonce: "3" });
   assert.ok([a, b, c].every(validExport));
-  assert.ok(!validExport({ ...a, how: "mail" }) && !validExport({ ...a, on: "yesterday" }) && !validExport(null));
+  assert.ok(validExport({ ...a, how: "mail" }), "a mail drafted in the person's mail app is logged as leaving too");
+  assert.ok(!validExport({ ...a, how: "post" }) && !validExport({ ...a, on: "yesterday" }) && !validExport(null));
   const m = mergeExports([a, b], [b, c, { junk: 1 }]);
   assert.equal(m.length, 3);
   assert.equal(m[0].id, c.id);
