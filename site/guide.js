@@ -142,6 +142,12 @@ export const FAQ = [
   { group: "Presales", items: [
     { q: "I have thirty minutes for a first meeting. Which questions?",
       a: "Open the workshop's Questions and press “Essential questions only”: five to seven per line, value first. “Who is in the room” narrows them to the people there. Under each, “How to ask it” says what to listen for and what to ask next. “Question guide (.md)” takes the list into the meeting." },
+    { q: "Can I send a few questions before the meeting?",
+      a: "Yes: under the lines in scope of a workshop, “Copy the questions to send ahead” gives a short note for the customer with the factual questions their team can answer in writing (how many, how old, how large, where), not answered yet, grouped by who would answer them. The meeting is then spent on what hurts. No answer or note is in it." },
+    { q: "Can I take my notes in Italian?",
+      a: "Yes. Heard something reads a note written in Italian through a glossary of the words these meetings use, so “il rinnovo della licenza scade a marzo” finds the question about the renewal, “abbiamo già i backup” is recognised as the concern it voices, and “300 mila al giorno” is a figure per day. English notes are read exactly as before." },
+    { q: "Can I size it before the customer sends any data?",
+      a: "Roughly, yes: with a line in scope, the workshop has a first sketch built from what was said. Hosts for virtual desktops, workers for a container platform, licensed cores for databases, file and backup capacity, a recovery design, GPUs for AI, an edge design, and from a VM inventory a sizing and a plan in waves. Every step and assumption is shown; the product's own sizing tool and the customer's data have the last word." },
     { q: "How do I know whether a deal is real, not only technically possible?",
       a: "Qualify the deal: ten questions that are the same on every line (pain, a date, the measured result, who decides and how, budget and purchasing, the proof that would convince, a champion, the alternatives). Known, partly or not yet; they say whether it is ready for a demo built for them, a proof of value, or a date in the forecast." },
     { q: "What do I do next with this prospect?",

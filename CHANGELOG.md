@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.200.0
+
+- **The help answers the newest presales questions:** can I send a few questions before the meeting (the questions to send ahead), can I take my notes in Italian (Heard something reads them), and can I size it before the customer sends any data (the first sketches of each line, from what was said). A test keeps every answer short enough to read in the panel, and each question asked once.
+
 ## 0.199.0
 
 - **A first file storage sketch.** With file storage in scope, a workshop now sizes the file shares from the conversation: the data after its growth over the years the storage is sized for, the share nobody has opened in a year moved to a cheaper tier, the daily and weekly snapshots kept on the rest, then data reduction, protection and the fill level. It gives the usable and raw capacity and what the cheaper tier holds, every step shown, with the notes that hold whatever the product (scan the last-access times, snapshots are not a backup, ransomware on a share, mapping the shares of the file servers brought together).
