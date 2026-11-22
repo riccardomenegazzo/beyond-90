@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { assign, emptyTable, redact, redactName, restore, leftovers, validTable, dropCustomer, kindsFor } from "../aliases.js";
+import { assign, emptyTable, redact, redactName, restore, leftovers, validTable, dropCustomer, kindsFor, prospectIds } from "../aliases.js";
 
 const ids = { customer: ["Northwind Traders"], person: ["Ana Rossi", "Ana"], team: ["Platform"], account: ["nw-prod", "nw-prod-eu"] };
 const table = (level = "pseudonym") => assign(emptyTable(), ids, level, "Northwind Traders");
@@ -89,4 +89,19 @@ test("a table is validated and a customer can be dropped", () => {
 test("empty names and short text do no harm", () => {
   assert.equal(redact("", table(), "pseudonym").text, "");
   assert.equal(redact("abc", emptyTable(), "pseudonym").replaced, 0);
+});
+
+test("prospects are known too: a workshop's and a proof's customer, a proof's sponsor and champion", () => {
+  const ids = prospectIds([{ customer: "Kestrel Logistics (mock)" }, { customer: "" }],
+    [{ customer: "Kestrel Logistics (mock)", sponsor: "Anna Rossi", champion: "" }, { customer: "Valle Health (mock)", sponsor: "Luca Bianchi", champion: "Luca Bianchi" }]);
+  assert.deepEqual(Object.keys(ids).sort(), ["Kestrel Logistics (mock)", "Valle Health (mock)"]);
+  assert.deepEqual(ids["Kestrel Logistics (mock)"], { customer: ["Kestrel Logistics (mock)"], person: ["Anna Rossi"], team: [], account: [] });
+  assert.deepEqual(ids["Valle Health (mock)"].person, ["Luca Bianchi"]);
+  let table = emptyTable();
+  for (const [c, x] of Object.entries(ids)) table = assign(table, x, "pseudonym", c);
+  const out = redact("Demo recap: Kestrel Logistics (mock). Anna Rossi signs; Valle Health (mock) next.", table, "pseudonym").text;
+  assert.doesNotMatch(out, /Kestrel|Valle|Anna|Luca/);
+  assert.match(out, /^Demo recap: Customer [A-Z]\. Person \d signs; Customer [A-Z] next\.$/);
+  assert.match(redact("Anna Rossi and Kestrel Logistics (mock)", table, "people").text, /^Person \d and Kestrel Logistics \(mock\)$/, "people hidden keeps the customer");
+  assert.deepEqual(prospectIds(null, undefined), {});
 });

@@ -1,7 +1,7 @@
 // Sharing with pseudonyms, keeping data only as long as it should be kept, and erasing one customer.
 // The pure rules are in aliases.js and erasure.js; this file connects them to the page.
 import { h } from "./ui.js";
-import { LEVELS, LEVEL_TEXT, assign, redact, redactName, restore, leftovers, KINDS } from "./aliases.js";
+import { LEVELS, LEVEL_TEXT, assign, redact, redactName, restore, leftovers, KINDS, prospectIds } from "./aliases.js";
 import { internalWarning } from "./internal.js";
 import { makeExport, due, soon, outside, receipt } from "./erasure.js";
 import { nOf, verb } from "./words.js";
@@ -14,9 +14,15 @@ export function createPrivacy({ state, store, $, say, unlockVaultUi, today, save
   try { const v = localStorage.getItem(LEVEL_KEY); if (LEVELS.includes(v)) state.share = v; } catch { /* no storage: the level is for this visit only */ }
   state.idsBy = {};
 
+  // what the page knows to replace: the customer analysed, and every prospect kept here (workshops, proofs of value)
+  const knownIds = () => {
+    const known = { ...state.idsBy };                // the analysed customer first: its aliases come first, its lists stay whole
+    for (const [c, ids] of Object.entries(prospectIds(state.workshops, state.povs))) if (!known[c]) known[c] = ids;
+    return known;
+  };
   const allIds = () => {
     const out = Object.fromEntries(KINDS.map((k) => [k, []]));
-    for (const ids of Object.values(state.idsBy)) for (const k of KINDS) out[k].push(...(ids[k] || []));
+    for (const ids of Object.values(knownIds())) for (const k of KINDS) out[k].push(...(ids[k] || []));
     return out;
   };
 
@@ -67,7 +73,7 @@ export function createPrivacy({ state, store, $, say, unlockVaultUi, today, save
     try {
       table = await store.aliasTable();
       const before = table.entries.length;
-      for (const [c, ids] of Object.entries(state.idsBy)) table = assign(table, ids, level, c);
+      for (const [c, ids] of Object.entries(knownIds())) table = assign(table, ids, level, c);
       if (table.entries.length !== before) await store.saveAliasTable(table);
     } catch (e) { say("Not shared: " + e.message); return null; }
     const red = redact(text, table, level);

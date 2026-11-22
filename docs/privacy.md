@@ -14,6 +14,8 @@ The **Share** control at the top chooses what leaves the page when you copy or d
 
 At the second and third level you see a **preview** before anything leaves: the text as it will leave, how many names were replaced, and what the page can still see (names the level does not cover, and anything shaped like an email address). You then choose to continue or cancel. File names get the alias too.
 
+The customer is the one analysed, and every prospect kept in this browser: the customer of each discovery workshop and each proof of value, whose sponsor and champion count as people. A readout, a recap or a demo plan from a workshop leaves with the alias too.
+
 The aliases are kept **on this device** (sealed with your passphrase if you set one), so the same name gets the same alias next week. Under *Saved → Sharing and retention* you can paste a text that came back with aliases in it, for example an answer from a model, and **put the real names back**.
 
 Not changed on purpose: the sealed workspace backup, and the starter and interaction files you make for your own use. A PowerPoint file cannot have its names replaced, so it is refused at the pseudonym levels: download the Markdown or HTML version.

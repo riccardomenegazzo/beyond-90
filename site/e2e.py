@@ -1210,6 +1210,15 @@ def main(site: str) -> int:
         check(0 < each_part() < at45, "and a shorter meeting gives each part less")
         page.get_by_label("Length of the demo meeting").select_option("45")
         page.locator("#view .fwtime", has_text=f"About {at45} minutes").wait_for()
+        # with pseudonyms, a workshop's text leaves without the prospect's name, as a customer's does
+        page.select_option("#share-level", "pseudonym")
+        page.get_by_role("button", name="Copy the demo plan").click()
+        page.wait_for_selector("#exit-dialog[open]")
+        check("Kestrel" not in page.inner_text("#exit-text") and "# Demo plan: Customer " in page.inner_text("#exit-text"),
+              "with pseudonyms, the demo plan leaves with the prospect's alias, not its name")
+        page.click("#exit-cancel")
+        page.wait_for_selector("#exit-dialog", state="hidden")
+        page.select_option("#share-level", "full")
         with page.expect_download() as dl:
             page.get_by_role("button", name="Demo plan (.md)").click()
         check(Path(dl.value.path()).read_text(encoding="utf-8").startswith("# Demo plan: Kestrel Logistics"), "and downloads as a plan to share with the seller")
@@ -1812,7 +1821,10 @@ def main(site: str) -> int:
         page.click("#copy")
         page.wait_for_selector("#exit-dialog[open]")
         shown = page.inner_text("#exit-text")
-        check("Northwind" not in shown and "Customer A" in shown, "pseudonym level replaces the customer's name in what is about to leave")
+        # the letter depends on which customers and prospects were shared before: read the one this customer was given
+        found_alias = re.search(r"^# (Customer [A-Z]+):", shown)
+        alias = found_alias.group(1) if found_alias else "Customer ?"
+        check("Northwind" not in shown and found_alias is not None, "pseudonym level replaces the customer's name in what is about to leave")
         check("replaced" in page.inner_text("#exit-sum") and page.locator("#exit-left li").count() >= 1, "the preview says what was replaced and what the page can still see")
         page.click("#exit-cancel")
         page.wait_for_selector("#exit-dialog", state="hidden")
@@ -1828,13 +1840,13 @@ def main(site: str) -> int:
             page.get_by_role("button", name="Download .md").click()
             page.wait_for_selector("#exit-dialog[open]")
             page.click("#exit-go")
-        check("northwind" not in dl.value.suggested_filename.lower() and "customer-a" in dl.value.suggested_filename, "the downloaded file's name carries the alias too")
+        check("northwind" not in dl.value.suggested_filename.lower() and alias.lower().replace(" ", "-") in dl.value.suggested_filename, "the downloaded file's name carries the alias too")
         saved_note = Path(tmp) / "handoff.md"
         dl.value.save_as(saved_note)
-        check("Northwind" not in saved_note.read_text() and "Customer A" in saved_note.read_text(), "the downloaded file holds aliases, not names")
+        check("Northwind" not in saved_note.read_text() and alias in saved_note.read_text(), "the downloaded file holds aliases, not names")
         page.click(".rail [data-place=saved]")
         page.locator("#privacy-body summary").click()
-        page.fill("#restore-in", "Customer A should renew; Customer A is at risk.")
+        page.fill("#restore-in", f"{alias} should renew; {alias} is at risk.")
         page.click("#restore-go")
         check("Northwind (mock) should renew" in page.inner_text("#restore-out") and "2 aliases restored" in page.inner_text("#restore-note"), "pasted aliases are turned back into the real names on this device")
         page.select_option("#share-level", "full")

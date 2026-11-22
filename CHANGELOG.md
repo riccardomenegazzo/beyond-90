@@ -2,6 +2,11 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.171.0
+
+- **Pseudonyms cover prospects too.** At the pseudonym level, the page replaced the names of the customer it had analysed, but not those of the prospects in discovery: a readout, a recap, a demo plan or a note from a workshop left with the prospect's real name. It now knows every prospect kept in this browser: the customer of each discovery workshop and each proof of value, and a proof's sponsor and champion as people (hidden at the people level too). The preview shows the alias before anything leaves.
+- New: `prospectIds` in `aliases.js`, with a test; a browser check that a workshop's demo plan leaves with the alias.
+
 ## 0.170.0
 
 - **Help answers three more presales questions:** how to run the demo and keep it on time, how to go through the results of a proof of value with the sponsor, and how to practise the objections before the meeting. Search (Ctrl K) finds them too.

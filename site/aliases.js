@@ -118,3 +118,21 @@ export function leftovers(text, ids, level) {
 export function dropCustomer(table, customer) {
   return { ...table, entries: table.entries.filter((e) => e.c !== customer) };
 }
+
+/**
+ * The identifiers of the prospects kept in this browser, as the engine lists a customer's: each discovery workshop's and
+ * each proof of value's customer, and a proof's sponsor and champion as people. Without them, a text from a workshop
+ * (a readout, a recap, a demo plan) would leave with the prospect's real name at the pseudonym level.
+ * @returns {Record<string, {customer:string[], person:string[], team:string[], account:string[]}>}
+ */
+export function prospectIds(workshops, povs) {
+  const out = {};
+  const slot = (c) => out[c] || (out[c] = { customer: [c], person: [], team: [], account: [] });
+  for (const w of workshops || []) if (w && typeof w.customer === "string" && w.customer.trim()) slot(w.customer);
+  for (const p of povs || []) {
+    if (!p || typeof p.customer !== "string" || !p.customer.trim()) continue;
+    const s = slot(p.customer);
+    for (const who of [p.sponsor, p.champion]) if (typeof who === "string" && who.trim() && !s.person.includes(who)) s.person.push(who);
+  }
+  return out;
+}
