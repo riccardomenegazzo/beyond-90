@@ -3920,6 +3920,7 @@ function lessonsView(ls, examples, title = "What the deals teach") {
     examples ? h("p", { class: "note first", text: "Read from the invented examples: with your own prospects, only theirs count." }) : null, stats,
     h("div", { class: "lsgrid" },
       list("What customers push back on", ls.objections.map((o) => h("li", {}, h("span", { text: `"${o.says}"` }), h("small", { class: "muted", text: ` ${o.line.toLowerCase()}: ${o.count} prospect${o.count === 1 ? "" : "s"}${o.won + o.lost ? `, ${o.won} won, ${o.lost} not` : ""}` })))),
+      list("What did not land in the demos", (ls.missed || []).map((m) => h("li", {}, h("span", { text: m.part }), h("small", { class: "muted", text: ` ${m.line.toLowerCase()}: ${m.count} demo${m.count === 1 ? "" : "s"}${m.won + m.lost ? `, ${m.won} won and ${m.lost} not` : ""}` })))),
       list("The gaps heard most", ls.gaps.map((g) => h("li", {}, h("span", { text: g.q }), h("small", { class: "muted", text: ` ${g.line.toLowerCase()}: ${g.count}${g.unknown ? `, ${g.unknown} where nobody knew` : ""}` })))),
       list("When not won", ls.reasons.map((r) => h("li", { text: `${r.label}: ${r.count}` }))),
       list("What the deals not won had not established", ((ls.not_established || {}).tags || []).map((t) => h("li", { text: `${t.tag}: ${t.count} of ${ls.not_established.of}` }))),

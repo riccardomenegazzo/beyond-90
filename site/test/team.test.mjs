@@ -122,3 +122,13 @@ test("the team view shows the partners across the team, with registrations to ac
   t.deals[0].partner = "Bad\u0007Name";
   assert.equal(validSnapshot(t), false);
 });
+
+test("a deal in a snapshot may carry what did not land in its demo; snapshots without it stay readable", () => {
+  const s = snap("Ada (mock)");
+  const d = s.deals[0];
+  assert.equal(validSnapshot({ ...s, deals: [{ ...d, missed: [{ line: "Disaster recovery and backup", part: "Every site has a copy" }] }] }), true);
+  assert.equal(validSnapshot({ ...s, deals: [{ ...d, missed: [] }] }), false, "empty is left out, not sent");
+  assert.equal(validSnapshot({ ...s, deals: [{ ...d, missed: [{ line: "x", part: "y", note: "z" }] }] }), false, "nothing but the line and the part");
+  const t = teamView([{ ...s, deals: [{ ...d, missed: [{ line: "Disaster recovery and backup", part: "Every site has a copy" }] }] }], { includeExamples: true });
+  assert.equal(t.lessons.missed[0].part, "Every site has a copy");
+});

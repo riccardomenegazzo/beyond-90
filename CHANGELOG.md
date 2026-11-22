@@ -2,6 +2,12 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.169.0
+
+- **What did not land in the demos, across deals.** What the deals teach (on the presales desk, and the team's desk) now lists the parts of a demo that did not land, most often first, with how those deals ended: a part that keeps missing is a demo to change. A part is named by what it was to show (the gap it closes, or the concern it answers), never by what was said about it.
+- Team snapshots may carry them (`missed` on a deal: the line and the part, at most twenty); snapshots from before stay readable. A snapshot that carries them is refused by versions before this one, as with every new field: update the app on both ends.
+- Tests for both, and that what was said in the demo stays out.
+
 ## 0.168.0
 
 - **Running the demo against the clock.** With the meeting clock running, each card of Run the demo says whether the demo is on time, from the plan's minutes: "On time: about 8 minutes for this part", "2 minutes behind: keep this part to its point, and say what you will send in writing", or ahead, with time for their questions. At the end, in the last five minutes: time to close, and agree what a proof would have to show.

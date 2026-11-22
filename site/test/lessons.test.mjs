@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 import { dealFacts, lessons, lessonsMarkdown } from "../lessons.js";
 import { exampleDesk } from "../desk.js";
 import { makePov, setOutcome, validPov, setCriterion, edit } from "../pov.js";
+import { exampleWorkshop, setDemoSeen } from "../workshop.js";
 
 const CAT = JSON.parse(readFileSync(new URL("./workshop-catalog.json", import.meta.url), "utf-8"));
 const D = "2026-11-18";
@@ -60,4 +61,23 @@ test("a deal with nothing recorded yet adds nothing but itself", () => {
   assert.equal(l.win_rate, null);
   assert.deepEqual([l.cycle.to_proof, l.cycle.proof, l.cycle.to_decision], [null, null, null]);
   assert.match(lessonsMarkdown(l), /1 prospect; 0 decisions recorded\./);
+});
+
+test("what did not land in the demos, across deals: by the part, never by what was said about it", () => {
+  let a = exampleWorkshop(D), b = { ...exampleWorkshop(D), id: `ws|${D}|other1`, customer: "Other (mock)" };
+  a = setDemoSeen(a, "dr-backup#2", "missed", "We have that already, thanks", D);
+  a = setDemoSeen(a, "c:dr-backup#3", "missed", "", D);
+  a = setDemoSeen(a, "dr-backup#4", "landed", "", D);
+  b = setDemoSeen(b, "dr-backup#2", "missed", "", D);
+  const facts = dealFacts([a, b], [], CAT);
+  const fa = facts.find((f) => f.customer === a.customer);
+  assert.equal(fa.missed.length, 2);
+  assert.ok(fa.missed.some((m) => m.part === CAT.lines["dr-backup"].questions[2].need));
+  assert.ok(fa.missed.some((m) => m.part === CAT.lines["dr-backup"].story.objections[3].says));
+  assert.doesNotMatch(JSON.stringify(facts), /We have that already/, "what was said stays out");
+  const l = lessons(facts, { includeExamples: true });
+  assert.equal(l.missed[0].part, CAT.lines["dr-backup"].questions[2].need);
+  assert.equal(l.missed[0].count, 2, "the same part missing in two demos counts twice");
+  assert.match(lessonsMarkdown(l), /## What did not land in the demos\n\n- .* \(disaster recovery and backup\): 2 demos\./);
+  assert.deepEqual(lessons([{ customer: "A", example: false, started_on: "", lines: [], land: "", raised: [], gaps: [], pov: null, outcome: null }]).missed, []);
 });

@@ -37,6 +37,20 @@ export function dealFacts(workshops, povs, catalog) {
         if (q) gaps.push({ line: line.label, q: clean(q.q), a: v.a });
       }
     }
+    // the parts of the demo that did not land: the gap it was to close, or the concern it answered; no words said about it
+    const missed = [];
+    if (w && catalog && w.demo && w.demo.seen) {
+      for (const [k, v] of Object.entries(w.demo.seen)) {
+        if (v.a !== "missed") continue;
+        const concern = k.startsWith("c:");
+        const [prof, i] = (concern ? k.slice(2) : k).split("#");
+        const line = catalog.lines[prof];
+        if (!line) continue;
+        const q = !concern && line.questions[Number(i)];
+        const text = concern ? ((line.story && line.story.objections) || [])[Number(i)]?.says : q && (q.need || q.q);
+        if (text) missed.push({ line: line.label, part: clean(text) });
+      }
+    }
     out.push({
       customer: clean(o.customer), example: isExampleId(w && w.id) || isExampleId(p && p.id),
       started_on: [w && w.created_on, p && p.created_on].filter(Boolean).sort()[0] || "",
@@ -54,6 +68,7 @@ export function dealFacts(workshops, povs, catalog) {
       not_known: w && w.deal ? DEAL.filter((d) => !(w.deal[d.id] && w.deal[d.id].a === "known")).map((d) => d.tag) : null,
       // what else they weighed, by name: renewing, a public cloud, waiting
       alts: w && catalog ? alternativesFor(catalog, w).filter((a) => a.on).map((a) => a.name) : [],
+      missed,
     });
   }
   return out.sort((a, b) => cmp(a.customer, b.customer));
@@ -124,13 +139,23 @@ export function lessons(facts, { includeExamples = false } = {}) {
     if (f.outcome) { have.decided += 1; if (f.outcome.result === "won") have.won += 1; }
     weighed.set(a, have);
   }
+  // what did not land in the demos, and how those deals ended: a part that keeps missing is a demo to change
+  const missedParts = new Map();
+  for (const f of deals) for (const m of (f.missed || [])) {
+    const k = `${m.line}|${m.part}`;
+    const have = missedParts.get(k) || { key: k, line: m.line, part: m.part, count: 0, won: 0, lost: 0 };
+    have.count += 1;
+    if (f.outcome && f.outcome.result === "won") have.won += 1;
+    if (f.outcome && f.outcome.result !== "won") have.lost += 1;
+    missedParts.set(k, have);
+  }
   const proofs = deals.filter((f) => f.pov && f.pov.stage === "done");
   const technical = proofs.filter((f) => f.pov.verdict === "all criteria met" || f.pov.verdict === "mostly met").length;
   return {
     deals: deals.length, decided: decided.length, won, lost, none,
     win_rate: decided.length ? Math.round((won / decided.length) * 100) : null,
     proofs: proofs.length, technical_wins: technical, technical_rate: proofs.length ? Math.round((technical / proofs.length) * 100) : null,
-    reasons: top(reasons, 6), objections: top(objections, 6), gaps: top(gaps, 6), not_met: top(notMet, 5), lands: top(lands, 5),
+    reasons: top(reasons, 6), objections: top(objections, 6), missed: top(missedParts, 6), gaps: top(gaps, 6), not_met: top(notMet, 5), lands: top(lands, 5),
     routes: tally("route", ROUTES), partner_kinds: tally("partner_kind", KINDS), alternatives: top(weighed, 6), not_established: { of: notWon.length, tags: top(missing, 5) },
     cycle: {
       to_proof: median(deals.filter((f) => f.pov && f.pov.start && f.started_on).map((f) => days(f.started_on, f.pov.start))),
@@ -158,6 +183,7 @@ export function lessonsMarkdown(l, title = "What our deals teach") {
   }
   if ((l.alternatives || []).length) out.push("## What else they weighed", "", ...l.alternatives.map((a) => `- ${a.label}: ${plural(a.count, "prospect")}${a.decided ? `, ${a.won} won of ${a.decided} decided` : ""}.`), "");
   if (l.objections.length) out.push("## What customers push back on", "", ...l.objections.map((o) => `- "${o.says}" (${o.line.toLowerCase()}): ${plural(o.count, "prospect")}${o.won + o.lost ? `, ${o.won} won and ${o.lost} not` : ""}.`), "");
+  if ((l.missed || []).length) out.push("## What did not land in the demos", "", ...l.missed.map((m) => `- ${m.part} (${m.line.toLowerCase()}): ${plural(m.count, "demo")}${m.won + m.lost ? `, ${m.won} won and ${m.lost} not` : ""}.`), "");
   if (l.gaps.length) out.push("## The gaps heard most", "", ...l.gaps.map((g) => `- ${g.q} (${g.line.toLowerCase()}): ${plural(g.count, "prospect")}${g.unknown ? `, ${g.unknown} where nobody knew` : ""}.`), "");
   if (l.not_met.length) out.push("## Tests not met", "", ...l.not_met.map((t) => `- ${t.text} (${t.count})`), "");
   const c = l.cycle;

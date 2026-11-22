@@ -34,6 +34,7 @@ export function snapshotFrom(opps, facts, by, today) {
         ...(o.partner ? { partner: clean(o.partner, 80) } : {}), ...(o.registration ? { reg_until: o.registration.until } : {}),
         ...(f.not_known ? { qualified: f.qualified || "", not_known: f.not_known } : {}),
         ...(f.alts && f.alts.length ? { alts: f.alts.slice(0, 8).map((x) => clean(x, 60)) } : {}),
+        ...(f.missed && f.missed.length ? { missed: f.missed.slice(0, 20).map((m) => ({ line: clean(m.line, 100), part: clean(m.part, 300) })) } : {}),
       };
     }),
   };
@@ -45,9 +46,11 @@ const only = (o, keys) => !!o && typeof o === "object" && !Array.isArray(o) && O
 const intIn = (v, lo, hi) => Number.isInteger(v) && v >= lo && v <= hi;
 
 function validDeal(d) {
-  if (!only(d, ["customer", "stage", "closed", "example", "started_on", "updated_on", "lines", "land", "next", "risks", "pov", "outcome", "raised", "gaps", "evidence", "route", "partner_kind", "qualified", "not_known", "partner", "reg_until", "alts"])) return false;
+  if (!only(d, ["customer", "stage", "closed", "example", "started_on", "updated_on", "lines", "land", "next", "risks", "pov", "outcome", "raised", "gaps", "evidence", "route", "partner_kind", "qualified", "not_known", "partner", "reg_until", "alts", "missed"])) return false;
   if (d.alts !== undefined && !(Array.isArray(d.alts) && d.alts.length >= 1 && d.alts.length <= 8 && new Set(d.alts).size === d.alts.length && d.alts.every((x) => isStr(x, 60, 1) && !/[\u0000-\u001f\u007f]/.test(x)))) return false;
-  if (d.evidence !== undefined && !intIn(d.evidence, 0, 100)) return false;     // optional: snapshots from before it stay readable
+  if (d.evidence !== undefined && !intIn(d.evidence, 0, 100)) return false;
+  // optional: the parts of the demo that did not land, by their place in the line
+  if (d.missed !== undefined && !(Array.isArray(d.missed) && d.missed.length >= 1 && d.missed.length <= 20 && d.missed.every((m) => only(m, ["line", "part"]) && isStr(m.line, 100, 1) && isStr(m.part, 300, 1)))) return false;     // optional: snapshots from before it stay readable
   // optional too: how it is sold, and how far it is qualified (tags only)
   if (d.route !== undefined && !Object.hasOwn(ROUTES, d.route)) return false;
   if (d.partner_kind !== undefined && !Object.hasOwn(KINDS, d.partner_kind)) return false;
@@ -117,7 +120,7 @@ export function teamView(snapshots, { includeExamples = false } = {}) {
   const risky = all.filter((d) => !d.closed && d.risks.some((r) => r.level === "high"))
     .map((d) => ({ engineer: d.engineer, customer: d.customer, stage: d.stage, risk: d.risks.find((r) => r.level === "high").text, more: d.risks.length - 1 }));
   const facts = all.map((d) => ({ customer: d.customer, example: d.example, started_on: d.started_on, lines: d.lines, land: d.land, raised: d.raised, gaps: d.gaps,
-    pov: d.pov, outcome: d.outcome, route: d.route || "", partner_kind: d.partner_kind || "", qualified: d.qualified || "", not_known: d.not_known || null, alts: d.alts || [] }));
+    pov: d.pov, outcome: d.outcome, route: d.route || "", partner_kind: d.partner_kind || "", qualified: d.qualified || "", not_known: d.not_known || null, alts: d.alts || [], missed: d.missed || [] }));
   const stages = STAGES.map((s) => ({ ...s, count: all.filter((d) => !d.closed && d.stage === s.id).length }));
   // the partners across the team: who carries which engineer's deals, and the registrations to act on (as of each snapshot)
   const asOf = new Map(snapshots.map((s, i) => [who(s, i), s.as_of]));

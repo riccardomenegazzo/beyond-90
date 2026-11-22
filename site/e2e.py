@@ -1515,6 +1515,7 @@ def main(site: str) -> int:
         lessons_card = page.locator("#desk-body .card").filter(has_text="What the deals teach")
         check(lessons_card.count() == 1 and "What customers push back on" in lessons_card.inner_text() and "Ransomware would encrypt the backups too" in lessons_card.inner_text(),
               "what the deals teach: what customers push back on, read from every prospect")
+        check("What did not land in the demos" in lessons_card.inner_text(), "and what did not land in the demos, from the demo run on this desk")
         # the partners across the desk: their deals, registrations to act on, what was won and lost with them
         partner_card = page.locator("#desk-body .card").filter(has_text="Partners across your deals")
         pt = partner_card.inner_text() if partner_card.count() == 1 else ""
