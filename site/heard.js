@@ -416,6 +416,14 @@ const SKETCH_FIGURES = [
     re: new RegExp(String.raw`\b${NUM}\s*(tb|tib|pb|pib)\b(?=[^.;]*\b(?:backups?|backed up|protect(?:ed)?|replicat(?:e|ed)|da proteggere|protetti|replica(?:re|ti)?)\b)`), size: true },
   { sketch: "dr", field: "latency_ms", line: "dr-backup", what: "ms round trip between the sites", label: "round trip between the sites, in the recovery design", decimal: true,
     re: /\b(\d+(?:[.,]\d+)?)()\s?(?:ms|milliseconds?|millisecondi)\b(?=[^.;]*\b(?:sites?|siti|sit[oi]|apart|away|round|latency|latenza|between|tra)\b)|\b(?:sites?|siti|apart|away|round[- ]trip|latency|latenza|between|tra)\b[^.;]*?\b(\d+(?:[.,]\d+)?)()\s?(?:ms|milliseconds?|millisecondi)\b/ },
+  { sketch: "gpu", field: "params_b", line: "private-ai", what: "billion parameters", label: "size of the model in the GPU sketch", decimal: true,
+    re: /\b(\d+(?:[.,]\d+)?)()\s?b\b(?=[^.;]*\b(?:models?|modell[oi]|llm|parameters|parametri)\b)|\b(\d+(?:[.,]\d+)?)()\s?(?:billion|bn|miliardi(?: di)?)\s+param/ },
+  { sketch: "gpu", field: "bits", line: "private-ai", what: "bits per weight", label: "bits per weight in the GPU sketch",
+    re: /\b(4|8|16)()[- ]?bits?\b|\b(?:fp|int)(4|8|16)()\b/ },
+  { sketch: "gpu", field: "context_k", line: "private-ai", what: "thousand tokens of context", label: "context per request in the GPU sketch", decimal: true,
+    re: /\b(\d+(?:[.,]\d+)?)()\s?k\s+(?:tokens?|context|token di contesto|di contesto)\b|\bcontext (?:of|window of|di)\s+(\d+(?:[.,]\d+)?)()\s?k\b/ },
+  { sketch: "gpu", field: "concurrent", line: "private-ai", what: "requests at once", label: "requests at once in the GPU sketch",
+    re: new RegExp(String.raw`\b${NUM}\s+(?:requests|users|richieste|utenti|sessions|sessioni)\s+(?:at once|at the same time|in flight|concurrent(?:ly)?|contemporane[ei]|in contemporanea|alla volta)\b`) },
 ];
 const FMT = new Intl.NumberFormat("en");
 const TIB = { tb: 1e12 / 2 ** 40, tib: 1, pb: 1e15 / 2 ** 40, pib: 1024 };

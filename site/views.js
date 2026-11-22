@@ -2005,9 +2005,9 @@ function deckPane({ cards, state, answerOf, answer, go, pfx, inline, set = DISCO
  */
 // the sketches a figure heard can go in: how each is cleaned, and what it is called
 const SKETCH_CLEAN = { vdi: (x) => VDI.cleanVdi(x), db: (x) => DBS.cleanDb(x), k8s: (x) => K8S.cleanK8s(x), files: (x) => FILES.cleanFiles(x),
-  obj: (x) => OBJ.cleanObj(x), dr: (x) => DRS.cleanDr(x) };
+  obj: (x) => OBJ.cleanObj(x), dr: (x) => DRS.cleanDr(x), gpu: (x) => GPU.cleanGpu(x) };
 const SKETCH_NAME = { vdi: "desktop sizing sketch", db: "database licence sketch", k8s: "container platform sizing sketch", files: "file storage sketch",
-  obj: "backup capacity sketch", dr: "recovery design" };
+  obj: "backup capacity sketch", dr: "recovery design", gpu: "GPU sketch" };
 /** A sketch's card on the page, if it is there, shows the settings just changed. */
 const refreshSketch = (name, settings) => { const el = document.querySelector(`[data-sketch="${name}"]`); if (el) el.dispatchEvent(new CustomEvent("sketch-settings", { detail: settings })); };
 
@@ -2457,7 +2457,7 @@ export function workshopView({ workshop: w, catalog, list, answer, worth, setDea
   }
   function syncDeck() { if (deckInline) deckInline.sync(); paceNow(); }
   if (inScope.length) rebuildDeck();
-  const heardBox = heardPanel({ catalog, get: () => cur, set: (x) => { cur = x; }, answer, worth, setDeal, raise, sketches: { vdi, db, k8s, files, obj, dr },
+  const heardBox = heardPanel({ catalog, get: () => cur, set: (x) => { cur = x; }, answer, worth, setDeal, raise, sketches: { vdi, db, k8s, files, obj, dr, gpu },
     onFiled: (key) => { if (key) afterDeck(key); syncDeck(); if (fullDeck) fullDeck.sync(); } }).el;
   // the conversation first: where it stands on every line, what to show, the questions; then the sketches from their numbers
   const sketches = [inventory ? inventoryCard(w, inventory) : null, w.inventory && sizing ? sizingCard(w, sizing) : null,
@@ -3053,13 +3053,13 @@ function gpuCard(w, gpu) {
     return h("label", { class: "szf" }, h("span", { text: label + (unit ? ` (${unit})` : "") }), inputs[k]);
   }));
   draw(a);
-  return card("A first GPU sketch", h("div", { class: "sz" }, out, h("details", { class: "szassume" }, h("summary", { text: "The assumptions, to agree with the customer" }), grid,
+  return sketchCard("gpu", inputs, draw, card("A first GPU sketch", h("div", { class: "sz" }, out, h("details", { class: "szassume" }, h("summary", { text: "The assumptions, to agree with the customer" }), grid,
     h("div", { class: "btnrow" }, h("button", { class: "btn small", type: "button", text: "Back to the defaults", onclick: async () => {
       for (const [k] of fields) inputs[k].value = String(GPU.GPU_DEFAULTS[k]);
       draw(GPU.GPU_DEFAULTS);
       try { await gpu(null); } catch (e) { say.textContent = e.message; }
     } }))), say),
-  { sub: "For serving a model on the customer's own GPUs: memory for the weights and for the conversations in flight, the GPUs one copy takes, the copies the load and availability need. A starting point for a benchmark on their prompts, not a sizing." });
+  { sub: "For serving a model on the customer's own GPUs: memory for the weights and for the conversations in flight, the GPUs one copy takes, the copies the load and availability need. A starting point for a benchmark on their prompts, not a sizing." }));
 }
 
 /** A plan in waves from the inventory: a test wave, then cluster by cluster, the same steps every time. */

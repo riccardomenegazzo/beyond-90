@@ -498,4 +498,11 @@ test("a figure a first sketch starts from is read from what was said, for the li
   assert.deepEqual(got("About 80 TB to protect, the second site is 3 ms away", ["dr-backup"]), ["dr.data_tib=72.8", "dr.latency_ms=3"]);
   assert.deepEqual(got("La latenza tra i siti è di 1,5 ms", ["dr-backup"]), ["dr.latency_ms=1.5"]);
   assert.deepEqual(got("Logons take 300 ms on a good day", ["dr-backup"]), [], "a time that is not between the sites");
+  // serving a model: its size, its precision, the context and the requests at once
+  const ai = ["private-ai"];
+  assert.deepEqual(got("A 70B model, quantised to 4-bit, with 32k tokens of context and 200 requests at once", ai),
+    ["gpu.params_b=70", "gpu.bits=4", "gpu.context_k=32", "gpu.concurrent=200"]);
+  assert.deepEqual(got("un modello da 8 miliardi di parametri, 50 utenti in contemporanea", ai), ["gpu.params_b=8", "gpu.concurrent=50"]);
+  assert.deepEqual(got("We serve it in FP8 with a context of 128k", ai), ["gpu.bits=8", "gpu.context_k=128"]);
+  assert.deepEqual(got("We bought 8 GPUs last year", ai), [], "a count of GPUs is not the model's size");
 });

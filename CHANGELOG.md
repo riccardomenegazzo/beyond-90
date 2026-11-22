@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.206.0
+
+- **Figures for the GPU sketch.** On AI on their own infrastructure, what is said about the model is offered for the GPU sketch: its size ("a 70B model", "8 miliardi di parametri"), its precision ("4-bit", "FP8"), the context ("32k tokens", "a context of 128k") and the requests at once ("200 requests at once", "50 utenti in contemporanea"). A tap puts each in, the card follows, and Undo puts it back.
+
 ## 0.205.0
 
 - **Figures for the recovery design and the backup capacity sketch too.** "We keep 200 TB of backups" is offered as the protected data of the backup capacity sketch and of the recovery design; "the second site is 3 ms away" (or "la latenza tra i siti è di 1,5 ms") as the round trip between the sites. Their cards follow at once, as the others do, and Undo puts them back. A time that is not between sites ("logons take 300 ms") is left alone.
