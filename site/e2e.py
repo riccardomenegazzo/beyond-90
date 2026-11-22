@@ -1394,6 +1394,14 @@ def main(site: str) -> int:
         edgecard = page.locator("#view .card").filter(has_text="A first edge design")
         check(edgecard.locator(".edgetable tbody tr").count() == 3 and edgecard.locator(".szhead > b").inner_text() == "198" and "a witness for 30 two-server sites" in edgecard.inner_text(),
               "with edge sites in scope, a first edge design: servers per kind of site and the witness the two-server sites need")
+        page.fill("#wsheard", "We have 140 small sites, and a trip to a site costs about 400 euros")
+        page.get_by_role("button", name="Use 140 as the number of small sites in the edge design").click()
+        page.locator("#view .heardsay", has_text="Put in the edge design: 140 sites of the kind Small sites").wait_for()
+        check("218" in edgecard.locator(".szhead > b").inner_text() and page.locator("#view input[aria-label='Kind 1: sites']").input_value() == "140",
+              "a count of sites heard in the meeting goes into its kind in the edge design")
+        page.locator("#view .heardsay button", has_text="Undo").click()
+        page.locator("#view .heardsay", has_text="Undone: the edge design is back as it was").wait_for()
+        page.fill("#wsheard", "")
         edgecard.locator("details.szassume summary").click()
         link = page.locator("#view input[aria-label='Kind 1: link (Mbit/s)']")
         link.fill("2")

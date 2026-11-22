@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
-import { stem, tokens, match, joinNote, NOTE_MAX, concernCards, concernsHeard, sketchFigures, caseFigures, unitFigures } from "../heard.js";
+import { stem, tokens, match, joinNote, NOTE_MAX, concernCards, concernsHeard, sketchFigures, caseFigures, unitFigures, edgeFigures } from "../heard.js";
 
 const card = (key, q, listen = "", why = "", probe = "") => ({ key, label: "Disaster recovery", q: { q, listen, why, probe } });
 const DR = [
@@ -534,4 +534,23 @@ test("what one machine costs is read from what was said, when a line that counts
   assert.deepEqual(got("Gestiamo 800 macchine virtuali con 4 sistemisti che seguono la piattaforma", ["hybrid-cloud"]), ["machines=800", "people_fte=4"]);
   assert.deepEqual(got("We have 3 people in marketing"), []);
   assert.deepEqual(got("We run about 500 VMs", ["hci"]), [], "no line in scope counts it");
+});
+
+test("the edge design's figures: sites of a kind it knows by name, the trips to sites and what one costs", () => {
+  const sc = ["edge-sites"];
+  const cur = { edge: { kinds: [{ name: "Stores", sites: 120 }, { name: "Large sites", sites: 30 }, { name: "Plants", sites: 6 }, { name: "Other sites", sites: 0 }] } };
+  const got = (said, current = cur) => edgeFigures(said, sc, current).map((x) => `${x.field}=${x.value}`);
+  assert.deepEqual(got("We have 140 stores and 8 plants"), ["kinds.0.sites=140", "kinds.2.sites=8"]);
+  assert.deepEqual(got("6 plants, 40 VMs each"), ["kinds.2.sites=6"]);
+  assert.deepEqual(got("35 large sites"), ["kinds.1.sites=35"]);
+  assert.deepEqual(got("6 plants", {}), ["kinds.2.sites=6"], "the default kinds when none were set");
+  assert.deepEqual(got("We send someone to a site 300 times a year, and a trip costs about 400 euros"), ["visits_year=300", "visit_cost=400"]);
+  assert.deepEqual(got("ogni trasferta costa 350 euro, facciamo 200 interventi l'anno"), ["visits_year=200", "visit_cost=350"]);
+  assert.deepEqual(edgeFigures("We have 140 stores", ["hci"], cur), []);
+  // a kind's count goes in its own row, the others stay as they were
+  const f = edgeFigures("We have 140 stores", sc, cur)[0];
+  const next = f.apply(cur.edge);
+  assert.deepEqual(next.kinds.map((k) => k.sites), [140, 30, 6, 0]);
+  assert.equal(f.has(next), true);
+  assert.equal(f.has(cur.edge), false);
 });

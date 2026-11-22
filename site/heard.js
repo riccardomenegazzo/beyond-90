@@ -7,6 +7,8 @@
 // Notes are often written in the customer's language: a note written in Italian is read through a glossary of the
 // words these meetings use, so it finds the same questions. No DOM, so Node can test it. Nothing leaves the browser.
 
+import { EDGE_DEFAULTS } from "./edgesketch.js";
+
 export const NOTE_MAX = 300;      // as long as a note on an answer can be
 
 const SHORT = new Set(["ms", "ip", "dc", "db", "vm", "os", "mb"]);     // short words that still carry meaning here
@@ -559,6 +561,48 @@ export function unitFigures(said, scope) {
   for (const f of UNIT_FIGURES) {
     const v = f.read(t);
     if (v != null && Number.isFinite(v) && v > 0) out.push({ sketch: "unit", field: f.field, value: v, what: f.what, label: f.label });
+  }
+  return out;
+}
+
+// shops, plants and branches: how many sites of a kind, the trips to sites a year and what one costs
+const KIND_WORD = (name) => String(name || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9 ]+/g, " ").trim();
+const pluralRe = (w) => (w.endsWith("s") ? `${w}?` : `${w}s?`);
+
+/**
+ * The edge design's figures in what was said: sites of a kind it knows by name ("120 stores" when a kind is called
+ * Stores, "6 plants"), the trips to sites a year, what one trip costs.
+ * @returns {{sketch:string, field:string, value:number, what:string, label:string, apply?:Function, has?:Function}[]}
+ */
+export function edgeFigures(said, scope, current = {}) {
+  if (!(scope || []).includes("edge-sites")) return [];
+  const t = ` ${String(said == null ? "" : said).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "")} `;
+  const out = [];
+  const kinds = (current.edge && Array.isArray(current.edge.kinds) && current.edge.kinds.length ? current.edge.kinds : EDGE_DEFAULTS.kinds);
+  kinds.forEach((k, i) => {
+    const words = KIND_WORD(k.name).split(/\s+/).filter(Boolean);
+    if (!words.length) return;
+    const name = [...words.slice(0, -1), pluralRe(words[words.length - 1])].join("\\s+");
+    const m = t.match(new RegExp(String.raw`\b${NUM}\s+${name}\b`));
+    if (!m) return;
+    const v = num(m[1], m[2]);
+    if (!(v > 0)) return;
+    out.push({ sketch: "edge", field: `kinds.${i}.sites`, value: Math.round(v), what: `sites of the kind ${k.name}`, label: `number of ${k.name.toLowerCase()} in the edge design`,
+      apply: (b) => ({ ...b, kinds: (b.kinds && b.kinds.length ? b.kinds : EDGE_DEFAULTS.kinds).map((x, j) => (j === i ? { ...x, sites: Math.round(v) } : x)) }),
+      has: (b) => !!(b && b.kinds && b.kinds[i] && b.kinds[i].sites === Math.round(v)) });
+  });
+  const siteTalk = /\b(?:sites?|stores?|shops?|branch\w*|plants?|sedi|negozi|filiali|stabiliment\w*)\b/.test(t);
+  const trips = t.match(new RegExp(String.raw`\b${NUM}\s+(?:trips|visits|site visits|truck rolls|interventi|trasferte|uscite)\b[^.;]*\b(?:a year|per year|each year|every year|all'anno|l'anno|annui|ogni anno)\b`))
+    || (siteTalk ? t.match(new RegExp(String.raw`\b${NUM}\s+(?:times|volte)\s+(?:a|per|all')\s?(?:year|anno)\b`)) : null);
+  if (trips) {
+    const [raw, mult] = pick(trips);
+    const v = num(raw, mult);
+    if (v > 0) out.push({ sketch: "edge", field: "visits_year", value: Math.round(v), what: "trips to sites a year", label: "trips to sites a year, in the edge design" });
+  }
+  const cost = t.match(/\b(?:a|one|each|every|ogni|una)\s+(?:trip|visit|truck roll|site visit|trasferta|uscita|intervento)\b[^.;]*?\b(?:costs?|costa|is|e)\b[^.;\d]*?[€$£]?\s?(\d{1,3}(?:[.,]\d{3})+|\d+(?:[.,]\d+)?)\s?(k|mila|thousand)?/);
+  if (cost) {
+    const v = num(cost[1], cost[2]);
+    if (v > 0) out.push({ sketch: "edge", field: "visit_cost", value: Math.round(v), what: "for one trip to a site", label: "cost of one trip, in the edge design" });
   }
   return out;
 }

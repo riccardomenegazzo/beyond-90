@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.218.0
+
+- **Figures for the edge design.** With edge sites in scope, Heard something offers the number of sites of a kind it knows by name ("140 stores" once a kind is called Stores, "8 plants", "35 large sites"), the trips to sites a year ("300 times a year", "200 interventi l'anno") and what one trip costs. A count goes in its own kind's row, the others stay as they were, the card follows and Undo puts it back.
+
 ## 0.217.0
 
 - **The desk's table says which lines are sketched.** Under what is at stake, each prospect now shows the lines whose first sketch was worked out with the customer's figures ("sketched: recovery, database licences, backup capacity"), as the Monday note does.
