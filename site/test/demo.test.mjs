@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { REACTIONS, ORDER, DEMO, demoCards, demoSuggest, demoSummary, demoRecapText, demoFollowUps, cardsFor, proofFromDemo, customerNote } from "../demo.js";
-import { demoPlan, forward } from "../forward.js";
+import { demoPlan, forward, demoTime } from "../forward.js";
 import { exampleWorkshop, makeWorkshop, setDemo, setDemoSeen, validWorkshop, assess, mergeWorkshops } from "../workshop.js";
 import { nextMeeting, agendaText } from "../nextmeeting.js";
 
@@ -139,4 +139,14 @@ test("the note for the customer: what we showed against what they said, their qu
   for (const internal of ["did not land", "Did not land", "We have runbooks already", "That's the one", "Landed", "landed"]) assert.ok(!t.includes(internal), internal);
   const none = customerNote("A (mock)", cards, () => null);
   assert.match(none, /A short call to agree what a proof of value/);
+});
+
+test("dealt for the length of the meeting, the cards say how long each part has and leave out what waits", () => {
+  const plan = demoPlan(CAT, exampleWorkshop(D));
+  const cards = demoCards(plan, demoTime(plan, 45));
+  assert.equal(cards.length, 6);
+  assert.match(cards[0].tag, /^For the architect, about 7 minutes$/);
+  assert.match(cards[4].tag, /^Their concern, about 3 minutes$/);
+  const short = demoCards(plan, demoTime(plan, 20));
+  assert.deepEqual(short.map((c) => c.key), [plan.segments[0].key, ...plan.concerns.map((c) => c.key)]);
 });

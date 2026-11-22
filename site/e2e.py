@@ -1199,6 +1199,17 @@ def main(site: str) -> int:
         demo = page.inner_text("#view")
         check("Their situation, in their words" in demo and "2M in lost orders" in demo and "Only what closes their gaps" in demo and "Close: agree what a proof would have to show" in demo,
               "the demo is planned from what they said: their words first, then only their gaps, then the proof to agree")
+        def each_part() -> int:
+            m = re.search(r"about (\d+) minutes each", page.inner_text("#view"))
+            return int(m.group(1)) if m else 0
+        at45 = each_part()
+        check(at45 >= 5 and page.get_by_label("Length of the demo meeting").input_value() == "45" and "(2 minutes)" in page.inner_text("#view"),
+              "the demo is timed for a 45-minute meeting: minutes for each part")
+        page.get_by_label("Length of the demo meeting").select_option("30")
+        page.locator("#view .fwtime", has_not_text=f"About {at45} minutes").wait_for()
+        check(0 < each_part() < at45, "and a shorter meeting gives each part less")
+        page.get_by_label("Length of the demo meeting").select_option("45")
+        page.locator("#view .fwtime", has_text=f"About {at45} minutes").wait_for()
         with page.expect_download() as dl:
             page.get_by_role("button", name="Demo plan (.md)").click()
         check(Path(dl.value.path()).read_text(encoding="utf-8").startswith("# Demo plan: Kestrel Logistics"), "and downloads as a plan to share with the seller")

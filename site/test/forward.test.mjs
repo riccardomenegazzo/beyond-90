@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { PHASES, forward, demoPlan, demoMarkdown } from "../forward.js";
+import { PHASES, forward, demoPlan, demoMarkdown, demoTime, DEMO_LENGTHS } from "../forward.js";
 import { makeWorkshop, exampleWorkshop, setDemo, setDeal, setAnswer, setChannel, validWorkshop, assess } from "../workshop.js";
 import { makePov, edit as editPov, setOutcome, setCriterion } from "../pov.js";
 
@@ -93,4 +93,23 @@ test("a demo plan without a qualified deal falls back on the line's message and 
   assert.ok(p.ready && p.result.length > 20, p.result);
   assert.ok(p.skip.length >= 1, "what they have already is left out");
   assert.ok(p.situation.some((s) => /2M/.test(s)), JSON.stringify(p.situation));
+});
+
+test("the demo, timed: the minutes of each part from the length of the meeting, and what waits when it does not fit", () => {
+  const p = demoPlan(CAT, exampleWorkshop(D));
+  assert.deepEqual(DEMO_LENGTHS, [30, 45, 60]);
+  assert.equal(p.segments.length, 4);
+  assert.equal(p.concerns.length, 2);
+  assert.deepEqual(demoTime(p, 45), { length: 45, situation: 2, result: 3, close: 5, concern: 3, each: 7, fit: 4, later: [], spare: 1 });
+  assert.deepEqual([demoTime(p, 60).each, demoTime(p, 60).spare], [10, 4], "never more than ten minutes a part: the rest is for their questions");
+  assert.deepEqual([demoTime(p, 30).each, demoTime(p, 30).fit], [3, 4]);
+  const short = demoTime(p, 20);
+  assert.equal(short.fit, 1);
+  assert.deepEqual(short.later, p.segments.slice(1).map((s) => s.key), "the last gaps wait first");
+  assert.equal(demoTime(p, 15).fit, 0);
+  const md = demoMarkdown(p, exampleWorkshop(D), 20);
+  assert.match(md, /A 20-minute meeting, with about 1 minutes? left|A 20-minute meeting\./);
+  assert.match(md, /Only what closes their gaps \(about \d+ minutes each\)/);
+  assert.match(md, /Not in 20 minutes: keep for the next meeting\n\n- /);
+  assert.match(md, /The concerns they raised \(3 minutes each\)/);
 });

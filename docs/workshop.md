@@ -353,6 +353,8 @@ The phase now is the furthest one started. A phase passed with something still o
 4. the concerns they raised, with how to prove each;
 5. the proof to agree at the end, from the line's own criteria and their concerns.
 
+**The meeting** sets its length (30, 45 or 60 minutes; the meeting clock's when it runs). The plan is timed for it: two minutes for their situation, three for the result, three for each concern, five to close, and the rest shared among the gaps, three to ten minutes each. What does not fit waits for the next meeting, the last gaps first, and is struck through; what is left over is time for their questions. The plan as text and the cards of **Run the demo** carry the same minutes.
+
 What they already have is listed under **Leave out**. A note says what to keep for a fifteen-minute version for the executive. Copy the plan or download it (.md) for the seller and the champion, and **Mark the demo as given** to move on.
 
 **Run the demo** opens the plan as a deck, full screen, the same as the questions: one card per gap it closes ("Show that no administrator account can delete the backups", for the security team, with what they said in discovery on the back), then one per concern they raised. Swipe each as it landed: right **landed**, up **questions**, left **did not land**, down **not shown**; or tap, or press an arrow or 1 to 4. Write what they said on the card: "how long does a restore take?" suggests questions, "we already have that" suggests it did not land; you decide. It is meant for a phone beside you while your screen is shared, or for a colleague taking notes.

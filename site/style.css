@@ -1774,3 +1774,8 @@ body[data-role=se] .choose>.wsstart{order:-1;margin:0 0 26px;border:2px solid va
 .tm-key{position:relative;height:0}
 .tm-lab{position:absolute;top:8px;transform:translateX(-50%);font-size:12.5px;color:#c5d2e1;white-space:nowrap}
 @media (prefers-reduced-motion:reduce){.tm-ghost{transition:none}}
+
+/* the demo, timed (0.167) */
+.fwtime{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;margin-bottom:6px}
+.fwtime .note{margin:0}
+.fwsegs li.fwlater>span:first-child{color:var(--ink2);text-decoration:line-through;text-decoration-color:color-mix(in srgb,var(--ink2) 50%,transparent)}

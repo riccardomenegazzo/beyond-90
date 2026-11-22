@@ -29,17 +29,19 @@ const PROBE = "Is this what you meant when you said it? Who else would need to s
  * One card per part of the demo: the gaps it closes, in the plan's order, then the concerns they raised.
  * @param {{ready:boolean, line:string, segments:object[], concerns:object[]}} plan from `demoPlan`
  */
-export function demoCards(plan) {
+export function demoCards(plan, time = null) {
   if (!plan || !plan.ready) return [];
-  const cards = plan.segments.filter((s) => s.key).map((s) => ({
+  const mins = (n) => (n ? `, about ${n} minutes` : "");
+  const segs = time ? plan.segments.slice(0, time.fit) : plan.segments;
+  const cards = segs.filter((s) => s.key).map((s) => ({
     key: s.key, label: plan.line, part: clean(s.show), heard: clean(s.heard),
-    tag: s.role && ROLE_WORDS[s.role] ? `For ${INVITE[s.role] || ROLE_WORDS[s.role].toLowerCase()}` : s.status === "gap" ? "A real gap" : "Partly there",
+    tag: (s.role && ROLE_WORDS[s.role] ? `For ${INVITE[s.role] || ROLE_WORDS[s.role].toLowerCase()}` : s.status === "gap" ? "A real gap" : "Partly there") + mins(time && time.each),
     q: { q: s.need ? `Show that ${lowerFirst(clean(s.need))}` : `Show: ${clean(s.show)}`,
       why: s.heard ? `They said: “${clean(s.heard)}”` : s.status === "gap" ? "A real gap, heard in discovery." : "Partly there today, heard in discovery.",
       listen: LISTEN, probe: PROBE },
   }));
   for (const c of plan.concerns.filter((x) => x.key)) {
-    cards.push({ key: c.key, label: "A concern they raised", tag: "Their concern", part: clean(c.says),
+    cards.push({ key: c.key, label: "A concern they raised", tag: `Their concern${mins(time && time.concern)}`, part: clean(c.says),
       q: { q: `Answer their concern: “${clean(c.says)}”`, why: `The proof that settles it: ${clean(c.prove)}`, listen: LISTEN,
         probe: "Does this answer it, or would you want to see it on your own systems?" } });
   }

@@ -79,25 +79,45 @@ export function demoPlan(catalog, w, res = assess(catalog, w)) {
   return { ready: !!land, line: land ? land.label : "", situation: situation.slice(0, 4), result, segments, concerns, skip, close: [...new Set(close)].slice(0, 5), roles };
 }
 
-/** The demo plan as text: to share with the seller and the champion before the meeting. */
-export function demoMarkdown(plan, w) {
+export const DEMO_LENGTHS = [30, 45, 60];
+const MIN_PART = 3, MAX_PART = 10;
+
+/**
+ * How the minutes of a demo are spent: two on their situation, three on the result, five to close, three on each
+ * concern they raised, and the rest shared among the gaps it closes, three to ten minutes each. The gaps that do not
+ * fit wait for another meeting, the last ones first; what is left over is time for their questions.
+ * @returns {{length:number, situation:number, result:number, close:number, concern:number, each:number, fit:number, later:string[], spare:number}}
+ */
+export function demoTime(plan, length = 45) {
+  const fixed = { situation: 2, result: 3, close: 5, concern: 3 };
+  const left = length - fixed.situation - fixed.result - fixed.close - fixed.concern * plan.concerns.length;
+  const fit = Math.max(0, Math.min(plan.segments.length, Math.floor(left / MIN_PART)));
+  const each = fit ? Math.min(MAX_PART, Math.floor(left / fit)) : 0;
+  return { length, ...fixed, each, fit, later: plan.segments.slice(fit).map((s) => s.key), spare: Math.max(0, left - each * fit) };
+}
+
+/** The demo plan as text: to share with the seller and the champion before the meeting, timed for its length. */
+export function demoMarkdown(plan, w, length = 45) {
   if (!plan.ready) return "";
-  const out = [`# Demo plan: ${clean(w.customer)}`, "", `Built from the discovery workshop. Start with ${plan.line.toLowerCase()}.`, ""];
+  const t = demoTime(plan, length);
+  const out = [`# Demo plan: ${clean(w.customer)}`, "", `Built from the discovery workshop. Start with ${plan.line.toLowerCase()}.`,
+    `A ${length}-minute meeting${t.spare ? `, with about ${t.spare} minutes left for their questions` : ""}.`, ""];
   let i = 0;
   out.push(`## ${++i}. Their situation, in their words (2 minutes)`, "");
   if (plan.situation.length) out.push(...plan.situation.map((s) => `- ${s}`), "", "Ask: is this still right? What has changed since we spoke?", "");
   else out.push("- Nothing in their words yet: open by asking what has changed since the last meeting.", "");
   out.push(`## ${++i}. The result first (3 minutes)`, "", plan.result, "");
-  if (plan.segments.length) {
-    out.push(`## ${++i}. Only what closes their gaps`, "");
-    plan.segments.forEach((s, n) => {
+  if (plan.segments.length && t.fit) {
+    out.push(`## ${++i}. Only what closes their gaps (about ${t.each} minutes each)`, "");
+    plan.segments.slice(0, t.fit).forEach((s, n) => {
       out.push(`${n + 1}. Show: ${s.show}${s.role ? ` (for ${ROLE_WORDS[s.role].toLowerCase()})` : ""}`);
       if (s.heard) out.push(`   - They said: "${s.heard}"`);
     });
     out.push("");
   }
+  if (t.later.length) out.push(`Not in ${length} minutes: keep for the next meeting`, "", ...plan.segments.slice(t.fit).map((s) => `- ${s.show}`), "");
   if (plan.concerns.length) {
-    out.push(`## ${++i}. The concerns they raised`, "");
+    out.push(`## ${++i}. The concerns they raised (${t.concern} minutes each)`, "");
     for (const c of plan.concerns) out.push(`- "${c.says}": ${c.prove}`);
     out.push("");
   }

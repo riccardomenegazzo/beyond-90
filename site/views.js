@@ -3035,6 +3035,8 @@ export function partnersView({ workshop: w, catalog, today, setChannel }) {
 
 // ------------------------------------------------------------------ the way forward: from discovery to handover
 const FW_STATE = { done: "Done", open: "Passed, with something left open", now: "Now", later: "Later" };
+const DEMO_LENGTH = new Map();     // per workshop, the length of the demo meeting chosen on the way forward, while the page is open
+
 export function forwardView({ workshop: w, catalog, povs, today, go, setDemo, setDemoSeen }) {
   const pov = DL.povFor(povs, w.customer);
   const f = FW.forward(catalog, w, pov, today);
@@ -3060,7 +3062,14 @@ export function forwardView({ workshop: w, catalog, povs, today, go, setDemo, se
   // the demo, planned from what they said
   const dp = f.demo;
   const slug = w.customer.replace(/[^A-Za-z0-9]+/g, "-").replace(/^-|-$/g, "").toLowerCase() || "customer";
-  const md = FW.demoMarkdown(dp, w);
+  // how long the demo meeting is: the meeting clock's length when it runs, else the one chosen here, else 45 minutes
+  const clockNow = clockOf(w.id);
+  const demoLength = DEMO_LENGTH.get(w.id) || (clockNow && FW.DEMO_LENGTHS.includes(clockNow.minutes) ? clockNow.minutes : 45);
+  const dt = FW.demoTime(dp, demoLength);
+  const md = FW.demoMarkdown(dp, w, demoLength);
+  const lengthPick = h("select", { "aria-label": "Length of the demo meeting", onchange: (e) => { DEMO_LENGTH.set(w.id, Number(e.target.value)); go("wsforward"); } },
+    FW.DEMO_LENGTHS.map((m) => h("option", { value: String(m), text: `${m} minutes` })));
+  lengthPick.value = String(demoLength);
   const day = h("input", { type: "date", value: (w.demo && w.demo.on) || today, min: w.created_on, "aria-label": "Day the demo was given" });
   const given = w.demo && w.demo.on
     ? h("div", { class: "btnrow" }, h("span", { text: `Given on ${w.demo.on}.` }), h("button", { class: "btn small quiet", type: "button", text: "Not given yet", onclick: async () => { try { await setDemo(""); } catch (e) { say.textContent = e.message; } } }))
@@ -3068,7 +3077,7 @@ export function forwardView({ workshop: w, catalog, povs, today, go, setDemo, se
   const sec = (title, kids) => h("div", { class: "fwsec" }, h("h3", { text: title }), kids);
   // running it: one card per part, swiped as it landed, with what they said; the meeting clock follows
   let cur = w;
-  const dcards = DEMO.demoCards(dp);
+  const dcards = DEMO.demoCards(dp, dt);
   const seenOf = (c) => (cur.demo && cur.demo.seen && cur.demo.seen[c.key]) || null;
   const demoSet = {
     ...DEMO.DEMO,
@@ -3098,14 +3107,20 @@ export function forwardView({ workshop: w, catalog, povs, today, go, setDemo, se
       onclick: (ev) => copyText(DEMO.customerNote(cur.customer, dcards, seenOf)).then((ok) => { ev.target.textContent = ok ? "Copied" : "Not copied"; }) })))) : null;
   const run = dcards.length ? h("button", { class: "btn small primary", type: "button", text: landed ? "Run the demo again" : "Run the demo",
     "data-tip": "One card per part of the plan, full screen: swipe each as it landed, with what they said. On a phone beside you while the screen is shared.", onclick: runDemo }) : null;
+  const timing = h("div", { class: "fwtime" }, h("label", { class: "szf" }, h("span", { text: "The meeting" }), lengthPick),
+    h("p", { class: "note", text: dt.fit < dp.segments.length
+      ? `${dt.fit ? `${nOf(dt.fit, "gap")} fit${dt.fit === 1 ? "s" : ""}, about ${dt.each} minutes each` : "No gap fits"} after the situation, the result, the concerns and the close; ${dt.later.length} ${dt.later.length === 1 ? "waits" : "wait"} for the next meeting.`
+      : `About ${dt.each} minutes for each gap${dt.spare ? `, and ${dt.spare} left for their questions` : ""}.` }));
   const demo = card("The demo, built from what they said", dp.ready ? h("div", {},
-    sec("1. Their situation, in their words", dp.situation.length ? h("ul", { class: "growwhy" }, dp.situation.map((t) => h("li", { text: t }))) : h("p", { class: "note", text: "Nothing in their words yet: note what they say to the value questions." })),
-    sec("2. The result first", h("p", { text: dp.result })),
-    dp.segments.length ? sec("3. Only what closes their gaps", h("ol", { class: "fwsegs" }, dp.segments.map((x) => h("li", {}, h("span", { text: x.show }),
+    timing,
+    sec("1. Their situation, in their words (2 minutes)", dp.situation.length ? h("ul", { class: "growwhy" }, dp.situation.map((t) => h("li", { text: t }))) : h("p", { class: "note", text: "Nothing in their words yet: note what they say to the value questions." })),
+    sec("2. The result first (3 minutes)", h("p", { text: dp.result })),
+    dp.segments.length ? sec(dt.fit ? `3. Only what closes their gaps (about ${dt.each} minutes each)` : "3. Only what closes their gaps", h("ol", { class: "fwsegs" }, dp.segments.map((x, i) => h("li", { class: i < dt.fit ? "" : "fwlater" }, h("span", { text: x.show }),
+      i < dt.fit ? null : h("small", { class: "muted", text: "Next meeting: no time for it in this one" }),
       x.role ? h("small", { class: "wsrole", text: "for " + WS.ROLE_WORDS[x.role].toLowerCase() }) : null, x.heard ? h("small", { class: "muted", text: `They said: "${x.heard}"` }) : null)))) : null,
-    dp.concerns.length ? sec("4. The concerns they raised", h("ul", { class: "growwhy" }, dp.concerns.map((c) => h("li", {}, h("q", { text: c.says }), " ", c.prove)))) : null,
+    dp.concerns.length ? sec(`4. The concerns they raised (${dt.concern} minutes each)`, h("ul", { class: "growwhy" }, dp.concerns.map((c) => h("li", {}, h("q", { text: c.says }), " ", c.prove)))) : null,
     dp.skip.length ? sec("Leave out: they have it already", h("ul", { class: "growwhy" }, dp.skip.map((t) => h("li", { text: t })))) : null,
-    sec("Close: agree what a proof would have to show", h("ul", { class: "growwhy" }, (dp.close.length ? dp.close : ["The criteria they would sign off, and who signs."]).map((t) => h("li", { text: t })))),
+    sec("Close: agree what a proof would have to show (5 minutes)", h("ul", { class: "growwhy" }, (dp.close.length ? dp.close : ["The criteria they would sign off, and who signs."]).map((t) => h("li", { text: t })))),
     h("p", { class: "note", text: "For the executive, keep to the situation, the result, the first two gaps and the proof: fifteen minutes." }),
     landedSec,
     h("div", { class: "btnrow" }, run,

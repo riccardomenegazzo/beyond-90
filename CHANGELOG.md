@@ -2,6 +2,12 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.167.0
+
+- **The demo, timed.** The demo plan under The way forward now sets the length of the meeting (30, 45 or 60 minutes; the meeting clock's when it runs) and spends it: two minutes for their situation, three for the result, three for each concern they raised, five to close, and the rest shared among the gaps it closes, three to ten minutes each. What does not fit waits for the next meeting, the last gaps first, struck through in the plan; what is left over is said as time for their questions.
+- The plan as text says the same ("A 45-minute meeting", "about 7 minutes each", "Not in 30 minutes: keep for the next meeting"), and the cards of Run the demo say how long each part has, leaving out the parts that wait.
+- New: `demoTime` in `forward.js`, with tests; browser checks for the minutes at two lengths.
+
 ## 0.166.0
 
 - **After the demo, a note for the customer.** At the end of the demo deck, and under How it landed, **Copy the note for the customer** gives the follow-up to send: what we showed, each beside what they told us in discovery; the concerns they raised, with how we propose to prove each; their questions, each with a line for the answer; and the proof of value we propose, to confirm on their own systems what landed. It names no reaction: what did not land, and what was said about it, stays in the recap for the account team. It leaves the page through the same check as every copy.
