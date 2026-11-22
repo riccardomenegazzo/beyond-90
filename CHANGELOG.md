@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.224.0
+
+- **Italian notes on the infrastructure lines' newest questions.** The glossary learns a few more words (connessione, vietata, tentativo, provato), and a test holds fourteen Italian sentences on desktops, the container platform, file and object storage, the sites, microsegmentation and a provider's cloud, each finding its question ("Nessuno riceve un allarme quando una macchina tenta una connessione vietata", "Il ripristino dall'object storage non è mai stato provato").
+
 ## 0.223.0
 
 - **Italian notes on the security lines' newest questions.** The glossary Heard something reads Italian notes through learns the words those questions turn on (evidenze, verifica, costato, ricostruire, avvisare, notificare, "prendere il controllo" of an account), so "Gli auditor vogliono le evidenze sui controlli del cloud" or "Non ci accorgeremmo se qualcuno prendesse il controllo di un account" finds its question; "audit" and "auditor" now count as the same word, in English too. A test holds twenty-two Italian sentences across the six security lines.

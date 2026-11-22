@@ -436,6 +436,37 @@ test("Italian notes on the security lines' newest questions find them too", () =
   assert.ok(first >= 18, `first ${first} of ${all}`);
 });
 
+test("Italian notes on the infrastructure lines' newest questions find them too", () => {
+  const cards = [];
+  for (const p of ["object-storage", "file-storage", "edge-sites", "microsegmentation", "kubernetes-platform", "euc", "service-provider-cloud"]) {
+    const file = new URL(`../../src/beyond90/data/profiles/${p}/discovery.json`, import.meta.url);
+    JSON.parse(readFileSync(file, "utf8")).questions.forEach((q, i) => cards.push({ key: `${p}#${i}`, q }));
+  }
+  let first = 0;
+  const cases = [
+    ["La nostra assicurazione cyber ci ha chiesto come fermeremmo un attacco che si propaga", "microsegmentation#11"],
+    ["I container e il bare metal non sono coperti da nessuna policy", "microsegmentation#12"],
+    ["Nessuno riceve un allarme quando una macchina tenta una connessione vietata", "microsegmentation#13"],
+    ["Quando una sede perde il collegamento di rete, le applicazioni si fermano", "edge-sites#13"],
+    ["Una postazione ci costa circa 90 euro per utente al mese tra licenze e supporto", "euc#13"],
+    ["Non sapremmo se un bucket diventasse pubblico", "object-storage#13"],
+    ["Il nostro team operativo ha accesso amministrativo a ogni ambiente dei tenant e niente viene registrato", "service-provider-cloud#13"],
+    ["Il logon del lunedì mattina dura cinque minuti", "euc#4"],
+    ["Abbiamo una dozzina di golden image, alcune vecchie di anni", "euc#3"],
+    ["Ogni team ha creato i suoi cluster Kubernetes", "kubernetes-platform#2"],
+    ["Le modifiche si fanno a mano sui cluster, non tramite Git", "kubernetes-platform#5"],
+    ["I file server delle filiali non li spegne mai nessuno", "file-storage#2"],
+    ["Le copie di backup non sono immutabili", "object-storage#4"],
+    ["Il ripristino dall'object storage non è mai stato provato", "object-storage#6"],
+  ];
+  for (const [said, want] of cases) {
+    const got = match(cards, said).map((h) => h.card.key);
+    assert.ok(got.includes(want), `${said}: ${got.join(" ")}`);
+    if (got[0] === want) first += 1;
+  }
+  assert.ok(first >= 13, `first ${first} of ${cases.length}`);
+});
+
 test("an English note is read exactly as before: Italian is read only in words that are not English", () => {
   assert.deepEqual(tokens("Il rinnovo della licenza scade a marzo"), [stem("renewal"), stem("licence"), stem("renewal"), "marzo"]);
   assert.deepEqual(tokens("l'accesso degli ex dipendenti"), [stem("access"), stem("leave")]);

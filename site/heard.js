@@ -113,7 +113,10 @@ attack: attacco attacchi attaccante attaccanti violazione violazioni compromesso
 encrypt: cifrerebbe cifra cifrare criptare cripta cifratura crittografia cifrato cifrati cifrata cifrate criptato criptati crittografato crittografati
 admin: amministratore amministratori amministrativo privilegiato privilegiati privilegiata privilegiate
 delete: cancellare cancella cancellato cancellati cancellata eliminare elimina eliminato eliminati
-test: prova prove testato testata testati testare collaudo esercitazione esercitazioni pilota
+test: prova prove testato testata testati testare collaudo esercitazione esercitazioni pilota provato provata provati provate
+connection: connessione connessioni
+forbidden: vietata vietato vietate vietati proibita proibito
+attempt: tenta tentano tentativo tentativi
 target: obiettivo obiettivi
 data: dati
 storage: archiviazione disco dischi
