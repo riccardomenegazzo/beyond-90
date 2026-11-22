@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.219.0
+
+- **The next meeting asks for the figures the first sketches need.** On a line in scope whose first sketch was not worked out with the customer's figures yet, the next meeting's agenda now has **The figures for a first sizing**, in the customer's terms: for recovery, how much data to protect, the distance between the sites and the recovery point each tier needs; for virtual desktops, how many users, how many connect at once and the kinds of worker; and so on for every line with a sketch. Once the sketch is worked out, the line leaves the agenda.
+
 ## 0.218.0
 
 - **Figures for the edge design.** With edge sites in scope, Heard something offers the number of sites of a kind it knows by name ("140 stores" once a kind is called Stores, "8 plants", "35 large sites"), the trips to sites a year ("300 times a year", "200 interventi l'anno") and what one trip costs. A count goes in its own kind's row, the others stay as they were, the card follows and Undo puts it back.

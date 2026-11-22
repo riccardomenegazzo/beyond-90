@@ -45,6 +45,10 @@ test("a new workshop starts from the essential questions, and who can answer the
   const t = agendaText(m);
   assert.match(t, /Questions we have not asked yet/);
   assert.match(t, /Someone who can answer for: /);
+  // the figures a first sketch needs, until it is worked out with theirs
+  assert.deepEqual(m.figures, [{ line: "Recovery", need: "how much data to protect, the distance between the sites, and the recovery point each tier needs" }]);
+  assert.match(t, /\d\. The figures for a first sizing\n {3}- Recovery: how much data to protect/);
+  assert.deepEqual(nextMeeting(CAT, { ...w, dr: { data_tib: 40 } }, D).figures, []);
 });
 
 test("once the essential questions are answered and nothing is open, the agenda says so", () => {

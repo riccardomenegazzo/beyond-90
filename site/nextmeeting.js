@@ -6,6 +6,18 @@ import { assess, journey, datedPlan, stories, WHO, ROLE_WORDS, displayOrder } fr
 import { calendar } from "./ics.js";
 import { cardsFor, demoFollowUps } from "./demo.js";
 
+// what each line's first sketch is worked out from, in the customer's terms, and where the workshop keeps it
+const SKETCH_NEEDS = {
+  euc: ["vdi", "Virtual desktops", "how many users, how many connect at once, and the kinds of worker"],
+  "kubernetes-platform": ["k8s", "The container platform", "how many applications, their pods, and what each pod asks for"],
+  dbaas: ["db", "Database licences", "how many databases are licensed per core, how busy they are at the busiest hour, and the cores licensed today"],
+  "file-storage": ["files", "File shares", "how much file data, how fast it grows, and how much nobody opens any more"],
+  "object-storage": ["obj", "Backup capacity", "how much data is protected, how much changes a day, and how long copies are kept"],
+  "dr-backup": ["dr", "Recovery", "how much data to protect, the distance between the sites, and the recovery point each tier needs"],
+  "private-ai": ["gpu", "GPUs", "the model and its precision, the context of a request, and how many requests at once"],
+  "edge-sites": ["edge", "The sites", "how many sites of each kind, what runs at each, and their links"],
+};
+
 const clean = (t) => String(t == null ? "" : t).replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim();
 
 /** The agenda: what to settle, what to show, what is due, and who should be there. At most five of each. */
@@ -31,7 +43,9 @@ export function nextMeeting(catalog, w, today) {
   // back from the demo: what they asked about, to answer, and what did not land, to show again differently
   const fu = w.demo && w.demo.seen ? demoFollowUps(cardsFor(catalog, w, res), w.demo) : { answer: [], again: [] };
   const demo = { answer: fu.answer.slice(0, 5).map((x) => ({ text: clean(x.part), note: clean(x.note) })), again: fu.again.slice(0, 5).map((x) => ({ text: clean(x.part), note: clean(x.note) })) };
-  return { customer: w.customer, land: res.land ? res.land.label : "", settle, ask, prove, due, late, people, roles, tender, demo,
+  // the figures a first sketch still needs, on the lines in scope whose sketch was not worked out with their figures yet
+  const figures = w.scope.filter((p) => catalog.lines[p] && SKETCH_NEEDS[p] && !w[SKETCH_NEEDS[p][0]]).slice(0, 5).map((p) => ({ line: SKETCH_NEEDS[p][1], need: SKETCH_NEEDS[p][2] }));
+  return { customer: w.customer, land: res.land ? res.land.label : "", settle, ask, prove, due, late, people, roles, tender, demo, figures,
     empty: !settle.length && !ask.length && !prove.length && !due.length && !late.length && !tender.length && !demo.answer.length && !demo.again.length };
 }
 
@@ -50,6 +64,7 @@ export function agendaText(m, when = "") {
   }
   if (m.settle.length) { out.push(`${++i}. Questions to answer together`); for (const q of m.settle) out.push(`   - ${q.text}`); out.push(""); }
   if ((m.ask || []).length) { out.push(`${++i}. Questions we have not asked yet`); for (const q of m.ask) out.push(`   - ${q.text}`); out.push(""); }
+  if ((m.figures || []).length) { out.push(`${++i}. The figures for a first sizing`); for (const x of m.figures) out.push(`   - ${x.line}: ${x.need}`); out.push(""); }
   if ((m.tender || []).length) { out.push(`${++i}. Your requirements we want to understand well`); for (const r of m.tender) out.push(`   - ${r.ref ? `${r.ref}: ` : ""}${r.text}`); out.push(""); }
   if (m.prove.length) { out.push(`${++i}. Your concerns, and how we will prove them`); for (const o of m.prove) out.push(`   - "${o.text}": ${o.how}`); out.push(""); }
   if (m.due.length) { out.push(`${++i}. Coming up`); for (const c of m.due) out.push(`   - ${c.text}, by ${c.by}${c.who ? ` (${c.who})` : ""}`); out.push(""); }
