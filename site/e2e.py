@@ -1390,6 +1390,19 @@ def main(site: str) -> int:
         users.dispatch_event("change")
         page.wait_for_timeout(300)
         check(int(vdicard.locator(".szhead > b").inner_text()) > 8, "and follows the users given")
+        # modernising applications: a first container platform sizing sketch, production and test apart
+        page.get_by_role("button", name="Modernising applications").click()
+        page.wait_for_selector("#ws-kubernetes-platform")
+        k8scard = page.locator("#view .card").filter(has_text="A first container platform sizing sketch")
+        check(k8scard.locator(".szhead > b").inner_text() == "11" and "in 2 clusters, 17 nodes with the control plane" in k8scard.inner_text()
+              and "the processor decides" in k8scard.inner_text(),
+              "with the container platform in scope, a first sizing sketch: workers by processor, memory and pods, production and test apart")
+        k8scard.locator("details.szassume summary").first.click()
+        mem = page.locator("#view input[aria-label='Memory requested per pod (MiB)']")
+        mem.fill("8192")
+        mem.dispatch_event("change")
+        page.wait_for_timeout(300)
+        check("the memory decides" in k8scard.inner_text() and int(k8scard.locator(".szhead > b").inner_text()) > 11, "and the memory decides when the pods ask for more of it")
         # running it like a cloud: what one machine costs, all in
         page.get_by_role("button", name="Running it like a cloud").click()
         page.wait_for_selector("#ws-cloud-operations")

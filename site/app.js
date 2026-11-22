@@ -981,6 +981,7 @@ function workshopContext() {
     obj: async (settings) => edit((x) => WSHOP.setObj(x, settings, today)),
     edge: async (settings) => edit((x) => WSHOP.setEdge(x, settings, today)),
     vdi: async (settings) => edit((x) => WSHOP.setVdi(x, settings, today)),
+    k8s: async (settings) => edit((x) => WSHOP.setK8s(x, settings, today)),
     unit: async (figures) => edit((x) => WSHOP.setUnit(x, figures, today)),
     commitments: state.commitments,
     // the promises of the handover become the customer's commitments, kept with the rest after the sale; none twice

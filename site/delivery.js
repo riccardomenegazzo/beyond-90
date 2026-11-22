@@ -13,6 +13,7 @@ import { drSketch } from "./drsketch.js";
 import { bidCommitments } from "./rfp.js";
 import { edgeSketch } from "./edgesketch.js";
 import { vdiSketch } from "./vdisketch.js";
+import { k8sSketch } from "./k8ssketch.js";
 import { unitSketch, money as unitMoney } from "./unitcost.js";
 import { objSketch } from "./objsketch.js";
 import { channelState, KINDS } from "./partners.js";
@@ -108,6 +109,8 @@ export function handoverMarkdown(catalog, w, pov, today) {
   if (es && es.ok) facts.push(`Edge design: ${es.servers} servers at ${es.sites} sites in ${es.kinds.length} standard design${es.kinds.length === 1 ? "" : "s"} (${es.kinds.map((k) => `${clean(k.name).toLowerCase()}: ${k.servers_each} a site`).join("; ")})${es.witness_sites ? `, a witness for ${es.witness_sites} two-server sites` : ""}; upgrades in about ${es.weeks} weeks after a pilot of ${es.pilot}${es.kinds.some((k) => !k.copy_fits) ? "; some daily copies do not fit the night over their link" : ""}.`);
   const vs = w.vdi && w.scope.includes("euc") ? vdiSketch(w.vdi) : null;
   if (vs && vs.ok) facts.push(`Desktop sizing: ${vs.hosts} hosts for ${vs.concurrent} desktops at once (the ${vs.binding} decides, one or more kept free), ${vs.usable_tib} TiB of usable storage${vs.graphics ? `; ${vs.graphics} graphics desktops need hosts with GPUs` : ""}; to confirm with a week of real use on a pilot group.`);
+  const ks = w.k8s && w.scope.includes("kubernetes-platform") ? k8sSketch(w.k8s) : null;
+  if (ks && ks.ok) facts.push(`Container platform sizing: ${ks.workers} workers in ${ks.clusters.length} cluster${ks.clusters.length === 1 ? "" : "s"} (${ks.nodes} nodes with the control plane), ${ks.vcpu} virtual processors and ${ks.ram} GiB of memory, ${ks.pv_tib} TiB of persistent volumes; to confirm with the requests read from a running cluster.`);
   const us = w.unit && w.scope.some((p) => ["cloud-operations", "service-provider-cloud", "hybrid-cloud"].includes(p)) ? unitSketch(w.unit, w.inventory) : null;
   if (us && us.ok) facts.push(`Cost per machine: ${unitMoney(us.month)} a month all in, across ${unitMoney(us.machines)} machines${us.tenant ? `; a standard tenant costs ${unitMoney(us.tenant.cost)} a month` : ""}. Agreed with finance? Check before it is used for showback or prices.`);
   if (gs && gs.ok) facts.push(`GPU sketch: ${gs.gpus} GPUs in ${gs.servers} server${gs.servers === 1 ? "" : "s"}, ${gs.copies} copies of the model, decided by ${gs.decided}; to confirm with a benchmark on the customer's own prompts.`);

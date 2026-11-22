@@ -22,6 +22,7 @@ import * as NM from "./nextmeeting.js";
 import * as OBJ from "./objsketch.js";
 import * as EDGE from "./edgesketch.js";
 import * as VDI from "./vdisketch.js";
+import * as K8S from "./k8ssketch.js";
 import * as UNIT from "./unitcost.js";
 import * as RFP from "./rfp.js";
 import * as AWD from "./award.js";
@@ -2150,7 +2151,7 @@ function openDeck({ clock, onClose, aside = null, asideTitle = "", ...rest }) {
 
 const wsFilter = { core: false, roles: [], tender: false, open: false, best: false };
 
-export function workshopView({ workshop: w, catalog, list, answer, worth, setDeal, raise, rename, preparedBy, setScope, inventory, sizing, waves, gpu, dr, obj, edge, vdi, unit, today, newWorkshop, openWorkshop, removeWorkshop, presets = [], go, focus }) {
+export function workshopView({ workshop: w, catalog, list, answer, worth, setDeal, raise, rename, preparedBy, setScope, inventory, sizing, waves, gpu, dr, obj, edge, vdi, k8s, unit, today, newWorkshop, openWorkshop, removeWorkshop, presets = [], go, focus }) {
   const say = h("p", { class: "note", role: "status" });
   const act = (fn) => async (...a) => { try { await fn(...a); say.textContent = ""; } catch (e) { say.textContent = e.message; } };
   let cur = w;
@@ -2427,7 +2428,8 @@ export function workshopView({ workshop: w, catalog, list, answer, worth, setDea
   const sketches = [inventory ? inventoryCard(w, inventory) : null, w.inventory && sizing ? sizingCard(w, sizing) : null,
     w.inventory && waves ? wavesCard(w, waves, today) : null, w.scope.includes("private-ai") && gpu ? gpuCard(w, gpu) : null,
     w.scope.includes("dr-backup") && dr ? drCard(w, dr) : null, w.scope.includes("object-storage") && obj ? objCard(w, obj) : null,
-    w.scope.includes("edge-sites") && edge ? edgeCard(w, edge) : null, w.scope.includes("euc") && vdi ? vdiCard(w, vdi) : null, w.scope.some((p) => WS.UNIT_LINES.includes(p)) && unit ? unitCard(w, unit) : null].filter(Boolean);
+    w.scope.includes("edge-sites") && edge ? edgeCard(w, edge) : null, w.scope.includes("euc") && vdi ? vdiCard(w, vdi) : null,
+    w.scope.includes("kubernetes-platform") && k8s ? k8sCard(w, k8s) : null, w.scope.some((p) => WS.UNIT_LINES.includes(p)) && unit ? unitCard(w, unit) : null].filter(Boolean);
   // with lines chosen, the next question comes first, beside where every line stands; the meeting's settings follow
   const top = inScope.length
     ? [h("div", { class: "card deckpanel" }, deckBox, h("div", { class: "deckside" }, clockBox, heardBox, prog, strip,
@@ -2673,6 +2675,46 @@ function objCard(w, obj) {
       try { await obj(null); } catch (e) { say.textContent = e.message; }
     } }))), say),
   { sub: "For backups kept on object storage: what the retention holds after reduction, with protection and room to grow, and what the nightly window needs. The backup product's own calculator, on the customer's data, has the last word." });
+}
+
+/** A first container platform sizing sketch: workers per cluster by processor, memory and pods, the control plane, the volumes. */
+function k8sCard(w, k8s) {
+  const a = K8S.cleanK8s(w.k8s || {});
+  const say = h("p", { class: "note", role: "status" });
+  const out = h("div", { class: "szout" });
+  const load = [["apps", "Applications in production"], ["pods_per_app", "Pods per application"], ["cpu_m", "Processor requested per pod (millicores)"],
+    ["mem_mib", "Memory requested per pod (MiB)"], ["nonprod_pct", "Test and development (% of production)"], ["pv_gib", "Persistent volume per application (GiB)"], ["pv_copies", "Copies the storage keeps"]];
+  const nodes = [["node_vcpu", "Virtual processors per worker"], ["node_ram_gib", "Memory per worker (GiB)"], ["system_pct", "Taken by the platform's own pods (%)"],
+    ["fill_pct", "Requests kept below (%)"], ["max_pods", "Pods a node may run"], ["spare_nodes", "Workers kept to drain, per cluster"],
+    ["control_nodes", "Control nodes per cluster"], ["control_vcpu", "Virtual processors per control node"], ["control_ram_gib", "Memory per control node (GiB)"]];
+  const fields = [...load, ...nodes];
+  const inputs = {};
+  const current = () => { const v = {}; for (const [k] of fields) v[k] = Number(inputs[k].value); return K8S.cleanK8s(v); };
+  const draw = (settings) => {
+    const sk = K8S.k8sSketch(settings);
+    if (!sk.ok) { put(out, h("p", { class: "note", text: sk.error })); return; }
+    put(out,
+      h("div", { class: "szhead" }, h("b", { text: String(sk.workers) }), h("span", {}, h("strong", { text: "workers" }),
+        h("small", { text: `in ${sk.clusters.length} cluster${sk.clusters.length === 1 ? "" : "s"}, ${sk.nodes} nodes with the control plane: ${INV.fmt(sk.vcpu)} virtual processors, ${INV.fmt(sk.ram)} GiB, ${INV.fmt(sk.pv_tib)} TiB of volumes` }))),
+      h("ol", { class: "szsteps" }, sk.steps.map((t) => h("li", { text: t }))),
+      h("div", { class: "growproof" }, h("small", { text: "Whatever the platform" }), h("ul", {}, K8S.k8sNotes(sk).map((t) => h("li", { text: t })))));
+  };
+  const save = async () => { const v = current(); draw(v); try { await k8s(v); say.textContent = ""; } catch (e) { say.textContent = e.message; } };
+  const grid = (list) => h("div", { class: "szgrid" }, list.map(([k, label]) => {
+    inputs[k] = h("input", { type: "number", step: "any", min: "0", value: String(a[k]), "aria-label": label });
+    inputs[k].addEventListener("change", save);
+    return h("label", { class: "szf" }, h("span", { text: label }), inputs[k]);
+  }));
+  draw(a);
+  return card("A first container platform sizing sketch", h("div", { class: "sz" }, out,
+    h("details", { class: "szassume" }, h("summary", { text: "The applications and what they ask for, to agree with the teams" }), grid(load)),
+    h("details", { class: "szassume" }, h("summary", { text: "The nodes and the room kept on them" }), grid(nodes),
+      h("div", { class: "btnrow" }, h("button", { class: "btn small", type: "button", text: "Back to the defaults", onclick: async () => {
+        for (const [k] of fields) inputs[k].value = String(K8S.K8S_DEFAULTS[k]);
+        draw(K8S.K8S_DEFAULTS);
+        try { await k8s(null); } catch (e) { say.textContent = e.message; }
+      } }))), say),
+  { sub: "For a container platform: the workers each cluster needs, counted by processor, by memory and by pods per node, with room for bursts and rolling updates and a node to drain; the control plane; the persistent volumes. The requests read from a running cluster have the last word." });
 }
 
 /** A first desktop sizing sketch: hosts by processor and by memory, a host kept free, and the storage. */

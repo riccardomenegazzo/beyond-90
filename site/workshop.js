@@ -17,6 +17,7 @@ import { validDr, drSketch, drMarkdown } from "./drsketch.js";
 import { validObj, objSketch, objMarkdown } from "./objsketch.js";
 import { validEdge, edgeSketch, edgeMarkdown } from "./edgesketch.js";
 import { validVdi, vdiSketch, vdiMarkdown } from "./vdisketch.js";
+import { validK8s, k8sSketch, k8sMarkdown } from "./k8ssketch.js";
 import { validUnit, unitSketch, unitMarkdown } from "./unitcost.js";
 import { cleanAward } from "./award.js";
 import { withAnswer, withCall, emptyDecision } from "./bidcall.js";
@@ -93,6 +94,7 @@ export function validWorkshop(w) {
   if (w.obj != null && !validObj(w.obj)) return false;
   if (w.edge != null && !validEdge(w.edge)) return false;
   if (w.vdi != null && !validVdi(w.vdi)) return false;
+  if (w.k8s != null && !validK8s(w.k8s)) return false;
   if (w.unit != null && !validUnit(w.unit)) return false;
   if (w.rfp != null && !validRfp(w.rfp)) return false;
   if (w.deal != null && !validDeal(w.deal)) return false;
@@ -240,6 +242,17 @@ export function setDr(w, settings, today) {
   if (settings) {
     if (!validDr(settings)) throw new Error("One of the recovery settings is out of range.");
     next.dr = settings;
+  }
+  return changed(next, {}, today);
+}
+
+/** The settings of the container platform sizing sketch, or null to go back to the defaults. */
+export function setK8s(w, settings, today) {
+  const next = { ...w };
+  delete next.k8s;
+  if (settings) {
+    if (!validK8s(settings)) throw new Error("One of the container platform settings is out of range.");
+    next.k8s = settings;
   }
   return changed(next, {}, today);
 }
@@ -834,6 +847,7 @@ export function summaryMarkdown(catalog, w, res) {
   if (w.obj && w.scope.includes("object-storage")) out.push(objMarkdown(objSketch(w.obj, w.inventory)), "");
   if (w.edge && w.scope.includes("edge-sites")) out.push(edgeMarkdown(edgeSketch(w.edge)), "");
   if (w.vdi && w.scope.includes("euc")) out.push(vdiMarkdown(vdiSketch(w.vdi)), "");
+  if (w.k8s && w.scope.includes("kubernetes-platform")) out.push(k8sMarkdown(k8sSketch(w.k8s)), "");
   if (w.unit && w.scope.some((p) => UNIT_LINES.includes(p))) { const u = unitSketch(w.unit, w.inventory); if (u.ok) out.push(unitMarkdown(u), ""); }
   const told = res.land ? stories(catalog, w, res).find((x) => x.land) : null;
   if (told && Object.keys(told.audiences).length) {

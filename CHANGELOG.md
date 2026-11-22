@@ -2,6 +2,11 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.197.0
+
+- **A first container platform sizing sketch.** With the Kubernetes platform in scope, a workshop now sizes the clusters from what the teams say: the applications, their pods, what each pod asks for, test and development as a share of production. For each cluster it counts the workers by processor, by memory and by the pods a node may run, says which decides, keeps room for the platform's own pods and for rolling updates, adds a node to drain and the control plane, and gives what the platform must host and the persistent volumes. Every step is shown, with the notes that hold whatever the platform.
+- The sketch is kept with the workshop, goes in the journey (.md) and in the handover to delivery.
+
 ## 0.196.0
 
 - **A first desktop sizing sketch.** With virtual desktops in scope, a workshop now sizes the pool from the conversation: the users, how many connect at the busiest hour, the mix of task workers, knowledge workers, power users and graphics users, what each kind of desktop is given and how many virtual processors share a core. It counts the hosts by processor and by memory, says which one decides, adds the host kept free for a failure, and adds up the storage: the disks of desktops that keep their changes, what fresh desktops write, the golden images, the profiles. Every step of the arithmetic is shown, with the notes that hold whatever the product (a pilot week of real use, the Monday morning logons, GPUs for graphics users).

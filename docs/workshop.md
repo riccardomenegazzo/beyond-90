@@ -489,6 +489,17 @@ It counts the hosts twice, by processor and by memory, says which one decides, a
 
 Notes that hold whatever the product: measure a week of real use on a pilot group of each kind before fixing the ratios, plan for the busiest half hour of logons, give graphics users hosts with GPUs sized from their applications, and ask which users truly need a desktop that keeps its changes. The sketch goes in the journey and in the handover; a week of real use on a pilot group has the last word.
 
+## A first container platform sizing sketch
+
+With the Kubernetes platform in scope, **A first container platform sizing sketch** works out the nodes the applications call for. Typed in from the conversation with the teams:
+- how many applications run in production, how many pods each, and what a pod asks for (processor in millicores, memory in MiB);
+- test and development as a share of production, and the persistent volume each application keeps;
+- the nodes: their size, the share their own platform pods take, how full their requests may be planned, the pods a node may run, a node kept to drain, and the control plane.
+
+For production and for test and development apart, it counts the workers three ways (processor, memory, pods per node), says which decides, adds the node to drain and the control nodes, and gives the virtual processors and memory the platform must host, and the persistent volumes with their copies.
+
+Notes that hold whatever the platform: read the requests the teams actually set from a running cluster, keep production apart with its own control plane, three or five control nodes, and room on each node for a rolling update. The sketch goes in the journey and in the handover.
+
 ## What one machine costs
 
 With cloud operations, a service provider's cloud or hybrid cloud in scope, **What one machine costs** works out the number behind "the cloud is cheaper", in the customer's own figures. It adds up a year of the estate:
