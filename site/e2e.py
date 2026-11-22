@@ -877,6 +877,14 @@ def main(site: str) -> int:
               "the rise at the renewal and the yearly cost of staying are offered for the case for change, and one tap puts each in")
         page.locator("#view .heardsay button", has_text="Undo").click()
         page.locator("#view .heardsay", has_text="Undone: the case for change is back as it was").wait_for()
+        # while qualifying the deal too
+        page.click("[data-tab=wsqualify]")
+        page.fill("#qdheard", "The contract expires in 18 months")
+        check(page.get_by_role("button", name="Use 18 as the months to the next renewal, in the case for change").count() == 1,
+              "a figure heard while qualifying the deal is offered for the case for change too")
+        page.fill("#qdheard", "")
+        page.click("[data-tab=workshop]")
+        page.wait_for_selector("#wsheard")
         page.fill("#wsheard", "One day without the main site would cost about 2 million euros")
         check(any("Figure heard: 2,000,000 per day" in page.locator("#view .heardhit").nth(i).inner_text() for i in range(page.locator("#view .heardhit").count())),
               "a figure in what was heard is read, with what it is counted per, on the value question it answers")

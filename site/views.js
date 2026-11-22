@@ -3277,7 +3277,7 @@ export function partnersView({ workshop: w, catalog, today, setChannel }) {
 const FW_STATE = { done: "Done", open: "Passed, with something left open", now: "Now", later: "Later" };
 const DEMO_LENGTH = new Map();     // per workshop, the length of the demo meeting chosen on the way forward, while the page is open
 
-export function forwardView({ workshop: w, catalog, povs, today, go, setDemo, setDemoSeen, answer, worth, setDeal, raise }) {
+export function forwardView({ workshop: w, catalog, povs, today, go, setDemo, setDemoSeen, answer, worth, setDeal, raise, vdi, db, k8s, files, obj, dr, gpu, setCase }) {
   const pov = DL.povFor(povs, w.customer);
   const f = FW.forward(catalog, w, pov, today);
   const say = h("p", { class: "note", role: "status" });
@@ -3341,7 +3341,7 @@ export function forwardView({ workshop: w, catalog, povs, today, go, setDemo, se
   // what the customer says during the demo answers discovery questions and voices concerns too: the same box, under the cards
   const runDemo = () => openDeck({ cards: dcards, state: { at: Math.max(0, dcards.findIndex((c) => !seenOf(c))), drafts: new Map() }, set: demoSet, go,
     answerOf: seenOf, answer: async (c, a, note) => { cur = await setDemoSeen(c.key, a, note); return cur; }, clock: () => miniClock(w.id), onClose: () => go("wsforward"),
-    ...(answer ? { aside: heardPanel({ catalog, get: () => cur, set: (x) => { cur = x; }, answer, worth, setDeal, raise, id: "fwheard" }).el, asideTitle: "Heard something else?" } : {}) });
+    ...(answer ? { aside: heardPanel({ catalog, get: () => cur, set: (x) => { cur = x; }, answer, worth, setDeal, raise, id: "fwheard", sketches: { vdi, db, k8s, files, obj, dr, gpu, case: setCase } }).el, asideTitle: "Heard something else?" } : {}) });
   const landed = dcards.some(seenOf) ? DEMO.demoSummary(dcards, seenOf) : null;
   const landedSec = landed ? sec("How it landed", h("div", { class: "fwlanded" }, h("p", { text: landed.head }),
     landed.lists.filter(([, rows]) => rows.length).map(([heading, rows]) => h("div", { class: "growproof" }, h("small", { text: heading }),
@@ -3387,7 +3387,7 @@ export function forwardView({ workshop: w, catalog, povs, today, go, setDemo, se
 }
 
 // ------------------------------------------------------------------ qualify the deal: the same ten questions on every line
-export function qualifyView({ workshop: w, catalog, setDeal, setAlt, answer, worth, raise, go }) {
+export function qualifyView({ workshop: w, catalog, setDeal, setAlt, answer, worth, raise, go, vdi, db, k8s, files, obj, dr, gpu, setCase }) {
   let cur = w;
   const say = h("p", { class: "note", role: "status" });
   const hero = h("section", { class: "card qdhero" });
@@ -3493,7 +3493,7 @@ export function qualifyView({ workshop: w, catalog, setDeal, setAlt, answer, wor
   qdDeck.draw(false);
   return h("div", {}, hero,
     h("div", { class: "card deckpanel" }, h("div", { class: "deckslot" }, qdDeck.el),
-      h("div", { class: "deckside" }, heardPanel({ catalog, get: () => cur, set: (x) => { cur = x; }, answer, worth, setDeal, raise, id: "qdheard",
+      h("div", { class: "deckside" }, heardPanel({ catalog, get: () => cur, set: (x) => { cur = x; }, answer, worth, setDeal, raise, id: "qdheard", sketches: { vdi, db, k8s, files, obj, dr, gpu, case: setCase },
         onFiled: () => { qdList.draw(); drawHero(); qdDeck.sync(); } }).el,
         h("h2", { class: "decksidehead", text: "The ten questions" }),
         h("p", { class: "note", text: "The same on every line, asked alongside the technical ones: known, partly or not yet, with what you heard. Named as most sales methods name them, so the seller reads the same list; never in the customer readout." }),
