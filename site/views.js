@@ -1932,8 +1932,10 @@ function deckPane({ cards, state, answerOf, answer, go, pfx, inline, set = DISCO
       h("ul", { class: "deckgaps" }, rows.map((r) => h("li", {}, h("span", { text: r.q }), h("small", { class: "muted", text: r.label }),
         r.note ? h("span", { class: "decksaidline", text: `“${r.note}”` }) : null)))] : null);
     const headline = h("p", { class: "deckheadline", tabindex: "-1", text: s.head });
+    const ended = set.note ? set.note(null, cards.length) : null;
     const open = cards.findIndex((c) => !answerOf(c));
     put(main, h("div", { class: "decksum" }, headline,
+      ended && ended.line ? h("p", { class: `decknote p-${ended.state}`, role: "status", text: ended.line }) : null,
       h("div", { class: "decktallies" }, s.tallies.map(([k, words]) => h("div", { class: `decktally t-${set.tone(k)}` },
         h("b", { text: String(s.counts[k]) }), h("span", { text: words })))),
       s.lists.map(said),

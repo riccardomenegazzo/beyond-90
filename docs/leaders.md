@@ -34,7 +34,7 @@ Each says what decided the result and what to check before relying on it. None i
 ![Your team: each engineer's pipeline, the deals at risk, and what the team's deals teach](img/app-team.png)
 
 **What the deals teach.** How deals ended and why, the share won and the share of proofs met. Then three lists, each useful to a different team:
-- what customers push back on, for enablement;
+- what customers push back on, and what did not land in the demos, for enablement;
 - the gaps heard most and the tests not met, for the product team;
 - the median days of each stage and where deals start, for planning.
 

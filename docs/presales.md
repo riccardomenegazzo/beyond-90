@@ -28,6 +28,7 @@ A pre-sales engineer carries many prospects at once, each at a different point: 
 - **What the deals teach.** Across every prospect:
   - how deals ended (won, lost, no decision) and why, with the share won and the share of proofs of value met;
   - what customers push back on, with how many of those deals were won;
+  - what did not land in the demos, part by part (named by what it was to show, never by what was said), with how those deals ended;
   - the gaps heard most (questions answered "a real gap" or "nobody knows");
   - the tests not met;
   - what the deals not won had not established: the qualification questions still open when they ended (for example, "Economic buyer: 2 of 3");

@@ -2,6 +2,12 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.170.0
+
+- **Help answers three more presales questions:** how to run the demo and keep it on time, how to go through the results of a proof of value with the sponsor, and how to practise the objections before the meeting. Search (Ctrl K) finds them too.
+- The presales and leaders guides name what did not land in the demos among what the deals teach.
+- At the end of Run the demo, in the meeting's last five minutes, a line says it is time to close: agree what a proof would have to show, and who signs it off.
+
 ## 0.169.0
 
 - **What did not land in the demos, across deals.** What the deals teach (on the presales desk, and the team's desk) now lists the parts of a demo that did not land, most often first, with how those deals ended: a part that keeps missing is a demo to change. A part is named by what it was to show (the gap it closes, or the concern it answers), never by what was said about it.
