@@ -885,3 +885,44 @@ export function drTierFigures(said, scope) {
   });
   return out;
 }
+
+// what each database is given and how busy it runs, and what each pod of an application asks for
+const DB_TALK = /\b(?:databases?|db|dbs|instances?|istanz\w*)\b/;
+const POD_TALK = /\b(?:pods?|containers?|replicas?|repliche|microservi\w*|applications?|apps?|applicazioni)\b/;
+
+/**
+ * The database licence sketch's and the container platform sketch's figures in what was said: the vCPU each database
+ * is given ("8 vCPU per database"), how busy they run at the busiest hour ("about 20% CPU at peak"), the pods of each
+ * application ("6 replicas each") and what each pod requests ("500m and 1 GiB per pod").
+ * @returns {{sketch:string, field:string, value:number, what:string, label:string}[]}
+ */
+export function workloadFigures(said, scope) {
+  const t = ` ${String(said == null ? "" : said).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "")} `;
+  const on = (p) => (scope || []).includes(p);
+  const out = [];
+  if (on("dbaas") && DB_TALK.test(t)) {
+    const v = t.match(/\b(\d+)\s*(?:vcpus?|virtual cpus?|cores?|core)\s+(?:each|per (?:database|instance|db)|a database|for each database|ciascun\w*|per istanza)\b/)
+      || t.match(/\b(?:each|every|ogni)\s+(?:database|instance|db|istanza)\s+(?:has|gets|runs on|is given|ha)\s+(\d+)\s*(?:vcpus?|virtual cpus?|cores?|core)\b/);
+    if (v && Number(v[1]) >= 1 && Number(v[1]) <= 256) out.push({ sketch: "db", field: "vcpu_per_db", value: Number(v[1]), what: "vCPU each database is given", label: "vCPU each database is given, in the licence sketch" });
+    const busy = t.match(/\b(\d+(?:[.,]\d+)?)\s?(?:%|percent\b|per cento\b)[^.;]*?\b(?:at (?:the )?(?:busiest|peak)|at peak|peak|busiest hour|di picco|nell'ora di punta|al picco)\b/)
+      || t.match(/\b(?:peak|busiest hour|di picco|al picco)\b[^.;]*?\b(\d+(?:[.,]\d+)?)\s?(?:%|percent\b|per cento\b)/);
+    const b = busy ? Number(busy[1].replace(",", ".")) : NaN;
+    if (b >= 1 && b <= 100) out.push({ sketch: "db", field: "busy_pct", value: b, what: "percent busy at the busiest hour", label: "how busy the databases run at the busiest hour, in the licence sketch" });
+  }
+  if (on("kubernetes-platform") && POD_TALK.test(t)) {
+    const pods = t.match(/\b(\d+)\s+(?:pods|replicas|repliche|istanze)\s+(?:each|per (?:app|application|service)|an app|ciascun\w*|per applicazione)\b/);
+    if (pods && Number(pods[1]) >= 1 && Number(pods[1]) <= 1000) out.push({ sketch: "k8s", field: "pods_per_app", value: Number(pods[1]), what: "pods each application runs", label: "pods each application runs, in the container platform sketch" });
+    const perPod = /\b(?:per pod|each pod|a pod|ogni pod|per container|each container|requests?|richiest\w*)\b/.test(t);
+    const cpu = perPod ? t.match(/\b(\d+)\s?(?:m|millicores?|millicpu)\b/) || t.match(/\b(\d+(?:[.,]\d+)?)\s+(?:vcpus?|cpus?|cores?)\s+(?:per pod|each pod|a pod|per container)\b/) : null;
+    if (cpu) {
+      const m = /m|milli/.test(cpu[0].replace(cpu[1], "")) ? Number(cpu[1]) : Math.round(Number(cpu[1].replace(",", ".")) * 1000);
+      if (m >= 10 && m <= 64000) out.push({ sketch: "k8s", field: "cpu_m", value: m, what: "millicores requested per pod", label: "processor requested per pod, in the container platform sketch" });
+    }
+    const mem = perPod ? t.match(/\b(\d+(?:[.,]\d+)?)\s?(mi|mib|mb|gi|gib|gb)\b/) : null;
+    if (mem) {
+      const v = Math.round(Number(mem[1].replace(",", ".")) * (/^g/.test(mem[2]) ? 1024 : 1));
+      if (v >= 16 && v <= 262144) out.push({ sketch: "k8s", field: "mem_mib", value: v, what: "MiB of memory requested per pod", label: "memory requested per pod, in the container platform sketch" });
+    }
+  }
+  return out;
+}

@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
-import { stem, tokens, match, joinNote, NOTE_MAX, concernCards, concernsHeard, sketchFigures, caseFigures, unitFigures, edgeFigures, retentionFigures, wavesFigures, sizingFigures, changeFigures, drTierFigures } from "../heard.js";
+import { stem, tokens, match, joinNote, NOTE_MAX, concernCards, concernsHeard, sketchFigures, caseFigures, unitFigures, edgeFigures, retentionFigures, wavesFigures, sizingFigures, changeFigures, drTierFigures, workloadFigures } from "../heard.js";
 
 const card = (key, q, listen = "", why = "", probe = "") => ({ key, label: "Disaster recovery", q: { q, listen, why, probe } });
 const DR = [
@@ -772,4 +772,15 @@ test("a named tier's recovery point, recovery time and share of the data are off
   assert.equal(f.has(next), true);
   assert.equal(f.has(null), false, "no design saved yet");
   assert.equal(drTierFigures("tier 2 RPO 15 minutes", ["dr-backup"])[0].has({ data_tib: 60 }), true, "a saved design at the default tiers has it");
+});
+
+test("what each database is given and each pod asks for is offered for the licence and the container platform sketches", () => {
+  const got = (said, scope = ["dbaas", "kubernetes-platform"]) => workloadFigures(said, scope).map((x) => `${x.sketch}.${x.field}=${x.value}`);
+  assert.deepEqual(got("The databases have 8 vCPU each and run at about 20% CPU at peak"), ["db.vcpu_per_db=8", "db.busy_pct=20"]);
+  assert.deepEqual(got("each database gets 6 cores; the busiest hour is around 35%"), ["db.vcpu_per_db=6", "db.busy_pct=35"]);
+  assert.deepEqual(got("le istanze hanno 4 vcpu ciascuna, al picco 30%"), ["db.vcpu_per_db=4", "db.busy_pct=30"]);
+  assert.deepEqual(got("Each app runs 3 replicas each, and every pod requests 250m and 512Mi"), ["k8s.pods_per_app=3", "k8s.cpu_m=250", "k8s.mem_mib=512"]);
+  assert.deepEqual(got("pods request 1 vcpu per pod and 2 GiB"), ["k8s.cpu_m=1000", "k8s.mem_mib=2048"]);
+  assert.deepEqual(got("The databases have 8 vCPU each", ["kubernetes-platform"]), [], "only the lines in scope");
+  assert.deepEqual(got("the servers have 8 vCPU each"), [], "not said of databases or pods");
 });
