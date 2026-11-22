@@ -1573,6 +1573,14 @@ def main(site: str) -> int:
         page.locator("#view .heardsay button", has_text="Undo").click()
         page.locator("#view .heardsay", has_text="Undone: the sizing sketch is back as it was").wait_for()
         check(page.inner_text("#view .szhead > b") == servers_before, "Undo puts the sizing back as it was")
+        page.fill("#wsheard", "We plan for 30% growth, on servers with 48 cores and 1.5 TB of memory, N+2.")
+        page.get_by_role("button", name="Use all 4 figures in the sizing sketch").click()
+        page.locator("#view .heardsay", has_text="Put in the sizing sketch: 30 percent growth over the platform's life; 2 spare servers for failures; 48 cores per server").wait_for()
+        got = [page.locator(f'#view input[aria-label="{x}"]').input_value() for x in ("Growth over the platform's life", "Spare servers for failures", "Cores per server", "Memory per server", "vCPU per physical core")]
+        check(got == ["30", "2", "48", "1536", "8"], f"the figures heard for one sketch in one sentence go in with one tap, beside what was set in the card: {got}")
+        page.locator("#view .heardsay button", has_text="Undo").click()
+        page.locator("#view .heardsay", has_text="Undone: the sizing sketch is back as it was").wait_for()
+        check(page.inner_text("#view .szhead > b") == servers_before and page.locator("#view input[aria-label='Cores per server']").input_value() == "64", "and one Undo takes them all back")
         page.fill("#wsheard", "")
         with page.expect_download() as dl:
             page.get_by_role("button", name="Add the waves to a calendar (.ics)").click()

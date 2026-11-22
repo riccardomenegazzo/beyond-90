@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.238.0
+
+- **Several figures for one sketch, heard in one sentence, go in together.** "We plan for 30% growth, on servers with 48 cores and 1.5 TB of memory, N+2" used to offer four cards with a button each. Figures for the same sketch now share one card, each with its own **Use**, and **Use all 4 in the sketch** puts them in with one tap and one **Undo**. A figure already in the sketch says so and is left out of the count.
+
 ## 0.237.0
 
 - **The note sent ahead asks for the VM inventory export.** With hyperconverged infrastructure or platform migration in scope and no inventory read yet, **Copy the questions to send ahead** now ends with the one file the sizing and the plan in waves start from: an export of the virtual machine inventory, one row per machine (CPUs, memory, disk, power state, operating system, cluster), with the promise that only the totals are kept, never the machines' names. Once the inventory is read, it is no longer asked for.

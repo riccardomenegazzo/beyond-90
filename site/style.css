@@ -930,6 +930,9 @@ details.wsline>summary::-webkit-details-marker{display:none}
 .wssketchopt{margin:0 0 12px}
 .szstate{margin-left:auto}
 .heardsketch{border-left:3px solid var(--ok,#2e7d32)}
+.heardfigs{list-style:none;margin:2px 0;padding:0;display:grid;gap:2px}
+.heardfigs li{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.heardfigs .linkbtn{padding:2px 4px;flex:none}.heardfigs small{flex:none}
 .wsstage{justify-self:start;font-size:11.5px;font-weight:700;padding:1px 8px;border-radius:6px;background:var(--sunk);color:var(--ink2)}
 .wsstage.s-value{background:var(--accent-soft);color:var(--accent-text)}
 .qdverdict{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline;margin:10px 0}

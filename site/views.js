@@ -2070,20 +2070,36 @@ function heardPanel({ catalog, get, set, answer, worth, setDeal, raise = null, s
         "aria-label": `Mark it raised: ${card.o.says}`, onclick: () => fileConcern(card, true) })) : null);
   };
   // a figure a first sketch starts from: put in the sketch with a tap, and undone the same way
-  const useFigure = async (f) => {
-    const before = get()[f.sketch];
-    const next = SKETCH_CLEAN[f.sketch](f.apply ? f.apply(before || {}) : { ...(before || {}), [f.field]: f.value });
-    set(await sketches[f.sketch](next));
-    refreshSketch(f.sketch, next);
+  // one figure, or all those heard for one sketch: one save, one Undo
+  const useFigures = async (list) => {
+    const sk = list[0].sketch;
+    const before = get()[sk];
+    const next = SKETCH_CLEAN[sk](list.reduce((b, f) => (f.apply ? f.apply(b) : { ...b, [f.field]: f.value }), { ...(before || {}) }));
+    set(await sketches[sk](next));
+    refreshSketch(sk, next);
     const undo = h("button", { type: "button", class: "linkbtn", text: "Undo", onclick: async () => {
-      set(await sketches[f.sketch](before || null));
-      refreshSketch(f.sketch, SKETCH_CLEAN[f.sketch](before || {}), !!before);
-      put(heardSay, h("span", { text: `Undone: the ${SKETCH_NAME[f.sketch]} is back as it was.` }));
+      set(await sketches[sk](before || null));
+      refreshSketch(sk, SKETCH_CLEAN[sk](before || {}), !!before);
+      put(heardSay, h("span", { text: `Undone: the ${SKETCH_NAME[sk]} is back as it was.` }));
       drawHeard();
     } });
-    put(heardSay, h("span", { text: `Put in the ${SKETCH_NAME[f.sketch]}: ${INV.fmt(f.value)} ${f.what}. ` }), undo);
+    put(heardSay, h("span", { text: `Put in the ${SKETCH_NAME[sk]}: ${list.map((f) => `${INV.fmt(f.value)} ${f.what}`).join("; ")}. ` }), undo);
     drawHeard();
     heardIn.focus({ preventScroll: true });
+  };
+  const useFigure = (f) => useFigures([f]);
+  const figureIsIn = (f) => (f.has ? f.has(get()[f.sketch]) : !!get()[f.sketch] && get()[f.sketch][f.field] === f.value);
+  // several figures for the same sketch in one sentence: one card, each usable alone, and all of them in one tap
+  const figureGroup = (list) => {
+    const sk = list[0].sketch;
+    const open = list.filter((f) => !figureIsIn(f));
+    return h("div", { class: "heardhit heardsketch" },
+      h("small", { class: "muted", text: `Figures for the ${SKETCH_NAME[sk]}` }),
+      h("ul", { class: "heardfigs" }, list.map((f) => h("li", {}, h("span", { class: "heardq", text: `${INV.fmt(f.value)} ${f.what}` }),
+        figureIsIn(f) ? h("small", { class: "muted", text: "already in it" })
+          : h("button", { type: "button", class: "linkbtn", text: "Use", "aria-label": `Use ${INV.fmt(f.value)} as the ${f.label}`, onclick: () => useFigure(f) })))),
+      open.length > 1 ? h("div", { class: "heardopts" }, h("button", { type: "button", class: "heardopt t-good", text: `Use ${open.length === 2 ? "both" : `all ${open.length}`} in the sketch`,
+        "aria-label": `Use ${open.length === 2 ? "both" : `all ${open.length}`} figures in the ${SKETCH_NAME[sk]}`, onclick: () => useFigures(open) })) : null);
   };
   const figureHit = (f) => {
     const now = f.has ? f.has(get()[f.sketch]) : get()[f.sketch] && get()[f.sketch][f.field] === f.value;
@@ -2100,7 +2116,9 @@ function heardPanel({ catalog, get, set, answer, worth, setDeal, raise = null, s
     const concern = HEARD.concernsHeard(HEARD.concernCards(catalog, get().scope), said)[0];
     const figs = sketches ? [...HEARD.sketchFigures(said, get().scope, get()), ...HEARD.unitFigures(said, get().scope), ...HEARD.edgeFigures(said, get().scope, get()), ...HEARD.retentionFigures(said, get().scope), ...HEARD.wavesFigures(said, get().scope, get()), ...HEARD.sizingFigures(said, get().scope, get()), ...HEARD.caseFigures(said)].filter((f) => sketches[f.sketch]) : [];
     if (!hits.length && !concern && !figs.length) { put(heardOut, h("p", { class: "note", text: "No question in scope uses these words. Try the words of the question, or write it on the card." })); return; }
-    put(heardOut, concern ? concernHit(concern.card) : null, figs.map(figureHit), hits.map(({ card }) => {
+    const bySketch = [];
+    for (const f of figs) { const g = bySketch.find((x) => x[0].sketch === f.sketch); if (g) g.push(f); else bySketch.push([f]); }
+    put(heardOut, concern ? concernHit(concern.card) : null, bySketch.map((g) => (g.length === 1 ? figureHit(g[0]) : figureGroup(g))), hits.map(({ card }) => {
       if (card.deal) return dealHit(card, said);
       const sug = DECK.suggest(card.q, said), before = get().answers[card.key];
       const fig = card.q.stage === "value" ? HEARD.figureIn(said, card.q) : null;
