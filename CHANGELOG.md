@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.214.0
+
+- **The invented example shows its first sketches.** Opened from "See a filled-in example", Kestrel Logistics now has its recovery design, backup capacity and database licence sketches worked out with the figures it gave (60 TiB to protect, 4 ms between the sites, 40 databases on 320 licensed cores), and its readout shows them under First orders of magnitude, so the whole path from the questions to the numbers can be shown in a minute.
+
 ## 0.213.0
 
 - **The Monday note says which first sketches each prospect has.** Beside what is at stake, the demo and the proof, each prospect's line in the presales update now says which sketches were worked out with the customer's figures ("first sketches for virtual desktops and database licences"), on the lines in scope, so the account team sees which deals have numbers behind them.

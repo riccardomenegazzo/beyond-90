@@ -13,12 +13,12 @@ import { validWaves, planWaves, wavesMarkdown, wavesLine, RUNBOOK } from "./wave
 import { calendar } from "./ics.js";
 import { validCase, buildCase, caseLine, caseMarkdown, money } from "./valuecase.js";
 import { validGpu, gpuSketch, gpuMarkdown } from "./gpu.js";
-import { validDr, drSketch, drMarkdown } from "./drsketch.js";
-import { validObj, objSketch, objMarkdown } from "./objsketch.js";
+import { validDr, drSketch, drMarkdown, cleanDr } from "./drsketch.js";
+import { validObj, objSketch, objMarkdown, cleanObj } from "./objsketch.js";
 import { validEdge, edgeSketch, edgeMarkdown } from "./edgesketch.js";
 import { validVdi, vdiSketch, vdiMarkdown } from "./vdisketch.js";
 import { validK8s, k8sSketch, k8sMarkdown } from "./k8ssketch.js";
-import { validDb, dbSketch, dbMarkdown } from "./dbsketch.js";
+import { validDb, dbSketch, dbMarkdown, cleanDb } from "./dbsketch.js";
 import { validFiles, fileSketch, fileMarkdown } from "./filesketch.js";
 import { validUnit, unitSketch, unitMarkdown } from "./unitcost.js";
 import { cleanAward } from "./award.js";
@@ -683,6 +683,8 @@ const EXAMPLE = {
   plan: { "dr-backup#2": ["together", 21], "dr-backup#4": ["us", 10], "platform-migration#3": ["customer", 14] },
   raised: [["dr-backup", 3], ["platform-migration", 1], ["hci", 2]],
   sizing: { growth_pct: 15 },
+  // the first sketches worked out in the room, from the figures they gave, and shown in their readout
+  sketches: { dr: { data_tib: 60, latency_ms: 4 }, obj: { data_tib: 60, monthly_months: 24 }, db: { databases: 40, vcpu_per_db: 8, busy_pct: 20, cores_today: 320 } },
   // sold with partners: an integrator that leads and will deliver, through a distributor; the integrator knows two of the four lines
   alts: ["renew", "public_cloud"],
   channel: {
@@ -723,6 +725,10 @@ export function exampleWorkshop(createdOn) {
   for (const [profile, i] of EXAMPLE.raised) w = setRaised(w, profile, i, true, createdOn);
   for (const id of EXAMPLE.alts) w = setAlt(w, id, true, createdOn);
   w = setCase(setSizing(w, EXAMPLE.sizing, createdOn), EXAMPLE.case, createdOn);
+  w = setDr(w, cleanDr(EXAMPLE.sketches.dr), createdOn);
+  w = setObj(w, cleanObj(EXAMPLE.sketches.obj), createdOn);
+  w = setDb(w, cleanDb(EXAMPLE.sketches.db), createdOn);
+  w = setReadoutSketches(w, true, createdOn);
   for (const [id, [a, note]] of Object.entries(EXAMPLE.deal)) w = setDeal(w, id, a, note, createdOn);
   const shift = (n) => new Date(Date.parse(createdOn + "T00:00:00Z") + n * 86400000).toISOString().slice(0, 10);
   w = setChannel(w, { ...EXAMPLE.channel, partners: EXAMPLE.channel.partners.map((p) => (p.reg ? { ...p, reg: { on: shift(p.reg[0]), until: shift(p.reg[1]) } } : p)) }, createdOn);

@@ -43,3 +43,12 @@ test("the readout shows them only when asked, with what they are and are not", (
   assert.equal(validWorkshop({ ...w, readout_sketches: "yes" }), false);
   assert.equal(validWorkshop({ ...w, readout_sketches: false }), false);
 });
+
+test("the invented example shows its first sketches, and puts them in its readout", async () => {
+  const { exampleWorkshop } = await import("../workshop.js");
+  const w = exampleWorkshop("2026-11-02");
+  assert.equal(validWorkshop(w), true);
+  assert.equal(w.readout_sketches, true);
+  assert.deepEqual(sketchLines(w).map((x) => x.what), ["Recovery", "Backups", "Databases"]);
+  assert.match(readoutHtml(cat, w, assess(cat, w)), /First orders of magnitude/);
+});
