@@ -177,3 +177,32 @@ export function figureIn(said, question) {
   const per = said_ ? said_[0] : asked ? asked[0] : null;
   return per ? { amount: Math.round(best), per } : null;
 }
+
+/**
+ * The concerns the lines in scope expect (their stories' objections), as cards to hold what was said against. Only
+ * what the customer would say counts: a concern is offered when what was heard says much the same.
+ */
+export function concernCards(catalog, scope) {
+  const out = [];
+  for (const p of scope) {
+    const line = catalog.lines[p];
+    const objs = (line && line.story && line.story.objections) || [];
+    objs.forEach((o, i) => out.push({ key: `obj:${p}#${i}`, line: p, index: i, label: line.label, o }));
+  }
+  return out;
+}
+
+/**
+ * The concern what was said voices, if any: the ones whose words it covers best, at least `min` of them and at least
+ * two (one, for a concern of one word), or four of a longer one. At most `n`, best first.
+ */
+export function concernsHeard(cards, said, { min = 0.7, n = 1 } = {}) {
+  const heard = new Set(tokens(said));
+  if (!heard.size) return [];
+  return cards.map((card, i) => {
+    const own = [...new Set(tokens(card.o.says))];
+    const hit = own.filter((t) => heard.has(t)).length;
+    return { card, i, share: own.length ? hit / own.length : 0, hit, need: Math.min(2, own.length) };
+  }).filter((x) => (x.share >= min && x.hit >= x.need) || x.hit >= 4).sort((a, b) => b.share - a.share || b.hit - a.hit || a.i - b.i)
+    .slice(0, n).map(({ card, share }) => ({ card, share }));
+}

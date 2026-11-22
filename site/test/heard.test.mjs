@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
-import { stem, tokens, match, joinNote, NOTE_MAX } from "../heard.js";
+import { readFileSync, readdirSync } from "node:fs";
+import { stem, tokens, match, joinNote, NOTE_MAX, concernCards, concernsHeard } from "../heard.js";
 
 const card = (key, q, listen = "", why = "", probe = "") => ({ key, label: "Disaster recovery", q: { q, listen, why, probe } });
 const DR = [
@@ -232,4 +232,50 @@ test("on AI, cloud operations, endpoints, SaaS, service provider clouds and the 
     if (got[0] === want) first += 1;
   }
   assert.ok(first >= 18, `first ${first} of ${cases.length}`);
+});
+
+test("a concern the line expects is recognised as the customer says it, and an ordinary sentence is not one", () => {
+  const cat = JSON.parse(readFileSync(new URL("./workshop-catalog.json", import.meta.url), "utf-8"));
+  const cards = concernCards(cat, Object.keys(cat.lines));
+  assert.equal(cards.length, 22);
+  for (const [want, said] of [
+    ["hci#0", "Honestly this is fine for the small sites but not for our core applications"],
+    ["hci#1", "the platform services eat resources that our workloads need"],
+    ["hci#2", "we just bought new storage arrays last year"],
+    ["hci#3", "what would our storage team do then, there'd be nothing left for them"],
+    ["dr-backup#0", "we have backups already, Veeam runs every night"],
+    ["dr-backup#1", "a second site is way too expensive for us"],
+    ["dr-backup#2", "we can't test recovery, it would disrupt production"],
+    ["dr-backup#3", "wouldn't ransomware just encrypt the backups as well?"],
+    ["dbaas#0", "the DBAs will never give up control of their databases"],
+    ["dbaas#1", "our databases are far too critical to move"],
+    ["dbaas#2", "would we need new licences for that?"],
+    ["object-storage#0", "why not just use a bucket in the public cloud"],
+    ["object-storage#1", "on premises an admin can always delete it"],
+    ["object-storage#2", "I'm not sure our backup software supports it"],
+    ["edge-sites#0", "our sites are too small for this kind of thing"],
+    ["edge-sites#1", "the links to the sites are poor, some are on 4G"],
+    ["edge-sites#2", "we can't send people to install servers at every site"],
+    ["edge-sites#3", "AI at the edge is not for us, not yet"],
+    ["cloud-operations#0", "we already have monitoring tools, three of them"],
+    ["cloud-operations#1", "self-service will just create sprawl"],
+    ["cloud-operations#2", "chargeback would start a political fight between departments"],
+    ["cloud-operations#3", "I'm worried automation will break production"],
+  ]) {
+    const got = concernsHeard(cards, said);
+    assert.equal(got.length ? got[0].card.key : "", `obj:${want}`, said);
+  }
+  for (const said of ["The CIO signs off anything above 500k", "Plenty of powered-off VMs still sit on expensive disks",
+    "The two data centres are linked by a 1 Gb line, the network team pays for it", "The last failover drill was three years ago", "", "ok"]) {
+    assert.deepEqual(concernsHeard(cards, said), [], said);
+  }
+});
+
+test("on every line that has them, each concern finds itself first, as it is written", () => {
+  for (const p of readdirSync(new URL("../../src/beyond90/data/profiles/", import.meta.url))) {
+    let story;
+    try { story = JSON.parse(readFileSync(new URL(`../../src/beyond90/data/profiles/${p}/story.json`, import.meta.url), "utf-8")); } catch { continue; }
+    const cards = concernCards({ lines: { [p]: { label: p, story } } }, [p]);
+    for (const c of cards) assert.equal(concernsHeard(cards, c.o.says)[0].card.key, c.key, `${p}: ${c.o.says}`);
+  }
 });

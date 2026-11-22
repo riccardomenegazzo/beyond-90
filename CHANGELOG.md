@@ -2,6 +2,12 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.163.0
+
+- **A concern, recognised as it is said.** Written in **Heard something**, a sentence that voices one of the concerns the lines in scope expect ("we have backups already", "the DBAs will never give up control", "automation could break production") now shows that concern first, above the questions it answers: the question to ask before answering, the answer, and how to prove it. **Mark it raised** sends it, as on Prepare, to the customer readout, the demo plan and the proof of value; **Undo** takes it back.
+- A concern is offered only when what was said covers most of its words (or four of a longer one): ordinary sentences, such as who signs or what a line costs, do not bring one up. Ctrl+Enter still files the first question.
+- New: `concernCards` and `concernsHeard` in `heard.js`. Tests: twenty-two concerns said in other words are each recognised; every concern of every line finds itself; ordinary sentences find none. A browser check that one is recognised, marked raised and undone.
+
 ## 0.162.0
 
 - **Email the recap passes the same check as a copy.** At the end of the questions, the demo and the readout, **Email the recap** was a link that opened the mail app with the text in it, around the check every other way out goes through. It is now a button: the subject and the text pass the sharing level first (names, people hidden or pseudonyms), with the same preview, and only what comes out of it opens as the draft. A mail drafted is kept in the log of what left the page, beside copies and files, and the erasure receipt names it.

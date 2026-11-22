@@ -863,6 +863,17 @@ def main(site: str) -> int:
         check(deal_hit.count() == 1 and "Qualify the deal" in deal_hit.inner_text() and deal_hit.locator(".heardopt").count() == 3
               and "Who decides, who signs" in page.locator("#view .heardhit").first.inner_text(),
               "what was heard about the deal finds its qualification question, with its three answers")
+        page.fill("#wsheard", "We have backups already, Veeam runs every night")
+        concern = page.locator("#view .heardconcern")
+        check(concern.count() == 1 and "We already have backups." in concern.inner_text() and "Ask first" in concern.inner_text()
+              and page.locator("#view .heardout > .heardhit").first.get_attribute("class") == "heardhit heardconcern",
+              "a concern the line expects is recognised as it is said, first, with the question to ask before answering")
+        concern.get_by_role("button", name="Mark it raised: We already have backups.").click()
+        page.locator("#view .heardsay", has_text="Marked as raised").wait_for()
+        check("marked as raised" in page.inner_text("#view .heardconcern") and page.locator("#view .heardconcern .heardopt").count() == 0,
+              "and a tap marks it raised, for the readout and the proof")
+        page.locator("#view .heardsay button", has_text="Undo").click()
+        page.locator("#view .heardsay", has_text="No longer marked as raised").wait_for()
         page.fill("#wsheard", "")
         check(page.locator("#view .heardhit").count() == 0, "cleared, the matches go")
         # the meeting's clock: a tap starts it; it keeps the time, on the card too, and the pace on the essential questions

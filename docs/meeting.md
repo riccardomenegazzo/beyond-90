@@ -19,6 +19,7 @@ A page for the hour with the customer: what to set up before, what to do while t
 - **Ask the card's question, and write what they said on it**, in their words. The words suggest an answer ("Sounds like a real gap"); you decide.
 - **Swipe it:** right solved, left a real gap, up partly, down nobody knows. Or tap the answer, or press an arrow or 1 to 4. A gap says, under the next card, what it puts **On the journey**.
 - **Something said out of turn?** Write it in **Heard something?** as it was said. It finds the question it answers, technical or about the deal ("the CIO signs off anything above 500k" goes to who decides and signs), with the answer the words suggest, and money in it ("about 2 million a day") goes in as the figure on a question about value. A tap, or Ctrl+Enter, files it; **Undo** puts back what was there.
+- **A concern, as it is said.** When what you write is one of the concerns the line expects ("we already have backups", "automation will break production"), it shows first: the question to ask before answering, the answer, and how to prove it. **Mark it raised** sends it to the customer readout and into the proof of value.
 - **Full screen** gives the card the whole screen, with Heard something as a sheet under it.
 - **Qualify the deal** works the same way: ten questions that are the same on every line, swiped right if known, up if partly, left if not yet.
 
