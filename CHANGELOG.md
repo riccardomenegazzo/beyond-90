@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.216.0
+
+- **The leaders' guide and the pictures follow.** The guide for presales leaders says what a snapshot carries about the sketches and what **Sized at the proof** counts; the pictures of the team's desk and of the invented example's recovery design are taken again from the app as it is.
+
 ## 0.215.0
 
 - **The presales manager sees which deals at the proof have numbers behind them.** A desk snapshot now carries, for each deal, which lines have a first sketch worked out with the customer's figures, as words from a fixed list ("recovery", "database licences"): never a figure. The team's desk and its review add **Sized at the proof**: of each engineer's deals at the proof or the decision, how many have them. Snapshots from before stay readable.
