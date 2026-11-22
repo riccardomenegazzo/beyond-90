@@ -3,7 +3,7 @@
  * what customers pushed back on, the gaps heard; no notes, no figures, no names of people), and the manager reads the
  * snapshots together. Nothing is stored and nothing is sent: the files are read in the page, checked field by field.
  */
-import { STAGES, exampleDesk, pipeline } from "./desk.js";
+import { STAGES, exampleDesk, pipeline, SKETCH_WORDS } from "./desk.js";
 import { lessons, dealFacts } from "./lessons.js";
 import { STAGES as POV_STAGES, OUTCOMES, REASONS } from "./pov.js";
 import { ROUTES, KINDS } from "./partners.js";
@@ -35,6 +35,7 @@ export function snapshotFrom(opps, facts, by, today) {
         ...(f.not_known ? { qualified: f.qualified || "", not_known: f.not_known } : {}),
         ...(f.alts && f.alts.length ? { alts: f.alts.slice(0, 8).map((x) => clean(x, 60)) } : {}),
         ...(f.missed && f.missed.length ? { missed: f.missed.slice(0, 20).map((m) => ({ line: clean(m.line, 100), part: clean(m.part, 300) })) } : {}),
+        ...(o.sketched && o.sketched.length ? { sketched: o.sketched.filter((x) => SKETCH_WORDS.includes(x)).slice(0, 8) } : {}),
       };
     }),
   };
@@ -46,7 +47,9 @@ const only = (o, keys) => !!o && typeof o === "object" && !Array.isArray(o) && O
 const intIn = (v, lo, hi) => Number.isInteger(v) && v >= lo && v <= hi;
 
 function validDeal(d) {
-  if (!only(d, ["customer", "stage", "closed", "example", "started_on", "updated_on", "lines", "land", "next", "risks", "pov", "outcome", "raised", "gaps", "evidence", "route", "partner_kind", "qualified", "not_known", "partner", "reg_until", "alts", "missed"])) return false;
+  if (!only(d, ["customer", "stage", "closed", "example", "started_on", "updated_on", "lines", "land", "next", "risks", "pov", "outcome", "raised", "gaps", "evidence", "route", "partner_kind", "qualified", "not_known", "partner", "reg_until", "alts", "missed", "sketched"])) return false;
+  // optional: which lines have a first sketch worked out with the customer's figures, as words from a fixed list
+  if (d.sketched !== undefined && !(Array.isArray(d.sketched) && d.sketched.length >= 1 && d.sketched.length <= 8 && new Set(d.sketched).size === d.sketched.length && d.sketched.every((x) => SKETCH_WORDS.includes(x)))) return false;
   if (d.alts !== undefined && !(Array.isArray(d.alts) && d.alts.length >= 1 && d.alts.length <= 8 && new Set(d.alts).size === d.alts.length && d.alts.every((x) => isStr(x, 60, 1) && !/[\u0000-\u001f\u007f]/.test(x)))) return false;
   if (d.evidence !== undefined && !intIn(d.evidence, 0, 100)) return false;
   // optional: the parts of the demo that did not land, by their place in the line
@@ -114,6 +117,9 @@ export function teamView(snapshots, { includeExamples = false } = {}) {
       at_risk: live.filter((d) => d.risks.some((r) => r.level === "high")).length,
       evidence: median(live.map((d) => d.evidence)),
       qualified: live.filter((d) => d.qualified === "proof" || d.qualified === "commit").length,
+      // deals at the proof or the decision, and how many of them have numbers behind them
+      late: live.filter((d) => d.stage === "proof" || d.stage === "decision").length,
+      sized: live.filter((d) => (d.stage === "proof" || d.stage === "decision") && (d.sketched || []).length).length,
     };
   });
   const all = snapshots.flatMap((s, i) => s.deals.filter((d) => includeExamples || !d.example).map((d) => ({ ...d, engineer: who(s, i) })));
@@ -144,8 +150,8 @@ export function teamView(snapshots, { includeExamples = false } = {}) {
 /** The team review in Markdown: for the weekly pipeline review with the presales leadership. */
 export function teamMarkdown(t, today) {
   const out = [`# Presales team review, ${today}`, "", `${t.engineers.length} engineer${t.engineers.length === 1 ? "" : "s"}, ${t.deals} deal${t.deals === 1 ? "" : "s"}; snapshots from ${t.oldest} onwards.`, "",
-    "| Engineer | Open | Discovery | Journey | Proof | Decision | Won | Lost or no decision | At risk | Evidence (median) | Qualified for a proof |", "|---|---|---|---|---|---|---|---|---|---|---|"];
-  for (const e of t.engineers) out.push(`| ${e.name.replace(/\|/g, "/")} | ${e.live} | ${e.stages.discovery} | ${e.stages.journey} | ${e.stages.proof} | ${e.stages.decision} | ${e.won} | ${e.lost} | ${e.at_risk} | ${e.evidence == null ? "—" : `${e.evidence}/100`} | ${e.qualified} |`);
+    "| Engineer | Open | Discovery | Journey | Proof | Decision | Won | Lost or no decision | At risk | Evidence (median) | Qualified for a proof | Sized at the proof |", "|---|---|---|---|---|---|---|---|---|---|---|---|"];
+  for (const e of t.engineers) out.push(`| ${e.name.replace(/\|/g, "/")} | ${e.live} | ${e.stages.discovery} | ${e.stages.journey} | ${e.stages.proof} | ${e.stages.decision} | ${e.won} | ${e.lost} | ${e.at_risk} | ${e.evidence == null ? "—" : `${e.evidence}/100`} | ${e.qualified} | ${e.late ? `${e.sized} of ${e.late}` : "—"} |`);
   out.push("");
   if ((t.partners || []).length) {
     out.push("## Partners across the team", "", "| Partner | Engineers | Live deals | Won | Lost or no decision | Registrations to act on |", "|---|---|---|---|---|---|");

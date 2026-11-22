@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.215.0
+
+- **The presales manager sees which deals at the proof have numbers behind them.** A desk snapshot now carries, for each deal, which lines have a first sketch worked out with the customer's figures, as words from a fixed list ("recovery", "database licences"): never a figure. The team's desk and its review add **Sized at the proof**: of each engineer's deals at the proof or the decision, how many have them. Snapshots from before stay readable.
+
 ## 0.214.0
 
 - **The invented example shows its first sketches.** Opened from "See a filled-in example", Kestrel Logistics now has its recovery design, backup capacity and database licence sketches worked out with the figures it gave (60 TiB to protect, 4 ms between the sites, 40 databases on 320 licensed cores), and its readout shows them under First orders of magnitude, so the whole path from the questions to the numbers can be shown in a minute.

@@ -94,6 +94,12 @@ test("a snapshot carries how each deal is sold and how far it is qualified, with
   assert.equal(k.partner, "Verdi Sistemi (mock)");
   assert.ok(/^\d{4}-\d{2}-\d{2}$/.test(k.reg_until));
   assert.doesNotMatch(JSON.stringify(snap), /Nord Distribuzione/);
+  // which lines have numbers behind them: words from a fixed list, never the figures
+  assert.deepEqual(k.sketched, ["recovery", "database licences", "backup capacity"]);
+  for (const bad of [{ sketched: ["300 TB"] }, { sketched: [] }, { sketched: ["recovery", "recovery"] }]) assert.equal(validSnapshot({ ...snap, deals: [{ ...k, ...bad }] }), false, JSON.stringify(bad));
+  const t = teamView([snap], { includeExamples: true });
+  assert.ok(t.engineers[0].sized <= t.engineers[0].late);
+  assert.match(teamMarkdown(t, day), /\| Sized at the proof \|/);
   // anything off in the new fields refuses the file
   for (const bad of [{ route: "smuggled" }, { partner_kind: "friend" }, { qualified: "nearly", not_known: [] }, { qualified: "demo" }, { qualified: "", not_known: ["Gossip"] }]) {
     const t = structuredClone(snap);
