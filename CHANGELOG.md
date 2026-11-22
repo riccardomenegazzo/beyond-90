@@ -2,6 +2,11 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.158.0
+
+- **The meeting guide shows Heard something in use.** An animated picture recorded from the app on a phone, with the invented example: full screen, the sheet opened under the card, a sentence written as the customer said it, the questions it answers with the answer its words suggest, and a tap that files it, Undo beside.
+- `scripts/deck_gif.py` records two scenes now: `--scene deck` (the default, for the README) and `--scene heard`.
+
 ## 0.157.0
 
 - **The meeting clock follows to Qualify the deal.** In a meeting one moves between the technical questions and the deal's; started on the questions, the time left now shows in the header of the qualification card too, kept up to date, and goes when the clock is stopped.

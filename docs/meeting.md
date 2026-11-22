@@ -13,12 +13,16 @@ A page for the hour with the customer: what to set up before, what to do while t
 
 ## During: the card, the box, the clock
 
+<img src="img/heard.gif" width="300" align="right" alt="On a phone, full screen: Heard something opened under the card, a sentence written as the customer said it, the questions it answers offered with A real gap suggested, and a tap that files it">
+
 - **Start the meeting clock** (30, 45 or 60 minutes). It shows the time left, on the card too, and says whether the essential questions still fit: "Behind: 6 essential questions in 15 minutes, about 2 minutes each", with **Ask only the essentials** one tap away.
 - **Ask the card's question, and write what they said on it**, in their words. The words suggest an answer ("Sounds like a real gap"); you decide.
 - **Swipe it:** right solved, left a real gap, up partly, down nobody knows. Or tap the answer, or press an arrow or 1 to 4. A gap says, under the next card, what it puts **On the journey**.
 - **Something said out of turn?** Write it in **Heard something?** as it was said. It finds the question it answers, technical or about the deal ("the CIO signs off anything above 500k" goes to who decides and signs), with the answer the words suggest, and money in it ("about 2 million a day") goes in as the figure on a question about value. A tap, or Ctrl+Enter, files it; **Undo** puts back what was there.
 - **Full screen** gives the card the whole screen, with Heard something as a sheet under it.
 - **Qualify the deal** works the same way: ten questions that are the same on every line, swiped right if known, up if partly, left if not yet.
+
+<br clear="right">
 
 ## After: the same day
 

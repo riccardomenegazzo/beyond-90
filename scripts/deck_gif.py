@@ -1,10 +1,14 @@
-"""Record the deck in use on a phone, as an animated picture for the README.
+"""Record the deck in use on a phone, as an animated picture for the README and the guides.
 
-The example workshop is invented, and the page is served from this machine: nothing leaves it. The picture shows
-what was said being written on a card, the answer it suggests, a swipe with the answer stamped on the card as it
-moves, and the next cards answered with a swipe up and a tap.
+The example workshop is invented, and the page is served from this machine: nothing leaves it. Two scenes:
+
+- deck: what was said written on a card, the answer it suggests, a swipe with the answer stamped on the card as it
+  moves, and the next cards answered with a swipe up and a tap;
+- heard: full screen, Heard something opened under the card, something said out of turn written in it, the questions
+  it answers offered with the answer the words suggest, and a tap that files it.
 
     python3 scripts/deck_gif.py <built site> docs/img/deck.gif
+    python3 scripts/deck_gif.py <built site> docs/img/heard.gif --scene heard
 """
 from __future__ import annotations
 
@@ -42,10 +46,49 @@ def drag(page, box, dx, dy, steps, pause_at=None):
     page.mouse.up()
 
 
+def deck_scene(page, begun):
+    """Full screen: write on the card, swipe it left, swipe the next up, tap the third. Returns when the scene starts."""
+    page.locator("#view .deckfull").click()
+    page.wait_for_selector("dialog.deck[open] .deckcard")
+    page.wait_for_timeout(500)
+    start = time.monotonic() - begun
+    page.wait_for_timeout(700)
+    page.locator("#deck-said").click()
+    page.keyboard.type("Never tested end to end, nobody signed it off", delay=40)
+    page.wait_for_timeout(900)
+    page.locator("dialog.deck .deckq").click()
+    page.wait_for_timeout(300)
+    drag(page, page.locator("dialog.deck .deckcard").bounding_box(), -250, 14, 18, pause_at=6 / 18)
+    page.wait_for_timeout(900)
+    drag(page, page.locator("dialog.deck .deckcard").bounding_box(), 8, -260, 16, pause_at=6 / 16)
+    page.wait_for_timeout(900)
+    page.locator("dialog.deck .deckopt.o-solved").click()
+    page.wait_for_timeout(1100)
+    return start
+
+
+def heard_scene(page, begun):
+    """Full screen: open Heard something under the card, write what was said out of turn, file it with a tap."""
+    page.locator("#view .deckfull").click()
+    page.wait_for_selector("dialog.deck[open] .deckcard")
+    page.wait_for_timeout(500)
+    start = time.monotonic() - begun
+    page.wait_for_timeout(600)
+    page.locator("dialog.deck .deckaside > summary").click()
+    page.wait_for_timeout(500)
+    page.locator("dialog.deck #wsheard").click()
+    page.keyboard.type("The last failover drill was three years ago and nobody signed it off", delay=38)
+    page.wait_for_timeout(1400)
+    page.locator("dialog.deck .heardhit").first.locator(".heardopt.sug").click()
+    page.wait_for_timeout(1900)
+    return start
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("site", type=Path)
     ap.add_argument("out", type=Path)
+    ap.add_argument("--scene", choices=["deck", "heard"], default="deck")
     a = ap.parse_args()
     ffmpeg = shutil.which("ffmpeg")
     if not ffmpeg:
@@ -67,22 +110,10 @@ def main() -> int:
             page.wait_for_selector("#view ol.journey")
             page.click("#mobilebar [data-go=workshop]")
             page.wait_for_selector("#view .deckfull")
-            page.locator("#view .deckfull").click()
-            page.wait_for_selector("dialog.deck[open] .deckcard")
-            page.wait_for_timeout(500)
-            start = time.monotonic() - begun
-            page.wait_for_timeout(700)
-            page.locator("#deck-said").click()
-            page.keyboard.type("Never tested end to end, nobody signed it off", delay=40)
-            page.wait_for_timeout(900)
-            page.locator("dialog.deck .deckq").click()
-            page.wait_for_timeout(300)
-            drag(page, page.locator("dialog.deck .deckcard").bounding_box(), -250, 14, 18, pause_at=6 / 18)
-            page.wait_for_timeout(900)
-            drag(page, page.locator("dialog.deck .deckcard").bounding_box(), 8, -260, 16, pause_at=6 / 16)
-            page.wait_for_timeout(900)
-            page.locator("dialog.deck .deckopt.o-solved").click()
-            page.wait_for_timeout(1100)
+            if a.scene == "deck":
+                start = deck_scene(page, begun)
+            else:
+                start = heard_scene(page, begun)
             length = time.monotonic() - begun - start
             video = page.video.path()
             ctx.close()
