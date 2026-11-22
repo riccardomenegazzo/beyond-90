@@ -864,6 +864,9 @@ def main(site: str) -> int:
               and page.locator("#view .heardhit .heardopt.o-gap.sug").count() >= 1,
               "what was heard finds the question it answers, with the answer the words suggest")
         # a figure a first sketch starts from is offered for it: the backups and the distance, here
+        page.fill("#wsheard", "About 5% of the data changes every day")
+        check(page.get_by_role("button", name="Use 5 as the data written each day, in the recovery design").count() == 1,
+              "how much data changes a day is offered for the recovery design")
         page.fill("#wsheard", "We keep 200 TB of backups, the second site is 3 ms away")
         check(page.get_by_role("button", name="Use 181.9 as the protected data of the recovery design").count() == 1
               and page.get_by_role("button", name="Use 3 as the round trip between the sites, in the recovery design").count() == 1,

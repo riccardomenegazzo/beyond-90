@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.245.0
+
+- **How much data changes a day, said in the meeting, goes into the sketches that turn on it.** "About 5% of the data changes every day", "a daily change rate of 4%", "cambia circa il 3% dei dati al giorno" are offered under Heard something for the recovery design (the data written each day, which sets the bandwidth) and the backup capacity sketch (the data changed each day, which sets the incrementals), for the lines in scope. Said of file shares, the figure goes to the file storage sketch only. Growth over a year is not taken for change.
+
 ## 0.244.0
 
 - **Data reduction and erasure coding, said in the meeting, go into the sizing sketch.** "About 2:1 compression on the current arrays" or "data reduction is 1.5 to 1" is offered as the data reduction counted; "erasure coding 4+2 on the cold data" (or double parity) as erasure coding with two parity strips, "4+1" or single parity with one. A reduction said about backups or file shares is left to their own sketches.

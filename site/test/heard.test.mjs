@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
-import { stem, tokens, match, joinNote, NOTE_MAX, concernCards, concernsHeard, sketchFigures, caseFigures, unitFigures, edgeFigures, retentionFigures, wavesFigures, sizingFigures } from "../heard.js";
+import { stem, tokens, match, joinNote, NOTE_MAX, concernCards, concernsHeard, sketchFigures, caseFigures, unitFigures, edgeFigures, retentionFigures, wavesFigures, sizingFigures, changeFigures } from "../heard.js";
 
 const card = (key, q, listen = "", why = "", probe = "") => ({ key, label: "Disaster recovery", q: { q, listen, why, probe } });
 const DR = [
@@ -728,4 +728,17 @@ test("what is said about the servers is offered for the sizing sketch once an in
   assert.equal(copies.has({ protection: "copies3" }), true);
   assert.equal(copies.has({}), false);
   assert.equal(copies.label, "copies of the data, in the sizing sketch");
+});
+
+test("how much data changes a day is offered for the recovery design, the backups and, said of file shares, the file sketch", () => {
+  const got = (said, scope = ["dr-backup", "object-storage", "file-storage"]) => changeFigures(said, scope).map((x) => `${x.sketch}.${x.field}=${x.value}`);
+  assert.deepEqual(got("About 5% of the data changes every day"), ["dr.change_pct=5", "obj.change_pct=5"]);
+  assert.deepEqual(got("we write about 2.5 percent a day"), ["dr.change_pct=2.5", "obj.change_pct=2.5"]);
+  assert.deepEqual(got("a daily change rate of 4%"), ["dr.change_pct=4", "obj.change_pct=4"]);
+  assert.deepEqual(got("cambia circa il 3% dei dati al giorno"), ["dr.change_pct=3", "obj.change_pct=3"]);
+  assert.deepEqual(got("on the file shares about 1% changes each day"), ["files.change_pct=1"]);
+  assert.deepEqual(got("About 5% of the data changes every day", ["dr-backup"]), ["dr.change_pct=5"], "only the lines in scope");
+  assert.deepEqual(got("the data grows 5% a year"), [], "growth is not change");
+  assert.deepEqual(got("80% changes every day"), [], "out of range");
+  assert.equal(changeFigures("5% changes every day", ["dr-backup"])[0].label, "data written each day, in the recovery design");
 });

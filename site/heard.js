@@ -783,3 +783,30 @@ export function sizingFigures(said, scope, current = {}) {
   }
   return out;
 }
+
+// how much of the data changes a day: what replication, backups and file snapshots all turn on
+const CHANGE_FOR = [
+  { sketch: "dr", line: "dr-backup", what: "percent of the data written each day", label: "data written each day, in the recovery design" },
+  { sketch: "obj", line: "object-storage", what: "percent of the data changed each day", label: "data changed each day, in the backup capacity sketch" },
+];
+const DAILY = String.raw`(?:each|a|per|every|al|ogni|in a)\s+(?:day|giorno)|daily|al giorno|giornalier\w*|per day`;
+
+/**
+ * The daily change rate in what was said ("about 5% of the data changes every day", "a daily change rate of 2%",
+ * "cambia il 4% dei dati al giorno"), for the recovery design and the backup capacity sketch of the lines in scope;
+ * said of file shares, for the file storage sketch only.
+ * @returns {{sketch:string, field:string, value:number, what:string, label:string}[]}
+ */
+export function changeFigures(said, scope) {
+  const t = ` ${String(said == null ? "" : said).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "")} `;
+  const changes = String.raw`(?:chang\w*|written|writes?|cambi\w*|modific\w*|scritt\w*)`;
+  const m = t.match(new RegExp(String.raw`\b(\d+(?:[.,]\d+)?)\s?(?:%|percent\b|per cento\b)[^.;]*?\b${changes}\b[^.;]*?\b(?:${DAILY})\b`))
+    || t.match(new RegExp(String.raw`\b${changes}\b[^.;]*?\b(\d+(?:[.,]\d+)?)\s?(?:%|percent\b|per cento\b)[^.;]*?\b(?:${DAILY})\b`))
+    || t.match(new RegExp(String.raw`\b(?:${DAILY})\s+(?:change|change rate|churn|tasso di cambiamento|variazione)\b[^.;]*?\b(\d+(?:[.,]\d+)?)\s?(?:%|percent\b|per cento\b)`));
+  if (!m) return [];
+  const v = Number(m[1].replace(",", "."));
+  if (!(v > 0 && v <= 50)) return [];
+  const on = (p) => (scope || []).includes(p);
+  if (FILE_TALK.test(t)) return on("file-storage") ? [{ sketch: "files", field: "change_pct", value: v, what: "percent of the file data changed each day", label: "file data changed each day, in the file storage sketch" }] : [];
+  return CHANGE_FOR.filter((c) => on(c.line)).map((c) => ({ sketch: c.sketch, field: "change_pct", value: v, what: c.what, label: c.label }));
+}
