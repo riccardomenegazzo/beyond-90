@@ -265,3 +265,9 @@ export function info(text, term, onOpen) {
   if (onOpen) b.addEventListener("click", onOpen);
   return b;
 }
+
+/** A card: a titled section, with a line under the title saying what it is for. */
+export const card = (title, body, { sub = "", cls = "", actions = null } = {}) =>
+  h("section", { class: "card " + cls }, h("header", { class: "cardhead" }, h("h2", { text: title }), actions), sub ? h("p", { class: "note first", text: sub }) : null, body);
+// replaceChildren writes null and undefined as the text "null"; every redraw goes through this instead
+export const put = (el, ...kids) => el.replaceChildren(...kids.flat(Infinity).filter((k) => k != null && k !== false));

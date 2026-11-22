@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.211.0
+
+- **The sketch cards live in their own module.** The cards of the first sketches (GPUs, recovery, backup capacity, the sites, the cost per machine, virtual desktops, the container platform, database licences, file shares) and what lets a figure heard in the meeting reach them move from `views.js` to `sketchcards.js`; the card and redraw helpers every view uses move to `ui.js`. Nothing changes on the page: the same tests pass unchanged, and `views.js` is about 400 lines shorter.
+
 ## 0.210.0
 
 - **Figures heard during the demo and while qualifying the deal go into their sketches too.** Heard something under the demo's cards and beside Qualify the deal now offers a figure for its sketch or for the case for change, as it does beside the questions: "we have 1,500 users", "the contract expires in 18 months", "the renewal triples the cost" said during the demo no longer waits to be typed again.
