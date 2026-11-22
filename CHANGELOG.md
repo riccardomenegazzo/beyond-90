@@ -2,6 +2,12 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.177.0
+
+- **Heard something under the demo's cards too.** What a customer says during the demo often answers a discovery question, voices a concern or gives a figure. Run the demo now has the same **Heard something?** sheet under its cards as the questions: it finds the question it answers, technical or about the deal, offers a concern the line expects with how to answer it, and files a figure with its question.
+- A browser check that it is there, with its matches.
+- **Today holds still under the pointer.** Pointing at an action previews where Yield would land beside the number; the preview now keeps its room when it fades, so the page no longer shifts when it appears, which could move the list under the pointer and make a button hard to press. A browser check that failed once in a while because of it is steady again.
+
 ## 0.176.0
 
 - **On a phone, a workshop's bar carries the way forward.** The bar at the bottom now offers Questions, Qualify and **Forward** (the phase the prospect is in, and the demo with Run the demo), instead of Tender: in the meetings a phone is used for, the demo comes up far more often than a tender, which stays one tap away under Menu.

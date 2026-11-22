@@ -170,11 +170,11 @@ def main(site: str) -> int:
         check(page.get_attribute("#view .seg [data-rank=quick]", "aria-pressed") == "true" and page.evaluate("localStorage.getItem('beyond90.rank')") == "quick", "the actions on Today can be ranked by quickest wins, and the choice is kept")
         check(page.locator("#view .todocard .opp").count() == 3, "still three of them")
         page.hover("#view .todocard .opp >> nth=0")
-        check(page.inner_text("#view .tprev").startswith("→ ") and page.locator("#view .stagebars li.moving").count() == 1, "pointing at an action previews where Yield would land and the stage it moves")
+        check(page.inner_text("#view .tprev").startswith("→ ") and page.locator("#view .today.previewing").count() == 1 and page.locator("#view .stagebars li.moving").count() == 1, "pointing at an action previews where Yield would land and the stage it moves")
         check(page.locator("#view .tm-ghost").evaluate("e => parseFloat(e.style.width) > 0") and "below the 90% target" in page.locator("#view .tmeter").get_attribute("aria-label"),
               "and the distance to the target under the number moves with it")
         page.hover("#view .chain")
-        check(page.inner_text("#view .tprev") == "" and page.locator("#view .stagebars li.moving").count() == 0, "and the preview goes when the pointer leaves")
+        check(page.locator("#view .today.previewing").count() == 0 and page.locator("#view .stagebars li.moving").count() == 0, "and the preview goes when the pointer leaves")
         page.click("#view .seg [data-rank=finish]")
         check("finishes 9 accounts" in page.inner_text("#view .todocard .opp >> nth=0"), "ranked by accounts finished, the first action says how many it brings all the way through")
         page.click("#view .seg [data-rank=effect]")
@@ -1249,6 +1249,11 @@ def main(site: str) -> int:
         check(page.inner_text(f"{DD} .deckq").startswith("Show that ") and page.locator(f"{DD} .deckopt").count() == 4 and total >= 4
               and "For the architect" in page.inner_text(f"{DD} .decktags"),
               "running the demo opens on its first part, to swipe as it landed, with who it is for")
+        page.locator(f"{DD} .deckaside > summary").click()
+        page.fill(f"{DD} #fwheard", "Any domain admin can wipe the backup repository")
+        check(page.locator(f"{DD} .heardhit").count() > 0, "during the demo, heard something is under the cards too")
+        page.fill(f"{DD} #fwheard", "")
+        page.locator(f"{DD} .deckaside > summary").click()
         page.fill(f"{DD} .decksaid", "How long does a restore take?")
         check(page.inner_text(f"{DD} .decksug") == "Sounds like questions" and page.locator(f"{DD} .deckopt.o-questions.sug").count() == 1,
               "and what they said suggests how it landed")

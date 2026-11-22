@@ -80,7 +80,8 @@ export function todayView({ result, dash, score, go, history = [], done = new Se
       h("small", { text: `${delta >= 0 ? "+" : ""}${(delta * 100).toFixed(1)} pts over ${pts_.length} snapshots` }));
   })() : null;
   // the live preview: pointing at an action shows where Yield would land, and the stage it works on grows in place
-  const tprev = h("span", { class: "tprev", "aria-hidden": "true" });
+  // the preview keeps its width when hidden (it only fades), so pointing at an action never moves the page under the pointer
+  const tprev = h("span", { class: "tprev", "aria-hidden": "true", text: `→ ${pct(score.yield)}` });
   // the distance to the target, drawn: what really works, the target's mark, and where an action would take it
   const goal = score.target && score.target.value;
   const tghost = h("i", { class: "tm-ghost" });
@@ -140,7 +141,6 @@ export function todayView({ result, dash, score, go, history = [], done = new Se
   };
   const hide = () => {
     const root = list.closest(".today");
-    tprev.textContent = "";
     tghost.style.width = "0";
     if (!root) return;
     root.classList.remove("previewing");
@@ -3041,7 +3041,7 @@ export function partnersView({ workshop: w, catalog, today, setChannel }) {
 const FW_STATE = { done: "Done", open: "Passed, with something left open", now: "Now", later: "Later" };
 const DEMO_LENGTH = new Map();     // per workshop, the length of the demo meeting chosen on the way forward, while the page is open
 
-export function forwardView({ workshop: w, catalog, povs, today, go, setDemo, setDemoSeen }) {
+export function forwardView({ workshop: w, catalog, povs, today, go, setDemo, setDemoSeen, answer, worth, setDeal, raise }) {
   const pov = DL.povFor(povs, w.customer);
   const f = FW.forward(catalog, w, pov, today);
   const say = h("p", { class: "note", role: "status" });
@@ -3102,8 +3102,10 @@ export function forwardView({ workshop: w, catalog, povs, today, go, setDemo, se
     // with the meeting clock running, each card says whether the demo is on time
     note: (c, i) => { const ck = clockOf(w.id); return ck ? DEMO.demoPace(dt, dcards, i, PACE.reading(ck, Date.now()).elapsed) : null; },
   };
+  // what the customer says during the demo answers discovery questions and voices concerns too: the same box, under the cards
   const runDemo = () => openDeck({ cards: dcards, state: { at: Math.max(0, dcards.findIndex((c) => !seenOf(c))), drafts: new Map() }, set: demoSet, go,
-    answerOf: seenOf, answer: async (c, a, note) => { cur = await setDemoSeen(c.key, a, note); return cur; }, clock: () => miniClock(w.id), onClose: () => go("wsforward") });
+    answerOf: seenOf, answer: async (c, a, note) => { cur = await setDemoSeen(c.key, a, note); return cur; }, clock: () => miniClock(w.id), onClose: () => go("wsforward"),
+    ...(answer ? { aside: heardPanel({ catalog, get: () => cur, set: (x) => { cur = x; }, answer, worth, setDeal, raise, id: "fwheard" }).el, asideTitle: "Heard something else?" } : {}) });
   const landed = dcards.some(seenOf) ? DEMO.demoSummary(dcards, seenOf) : null;
   const landedSec = landed ? sec("How it landed", h("div", { class: "fwlanded" }, h("p", { text: landed.head }),
     landed.lists.filter(([, rows]) => rows.length).map(([heading, rows]) => h("div", { class: "growproof" }, h("small", { text: heading }),
