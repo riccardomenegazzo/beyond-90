@@ -1693,8 +1693,9 @@ const DISCOVERY_DECK = {
     const answers = {};
     for (const c of cards) { const a = answerOf(c); if (a) answers[c.key] = a; }
     const s = DECK.deckSummary(cards, answers);
+    const invite = DECK.inviteLines(cards, answers).map((r) => ({ q: r.text, label: `For example: ${r.first}`, note: "" }));
     return { head: s.head, total: s.total, open: s.counts.open, counts: s.counts, tallies: ["gap", "unknown", "partly", "solved"].map((k) => [k, DECK_TALLY[k](s.counts[k])]),
-      lists: [["The gaps, with what they said", s.gaps], ["Nobody could answer", s.unknown]] };
+      lists: [["The gaps, with what they said", s.gaps], ["Nobody could answer", s.unknown], ["For the next meeting", invite]] };
   },
   end: { text: "See the journey", view: "journey" },
   more: { text: "Write the meeting summary", view: "wsummary" },
@@ -1923,6 +1924,101 @@ function deckPane({ cards, state, answerOf, answer, go, pfx, inline, set = DISCO
     draw(false);
   };
   return { el: root, draw, sync };
+}
+
+/**
+ * Heard something: what the customer said out of turn, written as it was said, matched to the question it answers among
+ * every question in scope and the ten of the qualification, and filed with a tap (or Ctrl+Enter), undoable. Shared by
+ * the questions and the qualification. `get`/`set` read and keep the workshop; `onFiled(key)` lets the view follow.
+ */
+function heardPanel({ catalog, get, set, answer, worth, setDeal, onFiled = () => {}, id = "wsheard" }) {
+  // heard something: written as it was said; the question it answers is found among every question in scope
+  const heardIn = h("textarea", { id, class: "heardin", rows: 2, maxlength: HEARD.NOTE_MAX, placeholder: "e.g. any domain admin can wipe the backup repository",
+    "aria-keyshortcuts": "Control+Enter" });
+  const heardOut = h("div", { class: "heardout" });
+  const heardSay = h("p", { class: "note heardsay", role: "status" });
+  const fileHeard = async (card, k, said) => {
+    const before = get().answers[card.key];
+    const fig = card.q.stage === "value" ? HEARD.figureIn(said, card.q) : null;      // a figure heard on a value question goes with it
+    set(await answer(card.line, card.index, k, HEARD.joinNote(before && before.note, said)));
+    if (fig) set(await worth(card.line, card.index, fig.amount, fig.per));
+    heardIn.value = "";
+    put(heardOut);
+    const moved = () => onFiled(card.key);
+    // a tap in a meeting can land on the wrong question: undo puts back what was there, and the words in the box
+    const undo = h("button", { type: "button", class: "linkbtn", text: "Undo", onclick: async () => {
+      set(await answer(card.line, card.index, before ? before.a : "", before ? before.note : ""));
+      if (before && fig) set(await worth(card.line, card.index, before.amount == null ? "" : before.amount, before.per || ""));
+      heardIn.value = said;
+      put(heardSay, h("span", { text: `Undone: ${card.q.q}` }));
+      moved();
+      drawHeard();
+      heardIn.focus({ preventScroll: true });
+    } });
+    put(heardSay, h("span", { text: `Filed as ${WS.ANSWERS[k].label.toLowerCase()}${fig ? `, with ${WS.worthText(fig)} as the figure` : ""}: ${card.q.q} ` }), undo);
+    moved();
+    heardIn.focus({ preventScroll: true });
+  };
+  // the qualification questions are heard too: the deal is talked about in the same meeting
+  const DEAL_TONE = { known: "good", partly: "mid", unknown: "unknown" };
+  const DEAL_FROM = { solved: "known", partly: "partly", gap: "unknown", unknown: "unknown" };
+  const dealCards = QD.DEAL.map((x) => ({ key: `deal#${x.id}`, id: x.id, label: `Qualify the deal, ${x.tag.toLowerCase()}`, q: x, deal: true }));
+  const fileDeal = async (card, k, said) => {
+    const before = get().deal && get().deal[card.id];
+    set(await setDeal(card.id, k, HEARD.joinNote(before && before.note, said)));
+    heardIn.value = "";
+    put(heardOut);
+    const undo = h("button", { type: "button", class: "linkbtn", text: "Undo", onclick: async () => {
+      set(await setDeal(card.id, before ? before.a : "", before ? before.note : ""));
+      heardIn.value = said;
+      put(heardSay, h("span", { text: `Undone: ${card.q.q}` }));
+      onFiled(null);
+      drawHeard();
+      heardIn.focus({ preventScroll: true });
+    } });
+    put(heardSay, h("span", { text: `Filed in Qualify the deal as ${QD.STATES[k].label.toLowerCase()}: ${card.q.q} ` }), undo);
+    onFiled(null);
+    heardIn.focus({ preventScroll: true });
+  };
+  const dealHit = (card, said) => {
+    const before = get().deal && get().deal[card.id], sug = DEAL_FROM[DECK.suggest(card.q, said)] || null;
+    return h("div", { class: "heardhit" },
+      h("small", { class: "muted", text: card.label + (before ? `, ${QD.STATES[before.a].label.toLowerCase()}` : "") }),
+      h("span", { class: "heardq", text: card.q.q }),
+      h("div", { class: "heardopts", role: "group", "aria-label": `File it under: ${card.q.q}` },
+        ["known", "partly", "unknown"].map((k) => h("button", { type: "button", class: `heardopt t-${DEAL_TONE[k]}` + (k === sug ? " sug" : ""), text: QD.STATES[k].label,
+          "aria-describedby": k === sug ? `${id}-sug` : null, onclick: () => fileDeal(card, k, said) }))));
+  };
+  const drawHeard = () => {
+    const said = heardIn.value.trim();
+    if (said.length < 6) { put(heardOut); return; }
+    const hits = HEARD.match([...DECK.deckFrom(catalog, get().scope), ...dealCards], said, 3);
+    if (!hits.length) { put(heardOut, h("p", { class: "note", text: "No question in scope uses these words. Try the words of the question, or write it on the card." })); return; }
+    put(heardOut, hits.map(({ card }) => {
+      if (card.deal) return dealHit(card, said);
+      const sug = DECK.suggest(card.q, said), before = get().answers[card.key];
+      const fig = card.q.stage === "value" ? HEARD.figureIn(said, card.q) : null;
+      return h("div", { class: "heardhit" },
+        h("small", { class: "muted", text: card.label + (before ? `, answered ${WS.ANSWERS[before.a].label.toLowerCase()}` : "") }),
+        h("span", { class: "heardq", text: card.q.q }),
+        fig ? h("small", { class: "heardfig", text: `Figure heard: ${WS.worthText(fig)}. It goes with the answer.` }) : null,
+        h("div", { class: "heardopts", role: "group", "aria-label": `File it under: ${card.q.q}` },
+          DECK.ORDER.map((k) => h("button", { type: "button", class: `heardopt o-${k}` + (k === sug ? " sug" : ""), text: WS.ANSWERS[k].label,
+            "aria-describedby": k === sug ? `${id}-sug` : null, onclick: () => fileHeard(card, k, said) }))));
+    }), h("span", { id: `${id}-sug`, class: "sr-only", text: "Suggested by the words" }));
+  };
+  heardIn.addEventListener("input", drawHeard);
+  // on a keyboard, Ctrl+Enter files it under the first match, with the answer the words suggest
+  heardIn.addEventListener("keydown", (e) => {
+    if (e.key !== "Enter" || !(e.ctrlKey || e.metaKey)) return;
+    e.preventDefault();
+    const first = heardOut.querySelector(".heardhit:first-child .heardopt.sug");
+    if (first) first.click();
+    else if (heardIn.value.trim()) put(heardSay, h("span", { text: "Nothing is suggested for the first match: tap the answer that fits." }));
+  });
+  const heardBox = h("div", { class: "heard" },
+    h("label", { for: id, class: "decklabel", text: "Heard something else? Write it as it was said" }), heardIn, heardOut, heardSay);
+  return { el: heardBox };
 }
 
 /** The deck on the whole screen. `aside`, when given, is lent to it under the cards (heard something) and given back on close. */
@@ -2228,90 +2324,8 @@ export function workshopView({ workshop: w, catalog, list, answer, worth, setDea
   }
   function syncDeck() { if (deckInline) deckInline.sync(); paceNow(); }
   if (inScope.length) rebuildDeck();
-  // heard something: written as it was said; the question it answers is found among every question in scope
-  const heardIn = h("textarea", { id: "wsheard", class: "heardin", rows: 2, maxlength: HEARD.NOTE_MAX, placeholder: "e.g. any domain admin can wipe the backup repository",
-    "aria-keyshortcuts": "Control+Enter" });
-  const heardOut = h("div", { class: "heardout" });
-  const heardSay = h("p", { class: "note heardsay", role: "status" });
-  const fileHeard = async (card, k, said) => {
-    const before = cur.answers[card.key];
-    const fig = card.q.stage === "value" ? HEARD.figureIn(said, card.q) : null;      // a figure heard on a value question goes with it
-    cur = await answer(card.line, card.index, k, HEARD.joinNote(before && before.note, said));
-    if (fig) cur = await worth(card.line, card.index, fig.amount, fig.per);
-    heardIn.value = "";
-    put(heardOut);
-    const moved = () => { afterDeck(card.key); syncDeck(); if (fullDeck) fullDeck.sync(); };
-    // a tap in a meeting can land on the wrong question: undo puts back what was there, and the words in the box
-    const undo = h("button", { type: "button", class: "linkbtn", text: "Undo", onclick: async () => {
-      cur = await answer(card.line, card.index, before ? before.a : "", before ? before.note : "");
-      if (before && fig) cur = await worth(card.line, card.index, before.amount == null ? "" : before.amount, before.per || "");
-      heardIn.value = said;
-      put(heardSay, h("span", { text: `Undone: ${card.q.q}` }));
-      moved();
-      drawHeard();
-      heardIn.focus({ preventScroll: true });
-    } });
-    put(heardSay, h("span", { text: `Filed as ${WS.ANSWERS[k].label.toLowerCase()}${fig ? `, with ${WS.worthText(fig)} as the figure` : ""}: ${card.q.q} ` }), undo);
-    moved();
-    heardIn.focus({ preventScroll: true });
-  };
-  // the qualification questions are heard too: the deal is talked about in the same meeting
-  const DEAL_TONE = { known: "good", partly: "mid", unknown: "unknown" };
-  const DEAL_FROM = { solved: "known", partly: "partly", gap: "unknown", unknown: "unknown" };
-  const dealCards = QD.DEAL.map((x) => ({ key: `deal#${x.id}`, id: x.id, label: `Qualify the deal, ${x.tag.toLowerCase()}`, q: x, deal: true }));
-  const fileDeal = async (card, k, said) => {
-    const before = cur.deal && cur.deal[card.id];
-    cur = await setDeal(card.id, k, HEARD.joinNote(before && before.note, said));
-    heardIn.value = "";
-    put(heardOut);
-    const undo = h("button", { type: "button", class: "linkbtn", text: "Undo", onclick: async () => {
-      cur = await setDeal(card.id, before ? before.a : "", before ? before.note : "");
-      heardIn.value = said;
-      put(heardSay, h("span", { text: `Undone: ${card.q.q}` }));
-      drawHeard();
-      heardIn.focus({ preventScroll: true });
-    } });
-    put(heardSay, h("span", { text: `Filed in Qualify the deal as ${QD.STATES[k].label.toLowerCase()}: ${card.q.q} ` }), undo);
-    heardIn.focus({ preventScroll: true });
-  };
-  const dealHit = (card, said) => {
-    const before = cur.deal && cur.deal[card.id], sug = DEAL_FROM[DECK.suggest(card.q, said)] || null;
-    return h("div", { class: "heardhit" },
-      h("small", { class: "muted", text: card.label + (before ? `, ${QD.STATES[before.a].label.toLowerCase()}` : "") }),
-      h("span", { class: "heardq", text: card.q.q }),
-      h("div", { class: "heardopts", role: "group", "aria-label": `File it under: ${card.q.q}` },
-        ["known", "partly", "unknown"].map((k) => h("button", { type: "button", class: `heardopt t-${DEAL_TONE[k]}` + (k === sug ? " sug" : ""), text: QD.STATES[k].label,
-          "aria-describedby": k === sug ? "wsheard-sug" : null, onclick: () => fileDeal(card, k, said) }))));
-  };
-  const drawHeard = () => {
-    const said = heardIn.value.trim();
-    if (said.length < 6) { put(heardOut); return; }
-    const hits = HEARD.match([...DECK.deckFrom(catalog, cur.scope), ...dealCards], said, 3);
-    if (!hits.length) { put(heardOut, h("p", { class: "note", text: "No question in scope uses these words. Try the words of the question, or write it on the card." })); return; }
-    put(heardOut, hits.map(({ card }) => {
-      if (card.deal) return dealHit(card, said);
-      const sug = DECK.suggest(card.q, said), before = cur.answers[card.key];
-      const fig = card.q.stage === "value" ? HEARD.figureIn(said, card.q) : null;
-      return h("div", { class: "heardhit" },
-        h("small", { class: "muted", text: card.label + (before ? `, answered ${WS.ANSWERS[before.a].label.toLowerCase()}` : "") }),
-        h("span", { class: "heardq", text: card.q.q }),
-        fig ? h("small", { class: "heardfig", text: `Figure heard: ${WS.worthText(fig)}. It goes with the answer.` }) : null,
-        h("div", { class: "heardopts", role: "group", "aria-label": `File it under: ${card.q.q}` },
-          DECK.ORDER.map((k) => h("button", { type: "button", class: `heardopt o-${k}` + (k === sug ? " sug" : ""), text: WS.ANSWERS[k].label,
-            "aria-describedby": k === sug ? "wsheard-sug" : null, onclick: () => fileHeard(card, k, said) }))));
-    }), h("span", { id: "wsheard-sug", class: "sr-only", text: "Suggested by the words" }));
-  };
-  heardIn.addEventListener("input", drawHeard);
-  // on a keyboard, Ctrl+Enter files it under the first match, with the answer the words suggest
-  heardIn.addEventListener("keydown", (e) => {
-    if (e.key !== "Enter" || !(e.ctrlKey || e.metaKey)) return;
-    e.preventDefault();
-    const first = heardOut.querySelector(".heardhit:first-child .heardopt.sug");
-    if (first) first.click();
-    else if (heardIn.value.trim()) put(heardSay, h("span", { text: "Nothing is suggested for the first match: tap the answer that fits." }));
-  });
-  const heardBox = h("div", { class: "heard" },
-    h("label", { for: "wsheard", class: "decklabel", text: "Heard something else? Write it as it was said" }), heardIn, heardOut, heardSay);
+  const heardBox = heardPanel({ catalog, get: () => cur, set: (x) => { cur = x; }, answer, worth, setDeal,
+    onFiled: (key) => { if (key) afterDeck(key); syncDeck(); if (fullDeck) fullDeck.sync(); } }).el;
   // the conversation first: where it stands on every line, what to show, the questions; then the sketches from their numbers
   const sketches = [inventory ? inventoryCard(w, inventory) : null, w.inventory && sizing ? sizingCard(w, sizing) : null,
     w.inventory && waves ? wavesCard(w, waves, today) : null, w.scope.includes("private-ai") && gpu ? gpuCard(w, gpu) : null,
@@ -3001,7 +3015,7 @@ export function forwardView({ workshop: w, catalog, povs, today, go, setDemo }) 
 }
 
 // ------------------------------------------------------------------ qualify the deal: the same ten questions on every line
-export function qualifyView({ workshop: w, catalog, setDeal, setAlt, go }) {
+export function qualifyView({ workshop: w, catalog, setDeal, setAlt, answer, worth, go }) {
   let cur = w;
   const say = h("p", { class: "note", role: "status" });
   const hero = h("section", { class: "card qdhero" });
@@ -3107,7 +3121,9 @@ export function qualifyView({ workshop: w, catalog, setDeal, setAlt, go }) {
   qdDeck.draw(false);
   return h("div", {}, hero,
     h("div", { class: "card deckpanel" }, h("div", { class: "deckslot" }, qdDeck.el),
-      h("div", { class: "deckside" }, h("h2", { class: "decksidehead", text: "The ten questions" }),
+      h("div", { class: "deckside" }, heardPanel({ catalog, get: () => cur, set: (x) => { cur = x; }, answer, worth, setDeal, id: "qdheard",
+        onFiled: () => { qdList.draw(); drawHero(); qdDeck.sync(); } }).el,
+        h("h2", { class: "decksidehead", text: "The ten questions" }),
         h("p", { class: "note", text: "The same on every line, asked alongside the technical ones: known, partly or not yet, with what you heard. Named as most sales methods name them, so the seller reads the same list; never in the customer readout." }),
         qdList.el, say,
         h("div", { class: "btnrow" }, copy, h("button", { class: "btn small", type: "button", text: "Back to the questions", onclick: () => go("workshop") })))),

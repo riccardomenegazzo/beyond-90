@@ -6,7 +6,7 @@
 // suggest an answer, which the person takes or ignores: the suggestion never answers on its own.
 //
 // No DOM, so Node can test it. Nothing here leaves the browser: the suggestion is a few word patterns, read locally.
-import { displayOrder } from "./questions.js";
+import { displayOrder, ROLE_WORDS } from "./questions.js";
 
 /** The four answers, in the order of their keys (1 to 4) and of the buttons, with the direction that gives each. */
 export const DIRECTIONS = {
@@ -237,6 +237,8 @@ export function recapText(customer, cards, answers) {
   if (s.unknown.length) lines.push("", "Nobody could answer", ...s.unknown.map(said));
   const needs = [...new Set(cards.filter((c) => answers[c.key] && answers[c.key].a !== "solved" && c.q.need).map((c) => c.q.need))];
   if (needs.length) lines.push("", "What would need to be true", ...needs.map((n) => `- ${n}`));
+  const invite = inviteLines(cards, answers);
+  if (invite.length) lines.push("", "For the next meeting", ...invite.map((x) => `- ${x.text}`));
   return lines.join("\n");
 }
 
@@ -244,4 +246,32 @@ export function recapText(customer, cards, answers) {
 export function recapMailto(subject, body, max = 1800) {
   const text = body.length > max ? `${body.slice(0, max - 1).trimEnd()}…` : body;
   return `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`;
+}
+
+/**
+ * Who to invite next: the roles that can answer the essential questions still open (no answer, or nobody knew), most
+ * questions first. Each with how many and the first of them, to say why in the invitation.
+ * @returns {{role:string, n:number, first:string}[]}
+ */
+export function whoNext(cards, answers) {
+  const by = new Map();
+  for (const c of cards) {
+    const a = answers[c.key];
+    if (!c.q.core || !c.q.role || (a && a.a !== "unknown")) continue;
+    const r = by.get(c.q.role) || { role: c.q.role, n: 0, first: c.q.q };
+    r.n += 1;
+    by.set(c.q.role, r);
+  }
+  return [...by.values()].sort((x, y) => y.n - x.n);
+}
+
+const INVITE = { executive: "the executive sponsor", architect: "the architect", operations: "operations", security: "the security team",
+  application: "the application owner", data: "the data team", finance: "finance" };
+
+/** One line per role to invite: "Invite the security team: 3 essential questions still open". */
+export function inviteLines(cards, answers) {
+  return whoNext(cards, answers).map((r) => ({
+    text: `Invite ${INVITE[r.role] || (ROLE_WORDS[r.role] || r.role).toLowerCase()}: ${plural(r.n, "essential question", "essential questions")} still open`,
+    first: r.first,
+  }));
 }

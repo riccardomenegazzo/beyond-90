@@ -148,3 +148,23 @@ test("the recap says how much was asked, the gaps and the unknowns with what was
   const link = recapMailto("Recap", "x".repeat(3000));
   assert.ok(link.startsWith("mailto:?subject=Recap&body=") && decodeURIComponent(link.split("body=")[1]).length === 1800);
 });
+
+test("who to invite next: the roles of the essential questions still open, most first", async () => {
+  const { whoNext } = await import("../deck.js");
+  const cards = [
+    { key: "a", q: { q: "A?", core: true, role: "security" } }, { key: "b", q: { q: "B?", core: true, role: "security" } },
+    { key: "c", q: { q: "C?", core: true, role: "executive" } }, { key: "d", q: { q: "D?", role: "architect" } },
+    { key: "e", q: { q: "E?", core: true, role: "architect" } },
+  ];
+  assert.deepEqual(whoNext(cards, { e: { a: "solved" }, c: { a: "unknown" } }),
+    [{ role: "security", n: 2, first: "A?" }, { role: "executive", n: 1, first: "C?" }]);
+  assert.deepEqual(whoNext(cards, { a: { a: "gap" }, b: { a: "partly" }, c: { a: "solved" }, e: { a: "solved" } }), []);
+});
+
+test("the invitations read as sentences, and go into the recap", async () => {
+  const { inviteLines, recapText } = await import("../deck.js");
+  const cards = [{ key: "a", label: "DR", q: { q: "A?", core: true, role: "security" } }, { key: "b", label: "DR", q: { q: "B?", core: true, role: "security" } },
+    { key: "c", label: "DR", q: { q: "C?", core: true, role: "application" } }];
+  assert.deepEqual(inviteLines(cards, {}).map((x) => x.text), ["Invite the security team: 2 essential questions still open", "Invite the application owner: 1 essential question still open"]);
+  assert.match(recapText("K", cards, { c: { a: "unknown" } }), /For the next meeting\n- Invite the security team: 2 essential questions still open\n- Invite the application owner: 1 essential question still open$/);
+});

@@ -629,12 +629,16 @@ def main(site: str) -> int:
         check(page.locator("#reshead img, #context img").count() == 0 and "<img" in page.inner_text("#reshead") and "<img" in page.inner_text("#context"), "a hostile customer name is shown as text in the header")
         page.click("[data-tab=qbr]")
         check(page.locator("#doc img, #doc script").count() == 0 and "Injected" in page.inner_text("#doc"), "and in the rendered Markdown")
+        # every message the status line shows is kept: a later one can replace the warning before a poll sees it
+        page.evaluate("""(() => { const s = document.getElementById('status'); window.__said = [];
+          new MutationObserver(() => window.__said.push(s.textContent)).observe(s, { childList: true, characterData: true, subtree: true }); })()""")
         page.click("#copy")
-        try:
-            page.wait_for_selector("#status:has-text('meant for you only')", state="attached", timeout=10_000)
-            warned = True
-        except Exception:
-            warned = False
+        warned = False
+        for _ in range(50):
+            if any("meant for you only" in x for x in page.evaluate("window.__said")) or "meant for you only" in page.inner_text("#status"):
+                warned = True
+                break
+            page.wait_for_timeout(200)
         check(warned, "copying a QBR draft warns that it holds material for the TAM only")
         for tab in ("overview", "onboarding", "outlook", "teams", "prep", "execqbr", "actions", "accounts", "findings", "maturity", "renewal"):
             page.click(f"[data-tab={tab}]")
@@ -930,6 +934,9 @@ def main(site: str) -> int:
         row = page.locator("#view .qdlist .qlrow").filter(has_text="Event")
         check(page.locator("#view .qdlist .qlopt[aria-pressed=true]").count() == answered + 1 and row.locator(".qlopt[aria-pressed=true]").get_attribute("aria-label") == "Partly",
               "answered on the card, it shows in the list beside it")
+        page.fill("#qdheard", "The CIO signs off anything above 500k")
+        check("Who decides, who signs" in page.locator("#view .heardhit").first.inner_text(), "heard something is beside the qualification too, and finds the deal's question")
+        page.fill("#qdheard", "")
         row.locator(".qlopt[aria-pressed=true]").click()           # cleared again, so what follows reads as before
         for _ in range(30):
             if page.locator("#view .qdlist .qlopt[aria-pressed=true]").count() == answered:
@@ -1853,6 +1860,8 @@ def main(site: str) -> int:
             mp.locator("dialog.deck .deckbar .linkbtn", has_text="Skip").click()
         check(mp.locator("dialog.deck .deckheadline").count() == 1 and mp.locator("dialog.deck .decktally").count() == 4,
               "skipped to the end, the deck says where the meeting stands")
+        check("Invite " in mp.inner_text("dialog.deck .decksum") and "essential question" in mp.inner_text("dialog.deck .decksum"),
+              "and says who to invite next, for the essential questions still open")
         mail = mp.locator("dialog.deck .deckrecap a", has_text="Email the recap")
         check(mail.count() == 1 and mail.get_attribute("href").startswith("mailto:?subject=Discovery%20recap") and mp.locator("dialog.deck .deckrecap button", has_text="Copy the recap").count() == 1,
               "at the end, the recap can be copied or opened in the phone's own mail app, for the account team")

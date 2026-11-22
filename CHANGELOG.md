@@ -2,6 +2,15 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.159.0
+
+- **Who to invite next.** At the end of the deck, where it stands now closes with **For the next meeting**: the people who can answer the essential questions still open (not answered, or nobody in the room knew), most first, each with one of their questions to say why. For example: "Invite the security team: 3 essential questions still open". The recap for the account team carries the same lines.
+- New: `whoNext` and `inviteLines` in `deck.js`, with tests; a browser check that the end of the deck says who to invite.
+- **Heard something on Qualify the deal too.** In a meeting one moves between the technical questions and the deal's; the box for what is said out of turn is now on both, above the ten questions here. It matches the same way, against every question in scope and the ten of the qualification, files with a tap or Ctrl+Enter, and can be undone. Filed here, the list, the card and the verdict follow at once.
+- One piece of code serves both views (`heardPanel`), so the two cannot drift apart.
+- A browser check that the box on the qualification finds the deal's question.
+- A browser check that failed once in a while is steady now: the warning when a QBR draft is copied could be replaced by the next message before the check looked; every message the status line shows is now kept and read.
+
 ## 0.158.0
 
 - **The meeting guide shows Heard something in use.** An animated picture recorded from the app on a phone, with the invented example: full screen, the sheet opened under the card, a sentence written as the customer said it, the questions it answers with the answer its words suggest, and a tap that files it, Undo beside.
