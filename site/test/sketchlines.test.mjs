@@ -52,3 +52,17 @@ test("the invented example shows its first sketches, and puts them in its readou
   assert.deepEqual(sketchLines(w).map((x) => x.what), ["Recovery", "Backups", "Databases"]);
   assert.match(readoutHtml(cat, w, assess(cat, w)), /First orders of magnitude/);
 });
+
+test("each sketch worked out with their figures becomes a test of the proof of value, with the figure it would confirm", async () => {
+  const { sketchProofs, exampleWorkshop } = await import("../workshop.js");
+  const w = exampleWorkshop("2026-11-02");
+  const proofs = sketchProofs(w);
+  assert.deepEqual(proofs.map((p) => p.text.split(" ").slice(0, 3).join(" ")), ["The databases' busy", "A week of", "A test failover"]);
+  assert.match(proofs[0].target, /^Licence sketch: \d+ cores on \d+ hosts$/);
+  assert.ok(proofs.every((p) => p.text.length <= 200 && p.target.length <= 200));
+  assert.deepEqual(sketchProofs({ ...w, scope: ["hci"] }), [], "not for lines out of scope");
+  let d = makeWorkshop({ customer: "Lumen (mock)", scope: ["euc"], createdOn: "2026-11-01", nonce: "abcdef" });
+  assert.deepEqual(sketchProofs(d), [], "nothing worked out yet");
+  d = setVdi(d, { users: 600 }, D);
+  assert.match(sketchProofs(d)[0].target, /^Sizing: \d+ hosts for 480 desktops at once$/);
+});

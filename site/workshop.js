@@ -295,6 +295,35 @@ export function sketchLines(w) {
   return out;
 }
 
+/**
+ * The proof that each first sketch holds on the customer's own data: one criterion for each sketch worked out with
+ * their figures, on a line in scope, with the figure it would confirm as its target. A sizing nobody tested is a
+ * guess the customer pays for later.
+ * @returns {{text:string, target:string}[]}
+ */
+export function sketchProofs(w) {
+  const out = [];
+  const on = (p) => (w.scope || []).includes(p);
+  const add = (text, target) => out.push({ text, target });
+  const vs = w.vdi && on("euc") ? vdiSketch(w.vdi) : null;
+  if (vs && vs.ok) add("A week of real use on a pilot group stays within the processor and memory the desktop sizing assumed", `Sizing: ${vs.hosts} hosts for ${vs.concurrent} desktops at once`);
+  const ks = w.k8s && on("kubernetes-platform") ? k8sSketch(w.k8s) : null;
+  if (ks && ks.ok) add("The requests read from a running cluster stay within what the container platform sizing assumed", `Sizing: ${ks.workers} workers in ${ks.clusters.length} cluster${ks.clusters.length === 1 ? "" : "s"}`);
+  const dbs = w.db && on("dbaas") ? dbSketch(w.db) : null;
+  if (dbs && dbs.ok) add("The databases' busy share, measured for a week at the busiest hour, is no higher than the licence sketch assumed", `Licence sketch: ${dbs.licensed} cores on ${dbs.hosts} hosts`);
+  const fs = w.files && on("file-storage") ? fileSketch(w.files) : null;
+  if (fs && fs.ok) add("A scan of last-access times confirms the share of file data nobody opens", `File sketch: ${fs.cold_tib} TiB on a cheaper tier`);
+  const os = w.obj && on("object-storage") ? objSketch(w.obj, w.inventory) : null;
+  if (os && os.ok) add("A week of their own backups confirms the data reduction the capacity sketch counted", `Backup sketch: ${os.usable} TiB usable, ${os.assumptions.reduction}:1 counted`);
+  const ds = w.dr && on("dr-backup") ? drSketch(w.dr, w.inventory) : null;
+  if (ds && ds.ok) add("A test failover of one tier over the real link meets its recovery point and recovery time", `Recovery design: about ${Math.round(ds.mbps)} Mbit/s between the sites`);
+  const gs = w.gpu && on("private-ai") ? gpuSketch(w.gpu) : null;
+  if (gs && gs.ok) add("A benchmark on their own prompts serves the requests at once the GPU sketch assumed", `GPU sketch: ${gs.gpus} GPUs, ${gs.copies} cop${gs.copies === 1 ? "y" : "ies"} of the model`);
+  const es = w.edge && on("edge-sites") ? edgeSketch(w.edge) : null;
+  if (es && es.ok) add("One site of each kind runs the standard design for a week, through a server failure where it must", `Edge design: ${es.servers} servers at ${es.sites} sites`);
+  return out;
+}
+
 /** The settings of the file storage sketch, or null to go back to the defaults. */
 export function setFiles(w, settings, today) {
   const next = { ...w };

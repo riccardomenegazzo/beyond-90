@@ -1001,7 +1001,8 @@ function workshopContext() {
       const now = currentWorkshop();
       // the line's own tests, then what landed in the demo, then what the customer asked us to prove; none twice
       const fromDemo = now.demo && now.demo.seen ? DEMO.proofFromDemo(DEMO.cardsFor(cat, now, r), now.demo) : [];
-      const all = [...r.proof.slice(0, 4).map((c) => ({ text: c.text, target: c.how })), ...fromDemo, ...(r.raised || []).slice(0, 4).map((o) => ({ text: o.prove, target: `Raised by the customer: "${o.says}"` }))];
+      const all = [...r.proof.slice(0, 4).map((c) => ({ text: c.text, target: c.how })), ...fromDemo, ...(r.raised || []).slice(0, 4).map((o) => ({ text: o.prove, target: `Raised by the customer: "${o.says}"` })),
+        ...WSHOP.sketchProofs(now).slice(0, 3)];
       const criteria = all.filter((c, i) => all.findIndex((d) => d.text.toLowerCase() === c.text.toLowerCase()) === i);
       const p = POV.makePov({ customer: w.customer, createdOn: today, problem: `Heard in discovery on ${r.land.label.toLowerCase()}: ${r.land.gaps.map((q) => q.q).join(" ")}`.slice(0, 300),
         criteria, readiness: r.readiness });
@@ -1011,7 +1012,8 @@ function workshopContext() {
     result: { customer: w.customer }, povs: state.povs, savePov, removePov,
     dash: { pov_criteria: [...res.proof,
       ...(w.demo && w.demo.seen ? DEMO.proofFromDemo(DEMO.cardsFor(cat, w, res), w.demo).map((c) => ({ text: c.text, how: c.target })) : []),
-      ...(res.raised || []).map((o) => ({ text: o.prove, how: `Raised by the customer: "${o.says}"` }))] },
+      ...(res.raised || []).map((o) => ({ text: o.prove, how: `Raised by the customer: "${o.says}"` })),
+      ...WSHOP.sketchProofs(w).map((c) => ({ text: c.text, how: c.target }))] },
   };
 }
 async function refreshAsks() { try { state.asks = await store.asksAll(); } catch { state.asks = []; } }

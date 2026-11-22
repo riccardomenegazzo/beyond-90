@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.222.0
+
+- **Each first sketch becomes a test of the proof of value.** A sizing nobody tested is a guess the customer pays for later: for each sketch worked out with the customer's figures, the proof of value now offers a criterion that checks it on their own data, with the figure it would confirm as its target ("A test failover of one tier over the real link meets its recovery point and recovery time", target "Recovery design: about 551 Mbit/s between the sites"). Up to three join the line's own criteria when the proof is started; all of them are among the suggestions after.
+
 ## 0.221.0
 
 - **How long backups are kept, and how fast file data grows, from what was said.** "We keep 30 days of daily backups, 12 weeklies and monthlies for 7 years" now offers the daily restore points, the weekly fulls and the monthly fulls (years turned into months) for the backup capacity sketch; "the file shares grow about 25% a year" offers the growth for the file storage sketch. In Italian too ("14 giorni di copie e 12 mensili"); growth of something else ("revenue grew 10%") is left alone.

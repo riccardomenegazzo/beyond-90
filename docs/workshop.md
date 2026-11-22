@@ -477,6 +477,10 @@ Notes that hold whatever the product: keep a few standard designs, ship servers 
 
 ![A first edge design: servers per kind of site, the witness, the daily copy against the night and the upgrade waves](img/app-edge.png)
 
+## The sketches in the proof of value
+
+A sizing nobody tested is a guess the customer pays for later. Each sketch worked out with their figures adds a test to the proof of value, with the figure it would confirm as its target: a pilot week for the desktop sizing, the requests read from a running cluster for the container platform, a week of busy-hour data for the database licences, a scan of last-access times for the file shares, a week of their own backups for the capacity sketch, a test failover of one tier for the recovery design, a benchmark on their prompts for the GPUs, one site of each kind for the edge design. They are offered with the line's own criteria when the proof is started, and among the suggestions after.
+
 ## The sketches in the customer readout
 
 Each sketch says, beside its title, whether it was worked out **With their figures** or is still **At the defaults**: a figure changed in the card or put in from Heard something marks it, **Back to the defaults** takes the mark away.
