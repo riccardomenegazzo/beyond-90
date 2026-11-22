@@ -11,7 +11,7 @@ A page for the hour with the customer: what to set up before, what to do while t
 3. **Turn on Most useful first.** The card then asks the essential questions first, on the lines you know least or have not touched, and says why ("Nothing asked on this line yet").
 4. **Read the first cards over.** **How to ask it** turns a card over: why it matters, what to listen for, what to ask next, what would need to be true and a first step towards it.
 
-5. **Rehearse the objections** (on Prepare): what the customer would say, one card each, the ones they already raised first. Say your answer aloud, turn the card to check it (the question to ask first, the answer, how to prove it), and swipe right if you had it, left to practise it again. Nothing of it is kept.
+5. **Rehearse the objections** (on Prepare): what the customer would say, one card each, the ones they already raised first, then the ones your other prospects raised most. Say your answer aloud, turn the card to check it (the question to ask first, the answer, how to prove it), and swipe right if you had it, left to practise it again. Nothing of it is kept.
 
 ## During: the card, the box, the clock
 

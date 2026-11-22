@@ -2,6 +2,11 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.179.0
+
+- **The rehearsal starts with what customers raise most.** Rehearse the objections now deals, on each line, the ones this customer already raised first, then the ones your other prospects in this browser raised most ("Raised by 3 other prospects"), then the rest: the answers most likely to be needed are practised first.
+- A test for the order.
+
 ## 0.178.0
 
 - **The readout's agenda, for the sponsor, and its invitation.** Under a proof of value's success criteria, **Copy the readout agenda** and **Readout invitation (.ics)** give what we set out to prove, each criterion still counted with how we will know, what the result means (anything not met included), and the decision with the dates to a signed order; and who should be there: the sponsor and the champion by name, and whoever decides. It is the agenda, sent before the meeting: no result is in it. The day starts on the one the mutual plan proposes, three days after the window ends.

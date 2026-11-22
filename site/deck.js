@@ -281,14 +281,16 @@ export function inviteLines(cards, answers) {
 }
 
 /**
- * One card per objection to expect, line by line as Prepare tells them (the line to start with first), those the
- * customer already raised first within each: what the customer says on the front; on the back, the question to ask
- * first, the answer and how to prove it.
+ * One card per objection to expect, line by line as Prepare tells them (the line to start with first): within each,
+ * those this customer already raised first, then those other prospects raised most, then the rest. What the customer
+ * says on the front; on the back, the question to ask first, the answer and how to prove it.
  * @param {{label:string, objections:{says:string, clarify:string, answer:string, prove:string, key:string, index:number, raised:boolean}[]}[]} told
+ * @param {Record<string, number>} elsewhere how many other prospects raised each objection, by its key
  */
-export function rehearseCards(told) {
-  return told.flatMap((t) => [...t.objections].sort((a, b) => Number(b.raised) - Number(a.raised) || a.index - b.index).map((o) => ({
-    key: o.key, label: t.label, tag: o.raised ? "They raised it" : "To expect",
+export function rehearseCards(told, elsewhere = {}) {
+  const n = (o) => elsewhere[o.key] || 0;
+  return told.flatMap((t) => [...t.objections].sort((a, b) => Number(b.raised) - Number(a.raised) || n(b) - n(a) || a.index - b.index).map((o) => ({
+    key: o.key, label: t.label, tag: o.raised ? "They raised it" : n(o) ? `Raised by ${plural(n(o), "other prospect", "other prospects")}` : "To expect",
     q: { q: `“${o.says}”`, why: o.clarify, listen: o.answer, probe: o.prove },
   })));
 }

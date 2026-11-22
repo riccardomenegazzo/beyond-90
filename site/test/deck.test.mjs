@@ -189,3 +189,14 @@ test("rehearsing the objections: the line to start with first, the ones raised f
   assert.deepEqual(s.lists[0][1].map((r) => r.key), ["dr#0"]);
   assert.equal(rehearseSummary(cards, () => null).head, "Nothing rehearsed yet.");
 });
+
+test("rehearsing puts first, after what this customer raised, what other prospects raised most", () => {
+  const told = [{ label: "Disaster recovery", objections: [
+    { says: "A.", clarify: "", answer: "", prove: "", key: "dr#0", index: 0, raised: false },
+    { says: "B.", clarify: "", answer: "", prove: "", key: "dr#1", index: 1, raised: false },
+    { says: "C.", clarify: "", answer: "", prove: "", key: "dr#2", index: 2, raised: true }] }];
+  const cards = rehearseCards(told, { "dr#1": 3, "dr#0": 1 });
+  assert.deepEqual(cards.map((c) => c.key), ["dr#2", "dr#1", "dr#0"]);
+  assert.deepEqual(cards.map((c) => c.tag), ["They raised it", "Raised by 3 other prospects", "Raised by 1 other prospect"]);
+  assert.deepEqual(rehearseCards(told).map((c) => c.key), ["dr#2", "dr#0", "dr#1"], "without others, the line's order");
+});

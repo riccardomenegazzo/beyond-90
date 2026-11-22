@@ -3788,7 +3788,7 @@ export function rfpView({ workshop: w, catalog, today, addReqs, setReq, removeRe
 
 const REHEARSED = new Map();          // per workshop, while the page is open: how a rehearsal went; never kept
 
-export function wsPrepView({ workshop: w, catalog, raise, go }) {
+export function wsPrepView({ workshop: w, catalog, raise, go, list = [] }) {
   const res = WS.assess(catalog, w);
   const told = WS.stories(catalog, w, res);
   if (!told.length) return card("Prepare", h("p", { class: "note first", text: "The product lines in scope do not come with messages or objections yet. Add a story.json to their profiles to see them here." }));
@@ -3799,7 +3799,9 @@ export function wsPrepView({ workshop: w, catalog, raise, go }) {
   if (!REHEARSED.has(w.id)) REHEARSED.set(w.id, new Map());
   const rehearsal = REHEARSED.get(w.id);
   let cur = w;                       // what is marked raised here changes the order: the cards are dealt when the deck opens
-  const rCards = DECK.rehearseCards(told);
+  const elsewhere = {};
+  for (const x of list) if (x.id !== w.id) for (const k of x.raised || []) elsewhere[k] = (elsewhere[k] || 0) + 1;
+  const rCards = DECK.rehearseCards(told, elsewhere);
   const rSet = { ...DECK.REHEARSE, label: (k) => (k === "ready" ? "I had it" : "Practise again"), tone: (k) => (k === "ready" ? "good" : "bad"),
     tag: (c) => c.tag, hint: "Say your answer aloud, then swipe", how: "What to say", backLabels: { why: "Ask first", listen: "Answer", probe: "Prove it" },
     saidLabel: "Your answer, in a few words", saidHint: "What you would say", doneWord: "rehearsed", openText: "Back to what is not rehearsed",
@@ -3809,7 +3811,7 @@ export function wsPrepView({ workshop: w, catalog, raise, go }) {
   const rehearse = rCards.length ? h("div", { class: "btnrow" }, h("button", { class: "btn small primary", type: "button", text: "Rehearse the objections",
     "data-tip": "Before the meeting, full screen: what the customer would say, one card each; say your answer aloud, turn the card to check it, and swipe right if you had it, left to practise it again. Nothing is kept.",
     onclick: () => {
-      const cards = DECK.rehearseCards(WS.stories(catalog, cur, WS.assess(catalog, cur)));
+      const cards = DECK.rehearseCards(WS.stories(catalog, cur, WS.assess(catalog, cur)), elsewhere);
       openDeck({ cards, state: { at: Math.max(0, cards.findIndex((c) => !rehearsal.has(c.key))), drafts: new Map() }, set: rSet, go: (v) => { if (v) go(v); },
         answerOf: (c) => rehearsal.get(c.key) || null, answer: async (c, a, note) => { rehearsal.set(c.key, { a, note }); }, onClose: () => go("wsprep") });
     } })) : null;
