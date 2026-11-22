@@ -11,7 +11,7 @@ test("every help answer is short enough to read in the panel, and every question
 
 test("the presales help answers the questions asked before and during a first meeting", () => {
   const pre = FAQ.find((g) => g.group === "Presales").items.map((x) => `${x.q} ${x.a}`).join(" ");
-  for (const words of ["questions to send ahead", "notes in Italian", "virtual desktops", "container platform", "licensed cores for databases", "Essential questions only", "copies ahead of its cutover"]) {
+  for (const words of ["questions to send ahead", "notes in Italian", "virtual desktops", "container platform", "licensed cores for databases", "Essential questions only", "copies ahead of its cutover", "pace of the migration", "each tier's RPO and RTO"]) {
     assert.ok(pre.includes(words), words);
   }
 });

@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.252.0
+
+- **The help says which figures Heard something picks up.** A new answer under Presales in Help lists, in one place, the figures a sentence said in the meeting can put in a sketch since the last releases: users and the mix of workers, databases and how busy they run, pods and what they ask for, backups and file data, what changes a day and what nobody opens, each tier's recovery point and time, sites and their links, the AI model, and once an inventory is read the servers, today's cores and the pace of the migration, with **Use all** for all of a sketch's figures at once.
+
 ## 0.251.0
 
 - **What nobody opens, the snapshots kept and the file servers today go into the file storage sketch.** "They run 12 file servers, and about 40% of the files have not been opened in a year", "on the shares we keep 30 days of snapshots and 8 weekly", "the file storage has to last for five years", "il 60% dei file non è stato aperto da un anno" are offered under Heard something for the file storage sketch, each figure for its setting. Said of anything but files, they are left alone.
