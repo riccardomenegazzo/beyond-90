@@ -2005,9 +2005,9 @@ function deckPane({ cards, state, answerOf, answer, go, pfx, inline, set = DISCO
  */
 // the sketches a figure heard can go in: how each is cleaned, and what it is called
 const SKETCH_CLEAN = { vdi: (x) => VDI.cleanVdi(x), db: (x) => DBS.cleanDb(x), k8s: (x) => K8S.cleanK8s(x), files: (x) => FILES.cleanFiles(x),
-  obj: (x) => OBJ.cleanObj(x), dr: (x) => DRS.cleanDr(x), gpu: (x) => GPU.cleanGpu(x) };
+  obj: (x) => OBJ.cleanObj(x), dr: (x) => DRS.cleanDr(x), gpu: (x) => GPU.cleanGpu(x), case: (x) => VC.cleanCase(x) };
 const SKETCH_NAME = { vdi: "desktop sizing sketch", db: "database licence sketch", k8s: "container platform sizing sketch", files: "file storage sketch",
-  obj: "backup capacity sketch", dr: "recovery design", gpu: "GPU sketch" };
+  obj: "backup capacity sketch", dr: "recovery design", gpu: "GPU sketch", case: "case for change" };
 /** A sketch's card on the page, if it is there, shows the settings just changed. */
 const refreshSketch = (name, settings) => { const el = document.querySelector(`[data-sketch="${name}"]`); if (el) el.dispatchEvent(new CustomEvent("sketch-settings", { detail: settings })); };
 
@@ -2117,7 +2117,7 @@ function heardPanel({ catalog, get, set, answer, worth, setDeal, raise = null, s
     if (said.length < 6) { put(heardOut); return; }
     const hits = HEARD.match([...DECK.deckFrom(catalog, get().scope), ...dealCards], said, 3);
     const concern = HEARD.concernsHeard(HEARD.concernCards(catalog, get().scope), said)[0];
-    const figs = sketches ? HEARD.sketchFigures(said, get().scope, get()).filter((f) => sketches[f.sketch]) : [];
+    const figs = sketches ? [...HEARD.sketchFigures(said, get().scope, get()), ...HEARD.caseFigures(said)].filter((f) => sketches[f.sketch]) : [];
     if (!hits.length && !concern && !figs.length) { put(heardOut, h("p", { class: "note", text: "No question in scope uses these words. Try the words of the question, or write it on the card." })); return; }
     put(heardOut, concern ? concernHit(concern.card) : null, figs.map(figureHit), hits.map(({ card }) => {
       if (card.deal) return dealHit(card, said);
@@ -2186,7 +2186,7 @@ function openDeck({ clock, onClose, aside = null, asideTitle = "", ...rest }) {
 
 const wsFilter = { core: false, roles: [], tender: false, open: false, best: false };
 
-export function workshopView({ workshop: w, catalog, list, answer, worth, setDeal, raise, rename, preparedBy, setScope, inventory, sizing, waves, gpu, dr, obj, edge, vdi, k8s, db, files, unit, setReadoutSketches, today, newWorkshop, openWorkshop, removeWorkshop, presets = [], go, focus }) {
+export function workshopView({ workshop: w, catalog, list, answer, worth, setDeal, raise, rename, preparedBy, setScope, inventory, sizing, waves, gpu, dr, obj, edge, vdi, k8s, db, files, unit, setReadoutSketches, setCase, today, newWorkshop, openWorkshop, removeWorkshop, presets = [], go, focus }) {
   const say = h("p", { class: "note", role: "status" });
   const act = (fn) => async (...a) => { try { await fn(...a); say.textContent = ""; } catch (e) { say.textContent = e.message; } };
   let cur = w;
@@ -2457,7 +2457,7 @@ export function workshopView({ workshop: w, catalog, list, answer, worth, setDea
   }
   function syncDeck() { if (deckInline) deckInline.sync(); paceNow(); }
   if (inScope.length) rebuildDeck();
-  const heardBox = heardPanel({ catalog, get: () => cur, set: (x) => { cur = x; }, answer, worth, setDeal, raise, sketches: { vdi, db, k8s, files, obj, dr, gpu },
+  const heardBox = heardPanel({ catalog, get: () => cur, set: (x) => { cur = x; }, answer, worth, setDeal, raise, sketches: { vdi, db, k8s, files, obj, dr, gpu, case: setCase },
     onFiled: (key) => { if (key) afterDeck(key); syncDeck(); if (fullDeck) fullDeck.sync(); } }).el;
   // the conversation first: where it stands on every line, what to show, the questions; then the sketches from their numbers
   const sketches = [inventory ? inventoryCard(w, inventory) : null, w.inventory && sizing ? sizingCard(w, sizing) : null,

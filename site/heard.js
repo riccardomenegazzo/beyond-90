@@ -457,3 +457,57 @@ export function sketchFigures(said, scope, current = {}) {
   }
   return out;
 }
+
+// the case for change, in the customer's words: what the renewal does to the price, when it comes, what staying costs
+const WORD_NUM = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10, eleven: 11, twelve: 12, eighteen: 18,
+  uno: 1, due: 2, tre: 3, quattro: 4, cinque: 5, sei: 6, sette: 7, otto: 8, nove: 9, dieci: 10, undici: 11, dodici: 12, diciotto: 18 };
+const PRICE = /\b(?:renewal|renews?|price|cost|licen[cs]\w*|subscription|support|prezzo|costo|canone|rinnov\w*|licenz\w*|abbonament\w*)\b/;
+const CASE_FIGURES = [
+  { field: "stay_uplift_pct", what: "percent more at the next renewal", label: "expected rise at the next renewal, in the case for change",
+    read: (t) => {
+      if (!PRICE.test(t)) return null;
+      if (/\b(?:tripl(?:e|es|ed|ing)|triplica(?:to|re)?|tre volte)\b/.test(t)) return 200;
+      if (/\b(?:doubl(?:e|es|ed|ing)|raddoppia(?:to|re)?|il doppio)\b/.test(t)) return 100;
+      const m = t.match(/\b(\d+(?:[.,]\d+)?)\s?(?:%|percent|per cento)(?=[^.;]*\b(?:renewal|rise|increase|more|aumento|rinnovo|in piu)\b)|\b(?:renewal|rise|increase|up|aumento|rinnovo)\b[^.;]*?\+?\b(\d+(?:[.,]\d+)?)\s?(?:%|percent|per cento)/);
+      return m ? Number((m[1] || m[2]).replace(",", ".")) : null;
+    } },
+  { field: "renewal_in_months", what: "months to the next renewal", label: "months to the next renewal, in the case for change",
+    read: (t) => {
+      const m = t.match(/\b(?:renewal|renews|contract|expires?|ends|rinnovo|contratto|scade|scadenza)\b[^.;]*?\b(?:in|tra|fra)\s+(\d+|[a-z]+)\s+(?:months?|mesi|mese)\b/);
+      if (!m) return null;
+      const v = /^\d+$/.test(m[1]) ? Number(m[1]) : WORD_NUM[m[1]];
+      return v || null;
+    } },
+  { field: "stay_run", what: "a year for the current platform", label: "yearly cost of the current platform, in the case for change",
+    read: (t) => {
+      if (!/\b(?:licen[cs]\w*|subscriptions?|support|platform|hypervisor|licenz\w*|abbonament\w*|canone|piattaforma|supporto)\b/.test(t) || /\b(?:down|outage|fermo|disservizio)\b/.test(t)) return null;
+      const f = figureIn(t, { q: "per year" });
+      return f && f.per === "year" ? f.amount : null;
+    } },
+  { field: "downtime_cost_hour", what: "for an hour down", label: "cost of an hour down, in the case for change",
+    read: (t) => {
+      if (!/\b(?:down|downtime|outage|offline|fermo|disservizio|stop)\b/.test(t)) return null;
+      const f = figureIn(t, { q: "per hour" });
+      return f && f.per === "hour" ? f.amount : null;
+    } },
+  { field: "ops_hours_now", what: "hours a month on routine work", label: "hours a month on routine work today, in the case for change",
+    read: (t) => {
+      const m = t.match(/\b(\d+)\s+(?:hours?|ore)\s+(?:a|per|each|al|ogni)\s+(?:month|mese)\b/);
+      return m && /\b(?:patch\w*|upgrad\w*|provision\w*|routine|maintenance|manutenzion\w*|aggiornament\w*)\b/.test(t) ? Number(m[1]) : null;
+    } },
+];
+
+/**
+ * The figures of the case for change in what was said: the rise at the renewal ("it triples", "+40%"), when it comes
+ * ("in ten months"), what staying costs a year, an hour down, the hours of routine work. Any line: every deal has one.
+ * @returns {{sketch:string, field:string, value:number, what:string, label:string}[]}
+ */
+export function caseFigures(said) {
+  const t = ` ${String(said == null ? "" : said).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "")} `;
+  const out = [];
+  for (const f of CASE_FIGURES) {
+    const v = f.read(t);
+    if (v != null && Number.isFinite(v) && v > 0) out.push({ sketch: "case", field: f.field, value: v, what: f.what, label: f.label });
+  }
+  return out;
+}

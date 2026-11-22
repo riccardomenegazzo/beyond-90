@@ -868,6 +868,15 @@ def main(site: str) -> int:
         check(page.get_by_role("button", name="Use 181.9 as the protected data of the recovery design").count() == 1
               and page.get_by_role("button", name="Use 3 as the round trip between the sites, in the recovery design").count() == 1,
               "the protected data and the distance between the sites are offered for the recovery design")
+        # and the case for change is read from what was said: the renewal and what staying costs
+        page.fill("#wsheard", "The renewal would triple the cost; we pay 1.4 million a year for licences and support")
+        page.get_by_role("button", name="Use 200 as the expected rise at the next renewal, in the case for change").click()
+        page.locator("#view .heardsay", has_text="Put in the case for change: 200 percent more at the next renewal").wait_for()
+        check(page.get_by_role("button", name="Use 1,400,000 as the yearly cost of the current platform, in the case for change").count() == 1
+              and "already in it" in page.inner_text("#view .heardsketch"),
+              "the rise at the renewal and the yearly cost of staying are offered for the case for change, and one tap puts each in")
+        page.locator("#view .heardsay button", has_text="Undo").click()
+        page.locator("#view .heardsay", has_text="Undone: the case for change is back as it was").wait_for()
         page.fill("#wsheard", "One day without the main site would cost about 2 million euros")
         check(any("Figure heard: 2,000,000 per day" in page.locator("#view .heardhit").nth(i).inner_text() for i in range(page.locator("#view .heardhit").count())),
               "a figure in what was heard is read, with what it is counted per, on the value question it answers")

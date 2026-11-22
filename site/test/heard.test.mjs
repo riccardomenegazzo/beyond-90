@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
-import { stem, tokens, match, joinNote, NOTE_MAX, concernCards, concernsHeard, sketchFigures } from "../heard.js";
+import { stem, tokens, match, joinNote, NOTE_MAX, concernCards, concernsHeard, sketchFigures, caseFigures } from "../heard.js";
 
 const card = (key, q, listen = "", why = "", probe = "") => ({ key, label: "Disaster recovery", q: { q, listen, why, probe } });
 const DR = [
@@ -505,4 +505,19 @@ test("a figure a first sketch starts from is read from what was said, for the li
   assert.deepEqual(got("un modello da 8 miliardi di parametri, 50 utenti in contemporanea", ai), ["gpu.params_b=8", "gpu.concurrent=50"]);
   assert.deepEqual(got("We serve it in FP8 with a context of 128k", ai), ["gpu.bits=8", "gpu.context_k=128"]);
   assert.deepEqual(got("We bought 8 GPUs last year", ai), [], "a count of GPUs is not the model's size");
+});
+
+test("the case for change is read from what was said: the renewal, when it comes, what staying and an hour down cost", () => {
+  const got = (said) => caseFigures(said).map((x) => `${x.field}=${x.value}`);
+  assert.deepEqual(got("The renewal would triple the cost; we pay 1.4 million a year for licences and support"), ["stay_uplift_pct=200", "stay_run=1400000"]);
+  assert.deepEqual(got("Il rinnovo tra 10 mesi raddoppia il canone"), ["stay_uplift_pct=100", "renewal_in_months=10"]);
+  assert.deepEqual(got("Renewal is in ten months, +40% on the price"), ["stay_uplift_pct=40", "renewal_in_months=10"]);
+  assert.deepEqual(got("An hour down costs about 50k"), ["downtime_cost_hour=50000"]);
+  assert.deepEqual(got("un'ora di fermo costa 40.000 euro all'ora"), ["downtime_cost_hour=40000"]);
+  assert.deepEqual(got("Operations spend 120 hours a month on patching and upgrades"), ["ops_hours_now=120"]);
+  assert.deepEqual(got("The contract expires in 18 months"), ["renewal_in_months=18"]);
+  // not about the price, or no figure
+  assert.deepEqual(got("The team doubled last year"), []);
+  assert.deepEqual(got("We spend 30 hours a month in meetings"), []);
+  assert.equal(caseFigures("The renewal triples the price")[0].label, "expected rise at the next renewal, in the case for change");
 });

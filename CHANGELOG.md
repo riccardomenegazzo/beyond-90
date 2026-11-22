@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.209.0
+
+- **The case for change, from what was said.** In Heard something, "the renewal would triple the cost", "+40% at the renewal", "renewal in ten months", "we pay 1.4 million a year for licences and support", "an hour down costs 50k" or "120 hours a month on patching" is offered for the case for change: the rise at the next renewal, when it comes, what the current platform costs a year, the cost of an hour down, the hours of routine work. A tap puts each in, Undo puts it back. In Italian too ("il rinnovo tra 10 mesi raddoppia il canone", "un'ora di fermo costa 40.000 euro all'ora"); a sentence that is not about the price ("the team doubled") is left alone.
+
 ## 0.208.0
 
 - **The README and the presales guide follow the newest features:** the questions sent ahead of the first meeting, notes read in English or Italian, the first sketches of every line and the figures heard in the meeting that go into them, the sketches as orders of magnitude in the customer readout, and the desk's risk when a line at the proof has no sketch worked out.
