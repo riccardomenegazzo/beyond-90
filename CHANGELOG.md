@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.226.0
+
+- **On a phone, the wide tables read as one card a row.** The recovery design's tiers, the edge design's kinds of site, the inventory's largest clusters, the migration waves, the partners across your deals and the team's engineers no longer have to be scrolled sideways on a small screen: each row becomes a card, each value beside its column's name, as the account tables already did. On a wider screen nothing changes.
+
 ## 0.225.0
 
 - **Concerns said in Italian are recognised on every line.** "Una migrazione è un rischio che quest'anno non possiamo correre", "il team non ha tempo per gestire una migrazione", "gli utenti odiano i desktop virtuali: sono lenti", "raccogliamo già tutti i nostri log" are now heard as the concerns they voice, with what to ask first, the answer and the proof. The glossary learns the words those concerns turn on (non possiamo, tempo, gestire, restare, odiano, fermo, percorsi, raccogliere, per tutti); a test holds seventeen of them across platform migration, AI, hybrid cloud, desktops, Kubernetes, files, microsegmentation and the security lines.

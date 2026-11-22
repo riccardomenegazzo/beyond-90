@@ -2174,6 +2174,12 @@ def main(site: str) -> int:
             mp.wait_for_timeout(400)
             wide[tab] = mp.evaluate("document.documentElement.scrollWidth") - mp.viewport_size["width"]
         check(not any(wide.values()), f"no workshop view is wider than a phone: {wide}")
+        mp.locator("#tabs [data-tab=workshop]").dispatch_event("click")
+        mp.wait_for_selector("#view .drtable tbody td")
+        fit = mp.evaluate("""Object.fromEntries([...document.querySelectorAll('#view .invtable, #view .wvtable:not(.vctable), #view .drtable')].map((t) => [t.className.split(' ')[0],
+          [t.scrollWidth <= t.parentElement.clientWidth + 1, getComputedStyle(t.querySelector('tbody td'), '::before').content.replaceAll('"', '')]]))""")
+        check(fit == {"invtable": [True, "Cluster"], "wvtable": [True, "Date"], "drtable": [True, "Tier"]},
+              f"on a phone the inventory's clusters, the waves and the recovery tiers read as one card a row, each value beside its column's name: {fit}")
         mctx.close()
 
         # accessibility: axe-core, when its path is given (the Pages workflow installs it); both colour schemes

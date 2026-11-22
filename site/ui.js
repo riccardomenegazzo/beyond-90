@@ -9,10 +9,23 @@ export function h(tag, attrs = {}, ...kids) {
     else if (k === "text") el.textContent = v;
     else if (k.startsWith("on") && typeof v === "function") el.addEventListener(k.slice(2), v);
     else if (k === "dataset") Object.assign(el.dataset, v);
+    else if (k === "stack") continue;
     else el.setAttribute(k, v === true ? "" : String(v));
   }
   append(el, kids);
+  if (attrs && attrs.stack) stack(el);
   return el;
+}
+
+/**
+ * A table that reads as one card a row where the page is narrow (a phone): each cell carries its column's name,
+ * shown beside the value, so nothing has to be scrolled sideways. h("table", { stack: true }, ...) does it.
+ */
+export function stack(table) {
+  const names = [...table.querySelectorAll("thead th")].map((th) => th.textContent);
+  for (const tr of table.querySelectorAll("tbody tr")) [...tr.children].forEach((c, i) => { if (names[i] && !c.hasAttribute("data-label")) c.setAttribute("data-label", names[i]); });
+  table.classList.add("stack");
+  return table;
 }
 
 export function s(tag, attrs = {}, ...kids) {

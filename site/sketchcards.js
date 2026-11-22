@@ -254,7 +254,7 @@ export function drCard(w, dr) {
     if (!sk.ok) { put(out, h("p", { class: "note", text: sk.error })); return; }
     put(out,
       h("div", { class: "szhead" }, h("b", { text: INV.fmt(sk.mbps) }), h("span", {}, h("strong", { text: "Mbit/s between the sites" }), h("small", { text: `to keep ${INV.fmt(sk.data)} TiB protected in three tiers, before compression` }))),
-      h("div", { class: "tablewrap" }, h("table", { class: "drtable" },
+      h("div", { class: "tablewrap" }, h("table", { class: "drtable", stack: true },
         h("thead", {}, h("tr", {}, ["Tier", "Data", "Recovery point", "Recovery time", "Replication", "Bandwidth", "Retention to agree"].map((t) => h("th", { scope: "col", text: t })))),
         h("tbody", {}, sk.tiers.map((t) => h("tr", {}, h("td", { text: String(t.n) }), h("td", { text: `${INV.fmt(t.tib)} TiB` }), h("td", { text: DRS.duration(t.rpo_min) }), h("td", { text: DRS.duration(t.rto_min) }),
           h("td", {}, h("span", { text: t.mode }), t.ok ? null : h("small", { class: "neg drwhy", text: `Not at this distance: ${t.why}.` })),
@@ -305,7 +305,7 @@ export function edgeCard(w, edge) {
     put(out,
       h("div", { class: "szhead" }, h("b", { text: INV.fmt(sk.servers) }), h("span", {}, h("strong", { text: "servers" }),
         h("small", { text: `at ${INV.fmt(sk.sites)} sites in ${sk.kinds.length} standard design${sk.kinds.length === 1 ? "" : "s"}${sk.witness_sites ? `, a witness for ${INV.fmt(sk.witness_sites)} two-server sites` : ""}; every site upgraded in about ${INV.fmt(sk.weeks)} week${sk.weeks === 1 ? "" : "s"}` }))),
-      h("div", { class: "tablewrap" }, h("table", { class: "drtable edgetable" },
+      h("div", { class: "tablewrap" }, h("table", { class: "drtable edgetable", stack: true },
         h("thead", {}, h("tr", {}, ["Kind", "Sites", "Servers a site", "Servers in all", "If a server fails", "Daily copy to the core", "Whole site over the link"].map((t) => h("th", { scope: "col", text: t })))),
         h("tbody", {}, sk.kinds.map((k) => h("tr", {}, h("td", { text: k.name }), h("td", { text: INV.fmt(k.sites) }), h("td", { text: String(k.servers_each) }), h("td", { text: INV.fmt(k.servers) }),
           h("td", { text: k.tolerance }), h("td", {}, h("span", { text: EDGE.edgeHours(k.copy_h) }), k.copy_fits ? null : h("small", { class: "neg drwhy", text: "Does not fit the night." })),
