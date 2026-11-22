@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.251.0
+
+- **What nobody opens, the snapshots kept and the file servers today go into the file storage sketch.** "They run 12 file servers, and about 40% of the files have not been opened in a year", "on the shares we keep 30 days of snapshots and 8 weekly", "the file storage has to last for five years", "il 60% dei file non è stato aperto da un anno" are offered under Heard something for the file storage sketch, each figure for its setting. Said of anything but files, they are left alone.
+
 ## 0.250.0
 
 - **The mix of workers on virtual desktops goes into the desktop sizing sketch.** "About 30% are task workers, 15% power users and 5% designers", "knowledge workers: about 50%", "20% of the desktops are persistent", "il 40% sono operatori di call center, il 10% progettisti" are offered under Heard something as the share of each kind of worker and of desktops that keep their changes; **Use all** puts the mix in with one tap.

@@ -957,3 +957,30 @@ export function desktopFigures(said, scope) {
   if (k >= 0 && k <= 100) out.push({ sketch: "vdi", field: "persistent_pct", value: k, what: "percent desktops that keep their changes", label: "share of desktops that keep their changes, in the desktop sizing sketch" });
   return out;
 }
+
+/**
+ * The file storage sketch's figures in what was said about file shares: the share nobody has opened in a year ("40% of
+ * the files have not been opened in a year"), the snapshots kept ("30 days of snapshots, 8 weekly"), the years the
+ * storage is sized for and the file servers today ("12 file servers").
+ * @returns {{sketch:string, field:string, value:number, what:string, label:string}[]}
+ */
+export function fileFigures(said, scope) {
+  if (!(scope || []).includes("file-storage")) return [];
+  const t = ` ${String(said == null ? "" : said).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "")} `;
+  const out = [];
+  const add = (field, value, what, label) => out.push({ sketch: "files", field, value, what, label: `${label}, in the file storage sketch` });
+  const servers = t.match(/\b(\d+)\s+(?:file servers?|filers?|nas(?: heads| boxes| systems)?|server di file|file server)\b/);
+  if (servers && Number(servers[1]) >= 1 && Number(servers[1]) <= 10000) add("servers_today", Number(servers[1]), "file servers today", "file servers today");
+  if (!FILE_TALK.test(t) && !servers) return out;
+  const cold = t.match(/\b(\d+(?:[.,]\d+)?)\s?(?:%|percent\b|per cento\b)[^.;]*?\b(?:not (?:been )?(?:opened|touched|accessed|read)|never (?:opened|touched|accessed)|untouched|cold|nobody (?:opens|has opened|touched)|non (?:e |sono )?(?:stat[oi] )?(?:apert\w*|usat\w*|toccat\w*))\b/);
+  const c = cold ? Number(cold[1].replace(",", ".")) : NaN;
+  if (c >= 0 && c <= 95) add("cold_pct", c, "percent not opened in a year", "share nobody opens");
+  const daily = t.match(/\b(\d+)\s+(?:days?|giorni)\s+(?:of\s+|di\s+)?(?:daily\s+)?(?:snapshots?|snapshot)\b/) || t.match(/\b(\d+)\s+daily\s+snapshots?\b/);
+  if (daily && Number(daily[1]) <= 400) add("daily_days", Number(daily[1]), "daily snapshots kept", "daily snapshots kept");
+  const weekly = t.match(/\b(\d+)\s+(?:weekly(?:\s+snapshots?)?|weeks?\s+of\s+(?:weekly\s+)?snapshots?|settimanali)\b/);
+  if (weekly && Number(weekly[1]) <= 520) add("weekly_weeks", Number(weekly[1]), "weekly snapshots kept", "weekly snapshots kept");
+  const years = t.match(/\b(?:for|over|per)\s+(\d+|three|five|seven|ten|tre|cinque|sette|dieci)\s+(?:years|anni)\b/);
+  const y = years ? (/^\d+$/.test(years[1]) ? Number(years[1]) : WORD_NUM[years[1]]) : NaN;
+  if (y >= 1 && y <= 10 && /\b(?:siz\w*|plan\w*|last|durare|dimension\w*|storage|capacity)\b/.test(t)) add("years", y, "years the storage is sized for", "years the storage is sized for");
+  return out;
+}

@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
-import { stem, tokens, match, joinNote, NOTE_MAX, concernCards, concernsHeard, sketchFigures, caseFigures, unitFigures, edgeFigures, retentionFigures, wavesFigures, sizingFigures, changeFigures, drTierFigures, workloadFigures, desktopFigures } from "../heard.js";
+import { stem, tokens, match, joinNote, NOTE_MAX, concernCards, concernsHeard, sketchFigures, caseFigures, unitFigures, edgeFigures, retentionFigures, wavesFigures, sizingFigures, changeFigures, drTierFigures, workloadFigures, desktopFigures, fileFigures } from "../heard.js";
 
 const card = (key, q, listen = "", why = "", probe = "") => ({ key, label: "Disaster recovery", q: { q, listen, why, probe } });
 const DR = [
@@ -793,4 +793,14 @@ test("the mix of workers and the desktops that keep their changes are offered fo
   assert.deepEqual(got("il 40% sono operatori di call center, il 10% progettisti"), ["task_pct=40", "graphics_pct=10"]);
   assert.deepEqual(got("About 30% are task workers", ["hci"]), [], "only with virtual desktops in scope");
   assert.equal(desktopFigures("15% power users", ["euc"])[0].label, "share of power users, in the desktop sizing sketch");
+});
+
+test("what nobody opens, the snapshots kept and the file servers today are offered for the file storage sketch", () => {
+  const got = (said, scope = ["file-storage"]) => fileFigures(said, scope).map((x) => `${x.field}=${x.value}`);
+  assert.deepEqual(got("They run 12 file servers, and about 40% of the files have not been opened in a year"), ["servers_today=12", "cold_pct=40"]);
+  assert.deepEqual(got("on the shares we keep 30 days of snapshots and 8 weekly"), ["daily_days=30", "weekly_weeks=8"]);
+  assert.deepEqual(got("the file storage has to last for five years"), ["years=5"]);
+  assert.deepEqual(got("il 60% dei file non e stato aperto da un anno"), ["cold_pct=60"]);
+  assert.deepEqual(got("40% of the VMs are idle"), [], "not said of files");
+  assert.deepEqual(got("They run 12 file servers", ["hci"]), [], "only with file storage in scope");
 });
