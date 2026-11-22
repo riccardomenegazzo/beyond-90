@@ -2537,9 +2537,13 @@ function sizingCard(w, sizing) {
   const inputs = {};
   const prot = h("select", { "aria-label": "How data is protected" }, Object.entries(SZ.PROTECTION).map(([k, v]) => h("option", { value: k, text: v.label })));
   prot.value = a.protection;
+  // another server to compare with: blank until its three figures are given
+  const altFields = [["node_cores", "The other server: cores"], ["node_mem_gib", "The other server: memory (GiB)"], ["node_raw_tib", "The other server: raw storage (TiB)"]];
+  const altIn = Object.fromEntries(altFields.map(([k, label]) => [k, h("input", { type: "number", step: "any", min: "0", value: a.alt ? String(a.alt[k]) : "", placeholder: "—", "aria-label": label })]));
   const current = () => {
     const v = { protection: prot.value };
     for (const [k] of fields) v[k] = Number(inputs[k].value);
+    if (altFields.every(([k]) => altIn[k].value !== "")) v.alt = Object.fromEntries(altFields.map(([k]) => [k, Number(altIn[k].value)]));
     return SZ.clean(v);
   };
   const draw = (assumptions) => {
@@ -2551,6 +2555,14 @@ function sizingCard(w, sizing) {
       h("div", { class: "szhead" }, h("b", { text: String(sk.nodes) }), h("span", {}, h("strong", { text: "servers" }), h("small", { text: `decided by ${name}; compute ${sk.by.compute}, memory ${sk.by.memory}, storage ${sk.by.storage}; ${INV.fmt(sk.cores)} physical cores` }))),
       h("ul", { class: "szuse" }, h("li", { class: "szlabel", text: "With the spare servers out" }), bar("CPU", sk.use.cpu), bar("Memory", sk.use.mem), bar("Storage", sk.use.storage)),
       h("ol", { class: "szsteps" }, sk.steps.map((t) => h("li", { text: t }))),
+      sk.other ? h("div", { class: "tablewrap szcompare" }, h("table", { class: "wvtable", stack: true },
+        h("thead", {}, h("tr", {}, ["", "As assumed", "The other server"].map((t) => h("th", { scope: "col", text: t })))),
+        h("tbody", {}, [
+          ["What one server holds", `${INV.fmt(assumptions.node_cores)} cores, ${INV.fmt(assumptions.node_mem_gib)} GiB, ${INV.fmt(assumptions.node_raw_tib)} TiB`, `${INV.fmt(sk.other.node_cores)} cores, ${INV.fmt(sk.other.node_mem_gib)} GiB, ${INV.fmt(sk.other.node_raw_tib)} TiB`],
+          ["Servers", INV.fmt(sk.nodes), INV.fmt(sk.other.nodes)], ["Decided by", name, { compute: "compute", memory: "memory", storage: "storage", minimum: "the minimum for the copies" }[sk.other.decided]],
+          ["Physical cores", INV.fmt(sk.cores), INV.fmt(sk.other.cores)],
+          ["With the spare servers out", `CPU ${sk.use.cpu}%, memory ${sk.use.mem}%, storage ${sk.use.storage}%`, `CPU ${sk.other.use.cpu}%, memory ${sk.other.use.mem}%, storage ${sk.other.use.storage}%`],
+        ].map(([k, x, y]) => h("tr", {}, h("th", { scope: "row", text: k }), h("td", { text: x }), h("td", { text: y })))))) : null,
       h("div", { class: "growproof" }, h("small", { text: "Design notes" }), h("ul", {}, SZ.designNotes(assumptions).map((t) => h("li", { text: t })))));
   };
   const save = async () => { const v = current(); draw(v); try { await sizing(v); say.textContent = ""; } catch (e) { say.textContent = e.message; } };
@@ -2562,14 +2574,19 @@ function sizingCard(w, sizing) {
       return h("label", { class: "szf" }, h("span", { text: label + (unit ? ` (${unit})` : "") }), inputs[k]);
     }));
   prot.addEventListener("change", save);
+  for (const x of Object.values(altIn)) x.addEventListener("change", save);
+  const compare = h("details", { class: "szassume", open: a.alt ? true : null }, h("summary", { text: "Compare with another server" }),
+    h("p", { class: "note first", text: "Fewer larger servers, or more smaller ones: the same estate and assumptions on another server model, and the physical cores each way. Give its cores, memory and raw storage." }),
+    h("div", { class: "szgrid" }, altFields.map(([k, label]) => h("label", { class: "szf" }, h("span", { text: cap(label.replace("The other server: ", "")) }), altIn[k]))));
   draw(a);
   const el = card("A first sizing sketch", h("div", { class: "sz" }, out, h("details", { class: "szassume" }, h("summary", { text: "The assumptions, to agree with the customer" }), grid,
     h("div", { class: "btnrow" }, h("button", { class: "btn small", type: "button", text: "Back to the defaults", onclick: async () => {
       for (const [k] of fields) inputs[k].value = String(SZ.DEFAULTS[k]);
+      for (const [k] of altFields) altIn[k].value = "";
       prot.value = SZ.DEFAULTS.protection;
       draw(SZ.DEFAULTS);
       try { await sizing(null); } catch (e) { say.textContent = e.message; }
-    } }))), say),
+    } }))), compare, say),
   { sub: "The arithmetic before the sizing tool: how many servers the inventory needs, which resource decides, and what it runs at with a server down. Every assumption is open; it is not a sizing." });
   // a figure put in from what was heard: the assumptions show it, and the sketch follows
   el.dataset.sketch = "sizing";
@@ -2577,6 +2594,7 @@ function sizingCard(w, sizing) {
     const v = SZ.clean(e.detail.settings);
     prot.value = v.protection;
     for (const [k] of fields) inputs[k].value = String(v[k]);
+    for (const [k] of altFields) altIn[k].value = v.alt ? String(v.alt[k]) : "";
     draw(v);
   });
   return el;

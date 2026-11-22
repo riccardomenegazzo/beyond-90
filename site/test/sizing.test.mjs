@@ -44,6 +44,14 @@ test("assumptions are kept in range, and nonsense is refused or clamped", () => 
   assert.equal(validAssumptions({ vcpu_per_core: 99 }), false);
   assert.equal(validAssumptions({ unknown: 1 }), false);
   assert.equal(validAssumptions({ protection: "raid0" }), false);
+  // another server to compare with: all three of what it holds, in range, or nothing
+  assert.deepEqual(clean({ alt: { node_cores: 96, node_mem_gib: 2048, node_raw_tib: 60 } }).alt, { node_cores: 96, node_mem_gib: 2048, node_raw_tib: 60 });
+  assert.equal(clean({ alt: { node_cores: 96, node_mem_gib: 2048 } }).alt, undefined, "half a server is not compared");
+  assert.equal(clean({ alt: { node_cores: 9999, node_mem_gib: 2048, node_raw_tib: 60 } }).alt.node_cores, 512);
+  assert.ok(validAssumptions(clean({ alt: { node_cores: 96, node_mem_gib: 2048, node_raw_tib: 60 } })));
+  for (const bad of [{ node_cores: 96 }, [], { node_cores: 96, node_mem_gib: 2048, node_raw_tib: 60, x: 1 }, { node_cores: 2, node_mem_gib: 2048, node_raw_tib: 60 }]) {
+    assert.equal(validAssumptions({ alt: bad }), false, JSON.stringify(bad));
+  }
   assert.equal(sketch(INV, { node_cores: 8, overhead_cores: 8 }).ok, false);
 });
 
@@ -91,4 +99,18 @@ test("only the table's own names are accepted, never inherited ones", () => {
   assert.equal(validAssumptions(JSON.parse('{"__proto__": {"fill_pct": 10}}')), false);
   assert.equal(sketch(INV, { protection: "toString" }).ok, true);
   assert.deepEqual(clean(null), DEFAULTS);
+});
+
+test("the same estate on another server: fewer larger servers or more smaller ones, and the physical cores each way", async () => {
+  const { otherLine } = await import("../sizing.js");
+  const base = sketch(INV, {});
+  assert.equal(base.other, null);
+  const big = sketch(INV, { alt: { node_cores: 128, node_mem_gib: 2048, node_raw_tib: 60 } });
+  assert.equal(big.nodes, base.nodes, "the servers as assumed are unchanged");
+  assert.ok(big.other.nodes < big.nodes, "larger servers: fewer of them");
+  assert.equal(big.other.cores, big.other.nodes * 128);
+  assert.equal(big.other.nodes, sketch(INV, { node_cores: 128, node_mem_gib: 2048, node_raw_tib: 60 }).nodes, "sized exactly as the sketch would size that server");
+  assert.match(otherLine(big), /^Compared with a server of 128 cores, 2,048 GiB and 60 TiB: \d+ servers instead of \d+, [\d,]+ physical cores instead of [\d,]+, decided by (compute|memory|storage|the minimum for the copies) \(the servers as assumed: 64 cores, 1,024 GiB, 30 TiB\)\.$/);
+  assert.match(sketchMarkdown(big), /Compared with a server of 128 cores/);
+  assert.doesNotMatch(sketchMarkdown(base), /Compared with/);
 });

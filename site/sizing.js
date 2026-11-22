@@ -48,13 +48,27 @@ export function clean(given) {
     if (a[k] !== undefined && a[k] !== "" && Number.isFinite(v)) out[k] = Math.min(hi, Math.max(lo, v));
   }
   if (typeof a.protection === "string" && Object.hasOwn(PROTECTION, a.protection)) out.protection = a.protection;
+  // another server to compare with: kept only when all three of what it holds are given
+  if (a.alt && typeof a.alt === "object" && !Array.isArray(a.alt)) {
+    const alt = {};
+    for (const k of ALT_KEYS) { const v = Number(a.alt[k]); if (a.alt[k] !== "" && a.alt[k] != null && Number.isFinite(v) && v > 0) alt[k] = Math.min(LIMITS[k][1], Math.max(LIMITS[k][0], v)); }
+    if (Object.keys(alt).length === ALT_KEYS.length) out.alt = alt;
+  }
   return out;
 }
+
+/** What one server holds: what changes when another server model is compared. */
+export const ALT_KEYS = ["node_cores", "node_mem_gib", "node_raw_tib"];
 
 export function validAssumptions(a) {
   if (!a || typeof a !== "object" || Array.isArray(a)) return false;
   for (const [k, v] of Object.entries(a)) {
     if (k === "protection") { if (typeof v !== "string" || !Object.hasOwn(PROTECTION, v)) return false; continue; }
+    if (k === "alt") {
+      if (!v || typeof v !== "object" || Array.isArray(v) || Object.keys(v).length !== ALT_KEYS.length) return false;
+      if (!ALT_KEYS.every((x) => typeof v[x] === "number" && Number.isFinite(v[x]) && v[x] >= LIMITS[x][0] && v[x] <= LIMITS[x][1])) return false;
+      continue;
+    }
     if (!Object.hasOwn(LIMITS, k) || typeof v !== "number" || !Number.isFinite(v) || v < LIMITS[k][0] || v > LIMITS[k][1]) return false;
   }
   return true;
@@ -93,8 +107,15 @@ export function sketch(inv, a) {
   const use = { cpu: need.vcpu / (live * per.cores * s.vcpu_per_core), mem: need.mem / (live * per.mem), storage: rawTib * (s.fill_pct / 100) / (live * per.tib) };
   // what a subscription priced per core counts: every physical core of every server, the spare ones included
   const cores = nodes * s.node_cores;
+  // the same estate on the other server: fewer larger servers, or more smaller ones, and the cores each way
+  let other = null;
+  if (s.alt) {
+    const { alt, ...rest } = s;
+    const o = sketch(inv, { ...rest, ...alt });
+    if (o.ok) other = { ...alt, nodes: o.nodes, cores: o.cores, decided: o.decided, use: o.use };
+  }
   return {
-    ok: true, assumptions: s, nodes, cores, decided: base > Math.max(by.compute, by.memory, by.storage) ? "minimum" : decided, by, minimum,
+    ok: true, assumptions: s, nodes, cores, other, decided: base > Math.max(by.compute, by.memory, by.storage) ? "minimum" : decided, by, minimum,
     need: { vcpu: Math.round(need.vcpu), mem_gib: Math.round(need.mem), tib: r1(need.tib), raw_tib: r1(rawTib) },
     use: { cpu: r1(use.cpu * 100), mem: r1(use.mem * 100), storage: r1(use.storage * 100) },
     steps: [
@@ -124,6 +145,17 @@ export function designNotes(a) {
   return notes;
 }
 
+const DECIDED = { compute: "compute", memory: "memory", storage: "storage", minimum: "the minimum for the copies" };
+
+/** The comparison with the other server, in one sentence. */
+export function otherLine(sk) {
+  const o = sk.other;
+  if (!o) return "";
+  const s = sk.assumptions;
+  return `Compared with a server of ${n(o.node_cores)} cores, ${n(o.node_mem_gib)} GiB and ${n(o.node_raw_tib)} TiB: ${o.nodes} servers instead of ${sk.nodes}, `
+    + `${n(o.cores)} physical cores instead of ${n(sk.cores)}, decided by ${DECIDED[o.decided]} (the servers as assumed: ${n(s.node_cores)} cores, ${n(s.node_mem_gib)} GiB, ${n(s.node_raw_tib)} TiB).`;
+}
+
 /** The sketch in a few lines of Markdown, for the meeting summary. */
 export function sketchMarkdown(sk) {
   if (!sk || !sk.ok) return "";
@@ -131,5 +163,6 @@ export function sketchMarkdown(sk) {
   return [`**A first sizing sketch: ${sk.nodes} servers, decided by ${name}.** Not a sizing: every assumption below is to be checked with the customer and the sizing tool.`, "",
     ...sk.steps.map((x) => `- ${x}`), "",
     `With the spare servers out: CPU at ${sk.use.cpu}%, memory at ${sk.use.mem}%, storage at ${sk.use.storage}%.`, "",
+    ...(sk.other ? [otherLine(sk), ""] : []),
     "Design notes:", "", ...designNotes(sk.assumptions).map((x) => `- ${x}`)].join("\n");
 }

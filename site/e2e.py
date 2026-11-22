@@ -1525,6 +1525,21 @@ def main(site: str) -> int:
         check(before > 3 and after < before and "decided by" in page.inner_text("#view .szhead"), "a first sizing sketch follows the assumptions agreed with the customer")
         check(f"{after * 64:,} physical cores" in page.inner_text("#view .szhead") and "Counted per core" in page.inner_text("#view .szsteps"),
               "and counts the physical cores a per-core subscription would count, the spare servers included")
+        page.locator("#view summary", has_text="Compare with another server").click()
+        for label, value in (("The other server: cores", "128"), ("The other server: memory (GiB)", "2048"), ("The other server: raw storage (TiB)", "60")):
+            f = page.locator(f"#view input[aria-label='{label}']")
+            f.fill(value)
+            f.dispatch_event("change")
+        page.wait_for_selector("#view .szcompare")
+        cmp = page.inner_text("#view .szcompare")
+        check("128 cores, 2,048 GiB, 60 TiB" in cmp and "Physical cores" in cmp and int(page.inner_text("#view .szhead > b")) == after,
+              f"another server model is compared beside the servers as assumed, with the physical cores each way: {cmp[:160]}")
+        for label in ("The other server: cores", "The other server: memory (GiB)", "The other server: raw storage (TiB)"):
+            f = page.locator(f"#view input[aria-label='{label}']")
+            f.fill("")
+            f.dispatch_event("change")
+        page.wait_for_timeout(300)
+        check(page.locator("#view .szcompare").count() == 0, "and leaves when its figures are cleared")
         rows = page.locator("#view .wvtable tbody tr")
         check(rows.count() > 5 and "Test wave" in rows.first.inner_text() and "CL-TEST" in rows.first.inner_text(), "a plan in waves starts with a test wave on the cluster that teaches the most for the least risk")
         n_waves = rows.count()

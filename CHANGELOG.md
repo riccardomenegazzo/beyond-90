@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.239.0
+
+- **The sizing sketch compares the servers as assumed with another server model.** **Compare with another server** takes a second server's cores, memory and raw storage and sizes the same estate on it with the same assumptions: a table puts the two side by side (what one server holds, servers, what decides, physical cores, how full each runs with the spare servers out). It is the "fewer larger servers or more smaller ones" conversation in the customer's own numbers, with the cores a per-core subscription would count each way. The comparison is kept with the sketch and goes into the meeting summary; clearing its figures takes it away.
+
 ## 0.238.0
 
 - **Several figures for one sketch, heard in one sentence, go in together.** "We plan for 30% growth, on servers with 48 cores and 1.5 TB of memory, N+2" used to offer four cards with a button each. Figures for the same sketch now share one card, each with its own **Use**, and **Use all 4 in the sketch** puts them in with one tap and one **Undo**. A figure already in the sketch says so and is left out of the count.

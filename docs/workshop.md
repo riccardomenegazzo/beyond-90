@@ -407,6 +407,8 @@ It is a starting point for a sizing tool, not a sizing. The file is read in the 
 
 Once the inventory is read, **A first sizing sketch** turns it into a server count with assumptions agreed in the meeting: growth over the platform's life, vCPU per physical core, memory overcommit, how data is protected, the share of data no longer written to, data reduction counted, how full storage may get, spare servers, and what one server holds. Each step of the arithmetic is shown, with what decided the count (compute, memory or storage) and how full each would be with the spare servers out. The last step counts the physical cores, spare servers included: what a subscription priced per core would count (some count a minimum per processor, so the product's own rules have the last word).
 
+**Compare with another server** sizes the same estate, with the same assumptions, on a second server model: give its cores, memory and raw storage, and a table puts the two side by side (servers, what decides, physical cores, how full each runs with the spare servers out). Fewer larger servers cost fewer licences when licences count servers, and can cost more when they count cores; a larger server also takes more capacity with it when it fails. The comparison is kept with the sketch and goes into the meeting summary.
+
 How data is protected follows the rules of distributed storage:
 
 | Protection | Raw capacity per usable TiB | Survives | At least |
