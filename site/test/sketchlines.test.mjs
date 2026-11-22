@@ -66,3 +66,29 @@ test("each sketch worked out with their figures becomes a test of the proof of v
   d = setVdi(d, { users: 600 }, D);
   assert.match(sketchProofs(d)[0].target, /^Sizing: \d+ hosts for 480 desktops at once$/);
 });
+
+test("the sizing and the plan in waves, once worked out with their figures, are a line of the readout and a test of the proof", async () => {
+  const { sketchProofs, setInventory, setSizing, setWaves } = await import("../workshop.js");
+  const { summarise, readInventory } = await import("../inventory.js");
+  const csv = readFileSync(new URL("../../examples/inventory/kestrel-vinfo.csv", import.meta.url), "utf-8");
+  let w = makeWorkshop({ customer: "Kestrel (mock)", scope: ["hci", "platform-migration"], createdOn: "2026-11-01", nonce: "abcdef" });
+  w = setInventory(w, { ...summarise(readInventory(csv)), imported_on: D }, D);
+  assert.deepEqual(sketchLines(w), [], "an inventory alone is not a sketch discussed with them");
+  assert.deepEqual(sketchProofs(w), []);
+  w = setSizing(w, { growth_pct: 30 }, D);
+  w = setWaves(w, { start: "2027-01-11", per_wave: 60, every_days: 7, pilot: 20, include_off: false, link_mbps: 2000 }, D);
+  assert.equal(validWorkshop(w), true);
+  const lines = sketchLines(w);
+  assert.deepEqual(lines.map((x) => x.what), ["Your platform", "The move"]);
+  assert.match(lines[1].text, /^\d+ waves from 2027-01-11 to \d{4}-\d{2}-\d{2}, 537 machines; about [\d.]+ TiB copied ahead of the cutovers, the largest wave in about \d+ hours\.$/);
+  const proofs = sketchProofs(w);
+  assert.equal(proofs.length, 2);
+  assert.match(proofs[0].target, /^Sizing sketch: \d+ servers, decided by (compute|memory|storage|the minimum for the copies)$/);
+  assert.match(proofs[1].text, /^The test wave copies its data ahead over the real link/);
+  assert.match(proofs[1].target, /^Plan in waves: the test wave copies [\d.]+ TiB in (about \d+ hours?|under an hour)$/);
+  assert.ok(proofs.every((p) => p.text.length <= 200 && p.target.length <= 200));
+  // a summary read before the data per cluster was kept: the plan without the copy
+  const older = { ...w, inventory: { ...w.inventory, clusters: w.inventory.clusters.map(({ tib, tib_on, ...c }) => c) } };
+  assert.match(sketchLines(older)[1].text, /^\d+ waves from 2027-01-11 to \d{4}-\d{2}-\d{2}, 537 machines\.$/);
+  assert.match(sketchProofs(older)[1].target, /^Plan in waves: \d+ waves from 2027-01-11 to/);
+});

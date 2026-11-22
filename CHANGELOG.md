@@ -2,6 +2,11 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.231.0
+
+- **The sizing and the plan in waves become tests of the proof of value.** A sizing sketch worked out with the customer's figures now proposes its own test: a week of the current platform's figures (processor ready time, memory in use, storage growth) confirming the vCPU per core and the growth it assumed, with the server count as the target. A plan in waves proposes the test wave: its data copied ahead over the real link and the cutover inside the agreed window, with the TiB and the copy time as the target. Both join the criteria a proof of value starts from, like the other sketches.
+- **The move in the customer readout.** With the sketches shown in the readout, the plan in waves is one line of the first orders of magnitude: the waves, the dates, the machines, and the data copied ahead with the time the largest wave takes.
+
 ## 0.230.0
 
 - **What is said about the servers goes into the sizing sketch with a tap.** Once an inventory is read and hyperconverged infrastructure is in scope, Heard something reads the growth to plan for ("30% growth over five years"), the vCPU per physical core ("6 vCPU per core", "an overcommit ratio of 5:1"), the servers that can be down at once ("N+2", "two servers down at once"), what one server holds ("servers with 64 cores and 1.5 TB of memory") and two or three copies of the data, in English or Italian ("una crescita del 25 per cento, server da 32 core, due nodi guasti"). **Use it in the sketch** puts the figure in the sketch's assumptions, the number of servers follows, and **Undo** puts it back. Growth said about file shares stays with the file storage sketch.

@@ -9,7 +9,7 @@
 
 import { validSummary, notesFor, fmt } from "./inventory.js";
 import { validAssumptions, sketch, sketchMarkdown } from "./sizing.js";
-import { validWaves, planWaves, wavesMarkdown, wavesLine, copyLine, RUNBOOK } from "./waves.js";
+import { validWaves, planWaves, wavesMarkdown, wavesLine, copyLine, copyTime, RUNBOOK } from "./waves.js";
 import { calendar } from "./ics.js";
 import { validCase, buildCase, caseLine, caseMarkdown, money } from "./valuecase.js";
 import { validGpu, gpuSketch, gpuMarkdown } from "./gpu.js";
@@ -292,6 +292,11 @@ export function sketchLines(w) {
   if (dbs && dbs.ok) add("Databases", `About ${dbs.licensed} processor cores to license, on ${plural(dbs.hosts, "host")} kept for the databases${dbs.freed == null || dbs.freed === 0 ? "" : dbs.freed > 0 ? `: ${dbs.freed} fewer than today` : `: ${-dbs.freed} more than today`}.`);
   const fs = w.files && on("file-storage") ? fileSketch(w.files) : null;
   if (fs && fs.ok) add("File shares", `About ${fs.usable} TiB on the fast tier and ${fs.cold_tib} TiB on a cheaper one.`);
+  const pw = w.inventory && w.waves ? planWaves(w.inventory, w.waves, w.updated_on) : null;
+  if (pw && pw.ok) {
+    const big = pw.has_data ? pw.waves.filter((x) => x.copy_h != null).reduce((x, y) => (y.copy_h > x.copy_h ? y : x)) : null;
+    add("The move", `${plural(pw.waves.length, "wave")} from ${pw.start} to ${pw.end}, ${fmt(pw.moved)} machines${big ? `; about ${fmt(pw.data_tib)} TiB copied ahead of the cutovers, the largest wave in ${copyTime(big.copy_h)}` : ""}.`);
+  }
   return out;
 }
 
@@ -305,6 +310,11 @@ export function sketchProofs(w) {
   const out = [];
   const on = (p) => (w.scope || []).includes(p);
   const add = (text, target) => out.push({ text, target });
+  const sz = w.inventory && w.sizing ? sketch(w.inventory, w.sizing) : null;
+  if (sz && sz.ok) {
+    const by = { compute: "compute", memory: "memory", storage: "storage", minimum: "the minimum for the copies" }[sz.decided] || sz.decided;
+    add("A week of the current platform's figures (processor ready time, memory in use, storage growth) confirms the vCPU per core and the growth the sizing assumed", `Sizing sketch: ${sz.nodes} servers, decided by ${by}`);
+  }
   const vs = w.vdi && on("euc") ? vdiSketch(w.vdi) : null;
   if (vs && vs.ok) add("A week of real use on a pilot group stays within the processor and memory the desktop sizing assumed", `Sizing: ${vs.hosts} hosts for ${vs.concurrent} desktops at once`);
   const ks = w.k8s && on("kubernetes-platform") ? k8sSketch(w.k8s) : null;
@@ -321,6 +331,13 @@ export function sketchProofs(w) {
   if (gs && gs.ok) add("A benchmark on their own prompts serves the requests at once the GPU sketch assumed", `GPU sketch: ${gs.gpus} GPUs, ${gs.copies} cop${gs.copies === 1 ? "y" : "ies"} of the model`);
   const es = w.edge && on("edge-sites") ? edgeSketch(w.edge) : null;
   if (es && es.ok) add("One site of each kind runs the standard design for a week, through a server failure where it must", `Edge design: ${es.servers} servers at ${es.sites} sites`);
+  const pw = w.inventory && w.waves ? planWaves(w.inventory, w.waves, w.updated_on) : null;
+  if (pw && pw.ok) {
+    const first = pw.waves[0];
+    const name = first.test ? "The test wave" : "The first wave";
+    add(`${name} copies its data ahead over the real link and cuts over inside the agreed window, each owner signing off against the baseline`,
+      first.tib != null ? `Plan in waves: ${name.toLowerCase()} copies ${fmt(first.tib)} TiB in ${copyTime(first.copy_h)}` : `Plan in waves: ${plural(pw.waves.length, "wave")} from ${pw.start} to ${pw.end}`);
+  }
   return out;
 }
 
