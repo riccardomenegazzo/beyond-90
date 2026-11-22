@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
-import { stem, tokens, match, joinNote, NOTE_MAX, concernCards, concernsHeard, sketchFigures, caseFigures, unitFigures, edgeFigures, retentionFigures, wavesFigures, sizingFigures, changeFigures, drTierFigures, workloadFigures } from "../heard.js";
+import { stem, tokens, match, joinNote, NOTE_MAX, concernCards, concernsHeard, sketchFigures, caseFigures, unitFigures, edgeFigures, retentionFigures, wavesFigures, sizingFigures, changeFigures, drTierFigures, workloadFigures, desktopFigures } from "../heard.js";
 
 const card = (key, q, listen = "", why = "", probe = "") => ({ key, label: "Disaster recovery", q: { q, listen, why, probe } });
 const DR = [
@@ -783,4 +783,14 @@ test("what each database is given and each pod asks for is offered for the licen
   assert.deepEqual(got("pods request 1 vcpu per pod and 2 GiB"), ["k8s.cpu_m=1000", "k8s.mem_mib=2048"]);
   assert.deepEqual(got("The databases have 8 vCPU each", ["kubernetes-platform"]), [], "only the lines in scope");
   assert.deepEqual(got("the servers have 8 vCPU each"), [], "not said of databases or pods");
+});
+
+test("the mix of workers and the desktops that keep their changes are offered for the desktop sizing sketch", () => {
+  const got = (said, scope = ["euc"]) => desktopFigures(said, scope).map((x) => `${x.field}=${x.value}`);
+  assert.deepEqual(got("About 30% are task workers, 15% power users and 5% designers"), ["task_pct=30", "power_pct=15", "graphics_pct=5"]);
+  assert.deepEqual(got("knowledge workers: about 50%"), ["knowledge_pct=50"]);
+  assert.deepEqual(got("20% of the desktops are persistent"), ["persistent_pct=20"]);
+  assert.deepEqual(got("il 40% sono operatori di call center, il 10% progettisti"), ["task_pct=40", "graphics_pct=10"]);
+  assert.deepEqual(got("About 30% are task workers", ["hci"]), [], "only with virtual desktops in scope");
+  assert.equal(desktopFigures("15% power users", ["euc"])[0].label, "share of power users, in the desktop sizing sketch");
 });

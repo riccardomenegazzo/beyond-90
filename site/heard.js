@@ -926,3 +926,34 @@ export function workloadFigures(said, scope) {
   }
   return out;
 }
+
+// the kinds of worker on virtual desktops, and the desktops that keep their changes
+const WORKER = [
+  ["task_pct", /(?:task workers?|call cent\w*|contact cent\w*|front desk|operatori|sportell\w*)/, "task workers"],
+  ["knowledge_pct", /(?:knowledge workers?|office workers?|impiegat\w*)/, "knowledge workers"],
+  ["power_pct", /(?:power users?|developers?|analysts?|sviluppator\w*|analist\w*)/, "power users"],
+  ["graphics_pct", /(?:graphics?(?: users?| workers?)?|designers?|engineers?(?: with cad)?|cad users?|grafic\w*|progettist\w*)/, "graphics users"],
+];
+
+/**
+ * The desktop sizing sketch's mix in what was said: the share of each kind of worker ("30% task workers, 15% power
+ * users, 5% designers") and of desktops that keep their changes ("20% persistent desktops").
+ * @returns {{sketch:string, field:string, value:number, what:string, label:string}[]}
+ */
+export function desktopFigures(said, scope) {
+  if (!(scope || []).includes("euc")) return [];
+  const t = ` ${String(said == null ? "" : said).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "")} `;
+  const out = [];
+  const PCT = String.raw`(\d+(?:[.,]\d+)?)\s?(?:%|percent\b|per cento\b)`;
+  for (const [field, words, name] of WORKER) {
+    const m = t.match(new RegExp(String.raw`\b${PCT}\s+(?:(?:of\s+(?:them|the users|users)\s+)?(?:are\s+)?|(?:sono\s+)?)${words.source}`))
+      || t.match(new RegExp(String.raw`\b${words.source}\s*(?::|are|sono|about|around|circa|il)?\s*(?:about\s+|around\s+|circa\s+|il\s+)?${PCT}`));
+    const v = m ? Number(m[1].replace(",", ".")) : NaN;
+    if (v >= 0 && v <= 100) out.push({ sketch: "vdi", field, value: v, what: `percent ${name}`, label: `share of ${name}, in the desktop sizing sketch` });
+  }
+  const keep = t.match(new RegExp(String.raw`\b${PCT}\s+(?:of\s+(?:the\s+)?desktops?\s+)?(?:are\s+)?(?:persistent|dedicated|full clones?|persistenti|dedicat\w*)\b`))
+    || t.match(/\b(?:persistent|dedicated|persistenti)\s+(?:desktops?|desktop)\b[^.;]*?\b(\d+(?:[.,]\d+)?)\s?(?:%|percent\b|per cento\b)/);
+  const k = keep ? Number(keep[1].replace(",", ".")) : NaN;
+  if (k >= 0 && k <= 100) out.push({ sketch: "vdi", field: "persistent_pct", value: k, what: "percent desktops that keep their changes", label: "share of desktops that keep their changes, in the desktop sizing sketch" });
+  return out;
+}

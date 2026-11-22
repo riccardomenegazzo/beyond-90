@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.250.0
+
+- **The mix of workers on virtual desktops goes into the desktop sizing sketch.** "About 30% are task workers, 15% power users and 5% designers", "knowledge workers: about 50%", "20% of the desktops are persistent", "il 40% sono operatori di call center, il 10% progettisti" are offered under Heard something as the share of each kind of worker and of desktops that keep their changes; **Use all** puts the mix in with one tap.
+
 ## 0.249.0
 
 - **What each database is given and each pod asks for goes into their sketches.** "The databases have 8 vCPU each and run at about 20% CPU at peak" offers the vCPU per database and how busy they run at the busiest hour for the database licence sketch; "each app runs 3 replicas, and every pod requests 250m and 512Mi" offers the pods per application and the processor and memory each pod requests for the container platform sketch, in English or Italian ("le istanze hanno 4 vcpu ciascuna, al picco 30%"). Said of servers rather than databases or pods, the figures are left alone.
