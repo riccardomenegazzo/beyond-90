@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.248.0
+
+- **What one kind of site runs, holds and is linked by goes into the edge design.** After a kind of site is named ("The plants have 1 Gbit lines and run 40 VMs each on 20 TiB", "small sites: 3 VMs and a 30 Mbit line; large sites run 15 VMs"), its link, its machines and its data are offered for that kind, each up to the next kind named; **Use all** puts a kind in with one tap. A figure said without a kind is not placed.
+
 ## 0.247.0
 
 - The README and the guide for presales leaders now say what the sizing sketch and the plan in waves do since 0.227: the physical cores a per-core licence would count, against today's hosts, another server model side by side, the data each wave copies ahead and the day each copy has to start, and all of a sketch's figures heard in one sentence going in with one tap. The leaders' five-minute tour points to the worked case.

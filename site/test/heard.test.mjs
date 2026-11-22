@@ -640,7 +640,7 @@ test("the edge design's figures: sites of a kind it knows by name, the trips to 
   const cur = { edge: { kinds: [{ name: "Stores", sites: 120 }, { name: "Large sites", sites: 30 }, { name: "Plants", sites: 6 }, { name: "Other sites", sites: 0 }] } };
   const got = (said, current = cur) => edgeFigures(said, sc, current).map((x) => `${x.field}=${x.value}`);
   assert.deepEqual(got("We have 140 stores and 8 plants"), ["kinds.0.sites=140", "kinds.2.sites=8"]);
-  assert.deepEqual(got("6 plants, 40 VMs each"), ["kinds.2.sites=6"]);
+  assert.deepEqual(got("6 plants, 40 VMs each"), ["kinds.2.sites=6", "kinds.2.vms=40"], "the machines said after the kind are that kind's");
   assert.deepEqual(got("35 large sites"), ["kinds.1.sites=35"]);
   assert.deepEqual(got("6 plants", {}), ["kinds.2.sites=6"], "the default kinds when none were set");
   assert.deepEqual(got("We send someone to a site 300 times a year, and a trip costs about 400 euros"), ["visits_year=300", "visit_cost=400"]);
@@ -741,6 +741,18 @@ test("how much data changes a day is offered for the recovery design, the backup
   assert.deepEqual(got("the data grows 5% a year"), [], "growth is not change");
   assert.deepEqual(got("80% changes every day"), [], "out of range");
   assert.equal(changeFigures("5% changes every day", ["dr-backup"])[0].label, "data written each day, in the recovery design");
+});
+
+test("what one kind of site runs, holds and is linked by is offered for that kind in the edge design", () => {
+  const got = (said) => edgeFigures(said, ["edge-sites"], {}).filter((x) => /^kinds\.\d\.(?:link_mbps|vms|data_tib)$/.test(x.field)).map((x) => `${x.field}=${x.value}`).sort();
+  assert.deepEqual(got("The plants have 1 Gbit lines and run 40 VMs each on 20 TiB"), ["kinds.2.data_tib=20", "kinds.2.link_mbps=1000", "kinds.2.vms=40"]);
+  assert.deepEqual(got("small sites: 3 VMs and a 30 Mbit line; large sites run 15 VMs"), ["kinds.0.link_mbps=30", "kinds.0.vms=3", "kinds.1.vms=15"]);
+  assert.deepEqual(got("100 Mbit lines everywhere"), [], "no kind named: not placed");
+  const [f] = edgeFigures("the plants have 1 Gbit lines", ["edge-sites"], {}).filter((x) => x.field === "kinds.2.link_mbps");
+  assert.equal(f.label, "link at each site of the plants, in the edge design");
+  assert.equal(f.apply({}).kinds[2].link_mbps, 1000);
+  assert.equal(f.has({ kinds: [] }), false);
+  assert.equal(edgeFigures("the plants have 500 Mbit lines", ["edge-sites"], {}).find((x) => x.field === "kinds.2.link_mbps").has({ visits_year: 4 }), true, "the default kinds already have it");
 });
 
 test("a named tier's recovery point, recovery time and share of the data are offered for the recovery design", () => {

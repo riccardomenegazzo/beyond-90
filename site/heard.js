@@ -615,6 +615,38 @@ export function edgeFigures(said, scope, current = {}) {
       apply: (b) => ({ ...b, kinds: (b.kinds && b.kinds.length ? b.kinds : EDGE_DEFAULTS.kinds).map((x, j) => (j === i ? { ...x, sites: Math.round(v) } : x)) }),
       has: (b) => !!(b && b.kinds && b.kinds[i] && b.kinds[i].sites === Math.round(v)) });
   });
+  // what one kind of site runs, holds and is linked by: the figures said after its name, up to the next kind named
+  const marks = [];
+  kinds.forEach((k, i) => {
+    const words = KIND_WORD(k.name).split(/\s+/).filter(Boolean);
+    if (!words.length) return;
+    const name = [...words.slice(0, -1), pluralRe(words[words.length - 1])].join("\\s+");
+    for (const m of t.matchAll(new RegExp(String.raw`\b${name}\b`, "g"))) marks.push({ at: m.index, end: m.index + m[0].length, i, k });
+  });
+  marks.sort((a, b) => a.at - b.at);
+  const seen = new Set();
+  marks.forEach((mk, j) => {
+    const seg = t.slice(mk.end, j + 1 < marks.length ? marks[j + 1].at : t.length);
+    const kindFig = (field, value, what, label) => {
+      if (seen.has(`${mk.i}.${field}`)) return;
+      seen.add(`${mk.i}.${field}`);
+      out.push({ sketch: "edge", field: `kinds.${mk.i}.${field}`, value, what: `${what} of the kind ${mk.k.name}`, label: `${label} of the ${mk.k.name.toLowerCase()}, in the edge design`,
+        apply: (b) => ({ ...b, kinds: (b.kinds && b.kinds.length ? b.kinds : EDGE_DEFAULTS.kinds).map((x, n) => (n === mk.i ? { ...x, [field]: value } : x)) }),
+        has: (b) => !!(b && ((b.kinds && b.kinds.length ? b.kinds : EDGE_DEFAULTS.kinds)[mk.i] || {})[field] === value) });
+    };
+    const link = seg.match(/\b(\d+(?:[.,]\d+)?)\s?(gbit\/s|gbit|gbps|gb\/s|gigabit|mbit\/s|mbit|mbps|mb\/s|megabit)\b/);
+    if (link) {
+      const v = Math.round(Number(link[1].replace(",", ".")) * (/^g/.test(link[2]) ? 1000 : 1));
+      if (v >= 1 && v <= 100000) kindFig("link_mbps", v, "Mbit/s link at each site", "link at each site");
+    }
+    const vms = seg.match(/\b(\d+)\s+(?:vms?|virtual machines|machines|workloads|macchine(?: virtuali)?)\b/);
+    if (vms && Number(vms[1]) >= 1 && Number(vms[1]) <= 500) kindFig("vms", Number(vms[1]), "machines at each site", "machines at each site");
+    const data = seg.match(/\b(\d+(?:[.,]\d+)?)\s?(tb|tib)\b/);
+    if (data) {
+      const v = Math.round(Number(data[1].replace(",", ".")) * (data[2] === "tb" ? 1e12 / 2 ** 40 : 1) * 10) / 10;
+      if (v > 0 && v <= 1000) kindFig("data_tib", v, "TiB of data at each site", "data at each site");
+    }
+  });
   const siteTalk = /\b(?:sites?|stores?|shops?|branch\w*|plants?|sedi|negozi|filiali|stabiliment\w*)\b/.test(t);
   const trips = t.match(new RegExp(String.raw`\b${NUM}\s+(?:trips|visits|site visits|truck rolls|interventi|trasferte|uscite)\b[^.;]*\b(?:a year|per year|each year|every year|all'anno|l'anno|annui|ogni anno)\b`))
     || (siteTalk ? t.match(new RegExp(String.raw`\b${NUM}\s+(?:times|volte)\s+(?:a|per|all')\s?(?:year|anno)\b`)) : null);
