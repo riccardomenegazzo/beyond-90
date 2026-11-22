@@ -1462,6 +1462,11 @@ export function povView({ result, book, povs, today, savePov, removePov, dash })
         answer: async (c, a, note) => { cur = P.setCriterion(cur, c.key, { status: a, evidence: note }, today); await savePov(cur); return cur; },
         onClose: () => {} });
     };
+    const roDay = h("input", { type: "date", value: RO.readoutDay(p, today), min: today, "aria-label": "Day of the readout" });
+    const roInvite = pr.total ? h("div", { class: "btnrow fwinvite" }, h("span", { class: "fwgl", text: "Before the readout" }), h("label", { class: "fwlen" }, h("span", { text: "Invite for" }), roDay),
+      h("button", { class: "btn small", type: "button", text: "Copy the readout agenda", "data-tip": "What we set out to prove, each criterion with how we will know, what it means, and the decision with its dates; who should be there. No result is in it.",
+        onclick: (ev) => copyText(RO.readoutAgenda(p)).then((ok) => { ev.target.textContent = ok ? "Copied" : "Not copied"; }) }),
+      h("button", { class: "btn small", type: "button", text: "Readout invitation (.ics)", onclick: () => { if (roDay.value) saveBlob(RO.readoutIcs(p, roDay.value, new Date().toISOString().replace(/[-:]/g, "").slice(0, 15) + "Z"), `beyond90-readout-${p.customer.replace(/[^A-Za-z0-9]+/g, "-").toLowerCase()}.ics`, "text/calendar"); } })) : null;
     const readoutBtn = pr.total ? h("button", { class: "btn small primary", type: "button", text: "Go criterion by criterion",
       "data-tip": "The readout with the sponsor, full screen: one card per criterion, swiped by what was seen, with the evidence written on it. Ends with what was not met and what it means." , onclick: runReadout }) : null;
     put(body, 
@@ -1469,7 +1474,7 @@ export function povView({ result, book, povs, today, savePov, removePov, dash })
         h("p", { class: "bdlead", role: "status", text: `${p.customer}: ${pr.met} of ${pr.total} criteria met.` }),
         h("p", { class: "bdnoise" }, h("b", { text: ql.verdict }), ttv == null ? "" : ` · first value after ${ttv} day${ttv === 1 ? "" : "s"}`)),
       h("div", { class: "kpiline" }, stat(pr.verdict, "result so far"), stat(`${pr.met}/${pr.total}`, "criteria met"), stat(`${pr.ready}/${pr.ready_total}`, "ready"), stat(String(p.sessions.length), "sessions"), stat(P.timeToFirstValue(p) == null ? "not set" : `${P.timeToFirstValue(p)} d`, "to first value")),
-      card("Success criteria", h("div", {}, readoutBtn ? h("div", { class: "btnrow" }, readoutBtn) : null, h("ul", { class: "promises" }, crit)),
+      card("Success criteria", h("div", {}, readoutBtn ? h("div", { class: "btnrow" }, readoutBtn) : null, h("ul", { class: "promises" }, crit), roInvite),
         { sub: "Agree these with the sponsor before you start. Mark each one when you have seen it, and write what you saw; at the readout, go through them one by one." }),
       card("Add a criterion", h("div", { class: "formgrid" }, h("label", { class: "wide2" }, "Criterion", nc), h("label", { class: "wide2" }, "How we will know", nt),
         h("button", { class: "btn small", type: "button", text: "Add criterion", onclick: edit((q) => P.addCriterion(q, { text: nc.value, target: nt.value }, today)) }))),

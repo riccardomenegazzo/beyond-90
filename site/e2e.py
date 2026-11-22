@@ -407,6 +407,11 @@ def main(site: str) -> int:
         page.wait_for_selector("#view li:has-text('Yes: The problem is stated')")
         check("Yes: The problem is stated" in page.inner_text("#view"), "a qualification answer is saved and shown")
         check("Set the start and end of the window" in page.inner_text("#view"), "a proof of value without a window says how to get the mutual plan")
+        with page.expect_download() as dl:
+            page.get_by_role("button", name="Readout invitation (.ics)").click()
+        ro_ics = Path(dl.value.path()).read_text(encoding="utf-8").replace("\r\n", "\n").replace("\n ", "")
+        check("proof of value readout" in ro_ics and "Criterion by criterion" in ro_ics and "Who should be there: the sponsor" in ro_ics,
+              "the readout has an invitation that carries its agenda: each criterion, and who should be there")
         # the readout, criterion by criterion: it opens on the first not tried, the evidence written on the card
         page.get_by_role("button", name="Go criterion by criterion").click()
         page.wait_for_selector("dialog.deck[open] .deckcard")
@@ -1208,7 +1213,7 @@ def main(site: str) -> int:
         check("Who should be there: the executive sponsor" in demo, "the demo plan says who should be there")
         with page.expect_download() as dl:
             page.get_by_role("button", name="Demo invitation (.ics)").click()
-        demo_ics = Path(dl.value.path()).read_text(encoding="utf-8").replace("\r\n ", "")
+        demo_ics = Path(dl.value.path()).read_text(encoding="utf-8").replace("\r\n", "\n").replace("\n ", "")
         check("SUMMARY:Kestrel Logistics (mock): demo" in demo_ics and "Who should be there: the executive sponsor" in demo_ics and "They said" not in demo_ics,
               "and an invitation carries the agenda for the customer, with nothing from the discovery notes")
         check("Their situation, in their words" in demo and "2M in lost orders" in demo and "Only what closes their gaps" in demo and "Close: agree what a proof would have to show" in demo,

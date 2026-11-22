@@ -46,7 +46,7 @@ A page for the hour with the customer: what to set up before, what to do while t
 
 <img src="img/app-readout.png" width="300" align="right" alt="On a phone, the end of the readout deck: one of the criteria met, one partly, one not met, with what was not met and what it means for the decision, and the evidence written for each">
 
-At the end of a proof of value, **Go criterion by criterion** (under Success criteria) gives the readout the same cards: one per criterion, swiped by what was seen (right met, up partly met, left not met, down dropped with the sponsor), with the evidence written on it. It ends with what was not met and what it means for the decision, what is only partly there, and what was met, with the evidence; **Mark the readout as held** closes the proof, and the way forward moves to the decision.
+Before it, **Copy the readout agenda** and **Readout invitation (.ics)** (on the day the mutual plan proposes, three days after the window) give the sponsor what we set out to prove, each criterion with how we will know, what it means and the decision with its dates, and who should be there; no result is in it. At the end of a proof of value, **Go criterion by criterion** (under Success criteria) gives the readout the same cards: one per criterion, swiped by what was seen (right met, up partly met, left not met, down dropped with the sponsor), with the evidence written on it. It ends with what was not met and what it means for the decision, what is only partly there, and what was met, with the evidence; **Mark the readout as held** closes the proof, and the way forward moves to the decision.
 
 <br clear="right">
 

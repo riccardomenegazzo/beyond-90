@@ -6,6 +6,7 @@
 // No DOM, so Node can test it. Nothing here leaves the browser: the suggestion is a few word patterns, read locally.
 import { answerSet, tally } from "./deck.js";
 import { STATUS_TEXT } from "./pov.js";
+import { calendar, addDays } from "./ics.js";
 
 /** The results a criterion can be given here, in the order of their keys (1 to 4) and of the buttons. */
 export const RESULTS = {
@@ -75,4 +76,31 @@ export function readoutText(p, cards, answerOf) {
     : s.open ? "Try what is still open before the readout." : "Ask for the decision, and agree the dates to a signed order.";
   out.push("", "Next", `- ${next}`);
   return out.join("\n");
+}
+
+/** The day the readout is due by the mutual plan (three days after the window ends), or a week from today without one. */
+export const readoutDay = (p, today) => (p.end && /^\d{4}-\d{2}-\d{2}$/.test(p.end) && addDays(p.end, 3) >= today ? addDays(p.end, 3) : addDays(today, 7));
+
+/**
+ * The readout's agenda, for the sponsor: what we set out to prove, each criterion with how we will know, what it
+ * means, and the decision with the dates to a signed order; who should be there. No result is in it: it is the agenda,
+ * sent before the meeting.
+ */
+export function readoutAgenda(p, when = "") {
+  const counted = p.criteria.filter((c) => c.status !== "dropped");
+  const each = Math.max(3, Math.min(8, Math.round(30 / Math.max(1, counted.length))));
+  const out = [`Proof of value readout: ${clean(p.customer)}${when ? `, ${when}` : ""}`, ""];
+  out.push(`1. What we set out to prove${p.problem ? `: ${clean(p.problem)}` : ""} (5 minutes)`);
+  out.push(`2. Criterion by criterion, with the evidence (about ${each} minutes each)`);
+  for (const c of counted) out.push(`   - ${clean(c.text)}${c.target ? ` (how we will know: ${clean(c.target)})` : ""}`);
+  out.push("3. What the result means for you, including anything not met (10 minutes)");
+  out.push("4. The decision, and the dates to a signed order: security, purchasing, legal (10 minutes)", "");
+  const who = [p.sponsor ? `the sponsor (${clean(p.sponsor)})` : "the sponsor", p.champion ? `the champion (${clean(p.champion)})` : "", "whoever decides"].filter(Boolean);
+  out.push(`Who should be there: ${who.join(", ")}.`);
+  return out.join("\n");
+}
+
+/** One calendar event on the chosen day, carrying the readout's agenda: for the invitation. */
+export function readoutIcs(p, date, stamp) {
+  return calendar("Readout", [{ uid: `${p.id.replace(/[^A-Za-z0-9-]/g, "-")}-readout-${date}`, date, summary: `${clean(p.customer)}: proof of value readout`, description: readoutAgenda(p) }], stamp);
 }

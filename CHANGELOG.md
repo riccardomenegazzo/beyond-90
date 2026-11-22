@@ -2,6 +2,11 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.178.0
+
+- **The readout's agenda, for the sponsor, and its invitation.** Under a proof of value's success criteria, **Copy the readout agenda** and **Readout invitation (.ics)** give what we set out to prove, each criterion still counted with how we will know, what the result means (anything not met included), and the decision with the dates to a signed order; and who should be there: the sponsor and the champion by name, and whoever decides. It is the agenda, sent before the meeting: no result is in it. The day starts on the one the mutual plan proposes, three days after the window ends.
+- New: `readoutAgenda`, `readoutIcs` and `readoutDay` in `readout.js`, with a test; a browser check on the invitation.
+
 ## 0.177.0
 
 - **Heard something under the demo's cards too.** What a customer says during the demo often answers a discovery question, voices a concern or gives a figure. Run the demo now has the same **Heard something?** sheet under its cards as the questions: it finds the question it answers, technical or about the deal, offers a concern the line expects with how to answer it, and files a figure with its question.

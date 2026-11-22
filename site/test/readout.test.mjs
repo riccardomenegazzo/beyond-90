@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { RESULTS, ORDER, READOUT, readoutCards, resultOf, readoutSuggest, readoutSummary, readoutText } from "../readout.js";
+import { RESULTS, ORDER, READOUT, readoutCards, resultOf, readoutSuggest, readoutSummary, readoutText, readoutAgenda, readoutIcs, readoutDay } from "../readout.js";
 import { makePov, setCriterion, progress } from "../pov.js";
 
 const D = "2026-11-22";
@@ -65,4 +65,22 @@ test("where the readout stands, and the text for the account team", () => {
   assert.match(t, /Next\n- Agree with the sponsor what the criteria not met mean/);
   assert.equal(readoutSummary(readoutCards(pov()), resultOf(pov())).head, "Nothing tried yet.");
   assert.doesNotMatch(t, /nutanix|vmware|broadcom/i);
+});
+
+test("the readout's agenda for the sponsor: each criterion with how we will know, who should be there, no result", () => {
+  let p = pov();
+  p = { ...p, sponsor: "Head of infrastructure (mock)", problem: "Recovery after an attack is not proven", end: "2026-12-11" };
+  p = setCriterion(p, "c2", { status: "not_met", evidence: "The domain admin could delete the copy" }, D);
+  p = setCriterion(p, "c4", { status: "dropped", evidence: "" }, D);
+  const a = readoutAgenda(p, "Monday 14 December");
+  assert.match(a, /^Proof of value readout: Kestrel \(mock\), Monday 14 December\n\n1\. What we set out to prove: Recovery after an attack is not proven \(5 minutes\)/);
+  assert.match(a, /2\. Criterion by criterion, with the evidence \(about 8 minutes each\)\n {3}- Restore the order system in under four hours \(how we will know: Timed, from the declaration\)/);
+  assert.ok(!a.includes("A missed recovery point"), "a dropped criterion is not on the agenda");
+  assert.ok(!a.includes("could delete"), "no result is in it");
+  assert.match(a, /Who should be there: the sponsor \(Head of infrastructure \(mock\)\), whoever decides\.$/);
+  assert.equal(readoutDay(p, D), "2026-12-14", "three days after the window, as the mutual plan has it");
+  assert.equal(readoutDay({ ...p, end: "" }, D), "2026-11-29");
+  const ics = readoutIcs(p, "2026-12-14", "20261122T000000Z");
+  assert.match(ics, /DTSTART;VALUE=DATE:20261214/);
+  assert.match(ics, /SUMMARY:Kestrel \(mock\): proof of value readout/);
 });
