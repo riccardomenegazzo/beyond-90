@@ -29,6 +29,7 @@
       "need": "Every cluster is known, team-made ones included",
       "how": "Attach every cluster to central management",
       "role": "architect",
+      "ahead": true,
       "core": true,
       "listen": "Clusters built by teams themselves are the sprawl to bring under one management.",
       "probe": "Which distributions and clouds are they on?"
@@ -91,6 +92,7 @@
       "need": "Clusters on physical servers are managed with the same lifecycle, policies and storage as the virtualised ones",
       "how": "List the workloads that need physical servers and include them in the platform's scope",
       "role": "architect",
+      "ahead": true,
       "listen": "GPUs, low latency or the edge can justify physical nodes; otherwise virtual nodes are easier to run.",
       "probe": "Which workloads need direct access to the hardware?"
     },
@@ -101,6 +103,7 @@
       "need": "Current and planned container workloads are listed",
       "how": "List applications in containers and those planned, with dates",
       "role": "application",
+      "ahead": true,
       "listen": "A list of planned moves with dates gives the platform a deadline.",
       "probe": "Which application would be the first on a new platform?"
     },
@@ -111,6 +114,7 @@
       "need": "Ingress, load balancing and traffic between clusters are documented",
       "how": "Draw how traffic reaches one application from the user",
       "role": "architect",
+      "ahead": true,
       "listen": "Every cluster wired differently means every move needs network work.",
       "probe": "Who manages load balancer addresses and certificates?"
     },

@@ -18,6 +18,7 @@
       "need": "The separation required by audit is known, with the evidence it needs",
       "how": "List the requirements and the evidence each auditor expects",
       "role": "security",
+      "ahead": true,
       "core": true,
       "listen": "Payment, health or critical-infrastructure rules make separation a requirement with a deadline.",
       "probe": "When is the next audit, and what did the last one find?"
@@ -91,6 +92,7 @@
       "need": "Controls on traffic inside the data centre are listed with owners",
       "how": "List the firewalls and policies that control traffic between machines",
       "role": "architect",
+      "ahead": true,
       "listen": "Traffic between machines on the same network often passes no control at all.",
       "probe": "How many rules does the core firewall hold, and how many are never used?"
     },

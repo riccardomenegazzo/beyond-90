@@ -7,6 +7,7 @@
       "need": "The AI use cases in production are known, with the riskiest named",
       "how": "List them with their owners and rank by what they can touch",
       "role": "executive",
+      "ahead": true,
       "core": true,
       "listen": "Named use cases with an owner; \"a few pilots\" usually means more in production than anyone listed.",
       "probe": "Which of them answer customers, or change something on their own?"
@@ -91,6 +92,7 @@
       "need": "Every team building its own AI is known, with what it builds on",
       "how": "List the teams building AI and what each pipeline reads and writes",
       "role": "architect",
+      "ahead": true,
       "listen": "A short list with owners; \"data science does some things\" means more than anyone knows.",
       "probe": "Which of those pipelines read personal or confidential data?"
     },

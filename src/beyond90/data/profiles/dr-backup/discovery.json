@@ -121,6 +121,7 @@
       "need": "Distance and round-trip time between the sites are measured",
       "how": "Measure round-trip time between the sites at peak",
       "role": "architect",
+      "ahead": true,
       "core": true,
       "listen": "Under about five milliseconds allows zero-loss copies; beyond that, plan near-continuous or scheduled copies.",
       "probe": "Is there a third place, a cloud or a partner site, that could hold a copy?"
@@ -132,6 +133,7 @@
       "need": "Daily change and replication bandwidth are known",
       "how": "Measure daily change per protected system",
       "role": "operations",
+      "ahead": true,
       "listen": "If the link cannot carry a day's change within the recovery point, the target or the link must change.",
       "probe": "Does replication share the link with users, and at which hours?"
     },
@@ -142,6 +144,7 @@
       "need": "The backup stack is listed with its contract dates",
       "how": "List backup software, targets and renewal dates",
       "role": "operations",
+      "ahead": true,
       "listen": "A renewal in the same year as the platform decision is a chance to simplify both.",
       "probe": "Which backup jobs fail most often, and why?"
     },

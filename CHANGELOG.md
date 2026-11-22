@@ -2,6 +2,11 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.195.0
+
+- **The questions to send ahead.** A first meeting is often spent on facts: how many clusters, how old the servers, how much data changes a day, which backup software, what the hosting costs per terabyte. Each line now marks the few questions of that kind (two to five) that the customer's team can answer in writing, and **Copy the questions to send ahead**, under the lines in scope of a workshop, gives a short note for the customer: those not answered yet, grouped by who would answer them (the architects, operations, finance), so the meeting is spent on what hurts and what it is worth. No answer or note is in it, and it passes the same check as any copy.
+- `discovery.json` takes `"ahead": true` on a question; the catalogue checks it is true or false.
+
 ## 0.194.0
 
 - **Heard something reads notes written in Italian.** In a meeting in Italy the notes are written in Italian, and the questions are in English. What was heard is now read through a glossary of the words these meetings use (il rinnovo, la licenza, i backup, il ripristino, la sede, l'amministratore, fuori supporto, il fine settimana...), so "Le password degli account di servizio non cambiano da dieci anni" finds the question on service accounts, "Il CIO firma tutto sopra i 500 mila" finds who decides and signs, and "abbiamo già i backup" is recognised as the concern it voices.

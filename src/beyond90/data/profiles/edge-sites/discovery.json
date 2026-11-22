@@ -29,6 +29,7 @@
       "need": "Sites are grouped into a few standard kinds",
       "how": "List sites with their applications and size",
       "role": "architect",
+      "ahead": true,
       "core": true,
       "listen": "Three or four standard site designs make hundreds of sites manageable; one design per site does not.",
       "probe": "Which site is the exception everyone remembers, and why?"
@@ -40,6 +41,7 @@
       "need": "Bandwidth, latency and outages are known per kind of site",
       "how": "Collect link speeds and last quarter's outages",
       "role": "architect",
+      "ahead": true,
       "listen": "Sites that lose their link must keep working alone, then catch up; plan for both.",
       "probe": "What must keep working at a site when its link is down for a day?"
     },
@@ -50,6 +52,7 @@
       "need": "Site hardware is listed with its support dates",
       "how": "Export the site hardware list with purchase dates",
       "role": "finance",
+      "ahead": true,
       "listen": "A wave of sites going out of support is the reason to standardise now.",
       "probe": "How many sites go out of support next year?"
     },

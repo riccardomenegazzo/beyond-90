@@ -1244,6 +1244,17 @@ def main(site: str) -> int:
               "with pseudonyms, the demo plan leaves with the prospect's alias, not its name")
         page.click("#exit-cancel")
         page.wait_for_selector("#exit-dialog", state="hidden")
+        # the questions to send ahead leave through the same check: a short note, grouped by who would answer
+        page.click("#tabs [data-tab=workshop]")
+        page.get_by_role("button", name="Copy the questions to send ahead").click()
+        page.wait_for_selector("#exit-dialog[open]")
+        ahead = page.inner_text("#exit-text")
+        check(ahead.startswith("Before our meeting") and "\nFor " in ahead and "\n- " in ahead and "Kestrel" not in ahead,
+              "the questions to send ahead are a short note for the customer, grouped by who would answer them")
+        page.click("#exit-cancel")
+        page.wait_for_selector("#exit-dialog", state="hidden")
+        page.evaluate("document.querySelector('[data-tab=wsforward]').click()")
+        page.wait_for_selector("#view .fwhero")
         page.select_option("#share-level", "full")
         with page.expect_download() as dl:
             page.get_by_role("button", name="Demo plan (.md)").click()

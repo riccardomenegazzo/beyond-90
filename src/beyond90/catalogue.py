@@ -92,8 +92,9 @@ ROLES = ("executive", "architect", "operations", "security", "application", "dat
 def read_discovery(path: Path) -> list[dict[str, Any]]:
     """discovery.json: the questions to ask, each tied to a stage. Beyond the question, its reason ("why"), what would
     need to be true ("need") and a first step ("how"), a question can say how to ask it: who to ask ("role"), whether
-    it is one of the few not to leave the first meeting without ("core"), what a strong or a worrying answer sounds
-    like ("listen") and the follow-up that goes one level deeper ("probe"). Checked here, so the page can trust it."""
+    it is one of the few not to leave the first meeting without ("core"), whether it asks for facts the customer's team
+    can send in writing before the meeting ("ahead"), what a strong or a worrying answer sounds like ("listen") and the
+    follow-up that goes one level deeper ("probe"). Checked here, so the page can trust it."""
     out: list[dict[str, Any]] = []
     for x in json.loads(path.read_text(encoding="utf-8"))["questions"]:
         q: dict[str, Any] = {"stage": str(x["stage"]), "q": str(x["q"]), "why": str(x.get("why", "")), **{k: str(x[k]) for k in ("need", "how") if x.get(k)}}
@@ -103,11 +104,12 @@ def read_discovery(path: Path) -> list[dict[str, Any]]:
             if x["role"] not in ROLES:
                 raise ValueError(f"catalogue: {path}: a question's role is one of {', '.join(ROLES)}")
             q["role"] = x["role"]
-        if "core" in x:
-            if not isinstance(x["core"], bool):
-                raise ValueError(f"catalogue: {path}: core is true or false")
-            if x["core"]:
-                q["core"] = True
+        for k in ("core", "ahead"):
+            if k in x:
+                if not isinstance(x[k], bool):
+                    raise ValueError(f"catalogue: {path}: {k} is true or false")
+                if x[k]:
+                    q[k] = True
         for k, most in (("listen", 240), ("probe", 220)):
             if k in x:
                 v = x[k]

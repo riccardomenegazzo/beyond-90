@@ -28,6 +28,7 @@
       "need": "Every desktop pool is known and managed in one place",
       "how": "Register every pool with the console",
       "role": "operations",
+      "ahead": true,
       "core": true,
       "listen": "Many small pools managed differently multiply the work.",
       "probe": "Which brokering software runs them, and when does its contract end?"
@@ -39,6 +40,7 @@
       "need": "Images are few, current and owned",
       "how": "Consolidate images and set an update cadence",
       "role": "operations",
+      "ahead": true,
       "listen": "Many old images mean patching takes days.",
       "probe": "How long does it take to roll a new image out to everyone?"
     },
@@ -90,6 +92,7 @@
       "need": "Named users and peak concurrent users are known",
       "how": "Take the broker's peak concurrency over a month",
       "role": "operations",
+      "ahead": true,
       "core": true,
       "listen": "Shift work can mean many named users for few desktops: size each separately.",
       "probe": "When is the peak, and does it move with shifts or time zones?"
@@ -122,6 +125,7 @@
       "need": "Where profiles and user data live, and their size, is known",
       "how": "Measure the average profile and home drive size",
       "role": "operations",
+      "ahead": true,
       "listen": "Large profiles loaded at logon slow the mornings; keeping data apart from the profile helps.",
       "probe": "How long does logon take for the user with the largest profile?"
     },

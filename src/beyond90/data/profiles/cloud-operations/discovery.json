@@ -7,6 +7,7 @@
       "need": "Routine hours are counted per task",
       "how": "List the routine tasks of a month with their hours",
       "role": "operations",
+      "ahead": true,
       "core": true,
       "listen": "A team that cannot count its routine hours spends more than it thinks: count three tasks with them.",
       "probe": "Which task would you hand to a machine first, and why that one?"
@@ -29,6 +30,7 @@
       "need": "All sites and clusters are listed with the tool that manages each",
       "how": "List sites and clusters with their management tool",
       "role": "architect",
+      "ahead": true,
       "listen": "Several consoles for one estate means nobody sees the whole: one plane is the first win.",
       "probe": "Which site was last checked by hand, and when?"
     },

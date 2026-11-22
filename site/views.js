@@ -33,6 +33,7 @@ import * as LS from "./lessons.js";
 import * as TEAM from "./team.js";
 import * as QD from "./qualify.js";
 import * as FW from "./forward.js";
+import * as QS from "./questions.js";
 import * as DEMO from "./demo.js";
 import * as RO from "./readout.js";
 import * as PT from "./partners.js";
@@ -2184,7 +2185,14 @@ export function workshopView({ workshop: w, catalog, list, answer, worth, setDea
       h("span", { class: "wsfamname", text: "Start from" }),
       presets.map((p) => h("button", { type: "button", class: "kindchip", "aria-pressed": String(p.scope.length === w.scope.length && p.scope.every((x) => w.scope.includes(x))),
         "data-tip": `Lines in scope: ${p.scope.map((x) => catalog.lines[x].label).join(", ")}. Answers already given are kept.`, text: p.label, onclick: act(() => setScope(p.scope)) }))) : null,
-    scopeBox, h("p", { class: "note", text: "In the meeting: the keys 1 to 4 answer the selected question (Solved, Partly, A real gap, Nobody knows) and select the next one. Open a question for why it matters, how to ask it, and what they said." }), say),
+    scopeBox, (() => {
+      const shown = QS.aheadText(catalog, cur);
+      if (!shown.count) return null;
+      return h("div", { class: "btnrow wsahead" }, h("span", { class: "fwgl", text: "Before the meeting" }),
+        h("button", { class: "btn small", type: "button", text: "Copy the questions to send ahead",
+          "data-tip": "The few factual questions their team can answer in writing (how many, how old, how large, where), grouped by who would answer them, so the meeting is spent on what hurts. Only those not answered yet; no answer or note is in it.",
+          onclick: (ev) => { const t = QS.aheadText(catalog, cur).text; if (t) copyText(t).then((ok) => { ev.target.textContent = ok ? "Copied" : "Not copied"; }); } }));
+    })(), h("p", { class: "note", text: "In the meeting: the keys 1 to 4 answer the selected question (Solved, Partly, A real gap, Nobody knows) and select the next one. Open a question for why it matters, how to ask it, and what they said." }), say),
   { sub: "Choose the product lines in scope, then record what the customer says to each question. Nothing leaves this browser; it is sealed when you set a passphrase." });
 
   // progress, kept current as answers come in

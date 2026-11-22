@@ -29,6 +29,7 @@
       "need": "Tenants, regions and isolation methods are listed",
       "how": "List tenants per region with how each is isolated",
       "role": "architect",
+      "ahead": true,
       "core": true,
       "listen": "Separation by convention rather than by construction is a risk with every new tenant.",
       "probe": "Has one tenant ever seen or affected another, and how?"
@@ -50,6 +51,7 @@
       "need": "Usage per tenant is metered and exported to billing",
       "how": "Trace one tenant's usage from the platform to the invoice",
       "role": "finance",
+      "ahead": true,
       "listen": "Billing from spreadsheets loses revenue and starts disputes; metering by the platform ends both.",
       "probe": "How many billing disputes did you have last quarter, and over what?"
     },

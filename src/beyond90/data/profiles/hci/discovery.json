@@ -29,6 +29,7 @@
       "need": "Clusters outside the main data centre are known and managed",
       "how": "Bring plant, branch and edge clusters under central management",
       "role": "architect",
+      "ahead": true,
       "listen": "Sites with no local IT staff are where a platform that looks after itself pays most.",
       "probe": "How is a failed disk at the furthest site replaced today, and how long does it take?"
     },
@@ -102,6 +103,7 @@
       "need": "Capacity is planned with room to rebuild after a failure and to grow, with alerts before it runs short",
       "how": "Measure today's use, keep a server's worth of room free, and set alerts at two thresholds",
       "role": "architect",
+      "ahead": true,
       "listen": "Above about three quarters full, a server failure can leave no room to rebuild: a sizing input, not a detail.",
       "probe": "How fast has used capacity grown over the last two years?"
     },
@@ -132,6 +134,7 @@
       "need": "Servers and arrays are listed with their end-of-support dates",
       "how": "Export the hardware list with purchase and support dates",
       "role": "architect",
+      "ahead": true,
       "core": true,
       "listen": "An array or a server fleet out of support within 18 months is a reason to decide this year, with a date.",
       "probe": "What would it cost to extend support on the oldest array for two more years?"
@@ -143,6 +146,7 @@
       "need": "A week of performance data covers the busiest days",
       "how": "Run a collector for seven days that include month-end or the busiest day",
       "role": "operations",
+      "ahead": true,
       "core": true,
       "listen": "Without measured peaks, sizing falls back on what was allocated, often several times what is used.",
       "probe": "Which days of the month are the busiest, and can the collection include one?"
@@ -164,6 +168,7 @@
       "need": "Per-core licences are known and the design keeps them on the fewest cores",
       "how": "List per-core licences and the hosts they are tied to",
       "role": "finance",
+      "ahead": true,
       "listen": "Per-core software calls for fewer, faster cores on dedicated hosts. Ignoring it can erase the savings.",
       "probe": "What did the last licence true-up or audit cost, and for which product?"
     },

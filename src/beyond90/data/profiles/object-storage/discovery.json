@@ -18,6 +18,7 @@
       "need": "The full cost per terabyte is known",
       "how": "Add up storage, egress and requests for a typical month",
       "role": "finance",
+      "ahead": true,
       "core": true,
       "listen": "Charges for retrieval and requests often double the headline price.",
       "probe": "What did retrieving data cost the last time you restored from the cloud?"
@@ -29,6 +30,7 @@
       "need": "Every application and backup job writing to object storage is known",
       "how": "List writers and their buckets",
       "role": "architect",
+      "ahead": true,
       "listen": "Each application that writes is a compatibility test for the proof.",
       "probe": "Which of them use more than simple reads and writes: versioning, lifecycle rules, notifications?"
     },
@@ -90,6 +92,7 @@
       "need": "Capacity, object count and daily writes are estimated",
       "how": "Collect current size and daily writes per bucket or application",
       "role": "architect",
+      "ahead": true,
       "core": true,
       "listen": "Billions of small objects stress metadata more than capacity: ask about object size too.",
       "probe": "What is the typical object size, and the largest?"

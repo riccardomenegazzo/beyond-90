@@ -18,6 +18,7 @@
       "need": "Every SaaS tenant is known, card purchases included",
       "how": "Find tenants from sign-ins and expenses, and connect them",
       "role": "finance",
+      "ahead": true,
       "core": true,
       "listen": "The card statements are the honest list; the IT list is usually shorter.",
       "probe": "Who could pull the list of SaaS paid for by card last year?"
@@ -111,6 +112,7 @@
       "need": "The data that matters in each application can be restored after a deletion or an attack",
       "how": "Decide which data needs its own copy and test a restore",
       "role": "data",
+      "ahead": true,
       "listen": "Backed up and restored once in a test; \"the provider keeps it\" is a common misunderstanding.",
       "probe": "If someone deleted a shared folder today, how far back could you get it?"
     },

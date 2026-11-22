@@ -29,6 +29,7 @@
       "need": "Every file server is known, old ones included",
       "how": "List servers from the network and the directory, and retire the dead ones",
       "role": "operations",
+      "ahead": true,
       "core": true,
       "listen": "Old servers nobody switched off hold data nobody manages.",
       "probe": "How many of them run operating systems out of support?"
@@ -91,6 +92,7 @@
       "need": "Cold file data is known and moves to cheaper storage by policy, with users still finding it where it was",
       "how": "Run a file age analysis and set a tiering policy for data untouched for a year",
       "role": "finance",
+      "ahead": true,
       "listen": "Cold data on expensive storage is a saving: tier it or archive it.",
       "probe": "Is there a retention rule that would allow some of it to be deleted?"
     },
@@ -101,6 +103,7 @@
       "need": "Total size, file count and growth are measured",
       "how": "Scan the main shares for size, file count and age",
       "role": "operations",
+      "ahead": true,
       "core": true,
       "listen": "Hundreds of millions of small files are a different migration from a few large ones: measure both.",
       "probe": "Which share grows fastest, and what fills it?"

@@ -29,6 +29,7 @@
       "need": "Every GPU server is known, with an owner and its utilisation",
       "how": "List GPU servers and measure a week of utilisation",
       "role": "architect",
+      "ahead": true,
       "listen": "Idle or scattered GPUs are capacity to pool before buying more.",
       "probe": "How busy were the GPUs last month, on average and at peak?"
     },
@@ -90,6 +91,7 @@
       "need": "AI use across the business is known: who uses which models and services, with which data",
       "how": "Survey teams and network logs for AI services already in use",
       "role": "executive",
+      "ahead": true,
       "listen": "Use through public services shows the demand and the risk at once.",
       "probe": "Which of these services hold company data today?"
     },
@@ -120,6 +122,7 @@
       "need": "Every place models run is known, with how it is billed",
       "how": "List each model in use, where it runs and how it is paid for",
       "role": "architect",
+      "ahead": true,
       "core": true,
       "listen": "Several places with several sets of controls is the sprawl to bring together.",
       "probe": "Which of these would you bring in-house first, and why?"
@@ -171,6 +174,7 @@
       "need": "Model size, concurrent users and target response time are agreed for the first use case",
       "how": "Agree a model class, peak users and a response time with the use case owner",
       "role": "application",
+      "ahead": true,
       "core": true,
       "listen": "These three numbers size GPU memory and count; without them sizing is a guess.",
       "probe": "How long a document or conversation must the model read at once?"

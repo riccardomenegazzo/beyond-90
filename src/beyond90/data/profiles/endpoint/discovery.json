@@ -29,6 +29,7 @@
       "need": "Every device has an agent, servers and contractors included",
       "how": "Compare the agent list with the asset list and close the gap",
       "role": "operations",
+      "ahead": true,
       "core": true,
       "listen": "Every device counted against the inventory; servers, branches and contractors are where agents are missing.",
       "probe": "Which list of devices do you compare against, and who keeps it?"
@@ -40,6 +41,7 @@
       "need": "Every operating system in use is known, with the unsupported ones planned",
       "how": "List versions and plan the out-of-support ones",
       "role": "operations",
+      "ahead": true,
       "listen": "Unsupported systems need a plan and a date; unknown ones are the bigger risk.",
       "probe": "Which unsupported systems hold something important, and when do they go?"
     },
@@ -111,6 +113,7 @@
       "need": "Mobile devices that reach company data are known and protected",
       "how": "List the mobile devices reaching company data, and decide what each must have",
       "role": "operations",
+      "ahead": true,
       "listen": "Managed and known is the target; \"personal phones get mail\" is common and worth discussing.",
       "probe": "Which company data can a personal phone reach today?"
     },

@@ -32,7 +32,7 @@ def test_the_page_gets_how_to_ask_each_question():
     assert all("core" not in x for x in lines["hci"]["questions"] if not x.get("core"))
 
 
-@pytest.mark.parametrize("bad", [{"role": "ceo"}, {"core": "yes"}, {"listen": ""}, {"listen": "x" * 241}, {"probe": "And then"}, {"probe": 3}])
+@pytest.mark.parametrize("bad", [{"role": "ceo"}, {"core": "yes"}, {"ahead": "yes"}, {"listen": ""}, {"listen": "x" * 241}, {"probe": "And then"}, {"probe": 3}])
 def test_a_question_that_breaks_the_rules_is_refused(tmp_path, bad):
     f = tmp_path / "discovery.json"
     f.write_text(json.dumps({"questions": [{"stage": "L1", "q": "How many clusters are there?", "why": "", **bad}]}), encoding="utf-8")
@@ -42,4 +42,14 @@ def test_a_question_that_breaks_the_rules_is_refused(tmp_path, bad):
 
 def test_a_question_without_the_new_fields_still_reads():
     qs = Catalogue.load(profile="siem").discovery
-    assert qs and all(set(q) <= {"stage", "q", "why", "need", "how", "role", "core", "listen", "probe"} for q in qs)
+    assert qs and all(set(q) <= {"stage", "q", "why", "need", "how", "role", "core", "ahead", "listen", "probe"} for q in qs)
+
+
+def test_every_line_has_a_few_questions_to_send_ahead_each_for_someone():
+    lines = workshop_catalog()["lines"]
+    for profile, line in lines.items():
+        ahead = [q for q in line["questions"] if q.get("ahead")]
+        # a short note, not a questionnaire: the meeting is still where the pain is heard
+        assert 2 <= len(ahead) <= 5, (profile, len(ahead))
+        assert all(q.get("role") and q["q"].endswith("?") for q in ahead), profile
+    assert all("ahead" not in x for x in lines["hci"]["questions"] if not x.get("ahead"))

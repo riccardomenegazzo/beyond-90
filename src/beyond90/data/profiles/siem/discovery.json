@@ -29,6 +29,7 @@
       "need": "Every environment sends its logs",
       "how": "Connect the silent environments first",
       "role": "operations",
+      "ahead": true,
       "core": true,
       "listen": "A short, known list is fine; \"we are not sure\" means blind spots nobody has counted.",
       "probe": "Which of those environments would an attacker go to first?"
@@ -71,6 +72,7 @@
       "need": "Logs are kept long enough for an investigation and an audit",
       "how": "Agree retention with legal and the auditors",
       "role": "data",
+      "ahead": true,
       "listen": "Kept as long as an investigation looks back, and as long as the auditor asks; cheaper storage for the rest.",
       "probe": "How far back did the last investigation, or the last audit, need to look?"
     },

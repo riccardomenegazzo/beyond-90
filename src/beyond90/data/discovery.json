@@ -29,6 +29,7 @@
       "need": "There is one list of cloud accounts everyone trusts",
       "how": "Pull accounts from the organisation and the bill, and reconcile the two",
       "role": "operations",
+      "ahead": true,
       "core": true,
       "listen": "One trusted list; three partial ones means accounts nobody watches.",
       "probe": "When did someone last find an account that was on none of the lists?"
@@ -122,6 +123,7 @@
       "need": "The cloud evidence the next audit asks for can be produced on demand",
       "how": "List the controls the audit asks for and where each one's evidence comes from",
       "role": "executive",
+      "ahead": true,
       "listen": "A named audit with a date makes this urgent; \"none this year\" means find another reason.",
       "probe": "Who signs the answer, and what did the last one cost in hours?"
     }

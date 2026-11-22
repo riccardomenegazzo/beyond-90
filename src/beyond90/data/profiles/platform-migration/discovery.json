@@ -28,6 +28,7 @@
       "need": "Every virtual machine is known, with an owner",
       "how": "Run discovery at every site and assign owners",
       "role": "operations",
+      "ahead": true,
       "core": true,
       "listen": "Machines with no owner should be retired or parked, not moved: a smaller move is a faster one.",
       "probe": "How many of these could be switched off before the move without anyone noticing?"
@@ -92,6 +93,7 @@
       "need": "The hardware that stays is known, with its support dates and whether the new platform can use it",
       "how": "List servers and arrays with their end-of-support dates, and check each against the new platform's support list",
       "role": "architect",
+      "ahead": true,
       "listen": "Reusing hardware still under support lowers the cost of the move: check it against the target's compatibility list.",
       "probe": "Which of them appear on the compatibility list of the platforms you are considering?"
     },
@@ -163,6 +165,7 @@
       "need": "Container workloads on the current platform are listed with an owner",
       "how": "List clusters running on the current platform and where their data lives",
       "role": "architect",
+      "ahead": true,
       "listen": "Clusters tied to the old platform's add-ons need a target of their own; found late, they delay the last wave.",
       "probe": "Which of them keep data in volumes provided by the old platform?"
     },
@@ -183,6 +186,7 @@
       "need": "Daily change and bandwidth are measured for the largest systems",
       "how": "Measure daily change on the ten largest machines and the link between them",
       "role": "architect",
+      "ahead": true,
       "listen": "If the first copy of the biggest systems takes days, start it early and keep it in sync until cutover.",
       "probe": "Is the link shared with production traffic, and can the copy be slowed during the day?"
     },
@@ -193,6 +197,7 @@
       "need": "Operating systems are listed with their support status",
       "how": "Group the inventory by operating system and version",
       "role": "operations",
+      "ahead": true,
       "listen": "Unsupported systems are a risk wherever they run: the move is the moment to decide on each.",
       "probe": "Which applications keep those old systems alive, and who owns them?"
     },

@@ -29,6 +29,7 @@
       "need": "Every cloud cluster is known and managed with the data centre",
       "how": "List cloud accounts and attach their clusters to the same management",
       "role": "architect",
+      "ahead": true,
       "listen": "Accounts opened by teams without IT are both a cost leak and a security gap.",
       "probe": "How many cloud accounts show up on expense reports rather than central contracts?"
     },
@@ -100,6 +101,7 @@
       "need": "The cloud commitments in place are known, with what is left and until when",
       "how": "List the commitments per provider, with what each has left",
       "role": "finance",
+      "ahead": true,
       "core": true,
       "listen": "Unused prepaid commitments can fund the move: often the fastest business case.",
       "probe": "When do those commitments expire, and what happens to what is unused?"
@@ -151,6 +153,7 @@
       "need": "Links between sites and clouds are documented with their bandwidth",
       "how": "List links, bandwidth and contracts between sites and clouds",
       "role": "architect",
+      "ahead": true,
       "core": true,
       "listen": "A single VPN is enough for a pilot, not for recovering production: plan the link with the use case.",
       "probe": "What is the lead time to order a faster private link?"

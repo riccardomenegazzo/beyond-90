@@ -86,6 +86,7 @@
      "need": "Clusters outside the main data centre are known and managed",
      "how": "Bring plant, branch and edge clusters under central management",
      "role": "architect",
+     "ahead": true,
      "listen": "Sites with no local IT staff are where a platform that looks after itself pays most.",
      "probe": "How is a failed disk at the furthest site replaced today, and how long does it take?"
     },
@@ -159,6 +160,7 @@
      "need": "Capacity is planned with room to rebuild after a failure and to grow, with alerts before it runs short",
      "how": "Measure today's use, keep a server's worth of room free, and set alerts at two thresholds",
      "role": "architect",
+     "ahead": true,
      "listen": "Above about three quarters full, a server failure can leave no room to rebuild: a sizing input, not a detail.",
      "probe": "How fast has used capacity grown over the last two years?"
     },
@@ -190,6 +192,7 @@
      "how": "Export the hardware list with purchase and support dates",
      "role": "architect",
      "core": true,
+     "ahead": true,
      "listen": "An array or a server fleet out of support within 18 months is a reason to decide this year, with a date.",
      "probe": "What would it cost to extend support on the oldest array for two more years?"
     },
@@ -201,6 +204,7 @@
      "how": "Run a collector for seven days that include month-end or the busiest day",
      "role": "operations",
      "core": true,
+     "ahead": true,
      "listen": "Without measured peaks, sizing falls back on what was allocated, often several times what is used.",
      "probe": "Which days of the month are the busiest, and can the collection include one?"
     },
@@ -221,6 +225,7 @@
      "need": "Per-core licences are known and the design keeps them on the fewest cores",
      "how": "List per-core licences and the hosts they are tied to",
      "role": "finance",
+     "ahead": true,
      "listen": "Per-core software calls for fewer, faster cores on dedicated hosts. Ignoring it can erase the savings.",
      "probe": "What did the last licence true-up or audit cost, and for which product?"
     },
@@ -455,6 +460,7 @@
      "how": "Measure round-trip time between the sites at peak",
      "role": "architect",
      "core": true,
+     "ahead": true,
      "listen": "Under about five milliseconds allows zero-loss copies; beyond that, plan near-continuous or scheduled copies.",
      "probe": "Is there a third place, a cloud or a partner site, that could hold a copy?"
     },
@@ -465,6 +471,7 @@
      "need": "Daily change and replication bandwidth are known",
      "how": "Measure daily change per protected system",
      "role": "operations",
+     "ahead": true,
      "listen": "If the link cannot carry a day's change within the recovery point, the target or the link must change.",
      "probe": "Does replication share the link with users, and at which hours?"
     },
@@ -475,6 +482,7 @@
      "need": "The backup stack is listed with its contract dates",
      "how": "List backup software, targets and renewal dates",
      "role": "operations",
+     "ahead": true,
      "listen": "A renewal in the same year as the platform decision is a chance to simplify both.",
      "probe": "Which backup jobs fail most often, and why?"
     },
@@ -609,6 +617,7 @@
      "need": "Every database is known and has an owner",
      "how": "Register databases with the platform and assign owners",
      "role": "data",
+     "ahead": true,
      "listen": "Databases with no clear owner are the ones that miss patches and backups.",
      "probe": "How many database servers run a single small database?"
     },
@@ -672,6 +681,7 @@
      "how": "List every engine and edition with its licence model",
      "role": "finance",
      "core": true,
+     "ahead": true,
      "listen": "Per-core licences reward fewer, faster cores on dedicated hosts: consolidation can pay for the project.",
      "probe": "When is the next licence true-up or audit, and what did the last one find?"
     },
@@ -683,6 +693,7 @@
      "how": "Collect size, growth and an hour of peak activity for the top databases",
      "role": "data",
      "core": true,
+     "ahead": true,
      "listen": "When the busy part fits in the fastest tier, latency stays low: measure it rather than guess.",
      "probe": "Which database has grown fastest, and why?"
     },
@@ -814,6 +825,7 @@
      "how": "Add up storage, egress and requests for a typical month",
      "role": "finance",
      "core": true,
+     "ahead": true,
      "listen": "Charges for retrieval and requests often double the headline price.",
      "probe": "What did retrieving data cost the last time you restored from the cloud?"
     },
@@ -824,6 +836,7 @@
      "need": "Every application and backup job writing to object storage is known",
      "how": "List writers and their buckets",
      "role": "architect",
+     "ahead": true,
      "listen": "Each application that writes is a compatibility test for the proof.",
      "probe": "Which of them use more than simple reads and writes: versioning, lifecycle rules, notifications?"
     },
@@ -886,6 +899,7 @@
      "how": "Collect current size and daily writes per bucket or application",
      "role": "architect",
      "core": true,
+     "ahead": true,
      "listen": "Billions of small objects stress metadata more than capacity: ask about object size too.",
      "probe": "What is the typical object size, and the largest?"
     },
@@ -1043,6 +1057,7 @@
      "how": "List sites with their applications and size",
      "role": "architect",
      "core": true,
+     "ahead": true,
      "listen": "Three or four standard site designs make hundreds of sites manageable; one design per site does not.",
      "probe": "Which site is the exception everyone remembers, and why?"
     },
@@ -1053,6 +1068,7 @@
      "need": "Bandwidth, latency and outages are known per kind of site",
      "how": "Collect link speeds and last quarter's outages",
      "role": "architect",
+     "ahead": true,
      "listen": "Sites that lose their link must keep working alone, then catch up; plan for both.",
      "probe": "What must keep working at a site when its link is down for a day?"
     },
@@ -1063,6 +1079,7 @@
      "need": "Site hardware is listed with its support dates",
      "how": "Export the site hardware list with purchase dates",
      "role": "finance",
+     "ahead": true,
      "listen": "A wave of sites going out of support is the reason to standardise now.",
      "probe": "How many sites go out of support next year?"
     },
@@ -1246,6 +1263,7 @@
      "how": "List the routine tasks of a month with their hours",
      "role": "operations",
      "core": true,
+     "ahead": true,
      "listen": "A team that cannot count its routine hours spends more than it thinks: count three tasks with them.",
      "probe": "Which task would you hand to a machine first, and why that one?"
     },
@@ -1267,6 +1285,7 @@
      "need": "All sites and clusters are listed with the tool that manages each",
      "how": "List sites and clusters with their management tool",
      "role": "architect",
+     "ahead": true,
      "listen": "Several consoles for one estate means nobody sees the whole: one plane is the first win.",
      "probe": "Which site was last checked by hand, and when?"
     },

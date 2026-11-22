@@ -29,6 +29,7 @@
       "need": "Every directory and identity provider is known and connected",
       "how": "List them, acquisitions included, and connect each one",
       "role": "architect",
+      "ahead": true,
       "listen": "Several directories are normal after acquisitions; what matters is that each is known and joined.",
       "probe": "Which directory would an attacker use to reach the others?"
     },
@@ -101,6 +102,7 @@
       "need": "External people sign in through the same controls as employees, and their access ends with the contract",
       "how": "List the external accounts and tie each one to a sponsor and an end date",
       "role": "operations",
+      "ahead": true,
       "listen": "Through the same directory, with an end date; local accounts created by request are the usual gap.",
       "probe": "Which supplier account would reach the most, and who sponsors it?"
     },

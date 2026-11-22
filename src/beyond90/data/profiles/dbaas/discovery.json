@@ -29,6 +29,7 @@
       "need": "Every database is known and has an owner",
       "how": "Register databases with the platform and assign owners",
       "role": "data",
+      "ahead": true,
       "listen": "Databases with no clear owner are the ones that miss patches and backups.",
       "probe": "How many database servers run a single small database?"
     },
@@ -91,6 +92,7 @@
       "need": "Engines, editions and licence models are listed",
       "how": "List every engine and edition with its licence model",
       "role": "finance",
+      "ahead": true,
       "core": true,
       "listen": "Per-core licences reward fewer, faster cores on dedicated hosts: consolidation can pay for the project.",
       "probe": "When is the next licence true-up or audit, and what did the last one find?"
@@ -102,6 +104,7 @@
       "need": "Size, growth and busy data are measured for the important databases",
       "how": "Collect size, growth and an hour of peak activity for the top databases",
       "role": "data",
+      "ahead": true,
       "core": true,
       "listen": "When the busy part fits in the fastest tier, latency stays low: measure it rather than guess.",
       "probe": "Which database has grown fastest, and why?"
