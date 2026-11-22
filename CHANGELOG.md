@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.221.0
+
+- **How long backups are kept, and how fast file data grows, from what was said.** "We keep 30 days of daily backups, 12 weeklies and monthlies for 7 years" now offers the daily restore points, the weekly fulls and the monthly fulls (years turned into months) for the backup capacity sketch; "the file shares grow about 25% a year" offers the growth for the file storage sketch. In Italian too ("14 giorni di copie e 12 mensili"); growth of something else ("revenue grew 10%") is left alone.
+
 ## 0.220.0
 
 - **Each sketch says whether it has their figures.** Beside its title, every first sketch now shows **With their figures** once a figure was changed in it or put in from Heard something, and **At the defaults** until then or after Back to the defaults: at a glance, which numbers are the customer's, and which sketches the readout will show.

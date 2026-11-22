@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
-import { stem, tokens, match, joinNote, NOTE_MAX, concernCards, concernsHeard, sketchFigures, caseFigures, unitFigures, edgeFigures } from "../heard.js";
+import { stem, tokens, match, joinNote, NOTE_MAX, concernCards, concernsHeard, sketchFigures, caseFigures, unitFigures, edgeFigures, retentionFigures } from "../heard.js";
 
 const card = (key, q, listen = "", why = "", probe = "") => ({ key, label: "Disaster recovery", q: { q, listen, why, probe } });
 const DR = [
@@ -553,4 +553,16 @@ test("the edge design's figures: sites of a kind it knows by name, the trips to 
   assert.deepEqual(next.kinds.map((k) => k.sites), [140, 30, 6, 0]);
   assert.equal(f.has(next), true);
   assert.equal(f.has(cur.edge), false);
+});
+
+test("how long backups are kept, and how fast file data grows, read from what was said", () => {
+  const sc = ["object-storage", "file-storage"];
+  const got = (said, scope = sc) => retentionFigures(said, scope).map((x) => `${x.sketch}.${x.field}=${x.value}`);
+  assert.deepEqual(got("We keep 30 days of daily backups, 12 weeklies and monthlies for 7 years"), ["obj.daily_days=30", "obj.weekly_weeks=12", "obj.monthly_months=84"]);
+  assert.deepEqual(got("Daily for 60 days, weekly for 8 weeks, monthly for 24 months"), ["obj.daily_days=60", "obj.weekly_weeks=8", "obj.monthly_months=24"]);
+  assert.deepEqual(got("Teniamo 14 giorni di copie e 12 mensili"), ["obj.daily_days=14", "obj.monthly_months=12"]);
+  assert.deepEqual(got("The file shares grow about 25% a year"), ["files.growth_pct=25"]);
+  assert.deepEqual(got("Revenue grew 10% last year"), [], "growth of something other than file data");
+  assert.deepEqual(got("We restored a file 3 days ago"), []);
+  assert.deepEqual(got("We keep 30 days of daily backups", ["hci"]), []);
 });

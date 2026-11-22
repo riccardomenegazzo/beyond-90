@@ -2098,7 +2098,7 @@ function heardPanel({ catalog, get, set, answer, worth, setDeal, raise = null, s
     if (said.length < 6) { put(heardOut); return; }
     const hits = HEARD.match([...DECK.deckFrom(catalog, get().scope), ...dealCards], said, 3);
     const concern = HEARD.concernsHeard(HEARD.concernCards(catalog, get().scope), said)[0];
-    const figs = sketches ? [...HEARD.sketchFigures(said, get().scope, get()), ...HEARD.unitFigures(said, get().scope), ...HEARD.edgeFigures(said, get().scope, get()), ...HEARD.caseFigures(said)].filter((f) => sketches[f.sketch]) : [];
+    const figs = sketches ? [...HEARD.sketchFigures(said, get().scope, get()), ...HEARD.unitFigures(said, get().scope), ...HEARD.edgeFigures(said, get().scope, get()), ...HEARD.retentionFigures(said, get().scope), ...HEARD.caseFigures(said)].filter((f) => sketches[f.sketch]) : [];
     if (!hits.length && !concern && !figs.length) { put(heardOut, h("p", { class: "note", text: "No question in scope uses these words. Try the words of the question, or write it on the card." })); return; }
     put(heardOut, concern ? concernHit(concern.card) : null, figs.map(figureHit), hits.map(({ card }) => {
       if (card.deal) return dealHit(card, said);

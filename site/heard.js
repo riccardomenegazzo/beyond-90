@@ -606,3 +606,38 @@ export function edgeFigures(said, scope, current = {}) {
   }
   return out;
 }
+
+// how long backups are kept, and how fast file data grows: said in every backup and file conversation
+const RETENTION = [
+  { sketch: "obj", field: "daily_days", line: "object-storage", what: "daily restore points kept", label: "daily restore points kept, in the backup capacity sketch",
+    re: [/\b(\d+)\s+(?:days?|giorni)\s+(?:of\s+|di\s+)?(?:daily\s+)?(?:backups?|restore points|copies|copie|retention|ritenzione)\b/, /\b(?:daily|dailies|giornalier\w*)\b[^.;]*?\b(?:for\s+|per\s+)?(\d+)\s+(?:days?|giorni)\b/, /\b(\d+)\s+(?:dailies|daily backups|giornalieri)\b/] },
+  { sketch: "obj", field: "weekly_weeks", line: "object-storage", what: "weekly fulls kept", label: "weekly fulls kept, in the backup capacity sketch",
+    re: [/\b(\d+)\s+(?:weeklies|weekly(?:\s+(?:fulls?|backups?|copies))?|settimanali)\b/, /\b(?:weekly|weeklies|settimanal\w*)\b[^.;]*?\b(?:for\s+|per\s+)?(\d+)\s+(?:weeks?|settimane)\b/] },
+  { sketch: "obj", field: "monthly_months", line: "object-storage", what: "monthly fulls kept", label: "monthly fulls kept, in the backup capacity sketch",
+    re: [/\b(\d+)\s+(?:monthlies|monthly(?:\s+(?:fulls?|backups?|copies))?|mensili)\b/, /\b(?:monthly|monthlies|mensil\w*)\b[^.;]*?\b(?:for\s+|per\s+)?(\d+)\s+(?:months?|mesi)\b/,
+      { years: /\b(?:monthly|monthlies|mensil\w*)\b[^.;]*?\b(?:for\s+|per\s+)?(\d+)\s+(?:years?|anni)\b/ }] },
+  { sketch: "files", field: "growth_pct", line: "file-storage", what: "percent growth a year", label: "growth a year, in the file storage sketch", context: /\b(?:files?|shares?|nas|condivis\w*|cartelle|file data)\b/,
+    re: [/\b(?:grow\w*|growth|cresc\w*)\b[^.;]*?\b(\d+(?:[.,]\d+)?)\s?(?:%|percent\b|per cento\b)/, /\b(\d+(?:[.,]\d+)?)\s?(?:%|percent\b|per cento\b)[^.;]*\b(?:growth|grow\w*|cresc\w*)/] },
+];
+
+/**
+ * How long backups are kept (daily, weekly and monthly copies, "monthlies for 7 years" as months) and how fast file
+ * data grows, for the sketches of the lines in scope.
+ * @returns {{sketch:string, field:string, value:number, what:string, label:string}[]}
+ */
+export function retentionFigures(said, scope) {
+  const t = ` ${String(said == null ? "" : said).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "")} `;
+  const out = [];
+  for (const f of RETENTION) {
+    if (!(scope || []).includes(f.line) || (f.context && !f.context.test(t))) continue;
+    let v = null;
+    for (const r of f.re) {
+      const years = r.years ? t.match(r.years) : null;
+      const m = years ? null : r.years ? null : t.match(r);
+      if (years) { v = Number(years[1]) * 12; break; }
+      if (m) { v = Number(String(m[1]).replace(",", ".")); break; }
+    }
+    if (v != null && Number.isFinite(v) && v > 0) out.push({ sketch: f.sketch, field: f.field, value: v, what: f.what, label: f.label });
+  }
+  return out;
+}
