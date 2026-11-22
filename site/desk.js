@@ -59,9 +59,20 @@ export function evidenceOf({ w, p, res, plan, pr, overdue }) {
   return { score: Math.round(score), have, missing };
 }
 
+/** How the demo went, from what was noted on its cards: the day it was given, and how many parts landed. Null without one. */
+export function demoOf(w) {
+  if (!w || !w.demo) return null;
+  const seen = Object.values(w.demo.seen || {});
+  return { on: w.demo.on || "", shown: seen.filter((x) => x.a !== "skipped").length, landed: seen.filter((x) => x.a === "landed").length,
+    missed: seen.filter((x) => x.a === "missed").length, questions: seen.filter((x) => x.a === "questions").length };
+}
+
 export function risksOf({ w, p, res, pr, stage, overdue, today }) {
   const out = [];
   const add = (level, text) => out.push({ level, text });
+  // parts of the demo that did not land, before a proof is planned: a proof built on them would test the wrong thing
+  const dm = demoOf(w);
+  if (dm && dm.missed && !p) add("watch", `${dm.missed} part${dm.missed === 1 ? "" : "s"} of the demo did not land: ask what they expected before planning a proof.`);
   const later = stage === "proof" || stage === "decision";
   if (overdue) add("high", `${overdue} agreed condition${overdue === 1 ? " is" : "s are"} late: agree a new date with its owner, or say why it slipped.`);
   if (p) {
@@ -164,7 +175,7 @@ export function pipeline(workshops, povs, catalog, today) {
       inventory: w && w.inventory ? { vms: w.inventory.vms, clusters: w.inventory.clusters.length } : null,
       pov_verdict: pr ? pr.verdict : "", pov_met: pr ? pr.met : 0, pov_total: pr ? pr.total : 0,
       pov_end: p ? p.end || "" : "", pov_days_left: p && p.end ? days(today, p.end) : null,
-      overdue: overdue.length, next, example: isExampleId(w && w.id) || isExampleId(p && p.id),
+      overdue: overdue.length, next, example: isExampleId(w && w.id) || isExampleId(p && p.id), demo: demoOf(w),
       risks: stopped ? [] : risksOf({ w, p, res, pr, stage, overdue: overdue.length, today }),
       evidence: evidenceOf({ w, p, res, plan, pr, overdue: overdue.length }),
     });
@@ -242,6 +253,7 @@ export function weeklyMarkdown(opps, items, today) {
     out.push(`## ${s.label}`, "");
     for (const o of list) {
       const bits = [o.land ? `start with ${o.land.toLowerCase()}` : "", o.stakes.length ? `at stake ${o.stakes.join(", ")}` : "",
+        o.demo && (o.demo.on || o.demo.shown) ? `demo ${o.demo.on ? `given ${o.demo.on}` : "run"}${o.demo.shown ? `, ${o.demo.landed} of ${o.demo.shown} parts landed${o.demo.missed ? `, ${o.demo.missed} did not` : ""}` : ""}` : "",
         o.pov_total ? `proof ${o.pov_met} of ${o.pov_total} criteria met` : "", o.unknowns ? `${o.unknowns} question${o.unknowns === 1 ? "" : "s"} nobody could answer` : "",
         o.evidence ? `evidence of a technical win ${o.evidence.score}/100` : "", o.partner ? `with ${o.partner}` : "", o.qualified ? o.qualified.toLowerCase() : ""].filter(Boolean);
       out.push(`- **${o.customer}**${bits.length ? `: ${bits.join("; ")}` : ""}. Next: ${o.next || "nothing planned"}.`);

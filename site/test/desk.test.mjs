@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { pipeline, funnel, agenda, weeklyMarkdown, pipelineCsv, STAGES } from "../desk.js";
-import { makeWorkshop, setAnswer, setPlan, setWorth } from "../workshop.js";
+import { makeWorkshop, setAnswer, setPlan, setWorth, exampleWorkshop, setDemo, setDemoSeen } from "../workshop.js";
 import { makePov, setWindow, edit as editPov } from "../pov.js";
 
 const CAT = JSON.parse(readFileSync(new URL("./workshop-catalog.json", import.meta.url), "utf-8"));
@@ -220,4 +220,21 @@ test("what the deals teach includes the qualification the deals not won left ope
   assert.match(md, /## What the deals not won had not established\n\n- /);
   assert.match(md, /Through a reseller: 1 won of 1/);
   assert.match(md, /Led by a systems integrator: 1 won of 1/);
+});
+
+test("the desk knows how the demo went: in the Monday note, and as a risk while parts did not land and no proof is planned", () => {
+  let w = exampleWorkshop(D);
+  w = setDemoSeen(w, "dr-backup#2", "landed", "", D);
+  w = setDemoSeen(w, "dr-backup#4", "missed", "We have that", D);
+  w = setDemoSeen(w, "dr-backup#6", "skipped", "", D);
+  w = setDemo(w, D, D);
+  const [o] = pipeline([w], [], CAT, D);
+  assert.deepEqual(o.demo, { on: D, shown: 2, landed: 1, missed: 1, questions: 0 });
+  assert.ok(o.risks.some((r) => r.level === "watch" && /^1 part of the demo did not land/.test(r.text)), JSON.stringify(o.risks));
+  assert.match(weeklyMarkdown([o], [], D), new RegExp(`demo given ${D}, 1 of 2 parts landed, 1 did not`));
+  assert.doesNotMatch(weeklyMarkdown([o], [], D), /We have that/, "what was said stays out of the note");
+  const pov = makePov({ customer: w.customer, createdOn: D, nonce: "abcdef" });
+  const [withProof] = pipeline([w], [pov], CAT, D);
+  assert.ok(!withProof.risks.some((r) => /did not land/.test(r.text)), "once a proof is planned, the proof carries it");
+  assert.equal(pipeline([exampleWorkshop(D)], [], CAT, D)[0].demo, null);
 });

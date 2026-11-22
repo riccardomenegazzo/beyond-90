@@ -2,6 +2,11 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.182.0
+
+- **The desk knows how the demo went.** The Monday note says, for each prospect, when the demo was given and how many of the parts shown landed ("demo given 2026-11-18, 3 of 4 parts landed, 1 did not"); never what was said. While parts did not land and no proof of value is planned, the desk lists it among what could stop the deal: ask what they expected before planning a proof.
+- New: `demoOf` in `desk.js`, with a test.
+
 ## 0.181.0
 
 - **The presales guide follows the new meetings.** Its path through one prospect now names the rehearsal of the objections, the demo (timed, with who should be there, its agenda and invitation, run card by card, and what landed going into the proof), and the readout of the proof of value with its agenda and its cards. The app guide says the phone's cards serve the demo, the readout and the rehearsal too.
