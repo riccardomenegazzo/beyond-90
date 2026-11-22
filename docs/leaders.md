@@ -9,7 +9,7 @@ What a presales team gets from Beyond 90, and what its leader sees, without a ne
 ![Prepare: the message for each audience, who to bring, and the objections with the question to ask first](img/app-prepare.png)
 
 **Every deal carries its numbers, with the arithmetic shown:**
-- from a VM inventory read in the page: a sizing sketch with the rules of distributed storage, and a plan in waves with dates;
+- from a VM inventory read in the page: a sizing sketch with the rules of distributed storage, the physical cores a per-core licence would count against today's, and another server model side by side; a plan in waves with dates, the data each wave copies ahead and the day each copy has to start;
 - a GPU sketch for AI on the customer's own infrastructure;
 - a recovery design per tier;
 - a backup capacity sketch;
@@ -63,7 +63,7 @@ A registration about to lapse is a risk on the desk, next to a proof without a s
 1. Open **[the presales desk at work](https://riccardomenegazzo.github.io/beyond-90/?start=presales)**. On a first visit it opens with invented prospects at every stage, two of them already decided. A browser that already holds real work only opens the desk, adding nothing to it.
 2. Read **What could stop a deal** and **What the deals teach**.
 3. Under **Your team**, press **Try it with two invented engineers**.
-4. Open Kestrel Logistics. Go through **Prepare**, **Qualify the deal** and **The way forward** (the demo planned from what the customer said), then the inventory, sizing sketch, plan in waves and recovery design under **Questions**, then **Case for change**.
+4. Open Kestrel Logistics. Go through **Prepare**, **Qualify the deal** and **The way forward** (the demo planned from what the customer said), then the inventory, sizing sketch, plan in waves and recovery design under **Questions**, then **Case for change**. [The worked case](case-kestrel.md) tells the same prospect in prose, with the numbers.
 5. Finish with **Handover to delivery** and the **Customer readout**.
 
 ## What it is not

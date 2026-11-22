@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.247.0
+
+- The README and the guide for presales leaders now say what the sizing sketch and the plan in waves do since 0.227: the physical cores a per-core licence would count, against today's hosts, another server model side by side, the data each wave copies ahead and the day each copy has to start, and all of a sketch's figures heard in one sentence going in with one tap. The leaders' five-minute tour points to the worked case.
+
 ## 0.246.0
 
 - **A tier's recovery point, recovery time and share of the data, said in the meeting, go into the recovery design.** When a tier is named ("Tier 1: zero data loss, back up within 15 minutes", "tier 2 is 30% of the data, RPO 15 minutes, RTO 4 hours; tier 3 RPO 1 day", "livello 2: RPO 15 minuti, ripartenza entro 2 ore"), each figure is offered for that tier of the recovery design, in minutes; **Use all** puts a whole tier in with one tap. A recovery point said without a tier is not placed: which applications it belongs to is the question to ask.
