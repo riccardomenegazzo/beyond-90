@@ -214,6 +214,8 @@ beyond90 explain acme --store history.db   # what changed since the last stored 
 
 [The first 90 days with a new customer](docs/first-90-days.md) is a plan you can put in front of a customer, and [Showing Beyond 90 in five minutes](docs/demo-5-minutes.md) is a short script for explaining it out loud. [A worked case](docs/case-northwind.md) follows one customer from "we are at 92%" to a plan.
 
+For presales, [a second worked case](docs/case-kestrel.md) follows an invented prospect leaving its virtualisation platform: the inventory export, a first sizing with the cores a licence would count, another server model, the plan in waves with the data each wave copies over their link, the recovery design, the readout and the proof of value.
+
 ## Honest limits
 
 - The plan is a model. It rests on the effort figures in `playbooks.json`, the ramp assumptions in `simulate.py` and the realization rate; change them to match how you work.
@@ -231,6 +233,7 @@ beyond90 explain acme --store history.db   # what changed since the last stored 
 - [docs/guide.md](docs/guide.md): how it fits into a TAM's month
 - [docs/leaders.md](docs/leaders.md): for presales leaders: what the team gets, the team view, what the deals teach, a five-minute tour
 - [docs/presales.md](docs/presales.md): the presales desk and the path from discovery to handover
+- [docs/case-kestrel.md](docs/case-kestrel.md): a worked case for presales: a platform move, from the inventory export to the proof of value
 - [docs/partners.md](docs/partners.md): working with partners: who leads, the deal registration, who does what, a brief and a discovery kit for them, the partner review
 - [docs/meeting.md](docs/meeting.md): running the meetings (discovery, the demo, the readout), before, during and after
 - [docs/workshop.md](docs/workshop.md): the discovery workshop, its sketches, the case for change and the handover

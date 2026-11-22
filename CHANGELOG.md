@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.242.0
+
+- **A worked case for presales.** [docs/case-kestrel.md](docs/case-kestrel.md) follows the invented prospect Kestrel Logistics through a platform move, with the numbers the page works out from its invented inventory: the note sent ahead, the export read in the page, a first sizing (13 servers decided by compute, 832 physical cores, 224 fewer than today's hosts), another server model (7 larger servers, but 896 cores), the plan in waves (89.8 TiB copied ahead, the largest wave in about 29 hours over 1,000 Mbit/s), the recovery design (about 551 Mbit/s between the sites), the readout and the tests of the proof of value. The README points to it beside the first worked case.
+
 ## 0.241.0
 
 - **Today's cores, said in the meeting, go into the sizing sketch.** "Today our hosts have 32 cores each", "the current hosts are 2 x 16 cores", "gli host attuali hanno 24 core" are offered under Heard something as the cores in each host today; said without "today" or "current", the same figure is the new servers' cores. "Two sockets of 24 cores" counts 48.
