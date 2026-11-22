@@ -759,7 +759,23 @@ export function sizingFigures(said, scope, current = {}) {
     const v = Math.round(Number(mem[1].replace(",", ".")) * (/^t/.test(mem[2]) ? 1024 : 1));
     if (v >= 32 && v <= 16384) push("node_mem_gib", v, "GiB of memory per server", "memory per server");
   }
-  const copies = t.match(/\b(two|three|2|3|due|tre)\s+(?:copies|copie|replicas|repliche)\b|\b(?:rf|replication factor(?: of)?|fattore di replica)\s?([23])\b/);
+  // the data reduction counted: said of the platform, not of backups or file shares, which have sketches of their own
+  const reduce = /\b(?:backups?|back(?:ed)? up|backing up|copie di sicurezza|files?|shares?|nas)\b/.test(t) ? null
+    : t.match(/\b(\d+(?:[.,]\d+)?)\s?(?::|to|x)\s?1\b(?=[^.;]*\b(?:compress\w*|dedup\w*|reduction|riduzione)\b)|\b(?:compress\w*|dedup\w*|reduction|riduzione)\b[^.;]*?\b(\d+(?:[.,]\d+)?)\s?(?::|to|x)\s?1\b/);
+  if (reduce) {
+    const v = Number((reduce[1] || reduce[2]).replace(",", "."));
+    if (v >= 1 && v <= 5) push("reduction", v, "to 1 data reduction counted", "data reduction counted");
+  }
+  // erasure coding on the cold data: "4+2" or double parity is two parity strips, "4+1" or single parity one
+  const ec = t.match(/\b(?:erasure cod\w*|codifica di cancellazione)\b|\bec\s?[2-8]\s?\+\s?[12]\b|\b[2-8]\s?\+\s?[12]\b(?=[^.;]*\b(?:parity|parita|erasure)\b)/);
+  if (ec) {
+    const n = t.match(/\b[2-8]\s?\+\s?([12])\b/);
+    const parity = n ? Number(n[1]) : /\b(?:double|two|dual|doppia|due)\s+(?:parity|parita)\b/.test(t) ? 2 : 1;
+    const key = `ec${parity}`;
+    push("protection", parity, `parity strip${parity === 1 ? "" : "s"}: erasure coding on the cold data`, "protection by erasure coding",
+      { apply: (b) => ({ ...b, protection: key }), has: (b) => !!(b && b.protection === key) });
+  }
+  const copies = ec ? null : t.match(/\b(two|three|2|3|due|tre)\s+(?:copies|copie|replicas|repliche)\b|\b(?:rf|replication factor(?: of)?|fattore di replica)\s?([23])\b/);
   if (copies) {
     const n = small(copies[1] || copies[2]);
     const key = `copies${n}`;

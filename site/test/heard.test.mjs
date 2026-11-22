@@ -714,6 +714,15 @@ test("what is said about the servers is offered for the sizing sketch once an in
   assert.deepEqual(got("the current hosts are 2 x 16 cores"), ["today_cores_per_host=32"]);
   assert.deepEqual(got("new servers with two sockets of 24 cores"), ["node_cores=48"]);
   assert.deepEqual(got("gli host attuali hanno 24 core"), ["today_cores_per_host=24"]);
+  // the data reduction and erasure coding the platform would count
+  assert.deepEqual(got("they see about 2:1 compression on the current arrays"), ["reduction=2"]);
+  assert.deepEqual(got("data reduction is 1.5 to 1"), ["reduction=1.5"]);
+  assert.deepEqual(got("we back up with 3:1 deduplication"), [], "the backups' reduction is the backup sketch's");
+  assert.deepEqual(got("erasure coding 4+2 on the cold data"), ["protection=2"]);
+  assert.deepEqual(got("single parity erasure coding is fine"), ["protection=1"]);
+  const ec = sizingFigures("erasure coding 4+2", ["hci"], inv)[0];
+  assert.deepEqual(ec.apply({}), { protection: "ec2" });
+  assert.equal(ec.what, "parity strips: erasure coding on the cold data");
   const copies = sizingFigures("three copies of the data", ["hci"], inv)[0];
   assert.deepEqual(copies.apply({ growth_pct: 10 }), { growth_pct: 10, protection: "copies3" });
   assert.equal(copies.has({ protection: "copies3" }), true);

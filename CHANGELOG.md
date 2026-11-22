@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.244.0
+
+- **Data reduction and erasure coding, said in the meeting, go into the sizing sketch.** "About 2:1 compression on the current arrays" or "data reduction is 1.5 to 1" is offered as the data reduction counted; "erasure coding 4+2 on the cold data" (or double parity) as erasure coding with two parity strips, "4+1" or single parity with one. A reduction said about backups or file shares is left to their own sketches.
+
 ## 0.243.0
 
 - **Each wave says when its copy has to start.** A new column, **Start the copy**, gives the day the copy ahead of each wave must begin: the days the copy takes over the link, rounded up, and one more to check it before the cutover. **Add the waves to a calendar** now puts that day in too, one event per wave and one for the start of its copy, with the TiB and the copy time; the meeting summary's table carries the column.
