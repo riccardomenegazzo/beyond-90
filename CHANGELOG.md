@@ -2,6 +2,11 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.185.0
+
+- **A demo noted again and again never refuses a card.** A demo's plan changes as answers come in, so reactions to parts no longer in it pile up; past sixteen, the next card used to be refused in the middle of the demo. The oldest reaction now gives way instead, and the card in hand is always kept.
+- A test for it.
+
 ## 0.184.0
 
 - **The cards say their keys on a computer.** With a mouse and a keyboard, the line under every deck (the questions, the qualification, the demo, the readout, the rehearsal) now reads its keys, "Keys: → solved, ↑ partly, ← a real gap, ↓ nobody knows; or 1 to 4", instead of asking for a swipe; on a phone it still says to swipe or tap.

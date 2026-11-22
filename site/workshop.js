@@ -488,7 +488,8 @@ export function setDemoSeen(w, key, a, note, today) {
   const seen = { ...((w.demo && w.demo.seen) || {}) };
   if (!a) delete seen[key];
   else {
-    if (!seen[key] && Object.keys(seen).length >= MAX_SEEN) throw new Error(`At most ${MAX_SEEN} parts of a demo are noted.`);
+    // a plan changes as answers come in, so reactions to parts no longer in it pile up: the oldest gives way, never the card in hand
+    if (!seen[key] && Object.keys(seen).length >= MAX_SEEN) delete seen[Object.keys(seen)[0]];
     seen[key] = { a, note: text(note, 300) };
   }
   const on = w.demo && w.demo.on;

@@ -168,3 +168,17 @@ test("against the meeting clock, each card says whether the demo is on time, beh
   assert.match(demoPace(time, cards, cards.length, 41 * 60).line, /^Time to close/);
   assert.equal(demoPace(time, cards, cards.length, 20 * 60).line, "");
 });
+
+test("noted again and again, a demo never refuses a card: the oldest reaction gives way", () => {
+  let w = exampleWorkshop(D);
+  for (let i = 0; i < 16; i++) w = setDemoSeen(w, `dr-backup#${i}`, "landed", "", D);
+  assert.equal(Object.keys(w.demo.seen).length, 16);
+  w = setDemoSeen(w, "c:hci#2", "questions", "Which arrays?", D);
+  assert.equal(Object.keys(w.demo.seen).length, 16);
+  assert.equal(w.demo.seen["dr-backup#0"], undefined, "the oldest went");
+  assert.deepEqual(w.demo.seen["c:hci#2"], { a: "questions", note: "Which arrays?" });
+  assert.ok(validWorkshop(w));
+  w = setDemoSeen(w, "dr-backup#5", "missed", "", D);
+  assert.equal(w.demo.seen["dr-backup#5"].a, "missed", "changing one already noted drops nothing");
+  assert.equal(Object.keys(w.demo.seen).length, 16);
+});
