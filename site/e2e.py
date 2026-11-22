@@ -2222,6 +2222,9 @@ def main(site: str) -> int:
           [t.scrollWidth <= t.parentElement.clientWidth + 1, getComputedStyle(t.querySelector('tbody td'), '::before').content.replaceAll('"', '')]]))""")
         check(fit == {"invtable": [True, "Cluster"], "wvtable": [True, "Date"], "drtable": [True, "Tier"]},
               f"on a phone the inventory's clusters, the waves and the recovery tiers read as one card a row, each value beside its column's name: {fit}")
+        roles = mp.evaluate("""(() => { const t = document.querySelector('#view .drtable');
+          return [t.getAttribute('role'), t.tBodies[0].getAttribute('role'), t.rows[1].getAttribute('role'), t.rows[1].cells[0].getAttribute('role'), t.tHead.rows[0].cells[0].getAttribute('role')]; })()""")
+        check(roles == ["table", "rowgroup", "row", "cell", "columnheader"], f"and a screen reader still reads them as tables: rows, cells and the column of each value: {roles}")
         mctx.close()
 
         # accessibility: axe-core, when its path is given (the Pages workflow installs it); both colour schemes

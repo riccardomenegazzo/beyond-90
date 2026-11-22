@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.234.0
+
+- **Tables shown as cards on a phone keep being read as tables.** A table restyled as one card a row (the account tables, and since 0.226 the recovery tiers, the edge sites, the clusters, the waves, the partners and the team) can lose its table semantics in some browsers, and a screen reader then reads loose text. Their roles are now written out (table, row groups, rows, cells, column and row headers), so each value is still read with the column it belongs to.
+
 ## 0.233.0
 
 - **The inventory's largest clusters show the data on each.** Beside machines, running, vCPU and memory, the clusters table now has the data on each cluster (used, or provisioned when the export has no used column): what the plan in waves copies ahead, cluster by cluster. A summary read before 0.227 keeps its table as it was.

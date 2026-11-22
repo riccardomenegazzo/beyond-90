@@ -25,6 +25,21 @@ export function stack(table) {
   const names = [...table.querySelectorAll("thead th")].map((th) => th.textContent);
   for (const tr of table.querySelectorAll("tbody tr")) [...tr.children].forEach((c, i) => { if (names[i] && !c.hasAttribute("data-label")) c.setAttribute("data-label", names[i]); });
   table.classList.add("stack");
+  return tableRoles(table);
+}
+
+/**
+ * Explicit roles on a table and its parts. A table restyled as cards (display: block) loses its table semantics in
+ * some browsers, and a screen reader then reads loose text; with the roles written out it still reads rows, cells and
+ * the column each value belongs to.
+ */
+export function tableRoles(table) {
+  table.setAttribute("role", "table");
+  for (const g of table.querySelectorAll(":scope > thead, :scope > tbody")) g.setAttribute("role", "rowgroup");
+  for (const tr of table.querySelectorAll(":scope > thead > tr, :scope > tbody > tr")) {
+    tr.setAttribute("role", "row");
+    for (const c of tr.children) c.setAttribute("role", c.tagName === "TD" ? "cell" : c.getAttribute("scope") === "row" ? "rowheader" : "columnheader");
+  }
   return table;
 }
 
@@ -146,6 +161,7 @@ export function dataTable({ columns, rows, pageSize = 50, empty = "Nothing match
     }
     if (!all.length) body.append(h("tr", {}, h("td", { colspan: columns.length + (expand ? 1 : 0), class: "emptycell", text: empty })));
     table.replaceChildren(h("thead", {}, head), body);
+    tableRoles(table);
     info.textContent = `${Math.min(shown, all.length)} of ${all.length}${all.length !== rows.length ? ` (filtered from ${rows.length})` : ""}`;
     more.hidden = shown >= all.length;
   }
