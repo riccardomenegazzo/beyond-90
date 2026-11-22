@@ -103,7 +103,11 @@ export function planWaves(inv, given, today) {
   }
   if (!waves.length) return { ok: false, error: "No machines to move with these settings: include the powered-off ones, or read another export." };
   if (waves.length > MAX_WAVES) return { ok: false, error: `That makes more than ${MAX_WAVES} waves: allow more machines per wave.` };
-  waves.forEach((wv, i) => { wv.n = i + 1; wv.date = addDays(start, i * a.every_days); wv.copy_h = wv.tib == null ? null : copyHours(wv.tib, a.link_mbps); });
+  waves.forEach((wv, i) => {
+    wv.n = i + 1; wv.date = addDays(start, i * a.every_days); wv.copy_h = wv.tib == null ? null : copyHours(wv.tib, a.link_mbps);
+    // when the copy has to start: the days it takes, rounded up, and one more to check it before the cutover
+    wv.copy_from = wv.copy_h == null ? null : addDays(wv.date, -(Math.ceil(wv.copy_h / 24) + 1));
+  });
   const known = waves.filter((wv) => wv.tib != null);
   const moved = waves.reduce((n, wv) => n + wv.machines, 0);
   const end = waves[waves.length - 1].date;
@@ -146,10 +150,10 @@ const waveName = (wv) => (wv.test ? "Test wave" : `Wave ${wv.n}`);
 export function wavesMarkdown(p) {
   const d = p.has_data;
   const out = ["### A plan in waves", "", wavesLine(p), ...(d ? ["", copyLine(p)] : []), "",
-    `| Date | Wave | Cluster | Machines | vCPU | Memory GiB | Past support |${d ? " Data TiB | Copy ahead |" : ""}`, `|---|---|---|---|---|---|---|${d ? "---|---|" : ""}`];
+    `| Date | Wave | Cluster | Machines | vCPU | Memory GiB | Past support |${d ? " Data TiB | Copy ahead | Start the copy |" : ""}`, `|---|---|---|---|---|---|---|${d ? "---|---|---|" : ""}`];
   for (const wv of p.waves) {
     out.push(`| ${wv.date} | ${waveName(wv)} | ${wv.cluster.replace(/\|/g, "/")} | ${fmt(wv.machines)} | ${fmt(wv.vcpu)} | ${fmt(wv.mem_gib)} | ${fmt(wv.past)} |`
-      + (d ? ` ${wv.tib == null ? "—" : fmt(wv.tib)} | ${copyTime(wv.copy_h)} |` : ""));
+      + (d ? ` ${wv.tib == null ? "—" : fmt(wv.tib)} | ${copyTime(wv.copy_h)} | ${wv.copy_from || "—"} |` : ""));
   }
   out.push("", "Every wave: " + RUNBOOK.map((r) => `${r.when.toLowerCase()}, ${r.steps.map((x) => x.charAt(0).toLowerCase() + x.slice(1)).join("; ")}`).join(". ") + ".");
   return out.join("\n");
@@ -157,9 +161,14 @@ export function wavesMarkdown(p) {
 
 /** One all-day event per wave, for any calendar. */
 export function wavesIcs(w, p, stamp) {
-  return calendar("Migration waves", p.waves.map((wv) => ({
-    uid: `${w.id.replace(/\|/g, "-")}-wave-${wv.n}`, date: wv.date,
-    summary: `${w.customer}: ${waveName(wv)}, ${wv.machines} machines from ${wv.cluster}`,
-    description: `${wv.tib != null ? `Copy ahead: ${fmt(wv.tib)} TiB, ${copyTime(wv.copy_h)} before the day. ` : ""}${wv.past ? `${wv.past} on operating systems past support: check tools and agents first. ` : ""}${RUNBOOK.map((r) => `${r.when}: ${r.steps.join("; ")}.`).join(" ")}`,
-  })), stamp);
+  const uid = (wv, kind) => `${w.id.replace(/\|/g, "-")}-wave-${wv.n}${kind}`;
+  return calendar("Migration waves", p.waves.flatMap((wv) => [
+    // the copy ahead first: the day it has to start, so the cutover moves only the last changes
+    ...(wv.copy_from ? [{ uid: uid(wv, "-copy"), date: wv.copy_from,
+      summary: `${w.customer}: start the copy for ${waveName(wv).toLowerCase()}, ${fmt(wv.tib)} TiB from ${wv.cluster}`,
+      description: `${copyTime(wv.copy_h)} at ${fmt(p.assumptions.link_mbps)} Mbit/s, counting on ${Math.round(LINK_USABLE * 100)}% of the link; one day kept to check it before the cutover on ${wv.date}.` }] : []),
+    { uid: uid(wv, ""), date: wv.date,
+      summary: `${w.customer}: ${waveName(wv)}, ${wv.machines} machines from ${wv.cluster}`,
+      description: `${wv.tib != null ? `Copy ahead: ${fmt(wv.tib)} TiB, ${copyTime(wv.copy_h)} before the day, started by ${wv.copy_from}. ` : ""}${wv.past ? `${wv.past} on operating systems past support: check tools and agents first. ` : ""}${RUNBOOK.map((r) => `${r.when}: ${r.steps.join("; ")}.`).join(" ")}` },
+  ]), stamp);
 }

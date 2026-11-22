@@ -1609,7 +1609,8 @@ def main(site: str) -> int:
         with page.expect_download() as dl:
             page.get_by_role("button", name="Add the waves to a calendar (.ics)").click()
         ics = Path(dl.value.path()).read_text(encoding="utf-8")
-        check(ics.count("BEGIN:VEVENT") == page.locator("#view .wvtable tbody tr").count() and "Test wave" in ics, "and goes to a calendar, one event per wave")
+        check(ics.count("BEGIN:VEVENT") == 2 * page.locator("#view .wvtable tbody tr").count() and "Test wave" in ics and "start the copy for test wave" in ics,
+              "and goes to a calendar, one event per wave and one for the day its copy has to start")
         dr = page.locator("#view .drtable tbody tr")
         check(dr.count() == 3 and "Synchronous replication" in dr.first.inner_text() and "Mbit/s between the sites" in page.inner_text("#view"),
               "with disaster recovery in scope, a first recovery design: replication by tier and the bandwidth it needs, from the inventory")

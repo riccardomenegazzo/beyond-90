@@ -102,7 +102,13 @@ test("each wave says the data it copies ahead, and how long the copy takes over 
   // where they go: the summary, the calendar
   assert.match(wavesMarkdown(p), /\| Data TiB \| Copy ahead \|/);
   assert.match(wavesMarkdown(p), /\| 2027-01-11 \| Test wave \| CL-TEST \| 20 \| .* \| 2 \| about 7 hours \|/);
-  assert.ok(wavesIcs({ id: "ws|2026-11-18|abcdef", customer: "Kestrel" }, p, "20261118T000000Z").replace(/\r\n /g, "").includes("Copy ahead: 2 TiB\\, about 7 hours before the day."));
+  const ics = wavesIcs({ id: "ws|2026-11-18|abcdef", customer: "Kestrel" }, p, "20261118T000000Z").replace(/\r\n /g, "");
+  assert.ok(ics.includes("Copy ahead: 2 TiB\\, about 7 hours before the day\\, started by 2027-01-09."));
+  // the copy has to start the days it takes before the wave, and one more to check it
+  assert.equal(p.waves[0].copy_from, "2027-01-09", "7 hours: one day to copy, one to check, before 2027-01-11");
+  assert.equal((ics.match(/BEGIN:VEVENT/g) || []).length, p.waves.length * 2, "a start of the copy beside each wave");
+  assert.ok(ics.includes("SUMMARY:Kestrel: start the copy for test wave\\, 2 TiB from CL-TEST"));
+  assert.match(wavesMarkdown(p), /\| Start the copy \|/);
   // moving the powered-off machines too copies their data as well
   assert.ok(planWaves(data, { start: "2027-01-11", include_off: true }, "2026-11-18").data_tib > p.data_tib);
   // the link is a setting like the others, kept in range
@@ -115,6 +121,7 @@ test("an inventory read before the data per cluster was kept plans as before, wi
   const p = planWaves(INV, { start: "2027-01-11" }, "2026-11-18");
   assert.equal(p.has_data, false);
   assert.equal(copyLine(p), "");
-  assert.ok(p.waves.every((wv) => wv.tib === null && wv.copy_h === null));
+  assert.ok(p.waves.every((wv) => wv.tib === null && wv.copy_h === null && wv.copy_from === null));
+  assert.equal((wavesIcs({ id: "ws|2026-11-18|abcdef", customer: "Kestrel" }, p, "20261118T000000Z").match(/BEGIN:VEVENT/g) || []).length, p.waves.length, "without the data, one event per wave as before");
   assert.doesNotMatch(wavesMarkdown(p), /Copy ahead/);
 });

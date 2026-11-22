@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.243.0
+
+- **Each wave says when its copy has to start.** A new column, **Start the copy**, gives the day the copy ahead of each wave must begin: the days the copy takes over the link, rounded up, and one more to check it before the cutover. **Add the waves to a calendar** now puts that day in too, one event per wave and one for the start of its copy, with the TiB and the copy time; the meeting summary's table carries the column.
+
 ## 0.242.0
 
 - **A worked case for presales.** [docs/case-kestrel.md](docs/case-kestrel.md) follows the invented prospect Kestrel Logistics through a platform move, with the numbers the page works out from its invented inventory: the note sent ahead, the export read in the page, a first sizing (13 servers decided by compute, 832 physical cores, 224 fewer than today's hosts), another server model (7 larger servers, but 896 cores), the plan in waves (89.8 TiB copied ahead, the largest wave in about 29 hours over 1,000 Mbit/s), the recovery design (about 551 Mbit/s between the sites), the readout and the tests of the proof of value. The README points to it beside the first worked case.

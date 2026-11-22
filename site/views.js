@@ -2741,12 +2741,13 @@ function wavesCard(w, waves, today) {
       p.has_data ? h("p", { class: p.slow ? "note neg wvcopy" : "note wvcopy", text: WV.copyLine(p) }) : null,
       p.past ? h("p", { class: "note", text: `${INV.fmt(p.past)} machines across the waves run operating systems past general support: check that backup, monitoring and security agents support them before their wave.` }) : null,
       h("div", { class: "tablewrap" }, h("table", { class: "wvtable", stack: true },
-        h("thead", {}, h("tr", {}, ["Date", "Wave", "Cluster", "Machines", "vCPU", "Memory GiB", "Past support", ...(p.has_data ? ["Data", "Copy ahead"] : [])].map((t) => h("th", { scope: "col", text: t })))),
+        h("thead", {}, h("tr", {}, ["Date", "Wave", "Cluster", "Machines", "vCPU", "Memory GiB", "Past support", ...(p.has_data ? ["Data", "Copy ahead", "Start the copy"] : [])].map((t) => h("th", { scope: "col", text: t })))),
         h("tbody", {}, p.waves.map((wv) => h("tr", { class: wv.test ? "wvtest" : "" },
           h("td", { text: wv.date }), h("td", { text: name(wv) }), h("td", { text: wv.cluster }), h("td", { class: "n", text: INV.fmt(wv.machines) }),
           h("td", { class: "n", text: INV.fmt(wv.vcpu) }), h("td", { class: "n", text: INV.fmt(wv.mem_gib) }), h("td", { class: "n", text: INV.fmt(wv.past) }),
           p.has_data ? h("td", { class: "n", text: wv.tib == null ? "—" : `${INV.fmt(wv.tib)} TiB` }) : null,
-          p.has_data ? h("td", { class: wv.copy_h > p.assumptions.every_days * 24 ? "n neg" : "n", text: WV.copyTime(wv.copy_h) }) : null))))));
+          p.has_data ? h("td", { class: wv.copy_h > p.assumptions.every_days * 24 ? "n neg" : "n", text: WV.copyTime(wv.copy_h) }) : null,
+          p.has_data ? h("td", { class: "n", text: wv.copy_from || "—" }) : null))))));
     ics.hidden = false;
   };
   // outside what is redrawn: leaving a changed field redraws the plan, and must not take the button away mid-click

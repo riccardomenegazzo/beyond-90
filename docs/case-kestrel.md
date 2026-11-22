@@ -25,7 +25,7 @@ Two licence questions come up in every such meeting, and the sketch answers both
 
 ## How the move would run
 
-**A plan in waves** proposes a test wave of 20 machines on CL-TEST, then cluster by cluster, the least risky first: 14 waves, a week apart, for the 537 running machines. Each wave says the data it copies ahead of its cutover and how long that takes over their link: 89.8 TiB in all, the largest wave 8.3 TiB, about 29 hours at 1,000 Mbit/s counting on 70% of the link. Over a thin link the plan says when a copy no longer fits between two waves, and what to change: more bandwidth, more days between waves, or smaller waves.
+**A plan in waves** proposes a test wave of 20 machines on CL-TEST, then cluster by cluster, the least risky first: 14 waves, a week apart, for the 537 running machines. Each wave says the data it copies ahead of its cutover and how long that takes over their link: 89.8 TiB in all, the largest wave 8.3 TiB, about 29 hours at 1,000 Mbit/s counting on 70% of the link, so its copy starts three days before its cutover (the calendar export carries that day too). Over a thin link the plan says when a copy no longer fits between two waves, and what to change: more bandwidth, more days between waves, or smaller waves.
 
 "They can move 30 machines a weekend, a wave every two weeks, over a 10 Gbit link between the data centres" goes into the plan from Heard something the same way.
 
