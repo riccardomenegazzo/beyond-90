@@ -180,8 +180,8 @@ export function partnerBrief(catalog, w, res, { today = "", words = false } = {}
 }
 
 /**
- * An enablement kit for a partner's engineers on some lines: the essential questions with how to ask them, the ten
- * qualification questions, the concerns customers raise with how to answer and prove them, what a proof would have
+ * An enablement kit for a partner's engineers on some lines: the essential questions with how to ask them, those to
+ * send ahead of the first meeting, the ten qualification questions, the concerns customers raise with how to answer and prove them, what a proof would have
  * to show and what to have ready on its first day. No customer's data: it can go to any partner.
  */
 export function enablementKit(catalog, profiles) {
@@ -201,6 +201,12 @@ export function enablementKit(catalog, profiles) {
       if (q.probe) out.push(`   - Then ask: ${q.probe}`);
     });
     out.push("");
+    const ahead = displayOrder(line).filter(({ q }) => q.ahead);
+    if (ahead.length) {
+      out.push("### To send ahead of the first meeting", "", "Facts the customer's team can send in writing, so the meeting is spent on what hurts:", "");
+      for (const { q } of ahead) out.push(`- ${q.q}${q.role && ROLE_WORDS[q.role] ? ` (${ROLE_WORDS[q.role].toLowerCase()})` : ""}`);
+      out.push("");
+    }
     const story = line.story || {};
     if ((story.objections || []).length) {
       out.push("### What customers raise, and how to answer", "");

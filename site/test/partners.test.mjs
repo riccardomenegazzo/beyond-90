@@ -94,7 +94,9 @@ test("the enablement kit holds the essential questions, the objections, the proo
     assert.ok(kit.includes(line.proof[0].text));
     assert.ok(kit.includes(`- [ ] ${line.readiness[0]}`));
     assert.ok(kit.includes(line.story.objections[0].says));
+    for (const q of line.questions.filter((x) => x.ahead)) assert.ok(kit.includes(`- ${q.q} (`), q.q);
   }
+  assert.equal((kit.match(/### To send ahead of the first meeting/g) || []).length, 2);
   assert.match(kit, /## Qualify the deal, the same way on every line/);
   assert.equal((kit.match(/^\d+\. (Pain|Event|Metrics|Economic buyer|Decision criteria|Decision process|Paper process|Technical validation|Champion|Competition): /gm) || []).length, 10);
   assert.doesNotMatch(kit, /\(mock\)/);

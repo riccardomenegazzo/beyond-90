@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.203.0
+
+- **The questions to send ahead, wherever the questions go.** The question guide (copied or as .md) marks each of them "(can be sent ahead)", and the discovery kit for partners lists them per line under **To send ahead of the first meeting**, with who would answer each, so a meeting run by a partner starts from the same facts.
+
 ## 0.202.0
 
 - **The sketches can go in the customer readout.** Under Sketches from their numbers, a tick adds **First orders of magnitude** to the customer readout: one line for each sketch worked out with the customer's figures, on a line in scope, in their terms (your platform, AI, recovery, backups, shops and plants, virtual desktops, the container platform, databases, file shares), with what it is and is not: the order of magnitude, not a quote and not a final sizing. A sketch left at its defaults was not discussed and stays out; nothing is shown until the tick is set.

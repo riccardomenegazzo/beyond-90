@@ -810,7 +810,7 @@ export function questionGuide(catalog, w, filter = {}) {
     for (const { q, index } of qs) {
       const ans = w.answers[`${p}#${index}`];
       n++;
-      out.push(`${n}. ${q.q}${q.core ? " (essential)" : ""}${ans ? ` [answered: ${ANSWER_SHORT[ans.a]}]` : ""}`);
+      out.push(`${n}. ${q.q}${q.core ? " (essential)" : ""}${q.ahead ? " (can be sent ahead)" : ""}${ans ? ` [answered: ${ANSWER_SHORT[ans.a]}]` : ""}`);
       if (q.role) out.push(`   - Ask: ${ROLE_WORDS[q.role].toLowerCase()}`);
       if (q.why) out.push(`   - Why it matters: ${q.why}`);
       if (q.listen) out.push(`   - Listen for: ${q.listen}`);

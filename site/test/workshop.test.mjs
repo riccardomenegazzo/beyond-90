@@ -469,6 +469,10 @@ test("the questions come in the order of a conversation, can be narrowed to a me
   assert.match(g, /Listen for: /);
   assert.match(g, /Then ask: .+\?/);
   assert.equal((g.match(/^\d+\. /gm) || []).length, core.length);
+  // the questions the customer's team can answer in writing say so
+  const all = questionGuide(CAT, w);
+  for (const q of line.questions.filter((x) => x.ahead)) assert.ok(all.includes(`${q.q}${q.core ? " (essential)" : ""} (can be sent ahead)`), q.q);
+  assert.equal((all.match(/\(can be sent ahead\)/g) || []).length, line.questions.filter((x) => x.ahead).length);
   const none = questionGuide(CAT, w, { core: true, roles: ["nobody", "finance"] });
   assert.ok(Object.keys(ROLE_WORDS).includes("finance"));
   assert.match(none, /for finance/);

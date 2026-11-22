@@ -60,7 +60,7 @@ Open a question, then **How to ask it**, to see the last two. Above the lines, *
 - **Not answered yet** shows only what is left to ask;
 - **Who is in the room** shows only the questions for the people there: a session with the database team gets the database questions, and the security review gets the security ones.
 
-**Copy the questions to send ahead**, under the lines in scope, gives a short note for the customer before the meeting: the few factual questions of each line their team can answer in writing (how many clusters, how old the servers, how much data changes a day, which backup software), not answered yet, grouped by who would answer them. The meeting is then spent on what hurts and what it is worth. No answer or note is in it.
+**Copy the questions to send ahead**, under the lines in scope, gives a short note for the customer before the meeting: the few factual questions of each line their team can answer in writing (how many clusters, how old the servers, how much data changes a day, which backup software), not answered yet, grouped by who would answer them. The meeting is then spent on what hurts and what it is worth. No answer or note is in it. The question guide marks them "(can be sent ahead)", and the partners' discovery kit lists them per line, so a partner can send them too.
 
 **Copy the question guide** or **Question guide (.md)** gives the narrowed list with who to ask, why, what to listen for and what to ask next, for the meeting or for a colleague who will run it. The questions already answered say so. **The next meeting** lists the essential questions not asked yet, and the roles that can answer what is still open.
 
