@@ -1,0 +1,40 @@
+{
+  "audiences": {
+    "executive": "Know which cloud risks could reach the business, who owns each one, and that the tool bought is doing the work it was bought for.",
+    "technical": "Every cloud account connected and seen, the capabilities switched on, each critical finding routed to the team that owns it, and accepted risks that expire.",
+    "financial": "Get the value of the licences already paid for, and spend the team's hours on the few findings that matter, not on every alert."
+  },
+  "people": [
+    "The head of cloud security",
+    "The platform or cloud team that creates accounts",
+    "The application teams that own the findings",
+    "Security operations, for the alerts at run time",
+    "Governance or risk, for accepted risks"
+  ],
+  "objections": [
+    {
+      "says": "We already have a cloud security tool.",
+      "clarify": "How many of your cloud accounts does it see today, and which capabilities are switched on?",
+      "answer": "Owning the tool is the start: count the accounts it really sees and the controls really on, and close that gap first.",
+      "prove": "Compare the accounts on the bill with the accounts the tool sees, and list the capabilities still off."
+    },
+    {
+      "says": "Developers will ignore the findings.",
+      "clarify": "When a critical finding was last raised, how did its owner learn it was theirs?",
+      "answer": "Route each finding to the team that owns the resource, in the tool they already use, with a date to decide by.",
+      "prove": "Route one week of critical findings to their owning teams, and count how many get a decision on time."
+    },
+    {
+      "says": "Agents will slow down our workloads.",
+      "clarify": "Which workloads would you not put an agent on, and what would you watch on them instead?",
+      "answer": "See most of the estate without an agent, and add one only where run-time protection is worth it, measured first.",
+      "prove": "Run the agent on a test group for two weeks, and compare their response times with the group without it."
+    },
+    {
+      "says": "We have thousands of findings already.",
+      "clarify": "Which of them sit on something exposed to the internet and reachable from a weakness?",
+      "answer": "Start from the few risks that combine exposure, a weakness and something worth reaching, not from the whole list.",
+      "prove": "Take the full list, keep only the exposed, reachable and valuable findings, and fix the first ten."
+    }
+  ]
+}

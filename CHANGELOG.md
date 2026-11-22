@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.187.0
+
+- **Cloud security, the first line, is told and challenged too.** Its story: the line for the executive, the technical team and finance, who to have in the room, and four objections ("We already have a cloud security tool", "Developers will ignore the findings", "Agents will slow down our workloads", "We have thousands of findings already"), each with the question to ask first, the answer and the test that settles it. Every line now ships one.
+
 ## 0.186.0
 
 - **The security lines are told and challenged too.** SIEM, identity, endpoint, SaaS and AI security now ship a story like the infrastructure lines: the line in one sentence for the executive, the technical team and finance, who to have in the room, and three or four objections each ("We already collect all our logs", "We already have multi-factor for everyone", "Prevention mode will break our applications", "The vendor is responsible for security in the cloud", "We do not use AI in production yet"), each with the question to ask first, the answer and the test that settles it.

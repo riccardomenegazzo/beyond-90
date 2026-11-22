@@ -30,7 +30,7 @@ def test_the_page_gets_each_story_with_its_line():
     cat = workshop_catalog()
     for p in INFRA:
         assert cat["lines"][p]["story"]["objections"], p
-    assert cat["lines"].get("cnapp", {}).get("story", {}) == {}
+    assert cat["lines"]["cnapp"]["story"]["objections"], "cloud security, the first line, is told too"
 
 
 @pytest.mark.parametrize("bad", [
@@ -62,7 +62,7 @@ def test_infrastructure_profiles_name_no_vendor_or_product(profile):
         assert not found, f"{f.name}: {sorted({x.lower() for x in found})}"
 
 
-SECURITY_TOLD = ["siem", "identity", "endpoint", "saas", "ai"]
+SECURITY_TOLD = ["cnapp", "siem", "identity", "endpoint", "saas", "ai"]
 
 
 @pytest.mark.parametrize("profile", SECURITY_TOLD)
@@ -74,6 +74,6 @@ def test_the_security_lines_are_told_and_challenged_too(profile):
     for o in story["objections"]:
         assert o["clarify"].endswith("?"), o["clarify"]
         assert len(o["prove"]) <= 200 and not o["prove"].endswith("?")
-    text = (PROFILES_DIR / profile / "story.json").read_text(encoding="utf-8")
+    text = ((PROFILES_DIR / profile) if profile != "cnapp" else PROFILES_DIR.parent).joinpath("story.json").read_text(encoding="utf-8")
     assert not NAMES.search(text), NAMES.search(text)
     assert workshop_catalog()["lines"][profile]["story"]["objections"]

@@ -285,6 +285,7 @@ test("the security lines' concerns are recognised as customers say them", () => 
   for (const p of ["siem", "identity", "endpoint", "saas", "ai"]) {
     lines[p] = { label: p, story: JSON.parse(readFileSync(new URL(`../../src/beyond90/data/profiles/${p}/story.json`, import.meta.url), "utf-8")) };
   }
+  lines.cnapp = { label: "cnapp", story: JSON.parse(readFileSync(new URL("../../src/beyond90/data/story.json", import.meta.url), "utf-8")) };
   const cards = concernCards({ lines }, Object.keys(lines));
   for (const [want, said] of [
     ["siem#0", "we collect all our logs already"],
@@ -295,6 +296,9 @@ test("the security lines' concerns are recognised as customers say them", () => 
     ["saas#0", "security in the cloud is the vendor's job"],
     ["ai#0", "we don't use AI in production yet"],
     ["ai#1", "our policy forbids pasting sensitive data into AI tools"],
+    ["cnapp#0", "we already have a cloud security tool"],
+    ["cnapp#1", "the developers just ignore the findings"],
+    ["cnapp#2", "agents slow our workloads down"],
   ]) {
     const got = concernsHeard(cards, said);
     assert.equal(got.length ? got[0].card.key : "", `obj:${want}`, said);
