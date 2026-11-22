@@ -2077,7 +2077,7 @@ function heardPanel({ catalog, get, set, answer, worth, setDeal, raise = null, s
     refreshSketch(f.sketch, next);
     const undo = h("button", { type: "button", class: "linkbtn", text: "Undo", onclick: async () => {
       set(await sketches[f.sketch](before || null));
-      refreshSketch(f.sketch, SKETCH_CLEAN[f.sketch](before || {}));
+      refreshSketch(f.sketch, SKETCH_CLEAN[f.sketch](before || {}), !!before);
       put(heardSay, h("span", { text: `Undone: the ${SKETCH_NAME[f.sketch]} is back as it was.` }));
       drawHeard();
     } });

@@ -479,6 +479,8 @@ Notes that hold whatever the product: keep a few standard designs, ship servers 
 
 ## The sketches in the customer readout
 
+Each sketch says, beside its title, whether it was worked out **With their figures** or is still **At the defaults**: a figure changed in the card or put in from Heard something marks it, **Back to the defaults** takes the mark away.
+
 Under **Sketches from their numbers**, **Show the sketches worked out with their figures in the customer readout** adds a section to the readout, **First orders of magnitude**: one line for each sketch whose figures were changed with the customer, on a line in scope ("Virtual desktops: about 8 hosts for 800 desktops at once, 1 of them kept free, and 35.1 TiB of storage"). It says what it is: the order of magnitude from the figures they gave, not a quote and not a final sizing. A sketch left at its defaults was not discussed, and stays out.
 
 ## A first desktop sizing sketch

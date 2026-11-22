@@ -21,7 +21,7 @@ export const SKETCH_CLEAN = { vdi: (x) => VDI.cleanVdi(x), db: (x) => DBS.cleanD
 export const SKETCH_NAME = { vdi: "desktop sizing sketch", db: "database licence sketch", k8s: "container platform sizing sketch", files: "file storage sketch",
   obj: "backup capacity sketch", dr: "recovery design", gpu: "GPU sketch", case: "case for change", unit: "cost per machine", edge: "edge design" };
 /** A sketch's card on the page, if it is there, shows the settings just changed. */
-export const refreshSketch = (name, settings) => { const el = document.querySelector(`[data-sketch="${name}"]`); if (el) el.dispatchEvent(new CustomEvent("sketch-settings", { detail: settings })); };
+export const refreshSketch = (name, settings, saved = true) => { const el = document.querySelector(`[data-sketch="${name}"]`); if (el) el.dispatchEvent(new CustomEvent("sketch-settings", { detail: { settings, saved } })); };
 
 /** A first capacity sketch for backups on object storage: retention, reduction, protection, growth, the nightly window. */
 export function objCard(w, obj) {
@@ -50,7 +50,7 @@ export function objCard(w, obj) {
     return h("label", { class: "szf" }, h("span", { text: label }), inputs[k]);
   }));
   draw(a);
-  return sketchCard("obj", inputs, draw, card("A first backup capacity sketch", h("div", { class: "sz" }, out, h("details", { class: "szassume" }, h("summary", { text: "The retention and the assumptions, to agree with the customer" }), grid,
+  return sketchCard("obj", inputs, draw, !!w.obj, card("A first backup capacity sketch", h("div", { class: "sz" }, out, h("details", { class: "szassume" }, h("summary", { text: "The retention and the assumptions, to agree with the customer" }), grid,
     h("div", { class: "btnrow" }, h("button", { class: "btn small", type: "button", text: "Back to the defaults", onclick: async () => {
       for (const [k] of fields) inputs[k].value = String(OBJ.OBJ_DEFAULTS[k]);
       draw(OBJ.OBJ_DEFAULTS);
@@ -60,12 +60,22 @@ export function objCard(w, obj) {
 }
 
 /** A sketch's card, named so a figure heard in the meeting can be shown in it: its fields and its result follow. */
-function sketchCard(name, inputs, draw, el, more = () => {}) {
+function sketchCard(name, inputs, draw, saved, el, more = () => {}) {
   el.dataset.sketch = name;
+  // whether it was worked out with their figures, or still shows the defaults: only the first goes in the readout
+  const state = h("span", { class: "chip2 szstate", role: "status" });
+  const mark = (on) => { state.className = `chip2 szstate${on ? " good" : ""}`; state.textContent = on ? "With their figures" : "At the defaults"; };
+  mark(saved);
+  const head = el.querySelector(".cardhead");
+  if (head) head.append(state);
+  el.addEventListener("change", () => mark(true));
+  el.addEventListener("click", (e) => { const b = e.target.closest("button"); if (b && b.textContent === "Back to the defaults") mark(false); });
   el.addEventListener("sketch-settings", (e) => {
-    for (const [k, input] of Object.entries(inputs)) input.value = e.detail[k] === undefined ? "" : String(e.detail[k]);     // a figure taken back leaves its field blank
-    more(e.detail);
-    draw(e.detail);
+    const { settings, saved: now } = e.detail;
+    for (const [k, input] of Object.entries(inputs)) input.value = settings[k] === undefined ? "" : String(settings[k]);     // a figure taken back leaves its field blank
+    more(settings);
+    draw(settings);
+    mark(now);
   });
   return el;
 }
@@ -97,7 +107,7 @@ export function filesCard(w, files) {
     return h("label", { class: "szf" }, h("span", { text: label }), inputs[k]);
   }));
   draw(a);
-  return sketchCard("files", inputs, draw, card("A first file storage sketch", h("div", { class: "sz" }, out, h("details", { class: "szassume" }, h("summary", { text: "The data, its growth, the snapshots and the assumptions, to agree with the customer" }), grid,
+  return sketchCard("files", inputs, draw, !!w.files, card("A first file storage sketch", h("div", { class: "sz" }, out, h("details", { class: "szassume" }, h("summary", { text: "The data, its growth, the snapshots and the assumptions, to agree with the customer" }), grid,
     h("div", { class: "btnrow" }, h("button", { class: "btn small", type: "button", text: "Back to the defaults", onclick: async () => {
       for (const [k] of fields) inputs[k].value = String(FILES.FILE_DEFAULTS[k]);
       draw(FILES.FILE_DEFAULTS);
@@ -135,7 +145,7 @@ export function dbCard(w, db) {
     return h("label", { class: "szf" }, h("span", { text: label }), inputs[k]);
   }));
   draw(a);
-  return sketchCard("db", inputs, draw, card("A first database licence sketch", h("div", { class: "sz" }, out, h("details", { class: "szassume" }, h("summary", { text: "The databases, their busiest hour and the hosts, to agree with the customer" }), grid,
+  return sketchCard("db", inputs, draw, !!w.db, card("A first database licence sketch", h("div", { class: "sz" }, out, h("details", { class: "szassume" }, h("summary", { text: "The databases, their busiest hour and the hosts, to agree with the customer" }), grid,
     h("div", { class: "btnrow" }, h("label", { class: "vcopt" }, spare, h("span", { text: "The agreement asks for the spare host to be licensed too" }))),
     h("div", { class: "btnrow" }, h("button", { class: "btn small", type: "button", text: "Back to the defaults", onclick: async () => {
       for (const [k] of fields) inputs[k].value = String(DBS.DB_DEFAULTS[k]);
@@ -175,7 +185,7 @@ export function k8sCard(w, k8s) {
     return h("label", { class: "szf" }, h("span", { text: label }), inputs[k]);
   }));
   draw(a);
-  return sketchCard("k8s", inputs, draw, card("A first container platform sizing sketch", h("div", { class: "sz" }, out,
+  return sketchCard("k8s", inputs, draw, !!w.k8s, card("A first container platform sizing sketch", h("div", { class: "sz" }, out,
     h("details", { class: "szassume" }, h("summary", { text: "The applications and what they ask for, to agree with the teams" }), grid(load)),
     h("details", { class: "szassume" }, h("summary", { text: "The nodes and the room kept on them" }), grid(nodes),
       h("div", { class: "btnrow" }, h("button", { class: "btn small", type: "button", text: "Back to the defaults", onclick: async () => {
@@ -216,7 +226,7 @@ export function vdiCard(w, vdi) {
     return h("label", { class: "szf" }, h("span", { text: label }), inputs[k]);
   }));
   draw(a);
-  return sketchCard("vdi", inputs, draw, card("A first desktop sizing sketch", h("div", { class: "sz" }, out,
+  return sketchCard("vdi", inputs, draw, !!w.vdi, card("A first desktop sizing sketch", h("div", { class: "sz" }, out,
     h("details", { class: "szassume" }, h("summary", { text: "The users, the mix and the hosts, to agree with the customer" }), grid(people)),
     h("details", { class: "szassume" }, h("summary", { text: "What each kind of desktop is given, and the storage" }), grid(given),
       h("div", { class: "btnrow" }, h("button", { class: "btn small", type: "button", text: "Back to the defaults", onclick: async () => {
@@ -265,7 +275,7 @@ export function drCard(w, dr) {
     return [field(row.share_pct, `Tier ${i + 1}: share of the data (%)`), field(row.rpo_min, `Tier ${i + 1}: recovery point (minutes)`), field(row.rto_min, `Tier ${i + 1}: recovery time (minutes)`)];
   }));
   draw(a);
-  return sketchCard("dr", inputs, draw, card("A first recovery design", h("div", { class: "sz" }, out, h("details", { class: "szassume" }, h("summary", { text: "The data, the distance and the tiers, to agree with the customer" }), grid, tiers,
+  return sketchCard("dr", inputs, draw, !!w.dr, card("A first recovery design", h("div", { class: "sz" }, out, h("details", { class: "szassume" }, h("summary", { text: "The data, the distance and the tiers, to agree with the customer" }), grid, tiers,
     h("div", { class: "btnrow" }, h("button", { class: "btn small", type: "button", text: "Back to the defaults", onclick: async () => {
       for (const [k] of top) inputs[k].value = String(DRS.DR_DEFAULTS[k]);
       tierIn.forEach((row, i) => { for (const k of Object.keys(row)) row[k].value = String(DRS.DR_DEFAULTS.tiers[i][k]); });
@@ -324,7 +334,7 @@ export function edgeCard(w, edge) {
     row.servers_min.value = String(k.servers_min);
     for (const [c] of cols) row[c].value = String(k[c]);
   });
-  return sketchCard("edge", inputs, draw, card("A first edge design", h("div", { class: "sz" }, out, h("details", { class: "szassume" }, h("summary", { text: "The kinds of site, the links and the upgrade pace, to agree with the customer" }), h("div", { class: "vcgroups" }, kinds), grid,
+  return sketchCard("edge", inputs, draw, !!w.edge, card("A first edge design", h("div", { class: "sz" }, out, h("details", { class: "szassume" }, h("summary", { text: "The kinds of site, the links and the upgrade pace, to agree with the customer" }), h("div", { class: "vcgroups" }, kinds), grid,
     h("div", { class: "btnrow" }, h("button", { class: "btn small", type: "button", text: "Back to the defaults", onclick: async () => {
       for (const [k] of top) inputs[k].value = String(EDGE.EDGE_DEFAULTS[k]);
       kindIn.forEach((row, i) => { const d = EDGE.EDGE_DEFAULTS.kinds[i]; row.name.value = d.name; row.servers_min.value = String(d.servers_min); for (const [k] of cols) row[k].value = String(d[k]); });
@@ -366,7 +376,7 @@ export function unitCard(w, unit) {
       return h("label", { class: "szf" }, h("span", { text: `${label} (${u})` }), inputs[k]);
     })));
   draw(a);
-  return sketchCard("unit", inputs, draw, card("What one machine costs", h("div", { class: "sz" }, out, h("div", { class: "btnrow" }, copy),
+  return sketchCard("unit", inputs, draw, !!w.unit, card("What one machine costs", h("div", { class: "sz" }, out, h("div", { class: "btnrow" }, copy),
     h("details", { class: "szassume" }, h("summary", { text: "The figures, as the customer and finance gave them" }), h("div", { class: "vcgroups" }, groups)), say),
   { sub: "Hardware written off, licences, support, power, space and people, divided among the machines they run: the number behind \"the cloud is cheaper\", showback per team and a provider's price per tenant. In the customer's own figures; not a quote." }));
 }
@@ -400,7 +410,7 @@ export function gpuCard(w, gpu) {
     return h("label", { class: "szf" }, h("span", { text: label + (unit ? ` (${unit})` : "") }), inputs[k]);
   }));
   draw(a);
-  return sketchCard("gpu", inputs, draw, card("A first GPU sketch", h("div", { class: "sz" }, out, h("details", { class: "szassume" }, h("summary", { text: "The assumptions, to agree with the customer" }), grid,
+  return sketchCard("gpu", inputs, draw, !!w.gpu, card("A first GPU sketch", h("div", { class: "sz" }, out, h("details", { class: "szassume" }, h("summary", { text: "The assumptions, to agree with the customer" }), grid,
     h("div", { class: "btnrow" }, h("button", { class: "btn small", type: "button", text: "Back to the defaults", onclick: async () => {
       for (const [k] of fields) inputs[k].value = String(GPU.GPU_DEFAULTS[k]);
       draw(GPU.GPU_DEFAULTS);

@@ -1413,6 +1413,7 @@ def main(site: str) -> int:
         page.get_by_role("button", name="The digital workplace").click()
         page.wait_for_selector("#ws-euc")
         vdicard = page.locator("#view .card").filter(has_text="A first desktop sizing sketch")
+        check(vdicard.locator(".szstate").inner_text() == "At the defaults", "a sketch not worked out yet says it shows the defaults")
         check(vdicard.locator(".szhead > b").inner_text() == "8" and "the memory decides" in vdicard.inner_text() and "need hosts with GPUs" in vdicard.inner_text(),
               "with virtual desktops in scope, a first desktop sizing sketch: hosts by processor and by memory, one kept free, GPUs for graphics")
         vdicard.locator("details.szassume summary").first.click()
@@ -1420,7 +1421,8 @@ def main(site: str) -> int:
         users.fill("3000")
         users.dispatch_event("change")
         page.wait_for_timeout(300)
-        check(int(vdicard.locator(".szhead > b").inner_text()) > 8, "and follows the users given")
+        check(int(vdicard.locator(".szhead > b").inner_text()) > 8 and vdicard.locator(".szstate.good").inner_text() == "With their figures",
+              "and follows the users given, and now says it was worked out with their figures")
         # a figure said in the meeting goes into its sketch with a tap, and the card follows
         page.fill("#wsheard", "We have about 1,500 users, 900 at the same time")
         page.get_by_role("button", name="Use 1,500 as the users of the desktop sizing sketch").click()

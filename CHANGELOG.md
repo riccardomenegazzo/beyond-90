@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.220.0
+
+- **Each sketch says whether it has their figures.** Beside its title, every first sketch now shows **With their figures** once a figure was changed in it or put in from Heard something, and **At the defaults** until then or after Back to the defaults: at a glance, which numbers are the customer's, and which sketches the readout will show.
+
 ## 0.219.0
 
 - **The next meeting asks for the figures the first sketches need.** On a line in scope whose first sketch was not worked out with the customer's figures yet, the next meeting's agenda now has **The figures for a first sizing**, in the customer's terms: for recovery, how much data to protect, the distance between the sites and the recovery point each tier needs; for virtual desktops, how many users, how many connect at once and the kinds of worker; and so on for every line with a sketch. Once the sketch is worked out, the line leaves the agenda.
