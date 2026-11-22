@@ -1003,7 +1003,10 @@ function workshopContext() {
       await store.povPut([p], true); await refreshPovs(); selectTab("wspov");
     },
     // the proof-of-value view, for this prospect, with the first line's own criteria as suggestions
-    result: { customer: w.customer }, dash: { pov_criteria: res.proof }, povs: state.povs, savePov, removePov,
+    result: { customer: w.customer }, povs: state.povs, savePov, removePov,
+    dash: { pov_criteria: [...res.proof,
+      ...(w.demo && w.demo.seen ? DEMO.proofFromDemo(DEMO.cardsFor(cat, w, res), w.demo).map((c) => ({ text: c.text, how: c.target })) : []),
+      ...(res.raised || []).map((o) => ({ text: o.prove, how: `Raised by the customer: "${o.says}"` }))] },
   };
 }
 async function refreshAsks() { try { state.asks = await store.asksAll(); } catch { state.asks = []; } }

@@ -1482,10 +1482,10 @@ export function povView({ result, book, povs, today, savePov, removePov, dash })
       (() => {
         const have = new Set(p.criteria.map((c) => c.text.trim().toLowerCase()));
         const left = suggested.filter((c) => !have.has(c.text.trim().toLowerCase()));
-        return left.length ? card("Suggested for this kind of product", h("ul", { class: "suggest" }, left.map((c) => h("li", {},
+        return left.length ? card("Suggested criteria", h("ul", { class: "suggest" }, left.map((c) => h("li", {},
           h("span", {}, h("b", { text: c.text }), c.how ? h("small", { class: "block", text: `How: ${c.how}` }) : null),
           h("button", { class: "btn small", type: "button", text: "Add", "aria-label": `Add criterion: ${c.text}`, onclick: edit((q) => P.addCriterion(q, { text: c.text, target: c.how }, today)) })))),
-        { sub: "Typical tests for this kind of product, written so a sponsor can sign them off. Add the ones that fit, then edit them to the customer's numbers." }) : null;
+        { sub: "Typical tests for this kind of product and, for a prospect, what landed in the demo and the concerns they raised, written so a sponsor can sign them off. Add the ones that fit, then edit them to the customer's numbers." }) : null;
       })(),
       qualCard(p, edit, today),
       card("Ready to start?", h("ul", { class: "plain" }, ready)),

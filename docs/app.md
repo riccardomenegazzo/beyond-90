@@ -48,7 +48,7 @@ With an earlier snapshot to compare with, the map also says **what changed**: ac
 It installs as an app on a phone, a tablet or a computer (Help, "Install it on any device"). On a phone:
 - a bar at the bottom carries the views of what is open: Today, Actions and Call for a customer; Questions, Qualify and Forward (the way forward, with the demo) in a workshop; Estate and Grow for an estate; This week for a book; Menu opens the rest;
 - a view's introduction shows two lines, with More for the rest;
-- in a workshop, the questions open on the card of the next one to ask: write what they said, then swipe or tap the answer; **Full screen** gives the card the whole screen;
+- in a workshop, the questions open on the card of the next one to ask: write what they said, then swipe or tap the answer; **Full screen** gives the card the whole screen; the demo, the readout of a proof of value and the rehearsal of the objections use the same cards;
 - the four answers to a discovery question share one row, and the filters are one row each, swiped sideways;
 - tables of records read as cards; wide tables (waves, recovery, edge, cost) slide sideways, with a shadow on the edge that has more.
 

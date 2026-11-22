@@ -2,6 +2,11 @@
 
 All notable changes. Versions follow semantic versioning while below 1.0: minor versions may change formats, and the changelog says so.
 
+## 0.181.0
+
+- **The presales guide follows the new meetings.** Its path through one prospect now names the rehearsal of the objections, the demo (timed, with who should be there, its agenda and invitation, run card by card, and what landed going into the proof), and the readout of the proof of value with its agenda and its cards. The app guide says the phone's cards serve the demo, the readout and the rehearsal too.
+- **A prospect's proof of value suggests what it is still missing.** Under **Suggested criteria** (it was "Suggested for this kind of product"), a proof started from a workshop now also offers what landed in the demo and each concern the customer raised, as long as it is not a criterion yet: a demo given, or a concern raised, after the proof was planned is one click from being in it, which is what the way forward asks.
+
 ## 0.180.0
 
 - **The meeting guide covers the three meetings:** "Running the meetings: discovery, demo, readout", linked so from the README and the workshop guide.
